@@ -159,7 +159,8 @@ export async function signInWithGoogle(): Promise<{ success: boolean; message: s
         const firebaseUser = await firebaseSignInWithGoogle();
 
         if (!firebaseUser) {
-            return { success: false, message: 'Google 로그인 취소 또는 실패' };
+            // No alert here because firebase-auth.ts handles specific error alerts
+            return { success: false, message: '' };
         }
 
         // Firebase User -> Local AuthSession 변환

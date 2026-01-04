@@ -11,6 +11,7 @@ import GoogleLoginButton from '@/components/GoogleLoginButton';
 
 import { login, signInAsGuest } from '@/lib/auth-utils';
 import { gameStorage } from '@/lib/game-storage';
+import { isFirebaseConfigured } from '@/lib/firebase';
 
 export default function IntroPage() {
     const router = useRouter();
@@ -169,6 +170,18 @@ export default function IntroPage() {
                             className="absolute top-8 left-8 font-mono text-[10px] text-cyan-500/70 pointer-events-auto"
                             exit={{ opacity: 0 }}
                         >
+                            <AnimatePresence>
+                                {!isFirebaseConfigured && (
+                                    <motion.div
+                                        initial={{ opacity: 0, x: -20 }}
+                                        animate={{ opacity: 1, x: 0 }}
+                                        className="mb-4 p-2 border border-red-500 bg-red-500/10 text-red-500 animate-pulse"
+                                    >
+                                        [CRITICAL_WARNING] FIREBASE_CONFIG_MISSING
+                                        <br />Check Vercel Environment Variables!
+                                    </motion.div>
+                                )}
+                            </AnimatePresence>
                             {systemStatus.map((status, i) => (
                                 <motion.div
                                     key={i}

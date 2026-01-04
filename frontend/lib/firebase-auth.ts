@@ -26,13 +26,16 @@ export async function signInWithGoogle(): Promise<User | null> {
         console.error('구글 로그인 실패:', error);
 
         if (error.code === 'auth/unauthorized-domain') {
-            alert('도메인 승인 오류: Firebase Console에서 현재 도메인을 승인된 도메인에 추가해야 로그인이 가능합니다.\n(Authentication > Settings > Authorized Domains)');
+            alert(`[Firebase] 도메인 승인 오류: ${window.location.hostname} 가 승인된 도메인에 없습니다.\nFirebase Console > Authentication > Settings > Authorized Domains 에서 추가해주세요.`);
         } else if (error.code === 'auth/popup-closed-by-user') {
             console.log('사용자가 로그인 팝업을 닫았습니다.');
+            alert('로그인 팝업이 닫혔습니다. 다시 시도해 주세요.');
         } else if (error.code === 'auth/cancelled-popup-request') {
-            // Multiple popups
+            alert('이전 로그인 요청이 처리 중입니다. 잠시 후 다시 시도해 주세요.');
+        } else if (error.code === 'auth/popup-blocked') {
+            alert('팝업이 차단되었습니다. 브라우저 설정에서 팝업을 허용해 주세요.');
         } else {
-            alert(`로그인 오류가 발생했습니다: ${error.message}`);
+            alert(`[Firebase Error ${error.code}] ${error.message}`);
         }
 
         return null;

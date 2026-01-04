@@ -14,7 +14,7 @@ export default function GoogleLoginButton() {
         if (result.success) {
             router.push('/');
         } else {
-            alert(result.message);
+            if (result.message) alert(result.message);
             setIsLoading(false);
         }
     };

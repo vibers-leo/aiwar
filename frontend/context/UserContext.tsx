@@ -136,6 +136,7 @@ export function UserProvider({ children }: { children: React.ReactNode }) {
             if (lastKnownUid) {
                 console.log(`[Auth] No user detected, but found last known UID (${lastKnownUid}). Forcing cleanup.`);
                 resetState();
+                localStorage.removeItem('last_known_uid'); // Clear to prevent loops
             } else {
                 console.log("[Auth] No user detected and no previous session found. State is clean.");
             }
@@ -147,7 +148,10 @@ export function UserProvider({ children }: { children: React.ReactNode }) {
         if (user && lastKnownUid && user.uid !== lastKnownUid) {
             console.warn(`[Auth] 🚨 CRITICAL: UID mismatch detected! Firebase user (${user.uid}) does not match last session (${lastKnownUid}). Nuking local state NOW.`);
             resetState(); // This is the critical cleanup step.
-            // Do not proceed with data hydration. The component will re-render and re-evaluate.
+
+            // CRITICAL FIX: Update the last_known_uid BEFORE reload to break the loop!
+            localStorage.setItem('last_known_uid', user.uid);
+
             // We force a reload to be absolutely certain the application re-initializes cleanly.
             window.location.reload();
             return;
