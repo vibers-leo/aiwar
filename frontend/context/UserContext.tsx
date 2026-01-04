@@ -241,8 +241,13 @@ export function UserProvider({ children }: { children: React.ReactNode }) {
                     setSubscriptions(subs);
 
                     if (profile.level === 1 && profile.hasReceivedStarterPack && finalInventory.length === 0) {
-                        console.log("[SafetySystem] Rescue: Found claimed flag but 0 cards. Re-distributing...");
-                        await claimStarterPack(profile.nickname || '지휘관');
+                        console.log("[SafetySystem] Rescue: Found claimed flag but 0 cards. Attempting silent re-distribution...");
+                        // Use a silent catch here to prevent blocking or intrusive alerts if the backend rejects it.
+                        try {
+                            await claimStarterPack(profile.nickname || '지휘관');
+                        } catch (e) {
+                            console.warn("[SafetySystem] Silent Rescue failed (likely expected):", e);
+                        }
                     }
 
                     if (!profile.hasReceivedStarterPack && finalInventory.length === 0) {

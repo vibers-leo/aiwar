@@ -28,6 +28,15 @@ export default function IntroPage() {
     // [REMOVED] Pre-Flight Cleanup: This was interfering with Google Login redirects.
     // We now rely on UserContext.tsx's "Session ID Mismatch" detection for valid cleanup.
 
+    const { user, loading } = useUser();
+
+    // Auto-redirect if already logged in
+    useEffect(() => {
+        if (!loading && user) {
+            router.replace('/');
+        }
+    }, [user, loading, router]);
+
     // Boot sequence animation
     useEffect(() => {
         const bootSequence = [
