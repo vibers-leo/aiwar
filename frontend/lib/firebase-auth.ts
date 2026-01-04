@@ -6,10 +6,14 @@ import {
     signOut,
     User,
     setPersistence,
+<<<<<<< HEAD
     inMemoryPersistence
+=======
+    inMemoryPersistence,
+    browserLocalPersistence,
+>>>>>>> origin/feat/robust-auth-flow-8902041196380173422
 } from 'firebase/auth';
 import { auth, isFirebaseConfigured } from './firebase';
-import { gameStorage } from './game-storage';
 
 /**
  * 구글 로그인
@@ -94,9 +98,6 @@ export async function getUserId(): Promise<string> {
 
     if (!user) {
         // [Safety] Do NOT auto-login as guest.
-        // This causes infinite login loops if any component checks ID during loading.
-        // Instead, we should return a rejected promise or null, but since signature is string,
-        // we throw an error that callers must handle.
         throw new Error('NO_AUTHENTICATED_USER');
     }
 
@@ -104,13 +105,25 @@ export async function getUserId(): Promise<string> {
 }
 
 /**
+ * Firebase Auth의 세션 영속성 설정
+ */
+export async function setAuthPersistence(persistenceType: 'local' | 'in-memory'): Promise<void> {
+    if (!auth) return;
+
+    const persistence = persistenceType === 'local' ? browserLocalPersistence : inMemoryPersistence;
+
+    try {
+        await setPersistence(auth, persistence);
+        console.log(`[Auth] Persistence set to ${persistenceType}`);
+    } catch (error) {
+        console.error('Failed to set auth persistence:', error);
+    }
+}
+
+/**
  * 로그아웃
  * @description
  * This function orchestrates a clean and safe logout process.
- * 1. Clears all local session data.
- * 2. Switches Firebase persistence to 'inMemory' to force-clear disk storage.
- * 3. Signs the user out.
- * 4. Forces a page reload.
  */
 export async function signOutUser(): Promise<void> {
     if (!auth) return;

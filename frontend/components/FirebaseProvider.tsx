@@ -2,8 +2,12 @@
 
 import { createContext, useContext, useEffect, useState, ReactNode } from 'react';
 import { User } from 'firebase/auth';
+<<<<<<< HEAD
 import { onAuthChange, signInAnonymous } from '@/lib/firebase-auth';
 import { gameStorage } from '@/lib/game-storage';
+=======
+import { onAuthChange, signOutUser } from '@/lib/firebase-auth';
+>>>>>>> origin/feat/robust-auth-flow-8902041196380173422
 
 interface FirebaseContextType {
     user: User | null;
@@ -30,12 +34,11 @@ export function FirebaseProvider({ children }: FirebaseProviderProps) {
     useEffect(() => {
         // [Safety System] Check for pending logout (Kill Switch)
         // If the user requested logout but the browser restored the session, this flag will force a cleanup.
-        const { gameStorage } = require('@/lib/game-storage'); // Dynamic import to avoid cycles if necessary, though direct import is likely fine.
-        // Actually, game-storage is a class instance export, so we import normally at top usually.
+        const { gameStorage } = require('@/lib/game-storage'); // Dynamic import to avoid cycles
 
         // 인증 상태 변경 리스너
         const unsubscribe = onAuthChange(async (authUser) => {
-            // [Kill Switch Check]
+            // [Kill Switch / Clean Boot Check]
             if (authUser && gameStorage.checkAndConsumePendingLogout()) {
                 console.warn('⚠️ [FirebaseProvider] Detected stale session despite logout request. Forcing sign-out.');
                 const { signOut } = await import('firebase/auth');

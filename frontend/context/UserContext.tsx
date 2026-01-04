@@ -24,8 +24,9 @@ import { addCardToInventory, loadInventory, distributeStarterPack, InventoryCard
 import type { Card, Rarity } from '@/lib/types';
 import { useNotification } from '@/context/NotificationContext';
 import { useFirebase } from '@/components/FirebaseProvider';
-import { signOutUser } from '@/lib/firebase-auth';
+import { signOutUser, setAuthPersistence } from '@/lib/firebase-auth';
 import { addNotification } from '@/components/NotificationCenter';
+import { useRouter } from 'next/navigation';
 import {
     syncSubscriptionsWithFirebase,
 } from '@/lib/faction-subscription-utils';
@@ -67,6 +68,7 @@ const UserContext = createContext<UserContextType | undefined>(undefined);
 
 export function UserProvider({ children }: { children: React.ReactNode }) {
     const { user } = useFirebase();
+    const router = useRouter();
     const { profile, reload: reloadProfile, loading: profileLoading } = useUserProfile();
 
     const [error, setError] = useState<string | null>(null);
@@ -101,20 +103,34 @@ export function UserProvider({ children }: { children: React.ReactNode }) {
     }, []);
 
     const handleSignOut = useCallback(async () => {
-        console.log("🚀 [Auth] Initiating Scorched Earth Sign Out...");
+        console.log("🚀 [Auth] Initiating Hardened Sign Out...");
 
-        // 1. Nuke all local and session data FIRST.
-        gameStorage.clearAllSessionData();
-        sessionStorage.clear(); // Explicitly clear session storage as well.
+        // 1. Set a flag to indicate logout is in progress.
+        localStorage.setItem('pending_logout', 'true');
 
-        // 2. Reset React state
-        resetState();
+        try {
+            // 2. Switch persistence to in-memory to detach from IndexedDB.
+            // (This is also handled in signOutUser but valid to do here too)
+            await setAuthPersistence('in-memory');
 
-        // 3. Then, sign out from Firebase
-        // This utility function will handle the nuking of local storage and force a redirect to '/'
-        await signOutUser();
+            // 3. Call the server-side API to destroy the session cookie. (Jules's Fix)
+            try {
+                await fetch('/api/auth/logout', { method: 'POST' });
+            } catch (apiError) {
+                console.warn("[Auth] Server-side logout failed (non-critical):", apiError);
+            }
 
-        console.log("✅ [Auth] Sign Out initiated. Waiting for page reload...");
+            // 4. Sign out from Firebase & Nuke Local Data
+            // This utility function will handle the nuking of local storage and force a redirect to '/'
+            await signOutUser();
+
+        } catch (error) {
+            console.error("Sign-out process failed:", error);
+            // Even if it fails, still try to clean up and redirect.
+            gameStorage.clearAllSessionData();
+            sessionStorage.clear();
+            window.location.href = '/intro';
+        }
     }, [resetState]);
 
 
