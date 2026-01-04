@@ -286,10 +286,14 @@ export function UserProvider({ children }: { children: React.ReactNode }) {
 
     const completeTutorial = useCallback(async () => {
         if (!user?.uid || !profile) return;
+
+        // 1. Immediate local feedback
+        localStorage.setItem(`tutorial_completed_${user.uid}`, 'true');
+
         try {
             await saveUserProfile({ tutorialCompleted: true }, user.uid);
             await reloadProfile();
-            console.log("[UserContext] Tutorial status saved to Firebase. State will update.");
+            console.log("[UserContext] Tutorial status saved to Firebase and LocalStorage.");
         } catch (error) {
             console.error("Failed to save tutorial completion status:", error);
         }
@@ -317,10 +321,15 @@ export function UserProvider({ children }: { children: React.ReactNode }) {
             const refreshedToken = await checkAndRechargeTokens(user.uid, profile.tokens, profile.lastTokenUpdate, fetchedSubscriptions);
             if (refreshedToken !== profile.tokens) setTokens(refreshedToken);
 
-            const isTutorialCompleted = localStorage.getItem(`tutorial_completed_${user.uid}`);
-            if (!isClaimingInSession && formattedInv.length === 0 && !profile.hasReceivedStarterPack) {
+            const isTutorialCompleted = localStorage.getItem(`tutorial_completed_${user.uid}`) === 'true' || profile.tutorialCompleted;
+
+            // Starter Pack eligibility: Level 1, NO received flag, NO cards, and Tutorial MUST be completed.
+            if (!isClaimingInSession &&
+                formattedInv.length === 0 &&
+                !profile.hasReceivedStarterPack &&
+                isTutorialCompleted) {
                 setStarterPackAvailable(true);
-            } else if (profile.hasReceivedStarterPack || formattedInv.length > 0) {
+            } else {
                 setStarterPackAvailable(false);
             }
             setError(null);

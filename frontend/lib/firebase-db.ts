@@ -313,8 +313,8 @@ export async function checkAndRechargeTokens(
     subscriptions: { factionId: string; tier: SubscriptionTier }[] = []
 ): Promise<number> {
     if (!lastUpdate) {
-        // 첫 실행 시 현재 시간 기록
-        const userRef = doc(db!, 'users', userId);
+        // 첫 실행 시 현재 시간 기록 - 프로필 데이터 하위 문서에 기록해야 함
+        const userRef = doc(db!, 'users', userId, 'profile', 'data');
         await updateDoc(userRef, { lastTokenUpdate: serverTimestamp() });
         return currentTokens;
     }
@@ -356,15 +356,14 @@ export async function checkAndRechargeTokens(
             }
         }
 
-        const userRef = doc(db!, 'users', userId);
+        const userRef = doc(db!, 'users', userId, 'profile', 'data');
         // lastTokenUpdate를 '이번에 충전된 주기만큼' 앞으로 당김 (정확한 주기 유지)
-        // 단, 너무 오래전이면 그냥 now로 리셋할수도 았으나, 정밀하게 하려면 cycles * interval 만큼 더해줌.
         const cyclesMs = cycles * rechargeIntervalMinutes * 60 * 1000;
         const newLastUpdate = new Date(lastDate.getTime() + cyclesMs);
 
         await updateDoc(userRef, {
             tokens: newTokens,
-            lastTokenUpdate: newLastUpdate // Firestore Timestamp로 변환 필요하지만 JS Date도 허용될 수 있음, 안전하게 Timestamp 사용 권장되나 로컬 계산이라 Date 저장
+            lastTokenUpdate: newLastUpdate
         });
 
         console.log(`🔋 토큰 충전: +${newTokens - currentTokens} (주기: ${cycles}회, 간격: ${rechargeIntervalMinutes}분)`);

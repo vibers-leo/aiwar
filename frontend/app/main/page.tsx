@@ -25,14 +25,14 @@ export default function MainPage() {
     // Play Main BGM
     playSound('bgm_main', 'bgm');
 
-    // Check if tutorial has been seen (User Specific)
-    if (user?.uid) {
+    // Check if tutorial has been seen (User Specific - Server + Local)
+    if (user?.uid && profile) {
       const tutorialKey = `tutorial_completed_${user.uid}`;
-      const hasSeenTutorial = localStorage.getItem(tutorialKey);
+      const hasSeenTutorialLocal = localStorage.getItem(tutorialKey) === 'true';
+      const hasSeenTutorialServer = profile.tutorialCompleted;
 
-      if (!hasSeenTutorial) {
+      if (!hasSeenTutorialLocal && !hasSeenTutorialServer) {
         // [Fix] Tutorial modal race condition
-        // 1초 뒤에 켜지도록 하여 초기 로딩 안정화
         const timer = setTimeout(() => {
           setShowTutorial(true);
           setInitializingTutorial(false);
