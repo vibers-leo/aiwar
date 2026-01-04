@@ -81,6 +81,7 @@ export function UserProvider({ children }: { children: React.ReactNode }) {
     const [quests, setQuests] = useState<Quest[]>([]); // [NEW] Quest State
     const [isClaimingInSession, setIsClaimingInSession] = useState(false);
     const [mounted, setMounted] = useState(false);
+    const [showSafeMode, setShowSafeMode] = useState(false); // [NEW] Safe Mode Recovery
 
     const isAdmin = user?.email === 'admin@example.com';
 
@@ -132,15 +133,18 @@ export function UserProvider({ children }: { children: React.ReactNode }) {
 
         // Case 1: User is logged out.
         if (!user) {
+            if (!profileLoading) {
+                console.log("[Auth] No user detected and profile loading finished. Releasing loading state.");
+                setLoading(false);
+            } else {
+                console.log("[Auth] No user detected. Waiting for profile hook to finalize...");
+            }
             // If there was a previous user, ensure their data is nuked.
             if (lastKnownUid) {
-                console.log(`[Auth] No user detected, but found last known UID (${lastKnownUid}). Forcing cleanup.`);
+                console.log(`[Auth] Cleanup required for previous UID (${lastKnownUid}).`);
                 resetState();
-                localStorage.removeItem('last_known_uid'); // Clear to prevent loops
-            } else {
-                console.log("[Auth] No user detected and no previous session found. State is clean.");
+                localStorage.removeItem('last_known_uid');
             }
-            setLoading(false);
             return;
         }
 
@@ -517,18 +521,73 @@ export function UserProvider({ children }: { children: React.ReactNode }) {
         return true;
     }, [quests, addCoinsByContext, addExperienceByContext]);
 
-    // Render Error Screen if Critical Error exists
-    if (error) {
+    // [NEW] Global Safe Mode Timeout
+    useEffect(() => {
+        if (!mounted || !loading) {
+            setShowSafeMode(false);
+            return;
+        }
+
+        const safetyTimer = setTimeout(() => {
+            if (loading) {
+                console.error("🚨 [CRITICAL] Application stuck in loading state for >8s. Activating Safe Mode Overlay.");
+                setShowSafeMode(true);
+            }
+        }, 8000);
+
+        return () => clearTimeout(safetyTimer);
+    }, [mounted, loading]);
+
+    // Render Safe Mode / Error Screen
+    if (error || showSafeMode) {
         return (
-            <div className="fixed inset-0 z-[9999] flex flex-col items-center justify-center bg-black/95 text-white font-mono p-4 text-center">
-                <div className="text-red-500 text-6xl mb-4">⚠️</div>
-                <h1 className="text-3xl font-black mb-4">SYSTEM CRITICAL FAILURE</h1>
-                <p className="text-red-400 mb-8">{error}</p>
-                <div className="flex gap-4">
-                    <button onClick={() => window.location.reload()} className="px-6 py-2 bg-red-600 hover:bg-red-700 rounded font-bold">SYSTEM REBOOT (RELOAD)</button>
-                    <button onClick={handleSignOut} className="px-6 py-2 border border-white/20 hover:bg-white/10 rounded">FORCE LOGOUT</button>
+            <div className="fixed inset-0 z-[99999] flex flex-col items-center justify-center bg-black text-white font-mono p-6 text-center overflow-hidden">
+                <div className="absolute inset-0 bg-[radial-gradient(circle_at_center,rgba(239,68,68,0.1)_0%,transparent_70%)] animate-pulse" />
+
+                <div className="relative z-10 max-w-lg w-full">
+                    <div className="text-red-500 text-7xl mb-6 animate-bounce">⚠️</div>
+                    <h1 className="text-3xl font-black mb-2 orbitron tracking-tighter">
+                        {error ? "SYSTEM CRITICAL FAILURE" : "INITIALIZATION HANG DETECTED"}
+                    </h1>
+                    <div className="h-1 w-20 bg-red-500 mx-auto mb-6" />
+
+                    <p className="text-gray-400 text-sm mb-8 leading-relaxed">
+                        {error || "시스템이 데이터를 동기화하는 도중 응답이 없습니다. 네트워크 상태를 확인하거나 아래 버튼을 눌러 초기화를 시도하세요."}
+                    </p>
+
+                    <div className="grid grid-cols-1 gap-4">
+                        <button
+                            onClick={() => window.location.reload()}
+                            className="w-full px-8 py-4 bg-red-600 hover:bg-red-700 text-black font-black italic rounded-xl transition-all active:scale-95 shadow-[0_0_20px_rgba(220,38,38,0.3)]"
+                        >
+                            FORCE SYSTEM REBOOT
+                        </button>
+
+                        <div className="grid grid-cols-2 gap-3">
+                            <button
+                                onClick={handleSignOut}
+                                className="px-4 py-3 border border-white/20 hover:bg-white/10 hover:border-white/40 rounded-xl text-[10px] font-bold tracking-widest uppercase transition-all"
+                            >
+                                SCORCHED EARTH LOGOUT
+                            </button>
+                            <button
+                                onClick={() => {
+                                    localStorage.clear();
+                                    sessionStorage.clear();
+                                    window.location.href = '/';
+                                }}
+                                className="px-4 py-3 border border-yellow-500/20 text-yellow-500/60 hover:bg-yellow-500/10 hover:text-yellow-500 rounded-xl text-[10px] font-bold tracking-widest uppercase transition-all"
+                            >
+                                CLEAR LOCAL DATA & RESTART
+                            </button>
+                        </div>
+                    </div>
+
+                    <div className="mt-12 pt-8 border-t border-white/5 space-y-1">
+                        <p className="text-[10px] text-gray-600 font-mono">NODE_STATUS: STUCK_OR_OFFLINE</p>
+                        <p className="text-[10px] text-gray-600 font-mono">ERROR_CODE: {error ? "DB_SYNC_STRICT_ENFORCEMENT" : "AUTH_INIT_TIMEOUT"}</p>
+                    </div>
                 </div>
-                <p className="mt-8 text-xs text-gray-500">Error Code: DB_SYNC_STRICT_ENFORCEMENT</p>
             </div>
         );
     }
