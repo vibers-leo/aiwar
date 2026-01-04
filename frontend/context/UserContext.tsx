@@ -175,10 +175,19 @@ export function UserProvider({ children }: { children: React.ReactNode }) {
         }
 
         // Case 3: User is logged in, profile is still loading.
+        // [NEW] Added failsafe timeout - if profile takes too long, release loading anyway
         if (user && profileLoading) {
             console.log(`[Auth] User ${user.uid} session is valid. Waiting for profile...`);
             setLoading(true);
-            return;
+
+            // [SAFETY] Force release loading after 4 seconds if profile never loads
+            const profileWaitTimeout = setTimeout(() => {
+                console.warn(`[Auth] ⚠️ Profile loading timed out (4s). Force releasing loading state.`);
+                setLoading(false);
+            }, 4000);
+
+            // Cleanup on effect re-run or when profileLoading changes
+            return () => clearTimeout(profileWaitTimeout);
         }
 
         // Case 4: User and profile are fully loaded and session is consistent.

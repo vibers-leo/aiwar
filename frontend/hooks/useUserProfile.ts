@@ -19,12 +19,21 @@ export function useUserProfile() {
     const [error, setError] = useState<Error | null>(null);
 
     useEffect(() => {
-        // [CRITICAL FIX] If auth is still loading, we return early BUT we leave loading: true.
-        // This is intentional - we wait for auth to resolve first.
+        // [SAFETY TIMEOUT] If auth takes more than 5s, force release loading to prevent infinite hang
+        const authWaitTimeout = setTimeout(() => {
+            if (authLoading) {
+                console.warn('[useUserProfile] Auth loading timed out (5s). Force releasing loading.');
+                setLoading(false);
+            }
+        }, 5000);
+
+        // [CRITICAL FIX] If auth is still loading, we return early BUT set cleanup for timeout.
         if (authLoading) {
             console.log('[useUserProfile] Auth still loading, waiting...');
-            return;
+            return () => clearTimeout(authWaitTimeout);
         }
+
+        clearTimeout(authWaitTimeout); // Auth resolved, clear the timeout
 
         // [CRITICAL FIX] If there's no user, immediately release loading.
         // This prevents deadlock when UserContext waits for profileLoading to clear.
