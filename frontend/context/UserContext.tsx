@@ -190,7 +190,84 @@ export function UserProvider({ children }: { children: React.ReactNode }) {
                     // Sync was successful, so we can now set the last known UID to this user.
                     localStorage.setItem('last_known_uid', user.uid);
 
-                    // ... existing logic ...
+                    if (profile.coins < 0) {
+                        console.warn(`[Auto-Heal] Negative balance of ${profile.coins} detected. Resetting to 0.`);
+                        await firebaseUpdateCoins(Math.abs(profile.coins), user.uid);
+                        setCoins(0);
+                    } else {
+                        setCoins(profile.coins);
+                    }
+
+                    setTokens(profile.tokens);
+                    setLevel(profile.level);
+                    setExperience(profile.exp);
+
+                    const [cards, subs] = await Promise.all([
+                        loadInventory(user.uid),
+                        fetchUserSubscriptions(user.uid),
+                        syncSubscriptionsWithFirebase(user.uid)
+                    ]);
+
+                    const formattedCards = cards.map(c => ({
+                        ...c,
+                        acquiredAt: (c.acquiredAt && 'toDate' in (c.acquiredAt as any)) ? (c.acquiredAt as any).toDate() : new Date(c.acquiredAt as any)
+                    })) as InventoryCard[];
+
+                    const { COMMANDERS } = await import('@/data/card-database');
+                    const rentalCommanders: Card[] = [];
+
+                    for (const sub of subs) {
+                        // [Policy Change] All active subscribers get Commander access (Free included)
+                        if (sub.status === 'active') {
+                            const cmdTemplate = COMMANDERS.find(c => c.aiFactionId === sub.factionId);
+                            if (cmdTemplate) {
+                                const alreadyExists = formattedCards.some(c => c.templateId === cmdTemplate.id || c.id === cmdTemplate.id);
+                                if (!alreadyExists) {
+                                    rentalCommanders.push({
+                                        id: `commander-${cmdTemplate.id}`,
+                                        instanceId: `commander-${cmdTemplate.id}-${user.uid}`,
+                                        templateId: cmdTemplate.id,
+                                        ownerId: user.uid,
+                                        name: cmdTemplate.name,
+                                        rarity: 'commander',
+                                        type: 'EFFICIENCY',
+                                        level: 1,
+                                        experience: 0,
+                                        imageUrl: cmdTemplate.imageUrl,
+                                        aiFactionId: cmdTemplate.aiFactionId,
+                                        description: cmdTemplate.description,
+                                        stats: { efficiency: 95, creativity: 95, function: 95, totalPower: 285 },
+                                        acquiredAt: new Date(),
+                                        isCommanderCard: true,
+                                        isLocked: false,
+                                        specialty: cmdTemplate.specialty
+                                    } as InventoryCard);
+                                }
+                            }
+                        }
+                    }
+
+                    const finalInventory = [...formattedCards, ...rentalCommanders] as InventoryCard[];
+                    setInventory(finalInventory);
+                    setSubscriptions(subs);
+
+                    if (profile.level === 1 && profile.hasReceivedStarterPack && finalInventory.length === 0) {
+                        console.log("[SafetySystem] Rescue: Found claimed flag but 0 cards. Attempting silent re-distribution...");
+                        // Use a silent catch here to prevent blocking or intrusive alerts if the backend rejects it.
+                        try {
+                            await claimStarterPack(profile.nickname || '지휘관');
+                        } catch (e) {
+                            console.warn("[SafetySystem] Silent Rescue failed (likely expected):", e);
+                        }
+                    }
+
+                    if (!profile.hasReceivedStarterPack && finalInventory.length === 0) {
+                        console.log(`[StarterPack] ✅ User ELIGIBLE. (HasRecv: ${profile.hasReceivedStarterPack}, InvLen: ${finalInventory.length})`);
+                        setStarterPackAvailable(true);
+                    } else {
+                        console.log(`[StarterPack] ❌ User NOT Eligible. (HasRecv: ${profile.hasReceivedStarterPack}, InvLen: ${finalInventory.length})`);
+                        setStarterPackAvailable(false);
+                    }
                 } catch (error) {
                     console.error("[Auth] Failed to sync user data:", error);
                 } finally {
