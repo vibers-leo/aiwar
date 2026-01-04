@@ -120,7 +120,7 @@ export function UserProvider({ children }: { children: React.ReactNode }) {
 
     useEffect(() => {
         setMounted(true);
-        console.log('✅ UserProvider Mounted - Version: 2026-01-04-NUCLEAR-CLEANUP-FIX');
+        console.log('✅ UserProvider Mounted - Version: 2026-01-04-STARTER-PACK-DEBUG-V3');
     }, []);
 
     useEffect(() => {
@@ -217,9 +217,10 @@ export function UserProvider({ children }: { children: React.ReactNode }) {
                     }
 
                     if (!profile.hasReceivedStarterPack && finalInventory.length === 0) {
-                        console.log("[Auth] User is eligible for the starter pack.");
+                        console.log(`[StarterPack] ✅ User ELIGIBLE. (HasRecv: ${profile.hasReceivedStarterPack}, InvLen: ${finalInventory.length})`);
                         setStarterPackAvailable(true);
                     } else {
+                        console.log(`[StarterPack] ❌ User NOT Eligible. (HasRecv: ${profile.hasReceivedStarterPack}, InvLen: ${finalInventory.length})`);
                         setStarterPackAvailable(false);
                     }
                 } catch (error) {
