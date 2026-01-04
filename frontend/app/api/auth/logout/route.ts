@@ -4,7 +4,7 @@ import { cookies } from 'next/headers';
 export async function POST() {
   // Get the session cookie
   const sessionCookie = process.env.SESSION_COOKIE_NAME || 'session';
-  const cookieStore = cookies();
+  const cookieStore = await cookies();
   const session = cookieStore.get(sessionCookie);
 
   // If the cookie exists, expire it
