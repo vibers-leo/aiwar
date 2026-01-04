@@ -12,6 +12,7 @@ import GoogleLoginButton from '@/components/GoogleLoginButton';
 import { login, signInAsGuest } from '@/lib/auth-utils';
 import { gameStorage } from '@/lib/game-storage';
 import { isFirebaseConfigured } from '@/lib/firebase';
+import { useUser } from '@/context/UserContext';
 
 export default function IntroPage() {
     const router = useRouter();
