@@ -17,21 +17,25 @@ export function middleware(request: NextRequest) {
 
   // --- Redirect Logic ---
 
+  // [DISABLED] Server-side auth redirect causes loop because Firebase client auth
+  // does NOT set the session cookie. Client-side UserContext handles protection instead.
+  // TODO: Implement session cookie creation on login for proper server-side auth.
+
   // 1. If user has no session and is trying to access a protected route, redirect to login.
-  if (!session && isProtectedRoute) {
-    const url = request.nextUrl.clone();
-    url.pathname = '/intro';
-    console.log(`[Middleware] No session. Redirecting from ${pathname} to /intro.`);
-    return NextResponse.redirect(url);
-  }
+  // if (!session && isProtectedRoute) {
+  //   const url = request.nextUrl.clone();
+  //   url.pathname = '/intro';
+  //   console.log(`[Middleware] No session. Redirecting from ${pathname} to /intro.`);
+  //   return NextResponse.redirect(url);
+  // }
 
   // 2. If user has a session and is trying to access a public route (like login), redirect to main.
-  if (session && isPublicRoute) {
-    const url = request.nextUrl.clone();
-    url.pathname = '/main';
-    console.log(`[Middleware] Session found. Redirecting from ${pathname} to /main.`);
-    return NextResponse.redirect(url);
-  }
+  // if (session && isPublicRoute) {
+  //   const url = request.nextUrl.clone();
+  //   url.pathname = '/main';
+  //   console.log(`[Middleware] Session found. Redirecting from ${pathname} to /main.`);
+  //   return NextResponse.redirect(url);
+  // }
 
   // If none of the above, allow the request to proceed.
   return NextResponse.next();
