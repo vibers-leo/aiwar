@@ -148,6 +148,40 @@ export default function SettingsModal({ isOpen, onClose }: SettingsModalProps) {
                             </div>
                         </div>
 
+                        {/* Account Section [NEW] */}
+                        <div className="space-y-6">
+                            <div className="flex items-center gap-2 mb-2">
+                                <ShieldCheck size={14} className="text-green-500" />
+                                <span className="text-[11px] font-black orbitron text-gray-400 tracking-widest uppercase">Combatant Identity</span>
+                            </div>
+
+                            <div className="p-4 rounded-2xl bg-white/5 border border-white/5 space-y-4">
+                                <div className="flex items-center justify-between">
+                                    <div className="flex items-center gap-4">
+                                        <div className="p-3 rounded-xl bg-green-500/20 text-green-400">
+                                            <Mail size={20} />
+                                        </div>
+                                        <div>
+                                            <p className="text-xs text-gray-500 font-bold orbitron uppercase tracking-wider">Email Address</p>
+                                            <p className="text-sm font-black text-white">{user?.email || 'Guest Session'}</p>
+                                        </div>
+                                    </div>
+                                </div>
+                                <div className="h-px bg-white/5" />
+                                <div className="flex items-center justify-between">
+                                    <div className="flex items-center gap-4">
+                                        <div className="p-3 rounded-xl bg-orange-500/20 text-orange-400">
+                                            <Fingerprint size={20} />
+                                        </div>
+                                        <div>
+                                            <p className="text-xs text-gray-500 font-bold orbitron uppercase tracking-wider">Neural Link UID</p>
+                                            <p className="text-xs font-mono text-white/60">{user?.uid ? `${user.uid.substring(0, 10)}...` : 'N/A'}</p>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
                         {/* Danger Zone */}
                         <div className="space-y-6 pt-6 border-t border-white/5">
                             <div className="flex items-center gap-2 mb-2">
