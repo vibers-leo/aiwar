@@ -10,6 +10,7 @@ import { DraggableCard } from '@/components/ui/aceternity/draggable-card';
 import GoogleLoginButton from '@/components/GoogleLoginButton';
 
 import { login, signInAsGuest } from '@/lib/auth-utils';
+import { gameStorage } from '@/lib/game-storage';
 
 export default function IntroPage() {
     const router = useRouter();
@@ -22,6 +23,12 @@ export default function IntroPage() {
     const [loginId, setLoginId] = useState('');
     const [loginKey, setLoginKey] = useState('');
     const [loginError, setLoginError] = useState('');
+
+    // Pre-Flight Cleanup: Nuke any lingering session data the moment this page loads.
+    useEffect(() => {
+        console.log('🧹 [Pre-Flight Cleanup] Wiping all session data on intro page mount.');
+        gameStorage.clearAllSessionData();
+    }, []);
 
     // Boot sequence animation
     useEffect(() => {
