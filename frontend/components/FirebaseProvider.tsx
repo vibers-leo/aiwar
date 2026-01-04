@@ -2,12 +2,7 @@
 
 import { createContext, useContext, useEffect, useState, ReactNode } from 'react';
 import { User } from 'firebase/auth';
-<<<<<<< HEAD
-import { onAuthChange, signInAnonymous } from '@/lib/firebase-auth';
-import { gameStorage } from '@/lib/game-storage';
-=======
-import { onAuthChange, signOutUser } from '@/lib/firebase-auth';
->>>>>>> origin/feat/robust-auth-flow-8902041196380173422
+import { onAuthChange } from '@/lib/firebase-auth';
 
 interface FirebaseContextType {
     user: User | null;

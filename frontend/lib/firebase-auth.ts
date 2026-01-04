@@ -6,14 +6,11 @@ import {
     signOut,
     User,
     setPersistence,
-<<<<<<< HEAD
-    inMemoryPersistence
-=======
     inMemoryPersistence,
-    browserLocalPersistence,
->>>>>>> origin/feat/robust-auth-flow-8902041196380173422
+    browserLocalPersistence
 } from 'firebase/auth';
 import { auth, isFirebaseConfigured } from './firebase';
+import { gameStorage } from './game-storage';
 
 /**
  * 구글 로그인
@@ -136,8 +133,6 @@ export async function signOutUser(): Promise<void> {
         gameStorage.clearAllSessionData();
 
         // 2. [SDK-NATIVE CLEANUP] Switch to In-Memory Persistence
-        // This forces the SDK to wipe the header/payload from IndexedDB/LocalStorage
-        // without us having to fight database locks.
         try {
             console.log('[Auth] Switching to in-memory persistence to wipe storage...');
             await setPersistence(auth, inMemoryPersistence);
@@ -161,7 +156,6 @@ export async function signOutUser(): Promise<void> {
             console.log('[Auth] Reloading page to ensure clean state...');
 
             // [Safety] Set Pending Logout Flag
-            // This tells the next session to reject any restored auth tokens immediately
             gameStorage.setPendingLogout();
 
             setTimeout(() => {
