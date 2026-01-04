@@ -19,6 +19,8 @@ export default function MainPage() {
   const [showStarterPackModal, setShowStarterPackModal] = useState(false);
   const [starterCards, setStarterCards] = useState<any[]>([]);
 
+  const [initializingTutorial, setInitializingTutorial] = useState(true); // [Fix] Prevent race condition
+
   useEffect(() => {
     // Play Main BGM
     playSound('bgm_main', 'bgm');
@@ -31,19 +33,30 @@ export default function MainPage() {
       if (!hasSeenTutorial) {
         // [Fix] Tutorial modal race condition
         // 1초 뒤에 켜지도록 하여 초기 로딩 안정화
-        const timer = setTimeout(() => setShowTutorial(true), 1000);
+        const timer = setTimeout(() => {
+          setShowTutorial(true);
+          setInitializingTutorial(false);
+        }, 1000);
         return () => clearTimeout(timer);
+      } else {
+        setInitializingTutorial(false);
       }
+    } else {
+      // Guest or not loaded yet - wait? Or release?
+      // If user is null, authentication is still loading.
+      // But UserContext 'loading' should handle main page render?
+      // If user exists but logic skipped?
+      // Make sure we release the lock if user is present.
     }
   }, [playSound, user?.uid]);
 
   // Starter Pack Check
   useEffect(() => {
-    if (starterPackAvailable && !showTutorial) {
-      // 튜토리얼이 닫혀있고, 스타터팩을 아직 안 받았다면
+    if (starterPackAvailable && !showTutorial && !initializingTutorial) {
+      // 튜토리얼이 닫혀있고, 초기화가 끝났으며, 스타터팩을 아직 안 받았다면
       setShowStarterPackModal(true);
     }
-  }, [starterPackAvailable, showTutorial]);
+  }, [starterPackAvailable, showTutorial, initializingTutorial]);
 
   const handleClaimStarterPack = async () => {
     if (!profile?.nickname) return;

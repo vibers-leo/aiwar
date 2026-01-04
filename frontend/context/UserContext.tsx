@@ -216,8 +216,7 @@ export function UserProvider({ children }: { children: React.ReactNode }) {
                         await claimStarterPack(profile.nickname || '지휘관');
                     }
 
-                    const isTutorialCompleted = profile.tutorialCompleted || false;
-                    if (isTutorialCompleted && !profile.hasReceivedStarterPack && finalInventory.length === 0) {
+                    if (!profile.hasReceivedStarterPack && finalInventory.length === 0) {
                         console.log("[Auth] User is eligible for the starter pack.");
                         setStarterPackAvailable(true);
                     } else {
