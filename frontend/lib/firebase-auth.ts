@@ -146,6 +146,11 @@ export async function signOutUser(): Promise<void> {
         // 4. Force a full page reload to reset application state
         if (typeof window !== 'undefined') {
             console.log('[Auth] Reloading page to ensure clean state...');
+
+            // [Safety] Set Pending Logout Flag
+            // This tells the next session to reject any restored auth tokens immediately
+            gameStorage.setPendingLogout();
+
             setTimeout(() => {
                 window.location.href = '/';
             }, 100);

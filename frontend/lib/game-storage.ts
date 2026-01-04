@@ -238,6 +238,30 @@ class UnifiedStorage {
         }
     }
 
+    /**
+     * 로그아웃 보류 플래그 설정 (Kill Switch)
+     */
+    public setPendingLogout() {
+        if (typeof window !== 'undefined') {
+            localStorage.setItem('pending_logout', 'true');
+        }
+    }
+
+    /**
+     * 로그아웃 보류 플래그 확인 및 소비
+     */
+    public checkAndConsumePendingLogout(): boolean {
+        if (typeof window !== 'undefined') {
+            const isPending = localStorage.getItem('pending_logout') === 'true';
+            if (isPending) {
+                console.warn('⚠️ [SafetySystem] Pending logout detected. Consuming flag.');
+                localStorage.removeItem('pending_logout');
+                return true;
+            }
+        }
+        return false;
+    }
+
 
     /**
      * 데이터 무결성 체크 (로드 시)
