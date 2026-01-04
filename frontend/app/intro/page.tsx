@@ -65,6 +65,18 @@ export default function IntroPage() {
         return () => clearInterval(interval);
     }, []);
 
+    // [Safety] Global Intro Loading Fallback
+    useEffect(() => {
+        const safetyTimer = setTimeout(() => {
+            if (!isLoaded) {
+                console.warn("⚠️ [Intro] Boot sequence took too long. Force releasing UI.");
+                setIsLoaded(true);
+                setGlitchText('ENTER_THE_NETWORK');
+            }
+        }, 5000); // 5s absolute max for intro animation
+        return () => clearTimeout(safetyTimer);
+    }, [isLoaded]);
+
     // Glitch effect
     useEffect(() => {
         if (!isLoaded) return;

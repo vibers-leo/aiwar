@@ -1,35 +1,29 @@
 'use client';
 
-import { useEffect, useState } from 'react';
+import { useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import { motion } from 'framer-motion';
+import { useUser } from '@/context/UserContext';
 
 export default function RootPage() {
     const router = useRouter();
-    const [isChecking, setIsChecking] = useState(true);
+    const { user, loading } = useUser();
 
     useEffect(() => {
-        // Auth Check using 'auth-session' key from auth-utils
-        try {
-            const sessionData = localStorage.getItem('auth-session');
-            if (sessionData) {
-                const session = JSON.parse(sessionData);
-                if (session && session.expiresAt > Date.now()) {
-                    // Valid Session -> Go to Main
-                    router.replace('/main');
-                    return;
-                }
-            }
-        } catch (e) {
-            console.error('Auth check failed', e);
+        // [Modern Auth Check] Rely on UserContext instead of localStorage directly.
+        // This prevents the redirect loop between / and /intro.
+        if (loading) return;
+
+        console.log(`[RootPage] Authorization state confirmed. User: ${user ? user.uid : 'null'}`);
+
+        if (user) {
+            console.log("[RootPage] Valid session detected. Transitioning to Command Center...");
+            router.replace('/main');
+        } else {
+            console.log("[RootPage] No active session. Redirecting to Entry Network...");
+            router.replace('/intro');
         }
-
-        // No valid session -> Go to Intro
-        router.replace('/intro');
-
-        const timer = setTimeout(() => setIsChecking(false), 1000);
-        return () => clearTimeout(timer);
-    }, [router]);
+    }, [user, loading, router]);
 
     return (
         <div className="fixed inset-0 bg-black flex items-center justify-center">
