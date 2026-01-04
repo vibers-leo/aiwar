@@ -20,7 +20,7 @@ import FactionSubscriptionModal from '@/components/FactionSubscriptionModal'; //
 export default function ShopPage() {
     const router = useRouter();
     const { showAlert, showConfirm } = useAlert();
-    const { coins, tokens, level, addCoins, addTokens, refreshData, user } = useUser(); // [UPDATED] user
+    const { coins, tokens, level, addCoins, addTokens, refreshData, user, buyCardPack } = useUser(); // [FIXED] moved buyCardPack here
 
     // 연구 보너스 로드
     const [negotiationBonus, setNegotiationBonus] = useState(0);
@@ -82,7 +82,6 @@ export default function ShopPage() {
                 const generatedCards = openCardPack(pack, user.uid, insightLevel);
 
                 // 2. 트랜잭션 구매 실행 (재화 차감 + 카드 지급 통합)
-                const { buyCardPack } = useUser(); // Hook already called at top level, just destruct
                 await buyCardPack(generatedCards, finalPrice, pack.currencyType);
 
                 // 3. 잭팟 로직 (코인 구매 시에만 적용)
