@@ -411,7 +411,6 @@ export function UserProvider({ children }: { children: React.ReactNode }) {
         }
     };
 
-<<<<<<< HEAD
     // [NEW] Quest Event Bus
     const trackMissionEvent = useCallback((action: string, amount: number = 1) => {
         setQuests(prevQuests => {
