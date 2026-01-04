@@ -406,12 +406,23 @@ export default function IntroPage() {
                                                 <div className="grid grid-cols-2 gap-2">
                                                     <button
                                                         type="button"
-                                                        onClick={() => {
-                                                            const result = signInAsGuest();
-                                                            if (result.success) {
-                                                                setSystemStatus(prev => [...prev, 'GUEST_ACCESS_GRANTED', 'REDIRECTING...']);
-                                                                // Force hard reload to ensure all contexts pick up the new session
-                                                                setTimeout(() => window.location.href = '/', 500);
+                                                        onClick={async () => {
+                                                            try {
+                                                                // Use Firebase Anonymous Auth instead of local auth
+                                                                // This ensures UserContext picks up the user correctly
+                                                                const { signInAnonymous } = await import('@/lib/firebase-auth');
+                                                                const user = await signInAnonymous();
+
+                                                                if (user) {
+                                                                    setSystemStatus(prev => [...prev, 'GUEST_ACCESS_GRANTED', 'REDIRECTING...']);
+                                                                    // Force hard reload to ensure all contexts pick up the new session
+                                                                    setTimeout(() => window.location.href = '/', 500);
+                                                                } else {
+                                                                    setLoginError('GUEST_AUTH_FAILED');
+                                                                }
+                                                            } catch (e) {
+                                                                console.error(e);
+                                                                setLoginError('GUEST_AUTH_ERROR');
                                                             }
                                                         }}
                                                         className="col-span-2 py-2 bg-white/5 hover:bg-white/10 text-gray-400 hover:text-white rounded border border-white/10 font-mono text-[10px] uppercase tracking-wider transition-colors"

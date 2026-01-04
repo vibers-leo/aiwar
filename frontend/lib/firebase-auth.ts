@@ -88,13 +88,17 @@ export async function getUserId(): Promise<string> {
         return 'local-user'; // Firebase 미설정 시 로컬 사용자 ID 반환
     }
 
-    let user = getCurrentUser();
+    const user = getCurrentUser();
 
     if (!user) {
-        user = await signInAnonymous();
+        // [Safety] Do NOT auto-login as guest.
+        // This causes infinite login loops if any component checks ID during loading.
+        // Instead, we should return a rejected promise or null, but since signature is string,
+        // we throw an error that callers must handle.
+        throw new Error('NO_AUTHENTICATED_USER');
     }
 
-    return user?.uid || 'local-user';
+    return user.uid;
 }
 
 /**
@@ -112,7 +116,6 @@ export async function signOutUser(): Promise<void> {
         console.log('[Auth] Starting sign-out process...');
 
         // 1. Clear all sensitive local data BEFORE logging out
-        // This prevents any chance of data bleeding into the next session.
         console.log('[Auth] Clearing local session data...');
         gameStorage.clearAllSessionData();
 
@@ -120,7 +123,20 @@ export async function signOutUser(): Promise<void> {
         console.log('[Auth] Signing out from Firebase...');
         await signOut(auth);
 
-        // 3. Force a full page reload to reset application state
+        // 3. [NUCLEAR] Manually clear Firebase Persistence DB to prevent zombie sessions
+        // This addresses the issue where the browser restores the session from IndexedDB immediately after reload.
+        try {
+            const databases = await window.indexedDB.databases();
+            const firebaseDb = databases.find(db => db.name === 'firebaseLocalStorageDb');
+            if (firebaseDb && firebaseDb.name) {
+                console.log('[Auth] Deleting Firebase LocalStorage DB...');
+                window.indexedDB.deleteDatabase(firebaseDb.name);
+            }
+        } catch (dbError) {
+            console.warn('[Auth] Failed to clear IndexedDB (Non-critical):', dbError);
+        }
+
+        // 4. Force a full page reload to reset application state
         // This is a critical step to ensure UserContext and other states are cleared.
         if (typeof window !== 'undefined') {
             console.log('[Auth] Reloading page to ensure clean state...');
@@ -129,6 +145,7 @@ export async function signOutUser(): Promise<void> {
 
     } catch (error) {
         console.error('Sign-out failed:', error);
-        // Optional: Add user-facing error notification
+        // Fallback reload even if error
+        window.location.href = '/';
     }
 }
