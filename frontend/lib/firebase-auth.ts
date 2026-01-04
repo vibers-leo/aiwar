@@ -4,7 +4,9 @@ import {
     signInWithPopup,
     onAuthStateChanged,
     signOut,
-    User
+    User,
+    setPersistence,
+    inMemoryPersistence
 } from 'firebase/auth';
 import { auth, isFirebaseConfigured } from './firebase';
 import { gameStorage } from './game-storage';
@@ -105,9 +107,10 @@ export async function getUserId(): Promise<string> {
  * 로그아웃
  * @description
  * This function orchestrates a clean and safe logout process.
- * 1. Clears all local session data ('Nuclear Option') to prevent "Zombie Data".
- * 2. Signs the user out from Firebase Authentication.
- * 3. Forces a page reload to ensure all React contexts and states are reset.
+ * 1. Clears all local session data.
+ * 2. Switches Firebase persistence to 'inMemory' to force-clear disk storage.
+ * 3. Signs the user out.
+ * 4. Forces a page reload.
  */
 export async function signOutUser(): Promise<void> {
     if (!auth) return;
@@ -115,37 +118,41 @@ export async function signOutUser(): Promise<void> {
     try {
         console.log('[Auth] Starting sign-out process...');
 
-        // 1. Clear all sensitive local data BEFORE logging out
+        // 1. Clear all sensitive local data
         console.log('[Auth] Clearing local session data...');
         gameStorage.clearAllSessionData();
 
-        // 2. Sign out from Firebase
+        // 2. [SDK-NATIVE CLEANUP] Switch to In-Memory Persistence
+        // This forces the SDK to wipe the header/payload from IndexedDB/LocalStorage
+        // without us having to fight database locks.
+        try {
+            console.log('[Auth] Switching to in-memory persistence to wipe storage...');
+            await setPersistence(auth, inMemoryPersistence);
+        } catch (pError) {
+            console.warn('[Auth] Failed to switch persistence (Non-critical):', pError);
+        }
+
+        // 3. Sign out from Firebase
         console.log('[Auth] Signing out from Firebase...');
         await signOut(auth);
 
-        // 3. [NUCLEAR] Manually clear Firebase Persistence DB to prevent zombie sessions
-        // This addresses the issue where the browser restores the session from IndexedDB immediately after reload.
-        try {
-            const databases = await window.indexedDB.databases();
-            const firebaseDb = databases.find(db => db.name === 'firebaseLocalStorageDb');
-            if (firebaseDb && firebaseDb.name) {
-                console.log('[Auth] Deleting Firebase LocalStorage DB...');
-                window.indexedDB.deleteDatabase(firebaseDb.name);
-            }
-        } catch (dbError) {
-            console.warn('[Auth] Failed to clear IndexedDB (Non-critical):', dbError);
+        // [Verification] Wait for auth state to actually clear
+        let attempts = 0;
+        while (auth.currentUser && attempts < 10) {
+            await new Promise(resolve => setTimeout(resolve, 100));
+            attempts++;
         }
 
         // 4. Force a full page reload to reset application state
-        // This is a critical step to ensure UserContext and other states are cleared.
         if (typeof window !== 'undefined') {
             console.log('[Auth] Reloading page to ensure clean state...');
-            window.location.href = '/';
+            setTimeout(() => {
+                window.location.href = '/';
+            }, 100);
         }
 
     } catch (error) {
         console.error('Sign-out failed:', error);
-        // Fallback reload even if error
         window.location.href = '/';
     }
 }
