@@ -32,29 +32,54 @@ export function FirebaseProvider({ children }: FirebaseProviderProps) {
         const { gameStorage } = require('@/lib/game-storage'); // Dynamic import to avoid cycles
 
         // 인증 상태 변경 리스너
+        // 인증 상태 변경 리스너
         const unsubscribe = onAuthChange(async (authUser) => {
-            // [Kill Switch / Clean Boot Check]
-            if (authUser && gameStorage.checkAndConsumePendingLogout()) {
-                console.warn('⚠️ [FirebaseProvider] Detected stale session despite logout request. Forcing sign-out.');
-                const { signOut } = await import('firebase/auth');
-                const { auth } = await import('@/lib/firebase');
-                if (auth) await signOut(auth);
-                setUser(null);
-                setLoading(false);
-                return;
-            }
+            try {
+                // [Kill Switch / Clean Boot Check]
+                if (authUser && gameStorage.checkAndConsumePendingLogout()) {
+                    console.warn('⚠️ [FirebaseProvider] Detected stale session despite logout request. Forcing sign-out.');
+                    try {
+                        const { signOut } = await import('firebase/auth');
+                        const { auth } = await import('@/lib/firebase');
+                        if (auth) await signOut(auth);
+                    } catch (e) {
+                        console.error('[FirebaseProvider] Kill Switch sign-out error (ignoring):', e);
+                    }
+                    setUser(null);
+                    setLoading(false);
+                    return;
+                }
 
-            if (authUser) {
-                console.log(`[FirebaseProvider] User detected: ${authUser.uid}`);
-                setUser(authUser);
-            } else {
-                console.log('[FirebaseProvider] No user detected. Authentication state is null.');
-                setUser(null);
+                if (authUser) {
+                    console.log(`[FirebaseProvider] User detected: ${authUser.uid}`);
+                    setUser(authUser);
+                } else {
+                    console.log('[FirebaseProvider] No user detected. Authentication state is null.');
+                    setUser(null);
+                }
+            } catch (error) {
+                console.error('[FirebaseProvider] Auth state change error:', error);
+                setUser(null); // Default to guest/null on error
+            } finally {
+                setLoading(false);
             }
-            setLoading(false);
         });
 
-        return () => unsubscribe();
+        // [Safety] Force release loading state if Firebase takes too long (e.g. network hang)
+        const safetyTimer = setTimeout(() => {
+            setLoading(prev => {
+                if (prev) {
+                    console.warn('[FirebaseProvider] Auth initialization timed out (4s). releasing loading state.');
+                    return false;
+                }
+                return prev;
+            });
+        }, 4000);
+
+        return () => {
+            unsubscribe();
+            clearTimeout(safetyTimer);
+        };
     }, []);
 
     return (
