@@ -145,14 +145,13 @@ export function UserProvider({ children }: { children: React.ReactNode }) {
         // --- SESSION ID MISMATCH DETECTION ---
         const lastKnownUid = localStorage.getItem('last_known_uid');
 
-        // Case 1: User is logged out.
+        // Case 1: User is logged out (null).
+        // [CRITICAL FIX] We MUST release loading immediately here, regardless of profileLoading.
+        // Previously, we waited for profileLoading to clear, but useUserProfile's loading
+        // might not change if auth never fires (e.g., network issues).
         if (!user) {
-            if (!profileLoading) {
-                console.log("[Auth] No user detected and profile loading finished. Releasing loading state.");
-                setLoading(false);
-            } else {
-                console.log("[Auth] No user detected. Waiting for profile hook to finalize...");
-            }
+            console.log("[Auth] No user detected. Releasing loading state immediately.");
+            setLoading(false);
             // If there was a previous user, ensure their data is nuked.
             if (lastKnownUid) {
                 console.log(`[Auth] Cleanup required for previous UID (${lastKnownUid}).`);
@@ -544,10 +543,10 @@ export function UserProvider({ children }: { children: React.ReactNode }) {
 
         const safetyTimer = setTimeout(() => {
             if (loading) {
-                console.error("🚨 [CRITICAL] Application stuck in loading state for >8s. Activating Safe Mode Overlay.");
+                console.error("🚨 [CRITICAL] Application stuck in loading state for >5s. Activating Safe Mode Overlay.");
                 setShowSafeMode(true);
             }
-        }, 8000);
+        }, 5000);
 
         return () => clearTimeout(safetyTimer);
     }, [mounted, loading]);

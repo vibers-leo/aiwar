@@ -19,14 +19,23 @@ export function useUserProfile() {
     const [error, setError] = useState<Error | null>(null);
 
     useEffect(() => {
-        if (authLoading) return;
+        // [CRITICAL FIX] If auth is still loading, we return early BUT we leave loading: true.
+        // This is intentional - we wait for auth to resolve first.
+        if (authLoading) {
+            console.log('[useUserProfile] Auth still loading, waiting...');
+            return;
+        }
 
+        // [CRITICAL FIX] If there's no user, immediately release loading.
+        // This prevents deadlock when UserContext waits for profileLoading to clear.
         if (!user) {
+            console.log('[useUserProfile] No user, releasing loading state.');
             setProfile(null);
             setLoading(false);
             return;
         }
 
+        // User exists, start loading profile
         setLoading(true);
 
         if (!db) {
@@ -35,33 +44,50 @@ export function useUserProfile() {
             return;
         }
 
+        // [Safety] Timeout for Firestore snapshot - if no response in 6s, release loading
+        const snapshotTimeout = setTimeout(() => {
+            setLoading(prev => {
+                if (prev) {
+                    console.warn('[useUserProfile] Firestore snapshot timed out (6s). Releasing loading.');
+                    return false;
+                }
+                return prev;
+            });
+        }, 6000);
+
         // Firestore Realtime Listener 설정
         const userRef = doc(db, 'users', user.uid, 'profile', 'data');
 
         const unsubscribe = onSnapshot(userRef, async (docSnap) => {
+            clearTimeout(snapshotTimeout); // Clear timeout on successful response
             if (docSnap.exists()) {
                 setProfile(docSnap.data() as UserProfile);
                 setLoading(false);
             } else {
                 // 프로필이 존재하지 않는 경우 초기화 (기본값 생성)
                 try {
-                    console.log('User profile not found, creating default...');
+                    console.log('[useUserProfile] Profile not found, creating default...');
                     await loadUserProfile(user.uid);
                     // 생성 후에는 스냅샷이 다시 트리거되어 데이터가 로드됩니다.
+                    // Keep loading: true here, snapshot will fire again.
                 } catch (err) {
-                    console.error("Failed to create initial profile:", err);
+                    console.error("[useUserProfile] Failed to create initial profile:", err);
                     setError(err as Error);
                     setLoading(false);
                 }
             }
         }, (err) => {
-            console.error("Profile snapshot error:", err);
+            clearTimeout(snapshotTimeout);
+            console.error("[useUserProfile] Profile snapshot error:", err);
             setError(err);
             setLoading(false);
         });
 
         // Cleanup subscription on unmount or user change
-        return () => unsubscribe();
+        return () => {
+            unsubscribe();
+            clearTimeout(snapshotTimeout);
+        };
     }, [user, authLoading]);
 
     const updateProfile = async (updates: Partial<UserProfile>) => {
