@@ -2,7 +2,7 @@
 
 import { createContext, useContext, useEffect, useState, ReactNode } from 'react';
 import { User } from 'firebase/auth';
-import { onAuthChange, signInAnonymous } from '@/lib/firebase-auth';
+import { onAuthChange, signOutUser } from '@/lib/firebase-auth';
 
 interface FirebaseContextType {
     user: User | null;
@@ -27,17 +27,24 @@ export function FirebaseProvider({ children }: FirebaseProviderProps) {
     const [loading, setLoading] = useState(true);
 
     useEffect(() => {
-        // 인증 상태 변경 리스너
-        const unsubscribe = onAuthChange(async (authUser) => {
-            if (authUser) {
-                setUser(authUser);
+        const unsubscribe = onAuthChange((authUser) => {
+            // "Clean Boot" Check: If a logout was pending, force sign out again.
+            const isLogoutPending = localStorage.getItem('pending_logout');
+            if (isLogoutPending) {
+                console.warn('[Clean Boot] Pending logout detected. Forcing sign out.');
+                // We don't have access to the full handleSignOut here,
+                // so we call the core SDK signout and clean up flags.
+                signOutUser();
+                localStorage.removeItem('pending_logout');
+                setUser(null);
                 setLoading(false);
-            } else {
-                // 사용자가 없으면 익명 로그인
-                const anonymousUser = await signInAnonymous();
-                setUser(anonymousUser);
-                setLoading(false);
+                return;
             }
+
+            // CRITICAL CHANGE: Remove automatic anonymous sign-in.
+            // If there's no user, the user is simply null. No more zombie sessions.
+            setUser(authUser);
+            setLoading(false);
         });
 
         return () => unsubscribe();

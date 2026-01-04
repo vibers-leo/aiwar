@@ -4,10 +4,12 @@ import {
     signInWithPopup,
     onAuthStateChanged,
     signOut,
-    User
+    User,
+    setPersistence,
+    inMemoryPersistence,
+    browserLocalPersistence,
 } from 'firebase/auth';
 import { auth, isFirebaseConfigured } from './firebase';
-import { gameStorage } from './game-storage';
 
 /**
  * 구글 로그인
@@ -78,54 +80,47 @@ export function onAuthChange(callback: (user: User | null) => void): () => void 
 }
 
 /**
- * 사용자 ID 가져오기 (없으면 익명 로그인)
+ * 사용자 ID 가져오기 (현재 사용자 없으면 null 반환)
  */
-export async function getUserId(): Promise<string> {
+export function getUserId(): string | null {
     if (!isFirebaseConfigured) {
         return 'local-user'; // Firebase 미설정 시 로컬 사용자 ID 반환
     }
 
-    let user = getCurrentUser();
-
-    if (!user) {
-        user = await signInAnonymous();
-    }
-
-    return user?.uid || 'local-user';
+    const user = getCurrentUser();
+    return user?.uid || null;
 }
 
 /**
- * 로그아웃
- * @description
- * This function orchestrates a clean and safe logout process.
- * 1. Clears all local session data ('Nuclear Option') to prevent "Zombie Data".
- * 2. Signs the user out from Firebase Authentication.
- * 3. Forces a page reload to ensure all React contexts and states are reset.
+ * Firebase Auth의 세션 영속성 설정
+ */
+export async function setAuthPersistence(persistenceType: 'local' | 'in-memory'): Promise<void> {
+    if (!auth) return;
+
+    const persistence = persistenceType === 'local' ? browserLocalPersistence : inMemoryPersistence;
+
+    try {
+        await setPersistence(auth, persistence);
+        console.log(`[Auth] Persistence set to ${persistenceType}`);
+    } catch (error) {
+        console.error('Failed to set auth persistence:', error);
+    }
+}
+
+
+/**
+ * 로그아웃 (SDK-level only)
+ * This function now ONLY handles the Firebase SDK signout.
+ * The comprehensive logout logic is in UserContext.
  */
 export async function signOutUser(): Promise<void> {
     if (!auth) return;
 
     try {
-        console.log('[Auth] Starting sign-out process...');
-
-        // 1. Clear all sensitive local data BEFORE logging out
-        // This prevents any chance of data bleeding into the next session.
-        console.log('[Auth] Clearing local session data...');
-        gameStorage.clearAllSessionData();
-
-        // 2. Sign out from Firebase
-        console.log('[Auth] Signing out from Firebase...');
         await signOut(auth);
-
-        // 3. Force a full page reload to reset application state
-        // This is a critical step to ensure UserContext and other states are cleared.
-        if (typeof window !== 'undefined') {
-            console.log('[Auth] Reloading page to ensure clean state...');
-            window.location.href = '/';
-        }
-
     } catch (error) {
-        console.error('Sign-out failed:', error);
-        // Optional: Add user-facing error notification
+        console.error('Firebase SDK sign-out failed:', error);
+        // Re-throw to be caught by the caller if needed
+        throw error;
     }
 }

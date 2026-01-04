@@ -14,8 +14,9 @@ import {
 import { loadInventory, InventoryCard } from '@/lib/inventory-system';
 import type { Card } from '@/lib/types';
 import { useFirebase } from '@/components/FirebaseProvider';
-import { signOutUser } from '@/lib/firebase-auth';
+import { signOutUser, setAuthPersistence } from '@/lib/firebase-auth';
 import { addNotification } from '@/components/NotificationCenter';
+import { useRouter } from 'next/navigation';
 import {
     syncSubscriptionsWithFirebase,
 } from '@/lib/faction-subscription-utils';
@@ -53,6 +54,7 @@ const UserContext = createContext<UserContextType | undefined>(undefined);
 
 export function UserProvider({ children }: { children: React.ReactNode }) {
     const { user } = useFirebase();
+    const router = useRouter();
     const { profile, reload: reloadProfile, loading: profileLoading } = useUserProfile();
 
     const [error, setError] = useState<string | null>(null);
@@ -84,23 +86,36 @@ export function UserProvider({ children }: { children: React.ReactNode }) {
     }, []);
 
     const handleSignOut = useCallback(async () => {
-        console.log("🚀 [Auth] Initiating Scorched Earth Sign Out...");
+        console.log("🚀 [Auth] Initiating Hardened Sign Out...");
 
-        // 1. Nuke all local and session data FIRST.
-        gameStorage.clearAllSessionData();
-        sessionStorage.clear(); // Explicitly clear session storage as well.
+        // 1. Set a flag to indicate logout is in progress.
+        localStorage.setItem('pending_logout', 'true');
 
-        // 2. Reset React state
-        resetState();
+        try {
+            // 2. Switch persistence to in-memory to detach from IndexedDB.
+            await setAuthPersistence('in-memory');
 
-        // 3. Then, sign out from Firebase
-        await signOutUser();
+            // 3. Sign out from the Firebase SDK.
+            await signOutUser();
 
-        // 4. Force a hard redirect to the intro/login page.
-        window.location.href = '/intro';
+            // 4. Call the server-side API to destroy the session cookie.
+            await fetch('/api/auth/logout', { method: 'POST' });
 
-        console.log("✅ [Auth] Sign Out complete. Local state scorched.");
-    }, [resetState]);
+            // 5. Nuke all local data.
+            gameStorage.clearAllSessionData();
+            sessionStorage.clear();
+
+        } catch (error) {
+            console.error("Sign-out process failed:", error);
+            // Even if it fails, still try to clean up and redirect.
+            gameStorage.clearAllSessionData();
+            sessionStorage.clear();
+        } finally {
+            // 6. Hard redirect to the login page.
+            router.replace('/intro');
+            console.log("✅ [Auth] Sign Out complete and redirected.");
+        }
+    }, [router]);
 
 
     useEffect(() => {
