@@ -84,10 +84,11 @@ export function UserProvider({ children }: { children: React.ReactNode }) {
     }, []);
 
     const handleSignOut = useCallback(async () => {
-        console.log("🚀 [Auth] Initiating Nuclear Sign Out...");
+        console.log("🚀 [Auth] Initiating Scorched Earth Sign Out...");
 
-        // 1. Nuke all local data FIRST. This is synchronous.
+        // 1. Nuke all local and session data FIRST.
         gameStorage.clearAllSessionData();
+        sessionStorage.clear(); // Explicitly clear session storage as well.
 
         // 2. Reset React state
         resetState();
@@ -95,10 +96,10 @@ export function UserProvider({ children }: { children: React.ReactNode }) {
         // 3. Then, sign out from Firebase
         await signOutUser();
 
-        // 4. Force a reload to ensure a clean slate, just in case.
-        window.location.reload();
+        // 4. Force a hard redirect to the intro/login page.
+        window.location.href = '/intro';
 
-        console.log("✅ [Auth] Sign Out complete. Local state nuked.");
+        console.log("✅ [Auth] Sign Out complete. Local state scorched.");
     }, [resetState]);
 
 
@@ -110,25 +111,49 @@ export function UserProvider({ children }: { children: React.ReactNode }) {
     useEffect(() => {
         if (!mounted) return;
 
+        // --- SESSION ID MISMATCH DETECTION ---
+        const lastKnownUid = localStorage.getItem('last_known_uid');
+
+        // Case 1: User is logged out.
         if (!user) {
-            console.log("[Auth] No user detected. Resetting state and stopping loading.");
-            resetState();
+            // If there was a previous user, ensure their data is nuked.
+            if (lastKnownUid) {
+                console.log(`[Auth] No user detected, but found last known UID (${lastKnownUid}). Forcing cleanup.`);
+                resetState();
+            } else {
+                console.log("[Auth] No user detected and no previous session found. State is clean.");
+            }
             setLoading(false);
             return;
         }
 
+        // Case 2: User is logged in, but their UID does not match the last known UID.
+        if (user && lastKnownUid && user.uid !== lastKnownUid) {
+            console.warn(`[Auth] 🚨 CRITICAL: UID mismatch detected! Firebase user (${user.uid}) does not match last session (${lastKnownUid}). Nuking local state NOW.`);
+            resetState(); // This is the critical cleanup step.
+            // Do not proceed with data hydration. The component will re-render and re-evaluate.
+            // We force a reload to be absolutely certain the application re-initializes cleanly.
+            window.location.reload();
+            return;
+        }
+
+        // Case 3: User is logged in, profile is still loading.
         if (user && profileLoading) {
-            console.log(`[Auth] User ${user.uid} detected, waiting for profile...`);
+            console.log(`[Auth] User ${user.uid} session is valid. Waiting for profile...`);
             setLoading(true);
             return;
         }
 
+        // Case 4: User and profile are fully loaded and session is consistent.
         if (user && profile) {
             console.log(`[Auth] User ${user.uid} and profile loaded. Syncing data...`);
             setLoading(true);
 
             const syncUserData = async () => {
                 try {
+                    // Sync was successful, so we can now set the last known UID to this user.
+                    localStorage.setItem('last_known_uid', user.uid);
+
                     if (profile.coins < 0) {
                         console.warn(`[Auto-Heal] Negative balance of ${profile.coins} detected. Resetting to 0.`);
                         await firebaseUpdateCoins(Math.abs(profile.coins), user.uid);
