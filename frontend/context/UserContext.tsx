@@ -111,12 +111,10 @@ export function UserProvider({ children }: { children: React.ReactNode }) {
         resetState();
 
         // 3. Then, sign out from Firebase
+        // This utility function will handle the nuking of local storage and force a redirect to '/'
         await signOutUser();
 
-        // 4. Force a hard redirect to the intro/login page.
-        window.location.href = '/intro';
-
-        console.log("✅ [Auth] Sign Out complete. Local state scorched.");
+        console.log("✅ [Auth] Sign Out initiated. Waiting for page reload...");
     }, [resetState]);
 
 

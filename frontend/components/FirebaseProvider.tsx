@@ -30,14 +30,13 @@ export function FirebaseProvider({ children }: FirebaseProviderProps) {
         // 인증 상태 변경 리스너
         const unsubscribe = onAuthChange(async (authUser) => {
             if (authUser) {
+                console.log(`[FirebaseProvider] User detected: ${authUser.uid}`);
                 setUser(authUser);
-                setLoading(false);
             } else {
-                // 사용자가 없으면 익명 로그인
-                const anonymousUser = await signInAnonymous();
-                setUser(anonymousUser);
-                setLoading(false);
+                console.log('[FirebaseProvider] No user detected. Authentication state is null.');
+                setUser(null);
             }
+            setLoading(false);
         });
 
         return () => unsubscribe();
