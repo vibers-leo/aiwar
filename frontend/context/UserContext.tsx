@@ -309,7 +309,7 @@ export function UserProvider({ children }: { children: React.ReactNode }) {
             if (refreshedToken !== profile.tokens) setTokens(refreshedToken);
 
             const isTutorialCompleted = localStorage.getItem(`tutorial_completed_${user.uid}`);
-            if (isTutorialCompleted && !isClaimingInSession && formattedInv.length === 0 && !profile.hasReceivedStarterPack) {
+            if (!isClaimingInSession && formattedInv.length === 0 && !profile.hasReceivedStarterPack) {
                 setStarterPackAvailable(true);
             } else if (profile.hasReceivedStarterPack || formattedInv.length > 0) {
                 setStarterPackAvailable(false);

@@ -24,11 +24,8 @@ export default function IntroPage() {
     const [loginKey, setLoginKey] = useState('');
     const [loginError, setLoginError] = useState('');
 
-    // Pre-Flight Cleanup: Nuke any lingering session data the moment this page loads.
-    useEffect(() => {
-        console.log('🧹 [Pre-Flight Cleanup] Wiping all session data on intro page mount.');
-        gameStorage.clearAllSessionData();
-    }, []);
+    // [REMOVED] Pre-Flight Cleanup: This was interfering with Google Login redirects.
+    // We now rely on UserContext.tsx's "Session ID Mismatch" detection for valid cleanup.
 
     // Boot sequence animation
     useEffect(() => {
