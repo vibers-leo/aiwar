@@ -7,7 +7,7 @@ import { Modal, ModalContent, ModalHeader, ModalBody, ModalFooter } from '@/comp
 import { Button } from '@/components/ui/custom/Button';
 import { Switch } from '@/components/ui/custom/Switch';
 import { Slider } from '@/components/ui/custom/Slider';
-import { Volume2, VolumeX, Music, Bell, Settings2, Sliders, ShieldCheck, Zap } from 'lucide-react';
+import { Volume2, VolumeX, Music, Bell, Settings2, Sliders, ShieldCheck, Zap, Mail, Fingerprint } from 'lucide-react';
 import { useFirebase } from '@/components/FirebaseProvider';
 import { saveUserProfile } from '@/lib/firebase-db';
 import { useUser } from '@/context/UserContext';

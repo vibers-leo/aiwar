@@ -30,6 +30,7 @@ import {
     X
 } from "lucide-react";
 import { useUser } from '@/context/UserContext';
+import { LogOut, ExternalLink, Mail, Fingerprint } from "lucide-react"; // Import new icons
 import { gameStorage } from '@/lib/game-storage';
 import { RESEARCH_STATS, CommanderResearch, getResearchBonus, getResearchTimeBuff } from '@/lib/research-system';
 import { BackgroundBeams } from '@/components/ui/aceternity/background-beams';
@@ -44,7 +45,7 @@ interface CommanderProfileModalProps {
 }
 
 export default function CommanderProfileModal({ isOpen, onClose }: CommanderProfileModalProps) {
-    const { level, experience, coins, tokens, inventory, refreshData } = useUser();
+    const { level, experience, coins, tokens, inventory, refreshData, handleSignOut } = useUser(); // Added handleSignOut
     const { state: footerState } = useFooter();
     const { profile } = useUserProfile();
     const { user } = useFirebase();
@@ -223,19 +224,36 @@ export default function CommanderProfileModal({ isOpen, onClose }: CommanderProf
                                         </Button>
                                     </div>
                                 ) : (
-                                    <div className="flex items-center gap-4 group">
-                                        <h2 className="text-4xl font-black text-white orbitron tracking-tighter italic">
-                                            {profile?.nickname || 'LEGION COMMANDER'}
-                                        </h2>
-                                        <button
-                                            onClick={() => setIsEditingName(true)}
-                                            className="opacity-0 group-hover:opacity-100 transition-opacity p-2 hover:bg-white/10 rounded-full text-cyan-400"
-                                            title="Change Nickname"
-                                        >
-                                            <Edit3 size={20} />
-                                        </button>
+                                    <div className="flex flex-col">
+                                        <div className="flex items-center gap-4 group">
+                                            <h2 className="text-4xl font-black text-white orbitron tracking-tighter italic">
+                                                {profile?.nickname || 'LEGION COMMANDER'}
+                                            </h2>
+                                            <button
+                                                onClick={() => setIsEditingName(true)}
+                                                className="opacity-0 group-hover:opacity-100 transition-opacity p-2 hover:bg-white/10 rounded-full text-cyan-400"
+                                                title="Change Nickname"
+                                            >
+                                                <Edit3 size={18} />
+                                            </button>
+                                        </div>
+                                        {user?.email && (
+                                            <div className="flex items-center gap-2 mt-1 px-1">
+                                                <Mail size={12} className="text-white/40" />
+                                                <span className="text-[10px] text-white/40 font-mono tracking-wider">{user.email}</span>
+                                            </div>
+                                        )}
                                     </div>
                                 )}
+                            </div>
+                            <div className="flex items-center gap-3">
+                                <Button
+                                    onClick={handleSignOut}
+                                    className="h-10 px-4 bg-red-500/10 hover:bg-red-500/20 text-red-400 border border-red-500/30 font-bold orbitron text-[10px] flex items-center gap-2"
+                                >
+                                    <LogOut size={14} />
+                                    LOGOUT
+                                </Button>
                             </div>
                         </ModalHeader>
 
