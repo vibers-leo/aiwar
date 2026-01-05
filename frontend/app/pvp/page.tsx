@@ -99,15 +99,15 @@ export default function PVPArenaPage() {
 
             const pDeck = overrideDeck || playerDeck;
             const player: BattleParticipant = {
-                name: `Player_${state.level}`,
-                level: state.level,
+                name: `Player_${level}`,
+                level: level,
                 deck: pDeck,
                 cardOrder: overrideOrder || cardOrder,
             };
 
             const opponent: BattleParticipant = {
-                name: selectedMatchType === 'ai-training' ? `AI 훈련봇 Lv.${state.level}` : 'Opponent',
-                level: state.level,
+                name: selectedMatchType === 'ai-training' ? `AI 훈련봇 Lv.${level}` : 'Opponent',
+                level: level,
                 deck: opponentDeck,
                 cardOrder: [0, 1, 2, 3, 4, 5], // AI Deck Order extended
             };
@@ -156,16 +156,10 @@ export default function PVPArenaPage() {
         history: []
     });
 
-    const [inventory, setInventory] = useState<Card[]>([]);
-
-    // 카드 선택 (푸터 대신 로컬 state)
-    const [selectedCards, setSelectedCards] = useState<Card[]>([]);
-
-    // 실시간 매칭 모달
-    const [showMatchingModal, setShowMatchingModal] = useState(false);
-
     const stats = getPVPStats();
     const state = getGameState();
+
+    const [inventory, setInventory] = useState<Card[]>([]);
 
     // Load real cards on mount
     useEffect(() => {

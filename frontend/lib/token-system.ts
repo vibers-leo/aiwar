@@ -40,8 +40,7 @@ export function calculateRechargeParams(subscriptions: FactionSubscription[], le
         // Apply Bonuses
         if (category === 'AUDIO') {
             // Recharge Amount Increase: Base +10/hr equivalent?
-            // bonusType.baseValue = 10 (tokens)
-            rateAmount += (bonusType.baseValue * multiplier);
+            rateAmount += (CATEGORY_TOKEN_BONUS.AUDIO.baseValue * multiplier);
         } else if (category === 'IMAGE') {
             // Recharge Speed: Reduce Interval
             // bonusType.baseValue = 10 (min reduction? No, 10 is too big if interval is 10)
@@ -55,8 +54,7 @@ export function calculateRechargeParams(subscriptions: FactionSubscription[], le
             intervalMin = Math.max(1, intervalMin - (1 * multiplier));
         } else if (category === 'TEXT') {
             // Max Capacity
-            // bonusType.baseValue = 200
-            maxCap += (bonusType.baseValue * multiplier);
+            maxCap += (CATEGORY_TOKEN_BONUS.TEXT.baseValue * multiplier);
         }
     });
 
