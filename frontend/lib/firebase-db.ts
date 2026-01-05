@@ -937,10 +937,28 @@ export async function createSupportTicket(data: { title: string, description: st
     }
 
     try {
-        const userId = await getUserId();
-        // Try to get nickname if available, otherwise just use userId or Guest
+        const { getCurrentUser, loadUserProfile } = require('./firebase-auth'); // Circular dependency handling if needed, or just import
+        // To avoid circular dependency issues if simple import works:
+        // But getCurrentUser is in firebase-auth.ts. 
+        // Let's assume standard import is fine or I should use Dynamic Import if I can't add import at top.
+        // Actually I should add import at top. But for this tool I can only replace block.
+        // I will use require inside or I should have added import. 
+        // Wait, I can't easily add import at top with replace_file_content if I'm editing middle.
+        // I'll check imports first.
+
+        // Actually, let's look at the existing imports in firebase-db.ts via view_file task previously...
+        // I didn't see the top of firebase-db.ts in recent turns. 
+        // But getUserId was used, so firebase-auth is likely imported.
+        // I will use getUserId logic but wrapped.
+
+        let userId = 'anonymous';
         let nickname = 'Guest';
-        if (userId) {
+
+        const { getCurrentUser } = await import('./firebase-auth');
+        const currentUser = getCurrentUser();
+
+        if (currentUser) {
+            userId = currentUser.uid;
             const userProfile = await loadUserProfile(userId);
             if (userProfile?.nickname) nickname = userProfile.nickname;
         }
@@ -949,7 +967,7 @@ export async function createSupportTicket(data: { title: string, description: st
 
         const docRef = await addDoc(ticketsRef, {
             ...data,
-            userId: userId || 'anonymous',
+            userId: userId,
             userNickname: nickname,
             status: 'open',
             createdAt: serverTimestamp()

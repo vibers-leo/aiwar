@@ -22,6 +22,7 @@ export interface TierConfig {
     dailyCost: number;      // 일일 유지 비용 (Basic은 0)
     productionMultiplier: number;
     statBonus: number;      // % 능력치 보너스
+    tokenReward: number;    // [NEW] 구독 즉시 지급 토큰
     rareBonus: number;      // 희귀 등급 확률 보너스 %
     legendaryBonus: number; // 전설 등급 확률 보너스 %
     color: string;
@@ -36,6 +37,7 @@ export const TIER_CONFIGS: Record<SubscriptionTier, TierConfig> = {
         dailyCost: 0,
         productionMultiplier: 1,
         statBonus: 5,
+        tokenReward: 0,
         rareBonus: 0,
         legendaryBonus: 0,
         color: 'gray',
@@ -48,6 +50,7 @@ export const TIER_CONFIGS: Record<SubscriptionTier, TierConfig> = {
         dailyCost: 50,
         productionMultiplier: 2,
         statBonus: 15,
+        tokenReward: 300,
         rareBonus: 10,
         legendaryBonus: 5,
         color: 'blue',
@@ -60,6 +63,7 @@ export const TIER_CONFIGS: Record<SubscriptionTier, TierConfig> = {
         dailyCost: 200,
         productionMultiplier: 3,
         statBonus: 30,
+        tokenReward: 1200,
         rareBonus: 25,
         legendaryBonus: 15,
         color: 'purple',

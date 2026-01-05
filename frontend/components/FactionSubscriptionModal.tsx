@@ -10,7 +10,7 @@ import {
     FACTIONS_DATA,
     UserSubscription
 } from '@/lib/faction-subscription';
-import { subscribeToFaction } from '@/lib/firebase-db';
+import { subscribeToFaction, updateTokens } from '@/lib/firebase-db';
 import { CATEGORY_TOKEN_BONUS, FACTION_CATEGORY_MAP } from '@/lib/token-constants';
 
 interface Props {
@@ -19,7 +19,7 @@ interface Props {
 }
 
 export default function FactionSubscriptionModal({ isOpen, onClose }: Props) {
-    const { user, profile, refreshData, addCoins, subscriptions } = useUser(); // subscriptions should be available from UserContext now
+    const { user, profile, refreshData, addCoins, subscriptions } = useUser();
     const [selectedFactionId, setSelectedFactionId] = useState<string | null>(null);
     const [loading, setLoading] = useState(false);
 
@@ -45,7 +45,7 @@ export default function FactionSubscriptionModal({ isOpen, onClose }: Props) {
             }
 
             // Check confirmation
-            if (!confirm(`${tierConfig.koreanName} 등급을 구독하시겠습니까?\n비용: ${tierConfig.cost} 코인`)) {
+            if (!confirm(`${tierConfig.koreanName} 등급을 구독하시겠습니까?\n비용: ${tierConfig.cost} 코인\n보상: ${tierConfig.tokenReward} 토큰 즉시 지급`)) {
                 return;
             }
         }
@@ -60,8 +60,16 @@ export default function FactionSubscriptionModal({ isOpen, onClose }: Props) {
             // Save subscription to DB
             await subscribeToFaction(user.uid, factionId, tier);
 
+            // [NEW] Token Reward
+            if (tierConfig.tokenReward > 0) {
+                await updateTokens(tierConfig.tokenReward);
+            }
+
             await refreshData();
-            alert('구독이 완료되었습니다!');
+
+            const tokenMsg = tierConfig.tokenReward > 0 ? `\n🎁 ${tierConfig.tokenReward} 토큰이 지급되었습니다!` : '';
+            alert(`구독이 완료되었습니다!${tokenMsg}`);
+
             setSelectedFactionId(null); // Go back to list
         } catch (error) {
             console.error(error);
@@ -259,6 +267,12 @@ export default function FactionSubscriptionModal({ isOpen, onClose }: Props) {
                                                         <Crown className="w-4 h-4 text-yellow-500" />
                                                         능력치 +{config.statBonus}%
                                                     </li>
+                                                    {config.tokenReward > 0 && (
+                                                        <li className="flex items-center gap-2">
+                                                            <Zap className="w-4 h-4 text-pink-500" />
+                                                            즉시 지급 {config.tokenReward} 토큰
+                                                        </li>
+                                                    )}
                                                     <li className="flex items-center gap-2">
                                                         <Zap className="w-4 h-4 text-emerald-500" />
                                                         토큰 보너스 {tier === 'basic' ? 'Lv.1' : (tier === 'pro' ? 'Lv.2' : 'Lv.3')}

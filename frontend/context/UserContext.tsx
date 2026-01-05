@@ -7,7 +7,6 @@ import {
     updateTokens as firebaseUpdateTokens,
     updateExpAndLevel as firebaseUpdateExpAndLevel,
     saveUserProfile,
-    checkAndRechargeTokens,
     claimStarterPackTransaction,
     purchaseCardPackTransaction
 } from '@/lib/firebase-db';
@@ -39,6 +38,7 @@ import { gameStorage } from '@/lib/game-storage';
 interface UserContextType {
     coins: number;
     tokens: number;
+    maxTokens: number; // [NEW]
     level: number;
     experience: number;
     loading: boolean;
@@ -74,6 +74,7 @@ export function UserProvider({ children }: { children: React.ReactNode }) {
     const [error, setError] = useState<string | null>(null);
     const [coins, setCoins] = useState(0);
     const [tokens, setTokens] = useState(0);
+    const [maxTokens, setMaxTokens] = useState(1000); // [NEW]
     const [level, setLevel] = useState(1);
     const [experience, setExperience] = useState(0);
     const [inventory, setInventory] = useState<InventoryCard[]>([]);
@@ -91,6 +92,7 @@ export function UserProvider({ children }: { children: React.ReactNode }) {
         console.log("🧹 [UserContext] Resetting State to Defaults and clearing local storage.");
         setCoins(0);
         setTokens(0);
+        setMaxTokens(1000);
         setLevel(1);
         setExperience(0);
         setInventory([]);
@@ -355,8 +357,24 @@ export function UserProvider({ children }: { children: React.ReactNode }) {
             const fetchedSubscriptions = await fetchUserSubscriptions(user.uid);
             setSubscriptions(fetchedSubscriptions);
 
-            const refreshedToken = await checkAndRechargeTokens(user.uid, profile.tokens, profile.lastTokenUpdate, fetchedSubscriptions);
-            if (refreshedToken !== profile.tokens) setTokens(refreshedToken);
+            // [NEW] Passive Token Recharge
+            const { processTokenRecharge, initTokenTimestamp } = await import('@/lib/token-system');
+
+            // Initialize timestamp if missing
+            if (!profile.lastTokenUpdate) {
+                await initTokenTimestamp(user.uid);
+                // Temporarily set for this run
+                profile.lastTokenUpdate = new Date();
+            }
+
+            const rechargedTokens = await processTokenRecharge(profile, user.uid, fetchedSubscriptions);
+            if (rechargedTokens !== null) {
+                setTokens(rechargedTokens);
+                // Update local profile ref to avoid 'flicker' if reloadProfile is slow? 
+                // Context state 'tokens' is authority for UI.
+            } else {
+                setTokens(profile.tokens); // Ensure sync
+            }
 
             const isTutorialCompleted = localStorage.getItem(`tutorial_completed_${user.uid}`) === 'true' || profile.tutorialCompleted;
 
@@ -617,7 +635,7 @@ export function UserProvider({ children }: { children: React.ReactNode }) {
     return (
         <UserContext.Provider
             value={{
-                coins, tokens, level, experience, user, profile, inventory, loading, refreshData,
+                coins, tokens, maxTokens, level, experience, user, profile, inventory, loading, refreshData,
                 addCoins: addCoinsByContext, addTokens: addTokensByContext, addExperience: addExperienceByContext,
                 isAdmin, starterPackAvailable, claimStarterPack, hideStarterPack, consumeTokens, subscriptions,
                 buyCardPack: async (cards, price, currencyType) => {

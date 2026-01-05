@@ -8,7 +8,7 @@ import { useUser } from '@/context/UserContext';
 
 export default function GameHeader() {
     const pathname = usePathname();
-    const { coins, tokens, level } = useUser();
+    const { coins, tokens, maxTokens, level } = useUser();
 
     const menuItems = [
         { name: '스토리', path: '/story', icon: '📖' },
@@ -52,9 +52,17 @@ export default function GameHeader() {
                         <span className="text-yellow-400">💰</span>
                         <span className="font-bold text-yellow-300">{coins.toLocaleString()}</span>
                     </div>
-                    <div className="flex items-center gap-2 bg-purple-500/20 px-4 py-2 rounded-lg border border-purple-500/50">
+                    <div
+                        className="flex items-center gap-2 bg-purple-500/20 px-4 py-2 rounded-lg border border-purple-500/50 cursor-help"
+                        title={`최대 보유량: ${maxTokens.toLocaleString()}\n(기본 1000 + 레벨 보너스)`}
+                    >
                         <span className="text-purple-400">💎</span>
-                        <span className="font-bold text-purple-300">{tokens.toLocaleString()}</span>
+                        <span className="font-bold text-purple-300">
+                            {tokens.toLocaleString()}
+                            <span className="text-purple-500/80 text-xs ml-1 font-normal">
+                                / {maxTokens.toLocaleString()}
+                            </span>
+                        </span>
                     </div>
                     <div className="flex items-center gap-2 bg-blue-500/20 px-4 py-2 rounded-lg border border-blue-500/50">
                         <span className="text-blue-400">⭐</span>
