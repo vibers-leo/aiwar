@@ -9,6 +9,8 @@ import { cn } from '@/lib/utils';
 import { Check, X, Shuffle, Swords, Shield, Zap } from 'lucide-react';
 import { getMainCards, selectBalancedDeck } from '@/lib/balanced-deck-selector';
 
+import { useTranslation } from '@/context/LanguageContext';
+
 // Helper for card image (simplified version of pvp page logic)
 const getCardImageStyle = (card: Card) => {
     // This is a simplified reliable fallback. In a real scenario we'd import getCardCharacterImage.
@@ -38,7 +40,7 @@ export default function BattleDeckSelection({
     onConfirm,
     onCancel
 }: BattleDeckSelectionProps) {
-
+    const { t } = useTranslation();
     const mainCards = getMainCards(availableCards);
 
     const toggleCard = (card: Card) => {
@@ -69,12 +71,12 @@ export default function BattleDeckSelection({
             {/* Header */}
             <div className="relative z-10 p-6 border-b border-white/10 flex justify-between items-center bg-black/40 shrink-0">
                 <div>
-                    <h2 className="text-3xl font-black text-white italic tracking-tighter flex items-center gap-3">
-                        <span className="text-cyan-500">DECK</span> SELECTION
+                    <h2 className="text-3xl font-black text-white italic tracking-tighter flex items-center gap-3 text-nowrap">
+                        <span className="text-cyan-500">{t('battle.deck.title')}</span> {t('battle.deck.selection')}
                     </h2>
                     <p className="text-gray-400 text-sm mt-1 flex items-center gap-2">
                         <Swords size={14} className="text-cyan-500" />
-                        전투에 참여할 카드 <span className="text-white font-bold">{maxSelection}장</span>을 선택하세요
+                        {t('battle.deck.instruction', { n: maxSelection })}
                     </p>
                 </div>
                 {onCancel && (
@@ -95,7 +97,7 @@ export default function BattleDeckSelection({
                         <div className="mb-10">
                             <h4 className="text-lg font-bold text-amber-400 mb-4 flex items-center gap-2 px-2">
                                 <span className="text-xl">⭐</span>
-                                권장 주력 카드
+                                {t('battle.deck.recommended')}
                             </h4>
                             <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 xl:grid-cols-6 gap-6">
                                 {mainCards.map((card) => {
@@ -119,7 +121,7 @@ export default function BattleDeckSelection({
                                                 )}
                                             </div>
                                             <div className="absolute -top-2 -right-2 bg-gradient-to-r from-amber-500 to-orange-600 text-white text-[10px] font-black px-2 py-1 rounded-full shadow-lg z-30 border border-amber-300">
-                                                RECOMMENDED
+                                                {t('battle.deck.recommendedBadge')}
                                             </div>
                                         </motion.div>
                                     );
@@ -132,10 +134,10 @@ export default function BattleDeckSelection({
                     <div className="mb-6 flex items-center justify-between px-2">
                         <h4 className="text-lg font-bold text-white flex items-center gap-2">
                             <span className="w-1 h-6 bg-cyan-500 rounded-full mr-2" />
-                            전체 카드 목록
+                            {t('battle.deck.allCards')}
                         </h4>
                         <span className="text-gray-500 text-sm">
-                            {availableCards.length} Cards Available
+                            {availableCards.length} {t('battle.deck.available')}
                         </span>
                     </div>
 
@@ -199,8 +201,8 @@ export default function BattleDeckSelection({
                         {/* Controls */}
                         <div className="flex items-center gap-4 w-full md:w-auto shrink-0 justify-center">
                             <div className="text-right hidden md:block mr-4">
-                                <div className="text-xs text-gray-400 uppercase tracking-widest mb-1">Total Selected</div>
-                                <div className="text-3xl font-black italic flex items-center justify-end gap-1">
+                                <div className="text-xs text-gray-400 uppercase tracking-widest mb-1">{t('battle.deck.totalSelected')}</div>
+                                <div className="text-3xl font-black italic flex items-center justify-end gap-1 text-nowrap">
                                     <span className={cn(currentSelection.length === maxSelection ? "text-cyan-400" : "text-white")}>
                                         {currentSelection.length}
                                     </span>
@@ -213,14 +215,14 @@ export default function BattleDeckSelection({
                                 className="px-6 py-4 bg-white/5 hover:bg-white/10 text-white font-bold rounded-xl transition-all flex items-center gap-2 border border-white/10 group"
                             >
                                 <Shuffle size={18} className="group-hover:rotate-180 transition-transform duration-500" />
-                                <span className="hidden sm:inline">AUTO</span>
+                                <span className="hidden sm:inline">{t('battle.deck.auto')}</span>
                             </button>
 
                             <button
                                 onClick={() => currentSelection.length === maxSelection && onConfirm(currentSelection)}
                                 disabled={currentSelection.length !== maxSelection}
                                 className={cn(
-                                    "px-10 py-4 rounded-xl font-black text-lg flex items-center gap-3 transition-all min-w-[200px] justify-center shadow-lg",
+                                    "px-10 py-4 rounded-xl font-black text-lg flex items-center gap-3 transition-all min-w-[200px] justify-center shadow-lg whitespace-nowrap",
                                     currentSelection.length === maxSelection
                                         ? "bg-gradient-to-r from-cyan-600 to-blue-600 hover:from-cyan-500 hover:to-blue-500 text-white shadow-cyan-500/20 hover:scale-105 active:scale-95"
                                         : "bg-zinc-800 text-zinc-500 cursor-not-allowed border border-white/5"
@@ -228,11 +230,11 @@ export default function BattleDeckSelection({
                             >
                                 {currentSelection.length === maxSelection ? (
                                     <>
-                                        BATTLE START <Swords size={20} />
+                                        {t('battle.deck.start')} <Swords size={20} />
                                     </>
                                 ) : (
                                     <span className="text-sm font-normal">
-                                        Select {maxSelection - currentSelection.length} more
+                                        {t('battle.deck.selectMore', { n: maxSelection - currentSelection.length })}
                                     </span>
                                 )}
                             </button>
@@ -240,6 +242,6 @@ export default function BattleDeckSelection({
                     </div>
                 </div>
             </div>
-        </div>
+        </div >
     );
 }

@@ -9,7 +9,15 @@ export const getTranslation = (lang: Language): Translations => {
 };
 
 // 클라이언트 사이드에서 사용할 간단한 번역 헬퍼
-export const t = (key: TranslationKey, lang: Language): string => {
+export const t = (key: TranslationKey, lang: Language, params?: Record<string, string | number>): string => {
     const translationSet = getTranslation(lang);
-    return translationSet[key] || key;
+    let text = translationSet[key] || key;
+
+    if (params) {
+        Object.entries(params).forEach(([k, v]) => {
+            text = text.replace(`{${k}}`, String(v));
+        });
+    }
+
+    return text;
 };

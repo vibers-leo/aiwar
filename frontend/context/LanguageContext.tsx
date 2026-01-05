@@ -7,7 +7,7 @@ import { t as translateFunc } from '../lib/i18n';
 interface LanguageContextType {
     language: Language;
     setLanguage: (lang: Language) => void;
-    t: (key: TranslationKey) => string;
+    t: (key: TranslationKey, params?: Record<string, string | number>) => string;
 }
 
 const LanguageContext = createContext<LanguageContextType | undefined>(undefined);
@@ -41,8 +41,8 @@ export const LanguageProvider = ({ children }: { children: ReactNode }) => {
         localStorage.setItem('app_language', lang);
     };
 
-    const t = (key: TranslationKey): string => {
-        return translateFunc(key, language);
+    const t = (key: TranslationKey, params?: Record<string, string | number>): string => {
+        return translateFunc(key, language, params);
     };
 
     return (

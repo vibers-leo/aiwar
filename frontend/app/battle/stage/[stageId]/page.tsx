@@ -350,7 +350,7 @@ export default function StageBattlePage() {
             }
         };
 
-        addBattleLog(language === 'ko' ? "실시간 전투 시작!" : "Live Battle Initiated!", 'system');
+        addBattleLog(t('battle.log.roundStart', { n: 1 }), 'system');
         setBattleResult(result);
         setPhase('result');
     };
@@ -432,7 +432,7 @@ export default function StageBattlePage() {
             setCurrentRound(i + 1);
 
             // Log Round Start
-            addBattleLog((language === 'ko' ? `라운드 ${i + 1} 시작!` : `Round ${i + 1} Started!`), 'system');
+            addBattleLog(t('pvp.log.roundStart', { n: i + 1 }), 'system');
 
             setAnimationPhase('ready');
             setAnimating(true);
@@ -455,16 +455,16 @@ export default function StageBattlePage() {
                     next[i] = false;
                     return next;
                 });
-                addBattleLog((language === 'ko' ? `${round.playerCard.name} 승리!` : `${round.playerCard.name} Victory!`), 'winner');
+                addBattleLog(t('battle.log.victory', { name: String(round.playerCard.name) }), 'winner');
             } else if (round.winner === 'opponent') {
                 setAlivePlayerCards(prev => {
                     const next = [...prev];
                     next[i] = false;
                     return next;
                 });
-                addBattleLog((language === 'ko' ? `${round.opponentCard.name} 승리!` : `${round.opponentCard.name} Victory!`), 'enemy');
+                addBattleLog(t('battle.log.victory', { name: String(round.opponentCard.name) }), 'enemy');
             } else {
-                addBattleLog((language === 'ko' ? "무승부!" : "Draw!"), 'draw');
+                addBattleLog(t('battle.log.draw'), 'draw');
             }
 
             await new Promise(resolve => setTimeout(resolve, 2000));
@@ -478,8 +478,8 @@ export default function StageBattlePage() {
         const isWin = result.winner === 'player';
         addBattleLog(
             isWin
-                ? (language === 'ko' ? "최종 승리!" : "Final Victory!")
-                : (language === 'ko' ? "패배..." : "Defeat..."),
+                ? t('battle.log.finalVictory')
+                : t('battle.log.finalDefeat'),
             isWin ? 'winner' : 'enemy'
         );
 
@@ -511,7 +511,7 @@ export default function StageBattlePage() {
         }
     };
 
-    if (!storyStage) return <div className="min-h-screen bg-black text-white flex items-center justify-center">Loading...</div>;
+    if (!storyStage) return <div className="min-h-screen bg-black text-white flex items-center justify-center">{t('common.loading')}</div>;
 
     const maxSelect = (storyStage.battleMode === 'double' || storyStage.battleMode === 'ambush') ? 6 : 5;
 
@@ -531,7 +531,7 @@ export default function StageBattlePage() {
             {phase !== 'battle' && phase !== 'double-battle' && (
                 <div className="relative z-10 p-4 flex justify-between items-start shrink-0">
                     <Button variant="ghost" className="text-white hover:text-cyan-400 gap-2" onPress={() => router.back()} startContent={<ArrowLeft size={16} />}>
-                        BACK
+                        {t('battle.common.back')}
                     </Button>
                     <div className="text-right">
                         <h1 className="text-2xl font-black italic orbitron text-transparent bg-clip-text bg-gradient-to-r from-cyan-400 to-blue-600">
@@ -543,13 +543,14 @@ export default function StageBattlePage() {
                                 storyStage.difficulty === 'EASY' ? 'bg-green-600' :
                                     storyStage.difficulty === 'NORMAL' ? 'bg-blue-600' : 'bg-red-600'
                             )}>
-                                {storyStage.difficulty}
+                                {storyStage.difficulty === 'EASY' ? t('battle.difficulty.easy') :
+                                    storyStage.difficulty === 'NORMAL' ? t('battle.difficulty.normal') : t('battle.difficulty.boss')}
                             </span>
                             <span className="bg-white/10 px-2 py-0.5 rounded">
-                                {storyStage.battleMode === 'sudden-death' ? (language === 'ko' ? '단판 승부' : 'SUDDEN DEATH') :
-                                    storyStage.battleMode === 'double' ? (language === 'ko' ? '두장 승부' : 'TWO-CARD BATTLE') :
-                                        storyStage.battleMode === 'ambush' ? (language === 'ko' ? '전략 승부' : 'STRATEGY BATTLE') :
-                                            (language === 'ko' ? '전술 승부' : 'TACTICAL DUEL')}
+                                {storyStage.battleMode === 'sudden-death' ? t('battle.mode.suddenDeath') :
+                                    storyStage.battleMode === 'double' ? t('battle.mode.twoCardBattle') :
+                                        storyStage.battleMode === 'ambush' ? t('battle.mode.strategyBattle') :
+                                            t('battle.mode.tacticalDuel')}
                             </span>
                         </div>
                     </div>
@@ -569,7 +570,7 @@ export default function StageBattlePage() {
                             <div className="absolute top-0 left-0 w-1 h-full bg-red-500" />
                             <h3 className="text-red-400 font-bold mb-2 text-sm tracking-widest flex items-center gap-2">
                                 <Shield className="w-4 h-4" />
-                                {language === 'ko' ? '적군 조우' : 'ENEMY ENCOUNTER'}
+                                {t('battle.common.enemyEncounter')}
                             </h3>
                             <div className="flex gap-6 items-center">
                                 <div className="w-24 h-24 bg-red-900/20 rounded-full border-2 border-red-500 flex items-center justify-center text-4xl shrink-0">
@@ -586,7 +587,7 @@ export default function StageBattlePage() {
                             </div>
                         </motion.div>
                         <Button size="lg" className="w-full text-xl py-8 font-black bg-cyan-600 hover:bg-cyan-500 rounded-2xl" onPress={startDeckSelection}>
-                            {language === 'ko' ? '전투 준비' : 'PREPARE BATTLE'}
+                            {t('battle.common.prepareBattle')}
                         </Button>
                     </div>
                 )}
@@ -626,18 +627,18 @@ export default function StageBattlePage() {
                                 className="bg-black/60 backdrop-blur-xl border border-white/10 px-6 py-3 rounded-2xl inline-flex items-center gap-8 shadow-2xl mx-auto"
                             >
                                 <div className="text-center">
-                                    <p className="text-[8px] text-gray-500 font-bold orbitron uppercase tracking-[0.2em] mb-0.5">ROUND</p>
+                                    <p className="text-[8px] text-gray-500 font-bold orbitron uppercase tracking-[0.2em] mb-0.5">{t('pvp.battle.round')}</p>
                                     <p className="text-2xl font-black text-white orbitron italic">{currentRound}/5</p>
                                 </div>
 
                                 <div className="flex items-center gap-6">
                                     <div className="text-right">
-                                        <p className="text-[8px] text-blue-400 font-bold orbitron uppercase tracking-widest">YOU</p>
+                                        <p className="text-[8px] text-blue-400 font-bold orbitron uppercase tracking-widest">{t('battle.common.you')}</p>
                                         <p className="text-3xl font-black text-white orbitron">{battleResult.rounds.slice(0, currentRound).filter(r => r.winner === 'player').length}</p>
                                     </div>
                                     <div className="text-lg font-black text-gray-700 font-mono">VS</div>
                                     <div className="text-left">
-                                        <p className="text-[8px] text-red-500 font-bold orbitron uppercase tracking-widest">ENEMY</p>
+                                        <p className="text-[8px] text-red-500 font-bold orbitron uppercase tracking-widest">{t('battle.common.enemy')}</p>
                                         <p className="text-3xl font-black text-white orbitron">{battleResult.rounds.slice(0, currentRound).filter(r => r.winner === 'opponent').length}</p>
                                     </div>
                                 </div>
@@ -697,7 +698,7 @@ export default function StageBattlePage() {
                                             <div className="text-2xl font-black text-blue-500 orbitron">
                                                 {animationPhase === 'reveal' ? activeBattleDeck[currentRound - 1]?.stats.totalPower : "--"}
                                             </div>
-                                            <h2 className="text-[7px] font-black text-white/20 orbitron mt-1 tracking-[0.2em]">COMMANDER UNIT</h2>
+                                            <h2 className="text-[7px] font-black text-white/20 orbitron mt-1 tracking-[0.2em] uppercase">{t('pvp.battle.commanderUnit')}</h2>
                                         </motion.div>
 
                                         {/* Vs Zap Icon */}
@@ -734,7 +735,7 @@ export default function StageBattlePage() {
                                             <div className="text-2xl font-black text-red-500 orbitron">
                                                 {animationPhase === 'reveal' ? enemies[currentRound - 1]?.stats.totalPower : "--"}
                                             </div>
-                                            <h2 className="text-[7px] font-black text-white/20 orbitron mt-1 tracking-[0.2em]">ENEMY MODEL</h2>
+                                            <h2 className="text-[7px] font-black text-white/20 orbitron mt-1 tracking-[0.2em] uppercase">{t('pvp.battle.enemyModel')}</h2>
                                         </motion.div>
                                     </motion.div>
                                 )}
@@ -772,11 +773,11 @@ export default function StageBattlePage() {
                 {phase === 'double-battle' && (
                     <div className="flex-1 flex flex-col items-center justify-center p-4">
                         <div className="text-center mb-8">
-                            <h2 className="text-4xl font-black text-white mb-2">ROUND {doubleBattleState.round} / 3</h2>
+                            <h2 className="text-4xl font-black text-white mb-2">{t('battle.common.roundStatus', { n: doubleBattleState.round, total: 3 })}</h2>
                             <div className="text-xl text-cyan-400 font-mono">
-                                {doubleBattleState.phase === 'ready' && "준비"}
-                                {doubleBattleState.phase === 'choice' && `카드 선택: ${doubleBattleState.timer}s`}
-                                {doubleBattleState.phase === 'clash' && "격돌!"}
+                                {doubleBattleState.phase === 'ready' && t('battle.common.ready')}
+                                {doubleBattleState.phase === 'choice' && t('battle.common.choosing', { n: doubleBattleState.timer })}
+                                {doubleBattleState.phase === 'clash' && t('battle.common.clash')}
                             </div>
                         </div>
 
@@ -853,8 +854,8 @@ export default function StageBattlePage() {
                                     doubleBattleState.roundWinner === 'player' ? "text-yellow-400" :
                                         doubleBattleState.roundWinner === 'opponent' ? "text-red-600" : "text-gray-400"
                                 )}>
-                                    {doubleBattleState.roundWinner === 'player' ? "WIN" :
-                                        doubleBattleState.roundWinner === 'opponent' ? "LOSE" : "DRAW"}
+                                    {doubleBattleState.roundWinner === 'player' ? t('battle.common.win') :
+                                        doubleBattleState.roundWinner === 'opponent' ? t('battle.common.lose') : t('battle.common.draw')}
                                 </div>
                             </motion.div>
                         )}
@@ -892,7 +893,7 @@ export default function StageBattlePage() {
                                 {battleResult.winner === 'player' ? t('pvp.battle.victory') : t('pvp.battle.defeat')}
                             </h1>
                             <p className="text-[8px] font-black orbitron text-gray-500 tracking-[0.3em] mb-4">
-                                {battleResult.winner === 'player' ? "MISSION_OBJECTIVE_COMPLETE" : "TACTICAL_FAILURE_RETRY"}
+                                {battleResult.winner === 'player' ? t('battle.common.missionComplete') : t('battle.common.tacticalFailure')}
                             </p>
 
                             <div className="text-2xl text-white orbitron font-black mb-4 p-3 bg-white/5 rounded-2xl border border-white/5 inline-block px-8">
@@ -901,19 +902,19 @@ export default function StageBattlePage() {
 
                             <div className="grid grid-cols-3 gap-2 mb-6">
                                 <div className="bg-black/40 backdrop-blur-xl rounded-xl p-3 border border-white/5">
-                                    <div className="text-[8px] text-gray-500 orbitron uppercase mb-0.5">Stage</div>
+                                    <div className="text-[8px] text-gray-500 orbitron uppercase mb-0.5">{t('battle.common.stage')}</div>
                                     <div className="text-lg font-black orbitron text-cyan-400">
                                         {storyStage.id.split('-').slice(1).join('-')}
                                     </div>
                                 </div>
                                 <div className="bg-black/40 backdrop-blur-xl rounded-xl p-3 border border-white/5">
-                                    <div className="text-[8px] text-gray-500 orbitron uppercase mb-0.5">Coins</div>
+                                    <div className="text-[8px] text-gray-500 orbitron uppercase mb-0.5">{t('battle.common.coins')}</div>
                                     <div className="text-lg font-black orbitron text-yellow-400">
                                         +{battleResult.winner === 'player' ? storyStage.rewards.coins : 0}
                                     </div>
                                 </div>
                                 <div className="bg-black/40 backdrop-blur-xl rounded-xl p-3 border border-white/5">
-                                    <div className="text-[8px] text-gray-500 orbitron uppercase mb-0.5">EXP</div>
+                                    <div className="text-[8px] text-gray-500 orbitron uppercase mb-0.5">{t('battle.common.exp')}</div>
                                     <div className="text-lg font-black orbitron text-purple-400">
                                         +{battleResult.winner === 'player' ? storyStage.rewards.experience : 10}
                                     </div>
@@ -932,8 +933,8 @@ export default function StageBattlePage() {
                                 )}
                             >
                                 {battleResult.winner === 'player'
-                                    ? (language === 'ko' ? '다음 단계로' : 'NEXT STAGE')
-                                    : (language === 'ko' ? '다시 도전' : 'RETRY MISSION')}
+                                    ? t('battle.common.nextStage')
+                                    : t('battle.common.retryMission')}
                             </Button>
                         </motion.div>
                     </div>
