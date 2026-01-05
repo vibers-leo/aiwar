@@ -161,6 +161,12 @@ export default function PVPArenaPage() {
 
     const [inventory, setInventory] = useState<Card[]>([]);
 
+    // 카드 선택 (푸터 대신 로컬 state)
+    const [selectedCards, setSelectedCards] = useState<Card[]>([]);
+
+    // 실시간 매칭 모달
+    const [showMatchingModal, setShowMatchingModal] = useState(false);
+
     // Load real cards on mount
     useEffect(() => {
         const loadCards = async () => {
