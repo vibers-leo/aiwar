@@ -3,7 +3,8 @@
 import { useState } from 'react';
 import { useRouter } from 'next/navigation';
 import Link from 'next/link';
-import { signup, login, validateUsername, validatePassword } from '@/lib/auth-utils';
+import { signUpWithEmail } from '@/lib/firebase-auth';
+import { login, validateUsername, validatePassword } from '@/lib/auth-utils';
 import { BackgroundBeams } from '@/components/ui/aceternity/background-beams';
 import { HoverBorderGradient } from '@/components/ui/aceternity/hover-border-gradient';
 
@@ -15,10 +16,14 @@ export default function SignupPage() {
     const [error, setError] = useState('');
     const [isLoading, setIsLoading] = useState(false);
 
-    const handleSubmit = (e: React.FormEvent) => {
+    const handleSubmit = async (e: React.FormEvent) => {
         e.preventDefault();
         setError('');
         setIsLoading(true);
+
+        // [Reliability Patch] Clear all local session data before starting fresh
+        const { gameStorage } = await import('@/lib/game-storage');
+        gameStorage.clearAllSessionData();
 
         // Validation
         const emailValidation = validateUsername(email);
@@ -41,18 +46,26 @@ export default function SignupPage() {
             return;
         }
 
-        // Signup Attempt
-        const signupResult = signup(email, password);
+        // Signup Attempt via Firebase
+        try {
+            const firebaseUser = await signUpWithEmail(email, password);
 
-        if (signupResult.success) {
-            // Auto Login
-            login(email, password);
+            if (firebaseUser) {
+                console.log("[Signup] Firebase signup successful. Syncing local logic...");
 
-            setTimeout(() => {
-                router.push('/main'); // Redirect to Main to trigger nickname modal
-            }, 500);
-        } else {
-            setError(signupResult.message);
+                // [Sync] Also create local user record for legacy compatibility if needed
+                // But primarily we rely on Firebase now.
+                login(email, password);
+
+                setTimeout(() => {
+                    router.push('/main'); // Redirect to Main to trigger nickname modal
+                }, 500);
+            } else {
+                // Error is handled inside signUpWithEmail via alert
+                setIsLoading(false);
+            }
+        } catch (err: any) {
+            setError(err.message || '가입 중 오류가 발생했습니다.');
             setIsLoading(false);
         }
     };

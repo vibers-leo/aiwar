@@ -7,7 +7,9 @@ import {
     User,
     setPersistence,
     inMemoryPersistence,
-    browserLocalPersistence
+    browserLocalPersistence,
+    createUserWithEmailAndPassword,
+    signInWithEmailAndPassword
 } from 'firebase/auth';
 import { auth, isFirebaseConfigured } from './firebase';
 import { gameStorage } from './game-storage';
@@ -68,6 +70,52 @@ export async function signInAnonymous(): Promise<User | null> {
         return userCredential.user;
     } catch (error) {
         console.error('익명 로그인 실패:', error);
+        return null;
+    }
+}
+
+/**
+ * 이메일/비밀번호 가입
+ */
+export async function signUpWithEmail(email: string, password: string): Promise<User | null> {
+    if (!isFirebaseConfigured || !auth) {
+        console.warn('Firebase가 설정되지 않았습니다.');
+        return null;
+    }
+
+    try {
+        const userCredential = await createUserWithEmailAndPassword(auth, email, password);
+
+        // [Safety] Clear Any Pending Logout Flag on successful entry
+        gameStorage.clearPendingLogout();
+
+        return userCredential.user;
+    } catch (error: any) {
+        console.error('이메일 가입 실패:', error);
+        alert(`[Firebase Signup Error] ${error.message}`);
+        return null;
+    }
+}
+
+/**
+ * 이메일/비밀번호 로그인
+ */
+export async function signInWithEmail(email: string, password: string): Promise<User | null> {
+    if (!isFirebaseConfigured || !auth) {
+        console.warn('Firebase가 설정되지 않았습니다.');
+        return null;
+    }
+
+    try {
+        const userCredential = await signInWithEmailAndPassword(auth, email, password);
+
+        // [Safety] Clear Any Pending Logout Flag on successful entry
+        gameStorage.clearPendingLogout();
+
+        return userCredential.user;
+    } catch (error: any) {
+        console.error('이메일 로그인 실패:', error);
+        alert(`[Firebase Login Error] ${error.message}`);
         return null;
     }
 }

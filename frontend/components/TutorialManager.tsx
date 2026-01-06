@@ -61,49 +61,59 @@ export default function TutorialManager() {
 
         const checkOnboarding = async () => {
             // [DB-FIRST POLICY] Check tutorial completion from DB first
-            console.log("[TutorialManager] Checking onboarding status (DB-First)...", {
+            console.log("[TutorialManager] 🔍 Checking onboarding status (DB-First)...");
+            console.log("[TutorialManager] Profile Data:", {
                 uid: user.uid,
-                nickname: profile?.nickname,
-                hasNickname: !!(profile?.nickname && profile.nickname !== ''),
-                tutorialCompletedDB: profile?.tutorialCompleted,
-                hasReceivedStarterPackDB: profile?.hasReceivedStarterPack,
-                inventoryCount: inventory?.length || 0
+                nickname: profile?.nickname || 'NONE',
+                level: profile?.level,
+                tutorialCompleted: profile?.tutorialCompleted,
+                hasReceivedStarterPack: profile?.hasReceivedStarterPack
             });
+            console.log("[TutorialManager] Context State:", {
+                inventoryCount: inventory?.length || 0,
+                profileLoading,
+                contextLoading
+            });
+
+            // [NEW] Explicit Verification Log for User
+            const authProvider = user.providerData?.[0]?.providerId || 'password';
+            console.log(`[TutorialManager] 🛡️ Unified Auth Verification:`, {
+                uid: user.uid,
+                authType: authProvider === 'google.com' ? 'GOOGLE' : 'EMAIL/ID',
+                sourceOfTruth: 'Firebase Firestore',
+                nicknameInDB: profile?.nickname || 'MISSING',
+                tutorialInDB: profile?.tutorialCompleted ? 'DONE' : 'PENDING',
+                starterPackInDB: profile?.hasReceivedStarterPack ? 'CLAIMED' : 'AVAILABLE'
+            });
+
+            // [NEW] Gating existing users more aggressively
+            const isTutorialCompleted = profile?.tutorialCompleted === true;
+            const hasClaimedStarter = profile?.hasReceivedStarterPack === true;
+            const hasInventory = inventory && inventory.length > 0;
+
+            if (isTutorialCompleted || hasClaimedStarter || hasInventory) {
+                console.log("[TutorialManager] ✅ Onboarding bypassed. User is existing or already in sync.");
+                // Auto-sync if flags are missing but state is mature
+                if (!isTutorialCompleted && (hasClaimedStarter || hasInventory)) {
+                    console.log("[TutorialManager] 🛠️ Self-Healing: Syncing tutorialCompleted flag.");
+                    completeTutorial();
+                }
+                return;
+            }
 
             // 1. Check if nickname is missing
             const hasNickname = profile?.nickname && profile.nickname !== '';
 
             if (!hasNickname) {
-                console.log("[TutorialManager] Nickname missing. Triggering NicknameModal.");
+                console.log("[TutorialManager] 🚩 Nickname missing. Triggering NicknameModal.");
                 setShowNicknameModal(true);
                 hideFooter();
                 return;
             }
 
-            // [DB-FIRST] Use profile.tutorialCompleted as primary source
-            const isTutorialCompleted = profile?.tutorialCompleted === true;
-
-            console.log("[TutorialManager] Tutorial Check (DB-First):", {
-                uid: user.uid,
-                tutorialCompleted: isTutorialCompleted,
-                hasStarterPack: profile?.hasReceivedStarterPack
-            });
-
-            if (!isTutorialCompleted) {
-                // [CRITICAL FIX] If user already has cards (Starter Pack claimed), do NOT show tutorial again.
-                // This covers the "Refresh after Claim" edge case.
-                if (inventory && inventory.length > 0) {
-                    console.log("[TutorialManager] Inventory detected! User has starter pack. Auto-completing tutorial.");
-                    completeTutorial(); // Updates DB
-                    return;
-                }
-
-                console.log("[TutorialManager] Tutorial not completed. Triggering WelcomeTutorialModal.");
-                setShowTutorialModal(true);
-                hideFooter();
-            } else {
-                console.log("[TutorialManager] Tutorial already completed (DB).");
-            }
+            console.log("[TutorialManager] 🚩 Tutorial not completed. Triggering WelcomeTutorialModal.");
+            setShowTutorialModal(true);
+            hideFooter();
         };
 
         checkOnboarding();

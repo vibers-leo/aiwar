@@ -9,6 +9,7 @@ import { HoverBorderGradient } from '@/components/ui/aceternity/hover-border-gra
 import { DraggableCard } from '@/components/ui/aceternity/draggable-card';
 import GoogleLoginButton from '@/components/GoogleLoginButton';
 
+import { signInWithEmail } from '@/lib/firebase-auth';
 import { login, signInAsGuest } from '@/lib/auth-utils';
 import { gameStorage } from '@/lib/game-storage';
 import { isFirebaseConfigured } from '@/lib/firebase';
@@ -338,15 +339,33 @@ export default function IntroPage() {
                                                 return;
                                             }
 
-                                            // Attempt Login
-                                            const result = login(loginId, loginKey);
-                                            if (result.success) {
-                                                // Success animation then redirect
-                                                setSystemStatus(prev => [...prev, 'ACCESS_GRANTED', 'REDIRECTING...']);
-                                                setTimeout(() => window.location.href = '/main', 800);
-                                            } else {
-                                                setLoginError(result.message);
-                                            }
+                                            // Attempt Login via Firebase
+                                            const attemptLogin = async () => {
+                                                try {
+                                                    // [Reliability Patch] Clear all local session data before starting fresh
+                                                    const { gameStorage } = await import('@/lib/game-storage');
+                                                    gameStorage.clearAllSessionData();
+
+                                                    const user = await signInWithEmail(loginId, loginKey);
+                                                    if (user) {
+                                                        console.log("[Login] Firebase auth successful. Syncing local logic...");
+
+                                                        // [Sync] Success animation then redirect
+                                                        // Also sync local auth-utils for legacy compatibility
+                                                        login(loginId, loginKey);
+
+                                                        setSystemStatus(prev => [...prev, 'ACCESS_GRANTED', 'REDIRECTING...']);
+                                                        setTimeout(() => window.location.href = '/main', 800);
+                                                    } else {
+                                                        // Error is handled inside signInWithEmail via alert
+                                                        setLoginError('AUTH_FAILED');
+                                                    }
+                                                } catch (err: any) {
+                                                    setLoginError(err.message || '인증 중 오류가 발생했습니다.');
+                                                }
+                                            };
+
+                                            attemptLogin();
                                         }}
                                     >
 
