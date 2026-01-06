@@ -113,8 +113,10 @@ export async function performSecureLogout(
     // STEP 4: NUKE LOCAL DATA
     localStorage.removeItem('auth-session');
     localStorage.removeItem('last_known_uid');
-    localStorage.setItem('pending_logout', 'true'); // Guard for UserContext
     await nukeAllStorage();
+
+    // [CRITICAL] Set the flag AFTER nukeAllStorage so it survives the clear()
+    localStorage.setItem('pending_logout', 'true');
 
     // STEP 5: HARD REDIRECT
     console.log("👋 [Security] Goodbye. Redirecting to Root...");

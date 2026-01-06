@@ -24,8 +24,8 @@ export function middleware(request: NextRequest) {
   // 1. If user has no session and is trying to access a protected route, redirect to login.
   // if (!session && isProtectedRoute) {
   //   const url = request.nextUrl.clone();
-  //   url.pathname = '/intro';
-  //   console.log(`[Middleware] No session. Redirecting from ${pathname} to /intro.`);
+  //   url.pathname = '/';
+  //   console.log(`[Middleware] No session. Redirecting from ${pathname} to /.`);
   //   return NextResponse.redirect(url);
   // }
 
