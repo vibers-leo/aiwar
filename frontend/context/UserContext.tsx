@@ -148,6 +148,14 @@ export function UserProvider({ children }: { children: React.ReactNode }) {
     useEffect(() => {
         if (!mounted) return;
 
+        // --- LOGOUT GUARD ---
+        const isPendingLogout = typeof window !== 'undefined' && localStorage.getItem('pending_logout') === 'true';
+        if (isPendingLogout) {
+            console.log("[Auth] Pending logout detected. Suppressing all auth effects.");
+            setLoading(false);
+            return;
+        }
+
         // --- SESSION ID MISMATCH DETECTION ---
         const lastKnownUid = localStorage.getItem('last_known_uid');
 
@@ -312,7 +320,7 @@ export function UserProvider({ children }: { children: React.ReactNode }) {
                         console.log("[SafetySystem] Rescue: Found claimed flag but 0 cards. Attempting silent re-distribution...");
                         // Use a silent catch here to prevent blocking or intrusive alerts if the backend rejects it.
                         try {
-                            await claimStarterPack(profile.nickname || '지휘관');
+                            await claimStarterPack(profile.nickname || '지휘관', true); // Pass silent=true
                         } catch (e) {
                             console.warn("[SafetySystem] Silent Rescue failed (likely expected):", e);
                         }
@@ -499,7 +507,7 @@ export function UserProvider({ children }: { children: React.ReactNode }) {
 
     const hideStarterPack = () => setStarterPackAvailable(false);
 
-    const claimStarterPack = async (nickname: string): Promise<InventoryCard[]> => {
+    const claimStarterPack = async (nickname: string, silent: boolean = false): Promise<InventoryCard[]> => {
         if (!mounted || !user) return [];
 
         setStarterPackAvailable(false);
@@ -529,10 +537,22 @@ export function UserProvider({ children }: { children: React.ReactNode }) {
             return starterCards as InventoryCard[];
         } catch (error: any) {
             console.error("❌ Failed to claim starter pack - DETAILED ERROR:", error);
-            const isAlreadyClaimed = error.message === 'ALREADY_CLAIMED';
+            const isAlreadyClaimed = error.message === 'ALREADY_CLAIMED' || error.message?.includes('ALREADY_CLAIMED');
             let message = isAlreadyClaimed ? '이미 보급품을 수령하셨습니다.' : '스타터팩 지급 중 서버 오류가 발생했습니다.';
-            if (!isAlreadyClaimed) window.alert(`[보급 오류] ${message}\n(에러 상세: ${error.message || 'Unknown'})`);
-            addNotification({ type: isAlreadyClaimed ? 'warning' : 'error', title: isAlreadyClaimed ? '확인 완료' : '오류 발생', message: message, icon: isAlreadyClaimed ? 'ℹ️' : '⚠️' });
+
+            // SILENCE alerts if it's a background rescue attempt or if permissions are missing (common during logout)
+            const isPermissionError = error.message?.includes('permission') || error.code?.includes('permission');
+
+            if (!isAlreadyClaimed && !silent && !isPermissionError) {
+                window.alert(`[보급 오류] ${message}\n(에러 상세: ${error.message || 'Unknown'})`);
+            }
+
+            addNotification({
+                type: isAlreadyClaimed ? 'warning' : 'error',
+                title: isAlreadyClaimed ? '확인 완료' : '보급 처리 중',
+                message: isAlreadyClaimed ? message : (silent ? '데이터 동기화 재시도 중...' : message),
+                icon: isAlreadyClaimed ? 'ℹ️' : '⚠️'
+            });
             return [];
         }
     };
