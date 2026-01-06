@@ -375,6 +375,13 @@ export function UserProvider({ children }: { children: React.ReactNode }) {
             return;
         }
 
+        // [LOGOUT GUARD]
+        const isPendingLogout = typeof window !== 'undefined' && localStorage.getItem('pending_logout') === 'true';
+        if (isPendingLogout) {
+            console.log("[UserContext] refreshData suppressed - Pending logout.");
+            return;
+        }
+
         try {
             await reloadProfile();
             const inv = await loadInventory(user.uid);
@@ -427,6 +434,10 @@ export function UserProvider({ children }: { children: React.ReactNode }) {
 
     const addCoinsByContext = async (amount: number) => {
         if (!mounted || !profile || !user) return;
+
+        // [LOGOUT GUARD]
+        if (typeof window !== 'undefined' && localStorage.getItem('pending_logout') === 'true') return;
+
         try {
             await firebaseUpdateCoins(amount, user.uid);
             await reloadProfile();
@@ -437,6 +448,10 @@ export function UserProvider({ children }: { children: React.ReactNode }) {
 
     const addTokensByContext = async (amount: number) => {
         if (!mounted || !profile || !user) return;
+
+        // [LOGOUT GUARD]
+        if (typeof window !== 'undefined' && localStorage.getItem('pending_logout') === 'true') return;
+
         try {
             await firebaseUpdateTokens(amount, user.uid);
             await reloadProfile();
@@ -447,6 +462,9 @@ export function UserProvider({ children }: { children: React.ReactNode }) {
 
     const addExperienceByContext = async (amount: number) => {
         if (!profile || !user) return { level: 1, experience: 0, leveledUp: false };
+
+        // [LOGOUT GUARD]
+        if (typeof window !== 'undefined' && localStorage.getItem('pending_logout') === 'true') return { level: 1, experience: 0, leveledUp: false };
 
         let currentExp = experience + amount;
         let currentLevel = level;
@@ -504,6 +522,13 @@ export function UserProvider({ children }: { children: React.ReactNode }) {
 
     const claimStarterPack = async (nickname: string, silent: boolean = false): Promise<InventoryCard[]> => {
         if (!mounted || !user) return [];
+
+        // [LOGOUT GUARD]
+        const isPendingLogout = typeof window !== 'undefined' && localStorage.getItem('pending_logout') === 'true';
+        if (isPendingLogout) {
+            console.log("[UserContext] claimStarterPack suppressed - Pending logout.");
+            return [];
+        }
 
         setStarterPackAvailable(false);
         setIsClaimingInSession(true);

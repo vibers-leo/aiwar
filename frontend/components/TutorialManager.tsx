@@ -43,6 +43,21 @@ export default function TutorialManager() {
         // This prevents the "Inventory Check" from running on empty default state
         if (profileLoading || contextLoading) return;
 
+        // [LOGOUT GUARD / SELF-HEAL]
+        // If we have a user but the flag is stuck, attempt to consume it once.
+        const isPendingLogout = typeof window !== 'undefined' && localStorage.getItem('pending_logout') === 'true';
+        if (isPendingLogout) {
+            if (user) {
+                console.warn("[TutorialManager] Stuck logout flag detected while user is logged in. Attempting self-heal.");
+                const consumed = gameStorage.checkAndConsumePendingLogout();
+                if (!consumed) return; // Still blocked
+                // If consumed, we continue to checkOnboarding()
+            } else {
+                console.log("[TutorialManager] Onboarding check suppressed - Pending logout.");
+                return;
+            }
+        }
+
         const checkOnboarding = async () => {
             // [DB-FIRST POLICY] Check tutorial completion from DB first
             console.log("[TutorialManager] Checking onboarding status (DB-First)...", {

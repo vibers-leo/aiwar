@@ -262,6 +262,15 @@ class UnifiedStorage {
         return false;
     }
 
+    /**
+     * 로그아웃 보류 플래그 강제 제거 (로그인 시 사용)
+     */
+    public clearPendingLogout() {
+        if (typeof window !== 'undefined') {
+            localStorage.removeItem('pending_logout');
+        }
+    }
+
 
     /**
      * 데이터 무결성 체크 (로드 시)

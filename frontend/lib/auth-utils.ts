@@ -42,6 +42,9 @@ export function signup(email: string, password: string): { success: boolean; mes
     passwords[email] = password;
     localStorage.setItem('passwords', JSON.stringify(passwords));
 
+    // [Safety] Clear Any Pending Logout Flag on successful entry
+    if (typeof window !== 'undefined') localStorage.removeItem('pending_logout');
+
     return { success: true, message: '회원가입이 완료되었습니다.', user: newUser };
 }
 
@@ -71,6 +74,9 @@ export function login(username: string, password: string): { success: boolean; m
 
     // 세션 저장
     localStorage.setItem('auth-session', JSON.stringify(session));
+
+    // [Safety] Clear Any Pending Logout Flag on successful entry
+    if (typeof window !== 'undefined') localStorage.removeItem('pending_logout');
 
     return { success: true, message: '로그인 성공!', session };
 }
@@ -146,6 +152,9 @@ export function startAsGuest(): { success: boolean; session: AuthSession } {
     localStorage.setItem('auth-session', JSON.stringify(session));
     localStorage.setItem('last_known_uid', guestUser.id); // Sync UID for Context
 
+    // [Safety] Clear Any Pending Logout Flag on successful entry
+    if (typeof window !== 'undefined') localStorage.removeItem('pending_logout');
+
     return { success: true, session };
 }
 
@@ -178,6 +187,10 @@ export async function signInWithGoogle(): Promise<{ success: boolean; message: s
         };
 
         localStorage.setItem('auth-session', JSON.stringify(session));
+
+        // [Safety] Clear Any Pending Logout Flag on successful entry
+        if (typeof window !== 'undefined') localStorage.removeItem('pending_logout');
+
         return { success: true, message: 'Google 로그인 성공!', session };
     } catch (error) {
         console.error('Sign in error:', error);

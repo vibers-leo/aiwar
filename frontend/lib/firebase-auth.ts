@@ -24,6 +24,10 @@ export async function signInWithGoogle(): Promise<User | null> {
     try {
         const provider = new GoogleAuthProvider();
         const result = await signInWithPopup(auth, provider);
+
+        // [Safety] Clear Any Pending Logout Flag on successful entry
+        gameStorage.clearPendingLogout();
+
         return result.user;
     } catch (error: any) {
         console.error('구글 로그인 실패:', error);
@@ -57,6 +61,10 @@ export async function signInAnonymous(): Promise<User | null> {
 
     try {
         const userCredential = await signInAnonymously(auth);
+
+        // [Safety] Clear Any Pending Logout Flag on successful entry
+        gameStorage.clearPendingLogout();
+
         return userCredential.user;
     } catch (error) {
         console.error('익명 로그인 실패:', error);
