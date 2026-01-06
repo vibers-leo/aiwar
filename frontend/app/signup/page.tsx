@@ -140,7 +140,7 @@ export default function SignupPage() {
                     <div className="mt-8 flex flex-col items-center gap-4 text-sm font-mono">
                         <p className="text-gray-500 text-xs">
                             이미 계정이 있으신가요?{' '}
-                            <Link href="/intro" className="text-purple-400 hover:text-purple-300 font-bold ml-1 hover:underline text-center">
+                            <Link href="/" className="text-purple-400 hover:text-purple-300 font-bold ml-1 hover:underline text-center">
                                 로그인하기
                             </Link>
                         </p>

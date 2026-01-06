@@ -143,7 +143,7 @@ export default function LoginPage() {
                                 Register ID
                             </Link>
                         </p>
-                        <Link href="/intro" className="text-gray-500 hover:text-white transition-colors text-xs font-mono">
+                        <Link href="/" className="text-gray-500 hover:text-white transition-colors text-xs font-mono">
                             ← ABORT SESSION
                         </Link>
                     </div>

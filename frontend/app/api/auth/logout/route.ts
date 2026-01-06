@@ -18,5 +18,10 @@ export async function POST() {
     });
   }
 
-  return NextResponse.json({ success: true, message: 'Session terminated' });
+  const response = NextResponse.json({ success: true, message: 'Session terminated' });
+
+  // [Security] Scorched Earth: Instruct browser to clear all site data
+  response.headers.set('Clear-Site-Data', '"cache", "cookies", "storage"');
+
+  return response;
 }

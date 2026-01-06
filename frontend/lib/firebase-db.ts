@@ -82,6 +82,23 @@ export interface UserProfile {
     wins?: number; // PVP Wins
     losses?: number; // PVP Losses
     rank?: number; // Ranking
+    lastLogoutAt?: any; // Added for Secure Logout Sync
+    // [NEW] Commander Profile
+    commander?: {
+        name: string;
+        level: number;
+        exp: number;
+        avatarUrl?: string;
+        title?: string; // 칭호
+        stats?: {
+            insight: number;
+            efficiency: number;
+            negotiation: number;
+            leadership: number;
+            mastery: number;
+            fortune: number;
+        };
+    };
 }
 
 const BASE_MAX_TOKENS = 1000;
@@ -1272,6 +1289,372 @@ export async function resetAccountData(userId: string): Promise<void> {
         console.log('✅ Account Data Reset Complete.');
     } catch (error) {
         console.error('❌ Reset Account Data Failed:', error);
+        throw error;
+    }
+}
+
+// ==================== 연구소 시스템 (Research System) ====================
+
+import type { CommanderResearch } from './research-system';
+
+/**
+ * 연구 데이터 저장
+ */
+export async function saveResearchToFirestore(research: CommanderResearch, uid?: string): Promise<void> {
+    if (!isFirebaseConfigured || !db) {
+        console.warn('Firebase not configured. Skipping research save.');
+        return;
+    }
+
+    try {
+        const userId = uid || await getUserId();
+        const researchRef = doc(db, 'users', userId, 'data', 'research');
+
+        const cleanedResearch = cleanDataForFirestore({
+            ...research,
+            updatedAt: serverTimestamp()
+        });
+
+        await setDoc(researchRef, cleanedResearch, { merge: true });
+        console.log('✅ Research data saved to Firestore');
+    } catch (error) {
+        console.error('❌ Failed to save research:', error);
+        throw error;
+    }
+}
+
+/**
+ * 연구 데이터 로드
+ */
+export async function loadResearchFromFirestore(uid?: string): Promise<CommanderResearch | null> {
+    if (!isFirebaseConfigured || !db) {
+        console.warn('Firebase not configured.');
+        return null;
+    }
+
+    try {
+        const userId = uid || await getUserId();
+        const researchRef = doc(db, 'users', userId, 'data', 'research');
+        const docSnap = await getDoc(researchRef);
+
+        if (docSnap.exists()) {
+            const data = docSnap.data() as CommanderResearch;
+            console.log('✅ Research data loaded from Firestore');
+            return data;
+        }
+
+        return null;
+    } catch (error) {
+        console.error('❌ Failed to load research:', error);
+        return null;
+    }
+}
+
+// ==================== 스토리 모드 진행도 (Stage Progress) ====================
+
+export interface StageProgress {
+    clearedStages: string[];
+    stageDetails: {
+        [stageId: string]: {
+            stars: number;
+            bestScore: number;
+            completedAt: any;
+        };
+    };
+    currentStage: string;
+}
+
+/**
+ * 스토리 진행도 저장
+ */
+export async function saveStageProgressToFirestore(progress: StageProgress, uid?: string): Promise<void> {
+    if (!isFirebaseConfigured || !db) {
+        console.warn('Firebase not configured. Skipping stage progress save.');
+        return;
+    }
+
+    try {
+        const userId = uid || await getUserId();
+        const progressRef = doc(db, 'users', userId, 'data', 'stageProgress');
+
+        const cleanedProgress = cleanDataForFirestore({
+            ...progress,
+            updatedAt: serverTimestamp()
+        });
+
+        await setDoc(progressRef, cleanedProgress, { merge: true });
+        console.log('✅ Stage progress saved to Firestore');
+    } catch (error) {
+        console.error('❌ Failed to save stage progress:', error);
+        throw error;
+    }
+}
+
+/**
+ * 스토리 진행도 로드
+ */
+export async function loadStageProgressFromFirestore(uid?: string): Promise<StageProgress | null> {
+    if (!isFirebaseConfigured || !db) {
+        console.warn('Firebase not configured.');
+        return null;
+    }
+
+    try {
+        const userId = uid || await getUserId();
+        const progressRef = doc(db, 'users', userId, 'data', 'stageProgress');
+        const docSnap = await getDoc(progressRef);
+
+        if (docSnap.exists()) {
+            const data = docSnap.data() as StageProgress;
+            console.log('✅ Stage progress loaded from Firestore');
+            return data;
+        }
+
+        return null;
+    } catch (error) {
+        console.error('❌ Failed to load stage progress:', error);
+        return null;
+    }
+}
+
+// ==================== 지원 티켓 시스템 (Support Tickets) ====================
+
+export interface SupportTicket {
+    id?: string;
+    type: 'error' | 'idea';
+    title: string;
+    description: string;
+    status: 'pending' | 'in_progress' | 'resolved' | 'closed';
+    createdAt: any;
+    updatedAt: any;
+    userId: string;
+    userNickname?: string;
+    adminResponse?: {
+        message: string;
+        respondedAt: any;
+        respondedBy: string;
+    };
+}
+
+/**
+ * 사용자의 지원 티켓 목록 조회
+ */
+export async function getUserSupportTickets(uid?: string): Promise<SupportTicket[]> {
+    if (!isFirebaseConfigured || !db) {
+        console.warn('Firebase not configured.');
+        return [];
+    }
+
+    try {
+        const userId = uid || await getUserId();
+        const ticketsRef = collection(db, 'users', userId, 'support');
+        const q = query(ticketsRef, orderBy('createdAt', 'desc'));
+        const querySnapshot = await getDocs(q);
+
+        const tickets: SupportTicket[] = querySnapshot.docs.map(doc => ({
+            id: doc.id,
+            ...doc.data()
+        } as SupportTicket));
+
+        console.log(`✅ Loaded ${tickets.length} support tickets`);
+        return tickets;
+    } catch (error) {
+        console.error('❌ Failed to load support tickets:', error);
+        return [];
+    }
+}
+
+/**
+ * 지원 티켓 상태 업데이트 (관리자용)
+ */
+export async function updateSupportTicketStatus(
+    userId: string,
+    ticketId: string,
+    status: SupportTicket['status'],
+    adminResponse?: { message: string; respondedBy: string }
+): Promise<void> {
+    if (!isFirebaseConfigured || !db) {
+        throw new Error('Firebase not configured');
+    }
+
+    try {
+        const ticketRef = doc(db, 'users', userId, 'support', ticketId);
+
+        const updateData: any = {
+            status,
+            updatedAt: serverTimestamp()
+        };
+
+        if (adminResponse) {
+            updateData.adminResponse = {
+                ...adminResponse,
+                respondedAt: serverTimestamp()
+            };
+        }
+
+        await updateDoc(ticketRef, updateData);
+        console.log('✅ Support ticket updated');
+    } catch (error) {
+        console.error('❌ Failed to update support ticket:', error);
+        throw error;
+    }
+}
+
+// ==================== 덱 구성 (Deck Configuration) ====================
+
+export interface DeckConfig {
+    id?: string;
+    name: string;
+    cardInstanceIds: string[];
+    isActive: boolean;
+    createdAt: any;
+    updatedAt: any;
+}
+
+/**
+ * 덱 저장
+ */
+export async function saveDeckToFirestore(deck: DeckConfig, uid?: string): Promise<string> {
+    if (!isFirebaseConfigured || !db) {
+        throw new Error('Firebase not configured');
+    }
+
+    try {
+        const userId = uid || await getUserId();
+        const decksRef = collection(db, 'users', userId, 'decks');
+
+        const deckData = cleanDataForFirestore({
+            ...deck,
+            updatedAt: serverTimestamp(),
+            createdAt: deck.createdAt || serverTimestamp()
+        });
+
+        if (deck.id) {
+            // Update existing
+            const deckRef = doc(db, 'users', userId, 'decks', deck.id);
+            await setDoc(deckRef, deckData, { merge: true });
+            console.log('✅ Deck updated');
+            return deck.id;
+        } else {
+            // Create new
+            const docRef = await addDoc(decksRef, deckData);
+            console.log('✅ Deck created');
+            return docRef.id;
+        }
+    } catch (error) {
+        console.error('❌ Failed to save deck:', error);
+        throw error;
+    }
+}
+
+/**
+ * 사용자의 모든 덱 로드
+ */
+export async function loadDecksFromFirestore(uid?: string): Promise<DeckConfig[]> {
+    if (!isFirebaseConfigured || !db) {
+        console.warn('Firebase not configured.');
+        return [];
+    }
+
+    try {
+        const userId = uid || await getUserId();
+        const decksRef = collection(db, 'users', userId, 'decks');
+        const querySnapshot = await getDocs(decksRef);
+
+        const decks: DeckConfig[] = querySnapshot.docs.map(doc => ({
+            id: doc.id,
+            ...doc.data()
+        } as DeckConfig));
+
+        console.log(`✅ Loaded ${decks.length} decks`);
+        return decks;
+    } catch (error) {
+        console.error('❌ Failed to load decks:', error);
+        return [];
+    }
+}
+
+/**
+ * 덱 삭제
+ */
+export async function deleteDeckFromFirestore(deckId: string, uid?: string): Promise<void> {
+    if (!isFirebaseConfigured || !db) {
+        throw new Error('Firebase not configured');
+    }
+
+    try {
+        const userId = uid || await getUserId();
+        const deckRef = doc(db, 'users', userId, 'decks', deckId);
+        await updateDoc(deckRef, { isActive: false, updatedAt: serverTimestamp() });
+        console.log('✅ Deck deactivated');
+    } catch (error) {
+        console.error('❌ Failed to delete deck:', error);
+        throw error;
+    }
+}
+
+// ==================== 관리자 기능 (Admin Functions) ====================
+
+/**
+ * 모든 유저의 튜토리얼/스타터팩 상태 조회 (관리자용)
+ */
+export async function getAllUsersWithStatus(): Promise<Array<{
+    uid: string;
+    nickname: string;
+    email?: string;
+    level: number;
+    tutorialCompleted: boolean;
+    hasReceivedStarterPack: boolean;
+    createdAt: any;
+    lastLogin: any;
+    inventoryCount?: number;
+}>> {
+    if (!isFirebaseConfigured || !db) {
+        throw new Error('Firebase not configured');
+    }
+
+    try {
+        // Query all user profiles
+        const usersSnapshot = await getDocs(collectionGroup(db, 'profile'));
+
+        const users = usersSnapshot.docs.map(doc => {
+            const data = doc.data();
+            const uid = doc.ref.parent.parent?.id || 'unknown';
+
+            return {
+                uid,
+                nickname: data.nickname || 'Unknown',
+                email: data.email,
+                level: data.level || 1,
+                tutorialCompleted: data.tutorialCompleted === true,
+                hasReceivedStarterPack: data.hasReceivedStarterPack === true,
+                createdAt: data.createdAt,
+                lastLogin: data.lastLogin,
+                inventoryCount: 0 // Will be populated separately if needed
+            };
+        });
+
+        console.log(`✅ Loaded ${users.length} users for admin view`);
+        return users;
+    } catch (error) {
+        console.error('❌ Failed to load users:', error);
+        throw error;
+    }
+}
+
+/**
+ * 특정 유저의 스타터팩 수령 상태 강제 업데이트 (관리자용 마이그레이션)
+ */
+export async function migrateUserStarterPackStatus(uid: string, hasReceived: boolean): Promise<void> {
+    if (!isFirebaseConfigured || !db) {
+        throw new Error('Firebase not configured');
+    }
+
+    try {
+        await saveUserProfile({ hasReceivedStarterPack: hasReceived }, uid);
+        console.log(`✅ Migrated starter pack status for user ${uid}: ${hasReceived}`);
+    } catch (error) {
+        console.error(`❌ Failed to migrate user ${uid}:`, error);
         throw error;
     }
 }

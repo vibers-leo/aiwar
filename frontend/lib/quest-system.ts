@@ -3,6 +3,9 @@
 export type QuestType = 'daily' | 'weekly' | 'achievement';
 export type QuestCategory = 'battle' | 'card' | 'fusion' | 'general';
 
+import { db, isFirebaseConfigured } from './firebase';
+import { doc, getDoc, setDoc } from 'firebase/firestore';
+
 export interface Quest {
     id: string;
     type: QuestType;
@@ -240,17 +243,24 @@ export function saveQuests(quests: Quest[]): void {
     }
 }
 
+/**
+ * 저장소를 거치지 않고 순수한 초기 퀘스트 상태 반환 (로그인 유저 초기화용)
+ */
+export function getFreshQuestState(): Quest[] {
+    return [
+        ...generateDailyQuests(),
+        ...generateWeeklyQuests(),
+        ...getAchievementQuests()
+    ];
+}
+
 export function loadQuests(): Quest[] {
     if (typeof window === 'undefined') return [];
 
     const saved = localStorage.getItem('quests');
     if (!saved) {
         // 첫 로드 시 기본 퀘스트 생성
-        const quests = [
-            ...generateDailyQuests(),
-            ...generateWeeklyQuests(),
-            ...getAchievementQuests()
-        ];
+        const quests = getFreshQuestState();
         saveQuests(quests);
         return quests;
     }
@@ -310,4 +320,47 @@ function getEndOfWeek(): string {
     date.setDate(date.getDate() + diff);
     date.setHours(23, 59, 59, 999);
     return date.toISOString();
+}
+
+/**
+ * [NEW] Firebase Sync for Quests
+ */
+export async function saveQuestsToFirebase(uid: string, quests: Quest[]): Promise<void> {
+    if (!isFirebaseConfigured || !db) return;
+    try {
+        const docRef = doc(db, 'users', uid, 'data', 'quests');
+        await setDoc(docRef, {
+            list: quests,
+            updatedAt: new Date().toISOString()
+        }, { merge: true });
+        // console.log('✅ Quests synced to Firebase');
+    } catch (e) {
+        console.error('Failed to sync quests:', e);
+    }
+}
+
+export async function loadQuestsFromFirebase(uid: string): Promise<Quest[] | null> {
+    if (!isFirebaseConfigured || !db) return null;
+    try {
+        const docRef = doc(db, 'users', uid, 'data', 'quests');
+        const snap = await getDoc(docRef);
+        if (snap.exists() && snap.data().list) {
+            const data = snap.data();
+            console.log('✅ Loaded quests from Firebase');
+
+            // Check expiry on loaded quests
+            const quests = data.list as Quest[];
+            const needsRefresh = quests.some(q => isQuestExpired(q));
+            if (needsRefresh) {
+                const refreshed = refreshExpiredQuests(quests);
+                // Save back refreshed
+                saveQuestsToFirebase(uid, refreshed);
+                return refreshed;
+            }
+            return quests;
+        }
+    } catch (e) {
+        console.error('Failed to load quests from Firebase:', e);
+    }
+    return null;
 }

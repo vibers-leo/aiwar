@@ -10,7 +10,7 @@ export function middleware(request: NextRequest) {
 
   // Define protected and public routes
   const protectedRoutes = ['/main', '/my-cards', '/generation', '/factions']; // Add more as needed
-  const publicRoutes = ['/intro', '/signup', '/login']; // Login and signup pages
+  const publicRoutes = ['/', '/signup', '/login']; // Login and signup pages
 
   const isProtectedRoute = protectedRoutes.some(route => pathname.startsWith(route));
   const isPublicRoute = publicRoutes.some(route => pathname.startsWith(route));

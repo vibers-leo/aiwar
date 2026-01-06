@@ -13,7 +13,7 @@ export default function LayoutWrapper({ children }: { children: React.ReactNode 
     const [isSidebarOpen, setIsSidebarOpen] = useState(false); // Added sidebar state
 
     // Pages that don't need the full layout
-    const noLayoutPages = ['/intro', '/login', '/signup'];
+    const noLayoutPages = ['/login', '/signup'];
     const shouldShowLayout = !noLayoutPages.includes(pathname || '');
 
     if (!shouldShowLayout) {

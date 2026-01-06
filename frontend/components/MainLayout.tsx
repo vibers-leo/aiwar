@@ -11,8 +11,8 @@ const DynamicFooter = dynamic(() => import('@/components/DynamicFooter'), {
     ssr: false,
 });
 
-// [NEW] Unified Tutorial
-const UnifiedTutorialModal = dynamic(() => import('@/components/UnifiedTutorialModal'), {
+// [NEW] Unified Tutorial Manager
+const TutorialManager = dynamic(() => import('@/components/TutorialManager'), {
     ssr: false,
 });
 
@@ -35,7 +35,7 @@ export default function MainLayout({ children }: { children: React.ReactNode }) 
     const { state: footerState } = useFooter();
 
     // Pages that should be 100% full page without any layout
-    const noLayoutPages = ['/intro', '/login', '/signup', '/'];
+    const noLayoutPages = ['/login', '/signup', '/'];
     const isNoLayout = noLayoutPages.includes(pathname || '');
 
     // Sidebar state
@@ -69,7 +69,7 @@ export default function MainLayout({ children }: { children: React.ReactNode }) 
                             footerState.visible && "pb-[160px]" // 푸터가 보일 때 하단 여백 추가
                         )}
                     >
-                        <UnifiedTutorialModal />
+                        <TutorialManager />
                         {children}
 
                         {/* Dynamic Footer - Only renders when FooterContext.visible is true */}

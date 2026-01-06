@@ -16,7 +16,7 @@ export default function HamburgerMenu() {
 
     const handleLogout = () => {
         logout();
-        router.push('/intro');
+        router.push('/');
     };
 
     return (

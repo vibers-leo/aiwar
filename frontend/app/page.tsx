@@ -1,41 +1,480 @@
 'use client';
 
-import { useEffect } from 'react';
+import { useState, useEffect } from 'react';
+import { motion, AnimatePresence } from 'framer-motion';
 import { useRouter } from 'next/navigation';
-import { motion } from 'framer-motion';
+import { BackgroundBeams } from '@/components/ui/aceternity/background-beams';
+import { TextHoverEffect } from '@/components/ui/aceternity/text-hover-effect';
+import { HoverBorderGradient } from '@/components/ui/aceternity/hover-border-gradient';
+import { DraggableCard } from '@/components/ui/aceternity/draggable-card';
+import GoogleLoginButton from '@/components/GoogleLoginButton';
+
+import { login, signInAsGuest } from '@/lib/auth-utils';
+import { gameStorage } from '@/lib/game-storage';
+import { isFirebaseConfigured } from '@/lib/firebase';
 import { useUser } from '@/context/UserContext';
 
-export default function RootPage() {
+export default function IntroPage() {
     const router = useRouter();
-    const { user, loading } = useUser();
+    // [FIX] Direct window check to bypass Next.js router caching issues
+    const [isLogout, setIsLogout] = useState(false);
 
     useEffect(() => {
-        // [Modern Auth Check] Rely on UserContext instead of localStorage directly.
-        // This prevents the redirect loop between / and /intro.
-        if (loading) return;
-
-        console.log(`[RootPage] Authorization state confirmed. User: ${user ? user.uid : 'null'}`);
-
-        if (user) {
-            console.log("[RootPage] Valid session detected. Transitioning to Command Center...");
-            router.replace('/main');
-        } else {
-            console.log("[RootPage] No active session. Redirecting to Entry Network...");
-            router.replace('/intro');
+        if (typeof window !== 'undefined' && window.location.search.includes('logout=success')) {
+            console.log("[Intro] Logout detected via URL param. Disabling auto-redirect.");
+            setIsLogout(true);
         }
-    }, [user, loading, router]);
+    }, []);
+
+    const [isLoaded, setIsLoaded] = useState(false);
+    const [showLogin, setShowLogin] = useState(false);
+    const [glitchText, setGlitchText] = useState('INITIALIZING');
+    const [systemStatus, setSystemStatus] = useState<string[]>([]);
+
+
+
+    // Login State
+    const [loginId, setLoginId] = useState('');
+    const [loginKey, setLoginKey] = useState('');
+    const [loginError, setLoginError] = useState('');
+
+    // [REMOVED] Pre-Flight Cleanup: This was interfering with Google Login redirects.
+    // We now rely on UserContext.tsx's "Session ID Mismatch" detection for valid cleanup.
+
+    const { user, loading } = useUser();
+
+    // Auto-redirect if already logged in
+    useEffect(() => {
+        // If just logged out, do NOT auto-redirect even if user object lingers
+        if (!loading && user && !isLogout) {
+            // Redirect to main dashboard for logged-in users
+            router.replace('/main');
+        } else if (isLogout) {
+            // Stay on intro page
+        }
+    }, [user, loading, router, isLogout]);
+
+    // Boot sequence animation
+    useEffect(() => {
+        const bootSequence = [
+            'NEURAL_LINK::ESTABLISHING...',
+            'QUANTUM_CORE::ACTIVATED',
+            'FACTION_DATABASE::SYNCHRONIZED',
+            'COMBAT_PROTOCOLS::LOADED',
+            'AI_WAR_NETWORK::ONLINE',
+        ];
+
+        let index = 0;
+        const interval = setInterval(() => {
+            if (index < bootSequence.length) {
+                setSystemStatus(prev => [...prev, bootSequence[index]]);
+                index++;
+            } else {
+                clearInterval(interval);
+                setTimeout(() => {
+                    setIsLoaded(true);
+                    setGlitchText('ENTER_THE_NETWORK');
+                }, 500);
+            }
+        }, 400);
+
+        return () => clearInterval(interval);
+    }, []);
+
+    // [Safety] Global Intro Loading Fallback
+    useEffect(() => {
+        const safetyTimer = setTimeout(() => {
+            if (!isLoaded) {
+                console.warn("⚠️ [Intro] Boot sequence took too long. Force releasing UI.");
+                setIsLoaded(true);
+                setGlitchText('ENTER_THE_NETWORK');
+            }
+        }, 5000); // 5s absolute max for intro animation
+        return () => clearTimeout(safetyTimer);
+    }, [isLoaded]);
+
+    // Glitch effect
+    useEffect(() => {
+        if (!isLoaded) return;
+        const glitchChars = '!@#$%^&*()_+-=[]{}|;:,.<>?';
+        const originalText = 'ENTER_THE_NETWORK';
+
+        const interval = setInterval(() => {
+            if (Math.random() > 0.9) {
+                const glitched = originalText.split('').map((char, i) =>
+                    Math.random() > 0.8 ? glitchChars[Math.floor(Math.random() * glitchChars.length)] : char
+                ).join('');
+                setGlitchText(glitched);
+                setTimeout(() => setGlitchText(originalText), 100);
+            }
+        }, 200);
+
+        return () => clearInterval(interval);
+    }, [isLoaded]);
+
+    const floatingCards = [
+        { id: 1, name: 'GPT-5', faction: 'OpenAI', power: 97, x: 15, y: 20, img: '/images/cards/real/gpt5-omni.png' },
+        { id: 2, name: 'Claude', faction: 'Anthropic', power: 92, x: 75, y: 15, img: '/images/cards/real/epic-code-warrior.png' },
+        { id: 3, name: 'Gemini', faction: 'DeepMind', power: 94, x: 85, y: 60, img: '/images/cards/real/legendary-metatron-core.png' },
+        { id: 4, name: 'Llama', faction: 'Meta AI', power: 88, x: 10, y: 70, img: '/images/cards/real/unique-project-2501.png' },
+    ];
 
     return (
-        <div className="fixed inset-0 bg-black flex items-center justify-center">
-            {/* Minimal Loading State */}
-            <div className="flex flex-col items-center gap-4">
-                <div className="w-12 h-12 border-2 border-cyan-500 border-t-transparent rounded-full animate-spin" />
+        <div className="fixed inset-0 bg-black overflow-hidden">
+            {/* Animated Grid Background */}
+            <div className="absolute inset-0">
+                <div className="absolute inset-0 bg-[linear-gradient(rgba(0,217,255,0.03)_1px,transparent_1px),linear-gradient(90deg,rgba(0,217,255,0.03)_1px,transparent_1px)] bg-[size:50px_50px] [mask-image:radial-gradient(ellipse_at_center,black_20%,transparent_70%)]" />
+            </div>
+
+            {/* Radial Glow */}
+            <div className="absolute inset-0">
+                <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[800px] h-[800px] bg-cyan-500/5 rounded-full blur-3xl animate-pulse" />
+                <div className="absolute top-1/4 left-1/4 w-[400px] h-[400px] bg-purple-500/5 rounded-full blur-3xl" />
+                <div className="absolute bottom-1/4 right-1/4 w-[400px] h-[400px] bg-pink-500/5 rounded-full blur-3xl" />
+            </div>
+
+            {/* Scanlines */}
+            <div className="absolute inset-0 pointer-events-none opacity-[0.015] bg-[linear-gradient(rgba(18,16,16,0)_50%,rgba(0,0,0,0.25)_50%)] bg-[length:100%_2px]" />
+
+            {/* Background Beams */}
+            <BackgroundBeams className="opacity-40" />
+
+            {/* Floating Hologram Cards - Background Layer */}
+            <div className="absolute inset-0 pointer-events-none">
+                {floatingCards.map((card, i) => (
+                    <motion.div
+                        key={card.id}
+                        className="absolute pointer-events-auto cursor-grab active:cursor-grabbing"
+                        style={{ left: `${card.x}%`, top: `${card.y}%` }}
+                        initial={{ opacity: 0, scale: 0.5 }}
+                        animate={{
+                            opacity: isLoaded ? 0.8 : 0,
+                            scale: isLoaded ? 1 : 0.5,
+                            y: [0, -15, 0],
+                        }}
+                        transition={{
+                            delay: i * 0.2 + 2,
+                            y: { duration: 4, repeat: Infinity, ease: "easeInOut" }
+                        }}
+                    >
+                        <DraggableCard className="w-56 transform hover:scale-110 transition-transform duration-300">
+                            <div className="bg-black/80 backdrop-blur-md border border-cyan-500/30 rounded-xl p-3 hover:border-cyan-400/80 hover:bg-black/90 transition-all group shadow-[0_0_20px_rgba(6,182,212,0.15)] hover:shadow-[0_0_35px_rgba(6,182,212,0.3)]">
+                                <div className="aspect-[3/4] rounded-lg mb-3 flex items-center justify-center border border-white/10 relative overflow-hidden bg-gray-900">
+                                    <img
+                                        src={card.img}
+                                        alt={card.name}
+                                        draggable={false}
+                                        className="w-full h-full object-cover opacity-90 group-hover:opacity-100 transition-opacity select-none pointer-events-none"
+                                        onError={(e) => {
+                                            // Fallback if image missing
+                                            (e.target as HTMLImageElement).style.display = 'none';
+                                            (e.target as HTMLImageElement).nextElementSibling?.classList.remove('hidden');
+                                        }}
+                                    />
+                                    {/* Fallback Icon */}
+                                    <div className="absolute inset-0 hidden flex items-center justify-center bg-cyan-900/20">
+                                        <div className="absolute inset-0 bg-cyan-500/5 animate-pulse" />
+                                        <span className="text-4xl opacity-70 filter drop-shadow-[0_0_10px_rgba(6,182,212,0.4)]">🤖</span>
+                                    </div>
+
+                                    {/* Scanline overlay on image */}
+                                    <div className="absolute inset-0 bg-[linear-gradient(transparent_0%,rgba(6,182,212,0.1)_50%,transparent_100%)] bg-[length:100%_4px] opacity-30 pointer-events-none" />
+                                </div>
+                                <div className="flex justify-between items-end mb-1 px-1">
+                                    <div className="text-xs font-mono text-cyan-400/80">{card.faction}</div>
+                                    <div className="text-[9px] font-mono text-white/30">ID: {card.id.toString().padStart(3, '0')}</div>
+                                </div>
+                                <div className="text-lg font-bold text-white orbitron tracking-wide px-1">{card.name}</div>
+                                <div className="mt-2 flex items-center justify-between text-[10px] px-1 pb-1">
+                                    <span className="text-white/40 font-mono">POWER</span>
+                                    <div className="flex items-center gap-1">
+                                        <span className="w-1.5 h-1.5 rounded-full bg-cyan-400 animate-pulse" />
+                                        <span className="text-cyan-400 font-bold text-base font-orbitron">{card.power}</span>
+                                    </div>
+                                </div>
+                            </div>
+                        </DraggableCard>
+                    </motion.div>
+                ))}
+            </div>
+
+            {/* Main Content */}
+            <div className="relative z-10 flex flex-col items-center justify-center min-h-screen px-4 pointer-events-none">
+
+                {/* Boot Sequence Terminal */}
+                <AnimatePresence>
+                    {!isLoaded && (
+                        <motion.div
+                            className="absolute top-8 left-8 font-mono text-[10px] text-cyan-500/70 pointer-events-auto"
+                            exit={{ opacity: 0 }}
+                        >
+                            <AnimatePresence>
+                                {!isFirebaseConfigured && (
+                                    <motion.div
+                                        initial={{ opacity: 0, x: -20 }}
+                                        animate={{ opacity: 1, x: 0 }}
+                                        className="mb-4 p-2 border border-red-500 bg-red-500/10 text-red-500 animate-pulse"
+                                    >
+                                        [CRITICAL_WARNING] FIREBASE_CONFIG_MISSING
+                                        <br />Check Vercel Environment Variables!
+                                    </motion.div>
+                                )}
+                            </AnimatePresence>
+                            {systemStatus.map((status, i) => (
+                                <motion.div
+                                    key={i}
+                                    initial={{ opacity: 0, x: -20 }}
+                                    animate={{ opacity: 1, x: 0 }}
+                                    className="mb-1"
+                                >
+                                    <span className="text-green-500">✓</span> {status}
+                                </motion.div>
+                            ))}
+                        </motion.div>
+                    )}
+                </AnimatePresence>
+
+                {/* Logo Section */}
+                <motion.div
+                    initial={{ opacity: 0, y: -50 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    transition={{ duration: 1, delay: 2.5 }}
+                    className="text-center mb-16 relative pointer-events-auto"
+                >
+                    {/* Decorative Line */}
+                    <motion.div
+                        className="flex items-center justify-center gap-4 mb-2"
+                        initial={{ opacity: 0 }}
+                        animate={{ opacity: 1 }}
+                        transition={{ delay: 3 }}
+                    >
+                        <div className="h-px w-24 bg-gradient-to-r from-transparent to-cyan-500/80" />
+                        <div className="w-3 h-3 border border-cyan-500 rotate-45 flex items-center justify-center">
+                            <div className="w-1 h-1 bg-cyan-500" />
+                        </div>
+                        <div className="h-px w-24 bg-gradient-to-l from-transparent to-cyan-500/80" />
+                    </motion.div>
+
+                    {/* Main Title - Using Optimized TextHoverEffect */}
+                    <div className="relative z-20 select-none">
+                        <TextHoverEffect text="AI WAR" className="text-[100px] md:text-[150px] lg:text-[180px]" />
+                    </div>
+
+                    {/* Subtitle */}
+                    <motion.div
+                        initial={{ opacity: 0 }}
+                        animate={{ opacity: 1 }}
+                        transition={{ delay: 3.5 }}
+                        className="mt-6 space-y-2 relative z-20"
+                    >
+                        <p className="text-sm md:text-base font-mono tracking-[0.6em] text-cyan-400 font-bold uppercase drop-shadow-[0_0_10px_rgba(6,182,212,0.8)]">
+                            Neural Network Conflict
+                        </p>
+                        <p className="text-[10px] font-mono tracking-[0.3em] text-white/40">
+                            SYSTEM_VERSION: 2.0.30 // YEAR: 2030
+                        </p>
+                    </motion.div>
+                </motion.div>
+
+                {/* Enter Button */}
+                <motion.div
+                    initial={{ opacity: 0, y: 30 }}
+                    animate={{ opacity: isLoaded ? 1 : 0, y: isLoaded ? 0 : 30 }}
+                    transition={{ delay: 3.8 }}
+                    className="mb-16 relative z-30 pointer-events-auto"
+                >
+                    <HoverBorderGradient
+                        onClick={() => setShowLogin(true)}
+                        containerClassName="rounded-full"
+                        className="bg-black/90 text-white px-16 py-6 font-mono text-base tracking-[0.4em] uppercase font-bold border border-white/10"
+                        duration={1.5}
+                    >
+                        <span className="flex items-center gap-3">
+                            <span className="w-2 h-2 bg-green-500 rounded-full animate-pulse" />
+                            {glitchText}
+                            <span className="w-2 h-2 bg-green-500 rounded-full animate-pulse" />
+                        </span>
+                    </HoverBorderGradient>
+                </motion.div>
+
+                {/* Login Modal */}
+                <AnimatePresence>
+                    {showLogin && (
+                        <motion.div
+                            initial={{ opacity: 0 }}
+                            animate={{ opacity: 1 }}
+                            exit={{ opacity: 0 }}
+                            className="fixed inset-0 z-50 flex items-center justify-center bg-black/80 backdrop-blur-sm pointer-events-auto"
+                            onClick={() => setShowLogin(false)}
+                        >
+                            <motion.div
+                                initial={{ scale: 0.9, opacity: 0 }}
+                                animate={{ scale: 1, opacity: 1 }}
+                                exit={{ scale: 0.9, opacity: 0 }}
+                                onClick={(e) => e.stopPropagation()}
+                                className="relative w-full max-w-md"
+                            >
+                                {/* Terminal Window */}
+                                <div className="bg-black border border-cyan-500/30 rounded-lg overflow-hidden">
+                                    {/* Title Bar */}
+                                    <div className="bg-cyan-500/10 px-4 py-2 flex items-center justify-between border-b border-cyan-500/20">
+                                        <div className="flex items-center gap-2">
+                                            <div className="w-3 h-3 rounded-full bg-red-500/80" />
+                                            <div className="w-3 h-3 rounded-full bg-yellow-500/80" />
+                                            <div className="w-3 h-3 rounded-full bg-green-500/80" />
+                                        </div>
+                                        <span className="text-[10px] font-mono text-cyan-400/60">AUTHENTICATION_TERMINAL</span>
+                                    </div>
+
+                                    <form
+                                        className="p-8"
+                                        onSubmit={(e) => {
+                                            e.preventDefault();
+                                            setLoginError('');
+
+                                            // Validate
+                                            if (!loginId || !loginKey) {
+                                                setLoginError('CREDENTIALS_REQUIRED');
+                                                return;
+                                            }
+
+                                            // Attempt Login
+                                            const result = login(loginId, loginKey);
+                                            if (result.success) {
+                                                // Success animation then redirect
+                                                setSystemStatus(prev => [...prev, 'ACCESS_GRANTED', 'REDIRECTING...']);
+                                                setTimeout(() => window.location.href = '/main', 800);
+                                            } else {
+                                                setLoginError(result.message);
+                                            }
+                                        }}
+                                    >
+
+                                        <div className="text-center mb-8">
+                                            <h2 className="text-xl font-bold orbitron text-white mb-2">지휘관 인증</h2>
+                                            <p className="text-[10px] font-mono text-white/40">네트워크 접속을 위한 인증 정보를 입력하세요</p>
+                                        </div>
+
+                                        <div className="space-y-4">
+                                            <div>
+                                                <label className="block text-[10px] font-mono text-cyan-400/60 mb-2 uppercase tracking-widest">
+                                                    이메일
+                                                </label>
+                                                <input
+                                                    type="text"
+                                                    value={loginId}
+                                                    onChange={(e) => setLoginId(e.target.value)}
+                                                    className="w-full bg-black/50 border border-cyan-500/30 rounded px-4 py-3 text-white font-mono text-sm focus:border-cyan-400 focus:outline-none transition-colors"
+                                                    placeholder="이메일을 입력하세요"
+                                                />
+                                            </div>
+                                            <div>
+                                                <label className="block text-[10px] font-mono text-cyan-400/60 mb-2 uppercase tracking-widest">
+                                                    비밀번호
+                                                </label>
+                                                <input
+                                                    type="password"
+                                                    value={loginKey}
+                                                    onChange={(e) => setLoginKey(e.target.value)}
+                                                    className="w-full bg-black/50 border border-cyan-500/30 rounded px-4 py-3 text-white font-mono text-sm focus:border-cyan-400 focus:outline-none transition-colors"
+                                                    placeholder="비밀번호를 입력하세요"
+                                                />
+                                            </div>
+
+                                            {/* Error Message Display */}
+                                            {loginError && (
+                                                <motion.div
+                                                    initial={{ opacity: 0, height: 0 }}
+                                                    animate={{ opacity: 1, height: 'auto' }}
+                                                    className="text-red-500 text-[10px] font-mono border border-red-500/30 bg-red-500/10 p-2 rounded text-center"
+                                                >
+                                                    ⚠ {loginError}
+                                                </motion.div>
+                                            )}
+                                        </div>
+
+                                        <div className="mt-8 space-y-3">
+                                            <HoverBorderGradient
+                                                as="button"
+                                                type="submit"
+                                                containerClassName="w-full rounded"
+                                                className="w-full bg-cyan-500/10 text-cyan-400 py-3 font-mono text-sm tracking-widest uppercase"
+                                            >
+                                                로그인
+                                            </HoverBorderGradient>
+
+                                            <div className="flex gap-2">
+                                                <button
+                                                    type="button"
+                                                    onClick={() => router.push('/signup')}
+                                                    className="flex-1 py-3 text-white/40 hover:text-white font-mono text-xs tracking-widest uppercase transition-colors border border-white/5 rounded hover:bg-white/5"
+                                                >
+                                                    회원가입
+                                                </button>
+                                            </div>
+
+                                            <div className="pt-2 border-t border-white/5 space-y-2">
+                                                <GoogleLoginButton />
+
+                                                <div className="grid grid-cols-2 gap-2">
+                                                    <button
+                                                        type="button"
+                                                        onClick={async () => {
+                                                            try {
+                                                                // Use Firebase Anonymous Auth instead of local auth
+                                                                // This ensures UserContext picks up the user correctly
+                                                                const { signInAnonymous } = await import('@/lib/firebase-auth');
+                                                                const user = await signInAnonymous();
+
+                                                                if (user) {
+                                                                    setSystemStatus(prev => [...prev, 'GUEST_ACCESS_GRANTED', 'REDIRECTING...']);
+                                                                    // Force hard reload to ensure all contexts pick up the new session
+                                                                    setTimeout(() => window.location.href = '/main', 500);
+                                                                } else {
+                                                                    setLoginError('GUEST_AUTH_FAILED');
+                                                                }
+                                                            } catch (e) {
+                                                                console.error(e);
+                                                                setLoginError('GUEST_AUTH_ERROR');
+                                                            }
+                                                        }}
+                                                        className="col-span-2 py-2 bg-white/5 hover:bg-white/10 text-gray-400 hover:text-white rounded border border-white/10 font-mono text-[10px] uppercase tracking-wider transition-colors"
+                                                    >
+                                                        GUEST_LOGIN (익명 접속)
+                                                    </button>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </form>
+                                </div>
+
+                                {/* Decorative Corners */}
+                                <div className="absolute -top-2 -left-2 w-6 h-6 border-t-2 border-l-2 border-cyan-500" />
+                                <div className="absolute -top-2 -right-2 w-6 h-6 border-t-2 border-r-2 border-cyan-500" />
+                                <div className="absolute -bottom-2 -left-2 w-6 h-6 border-b-2 border-l-2 border-cyan-500" />
+                                <div className="absolute -bottom-2 -right-2 w-6 h-6 border-b-2 border-r-2 border-cyan-500" />
+                            </motion.div>
+                        </motion.div>
+                    )}
+                </AnimatePresence>
+
+                {/* Footer Status */}
                 <motion.div
                     initial={{ opacity: 0 }}
-                    animate={{ opacity: 1 }}
-                    className="text-cyan-500 font-mono text-xs tracking-widest animate-pulse"
+                    animate={{ opacity: isLoaded ? 0.5 : 0 }}
+                    transition={{ delay: 4 }}
+                    className="absolute bottom-8 left-0 right-0 text-center"
                 >
-                    VERIFYING_ACCESS...
+                    <div className="inline-flex items-center gap-4 text-[9px] font-mono text-white/30">
+                        <span className="flex items-center gap-2">
+                            <span className="w-1.5 h-1.5 bg-green-500 rounded-full animate-pulse" />
+                            NETWORK_STABLE
+                        </span>
+                        <span>|</span>
+                        <span>NODES_ACTIVE: 2,847</span>
+                        <span>|</span>
+                        <span>CONFLICTS_TODAY: 12,493</span>
+                    </div>
                 </motion.div>
             </div>
         </div>

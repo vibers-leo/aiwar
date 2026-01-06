@@ -69,7 +69,7 @@ export default function GameTopBar({ sidebarCollapsed = false }: GameTopBarProps
             cancelText: '취소',
             onConfirm: () => {
                 logout();
-                router.push('/intro');
+                router.push('/');
             }
         });
     };

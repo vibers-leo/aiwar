@@ -13,9 +13,17 @@ export default function SessionLogPage() {
     useEffect(() => {
         setMounted(true);
         if (user) {
-            const key = `tutorial_completed_${user.uid}`;
+            let trackingId = user.uid;
+            const sessionStr = localStorage.getItem('auth-session');
+            if (sessionStr) {
+                try {
+                    const session = JSON.parse(sessionStr);
+                    if (session?.user?.id) trackingId = session.user.id;
+                } catch (e) { }
+            }
+            const key = `tutorial_completed_${trackingId}`;
             const val = localStorage.getItem(key);
-            setTutorialLocalStatus(val ? 'Completed (Found in LocalStorage)' : 'Not Found in LocalStorage');
+            setTutorialLocalStatus(val ? `Completed (ID: ${trackingId})` : `Not Found (ID: ${trackingId})`);
         } else {
             setTutorialLocalStatus('User not logged in');
         }

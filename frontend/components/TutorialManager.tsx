@@ -2,7 +2,7 @@
 
 import { useState, useEffect, useCallback } from 'react';
 import { usePathname } from 'next/navigation';
-import WelcomeTutorialModal from '@/components/WelcomeTutorialModal';
+import UnifiedTutorialModal from '@/components/UnifiedTutorialModal';
 import NicknameModal from '@/components/NicknameModal';
 import UnitReceiptModal from '@/components/UnitReceiptModal'; // Import Receipt Modal
 import StarterPackOpeningModal from '@/components/StarterPackOpeningModal'; // Import Opening Modal
@@ -18,8 +18,8 @@ import { useUser } from '@/context/UserContext';
 export default function TutorialManager() {
     const pathname = usePathname();
     const { user } = useFirebase();
-    const { profile, reload: reloadProfile, loading } = useUserProfile();
-    const { refreshData } = useUser();
+    const { profile, reload: reloadProfile, loading: profileLoading } = useUserProfile();
+    const { refreshData, completeTutorial, inventory, loading: contextLoading } = useUser();
     const [showNicknameModal, setShowNicknameModal] = useState(false);
     const [showTutorialModal, setShowTutorialModal] = useState(false);
 
@@ -39,15 +39,19 @@ export default function TutorialManager() {
 
         if (!user) return;
 
-        // Wait for profile to load
-        if (loading) return;
+        // Wait for profile AND global context (inventory) to load
+        // This prevents the "Inventory Check" from running on empty default state
+        if (profileLoading || contextLoading) return;
 
         const checkOnboarding = async () => {
-            console.log("[TutorialManager] Checking onboarding status...", {
+            // [DB-FIRST POLICY] Check tutorial completion from DB first
+            console.log("[TutorialManager] Checking onboarding status (DB-First)...", {
                 uid: user.uid,
                 nickname: profile?.nickname,
                 hasNickname: !!(profile?.nickname && profile.nickname !== ''),
-                tutorialCompleted: localStorage.getItem(`tutorial_completed_${user.uid}`)
+                tutorialCompletedDB: profile?.tutorialCompleted,
+                hasReceivedStarterPackDB: profile?.hasReceivedStarterPack,
+                inventoryCount: inventory?.length || 0
             });
 
             // 1. Check if nickname is missing
@@ -60,38 +64,34 @@ export default function TutorialManager() {
                 return;
             }
 
-            // 2. Check if tutorial is completed
-            // Use Mock Session ID if available (for precise new user tracking), otherwise fall back to Firebase UID
-            // This fixes the issue where persistent Anonymous Firebase UID prevents new Mock Users from seeing the tutorial.
-            const sessionStr = localStorage.getItem('auth-session');
-            let trackingId = user.uid;
+            // [DB-FIRST] Use profile.tutorialCompleted as primary source
+            const isTutorialCompleted = profile?.tutorialCompleted === true;
 
-            if (sessionStr) {
-                try {
-                    const session = JSON.parse(sessionStr);
-                    if (session?.user?.id) {
-                        trackingId = session.user.id;
-                    }
-                } catch (e) {
-                    // Ignore parse error
+            console.log("[TutorialManager] Tutorial Check (DB-First):", {
+                uid: user.uid,
+                tutorialCompleted: isTutorialCompleted,
+                hasStarterPack: profile?.hasReceivedStarterPack
+            });
+
+            if (!isTutorialCompleted) {
+                // [CRITICAL FIX] If user already has cards (Starter Pack claimed), do NOT show tutorial again.
+                // This covers the "Refresh after Claim" edge case.
+                if (inventory && inventory.length > 0) {
+                    console.log("[TutorialManager] Inventory detected! User has starter pack. Auto-completing tutorial.");
+                    completeTutorial(); // Updates DB
+                    return;
                 }
-            }
 
-            const isCompleted = localStorage.getItem(`tutorial_completed_${trackingId}`);
-
-            console.log("[TutorialManager] Tutorial Check:", { trackingId, isCompleted });
-
-            if (!isCompleted) {
                 console.log("[TutorialManager] Tutorial not completed. Triggering WelcomeTutorialModal.");
                 setShowTutorialModal(true);
                 hideFooter();
             } else {
-                console.log("[TutorialManager] Tutorial already completed.");
+                console.log("[TutorialManager] Tutorial already completed (DB).");
             }
         };
 
         checkOnboarding();
-    }, [pathname, profile, user, loading, hideFooter]);
+    }, [pathname, profile, user, profileLoading, contextLoading, hideFooter, inventory, completeTutorial]);
 
     const handleNicknameComplete = async (nickname: string) => {
         try {
@@ -131,9 +131,16 @@ export default function TutorialManager() {
                 // Fallback if distribution fails (should rarely happen)
                 finalizeTutorial();
             }
-        } catch (e) {
-            console.error(e);
-            finalizeTutorial();
+        } catch (e: any) {
+            if (e.message === 'ALREADY_CLAIMED' || e.code === 'ALREADY_CLAIMED') {
+                console.log("[Tutorial] Starter pack already claimed. Skipping receipt.");
+                // Ensure context is synced
+                await refreshData();
+                finalizeTutorial();
+            } else {
+                console.error("[Tutorial] Claim failed:", e);
+                finalizeTutorial();
+            }
         }
     };
 
@@ -164,21 +171,9 @@ export default function TutorialManager() {
     };
 
     const finalizeTutorial = () => {
-        let trackingId = user?.uid;
-        // Logic duplicated for safety (or could be extracted)
-        const sessionStr = localStorage.getItem('auth-session');
-        if (sessionStr) {
-            try {
-                const session = JSON.parse(sessionStr);
-                if (session?.user?.id) {
-                    trackingId = session.user.id;
-                }
-            } catch (e) { }
-        }
-
-        if (trackingId) {
-            localStorage.setItem(`tutorial_completed_${trackingId}`, 'true');
-        }
+        // [DB-FIRST] Use context's completeTutorial which updates Firebase
+        completeTutorial();
+        showFooter();
     };
 
     if (showNicknameModal) {
@@ -186,7 +181,7 @@ export default function TutorialManager() {
     }
 
     if (showTutorialModal) {
-        return <WelcomeTutorialModal onClose={handleTutorialClose} />;
+        return <UnifiedTutorialModal onClose={handleTutorialClose} onClaim={handleTutorialClose} />;
     }
 
     // New: Opening Ceremony Modal

@@ -4,8 +4,6 @@ import { useState, useEffect } from 'react';
 import CyberPageLayout from '@/components/CyberPageLayout';
 import Link from 'next/link';
 import { motion, AnimatePresence } from 'framer-motion';
-import TutorialOverlay from '@/components/tutorial/TutorialOverlay';
-import StarterPackModal from '@/components/StarterPackModal';
 import { useGameSound } from '@/hooks/useGameSound';
 import { BackgroundBeams } from "@/components/ui/aceternity/background-beams";
 import { CardBody, Card3D as CardContainer, CardItem } from "@/components/ui/aceternity/3d-card";
@@ -19,40 +17,11 @@ export default function MainPage() {
 
   const [initializingTutorial, setInitializingTutorial] = useState(true);
 
+  // Sound handled here, tutorial/onboarding handled by global TutorialManager
   useEffect(() => {
-    // Play Main BGM
     playSound('bgm_main', 'bgm');
+  }, [playSound]);
 
-    // Check if tutorial has been seen (User Specific - Server + Local)
-    if (user?.uid && profile) {
-      const tutorialKey = `tutorial_completed_${user.uid}`;
-      const hasSeenTutorialLocal = localStorage.getItem(tutorialKey) === 'true';
-      const hasSeenTutorialServer = profile.tutorialCompleted;
-
-      if (!hasSeenTutorialLocal && !hasSeenTutorialServer) {
-        // [Fix] Tutorial modal race condition
-        const timer = setTimeout(() => {
-          setShowTutorial(true);
-          setInitializingTutorial(false);
-        }, 1000);
-        return () => clearTimeout(timer);
-      } else {
-        setInitializingTutorial(false);
-      }
-    } else {
-      // Guest or not loaded yet - wait? Or release?
-      // If user is null, authentication is still loading.
-      // But UserContext 'loading' should handle main page render?
-      // If user exists but logic skipped?
-      // Make sure we release the lock if user is present.
-    }
-  }, [playSound, user?.uid]);
-
-  const handleTutorialClose = () => {
-    setShowTutorial(false);
-    // [Fix] Context 상태 동기화를 위해 함수 사용
-    completeTutorial();
-  };
 
   const menuItems = [
     { title: '군단 본부', subtitle: 'LEGION HQ', path: '/factions', color: 'green', icon: '🏛️' },
@@ -187,10 +156,6 @@ export default function MainPage() {
       </div>
       */}
 
-      <TutorialOverlay isOpen={showTutorial} onClose={handleTutorialClose} />
-
-      {/* StarterPackModal - Only shows if user is eligible */}
-      <StarterPackModal />
     </CyberPageLayout>
   );
 }

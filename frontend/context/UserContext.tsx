@@ -38,7 +38,7 @@ import { gameStorage } from '@/lib/game-storage';
 interface UserContextType {
     coins: number;
     tokens: number;
-    maxTokens: number; // [NEW]
+    maxTokens: number;
     level: number;
     experience: number;
     loading: boolean;
@@ -57,11 +57,13 @@ interface UserContextType {
     subscriptions: UserSubscription[];
     buyCardPack: (cards: Card[], price: number, currencyType: 'coin' | 'token') => Promise<void>;
     completeTutorial: () => void;
-    // [NEW] Quest System Integration
     quests: Quest[];
     trackMissionEvent: (action: string, amount?: number) => void;
     claimQuest: (questId: string) => Promise<boolean>;
     handleSignOut: () => Promise<void>;
+    // [NEW] Research & Stage Progress
+    research: any | null;
+    stageProgress: any | null;
 }
 
 const UserContext = createContext<UserContextType | undefined>(undefined);
@@ -82,6 +84,8 @@ export function UserProvider({ children }: { children: React.ReactNode }) {
     const [starterPackAvailable, setStarterPackAvailable] = useState(false);
     const [subscriptions, setSubscriptions] = useState<UserSubscription[]>([]);
     const [quests, setQuests] = useState<Quest[]>([]); // [NEW] Quest State
+    const [research, setResearch] = useState<any | null>(null); // [NEW] Research State
+    const [stageProgress, setStageProgress] = useState<any | null>(null); // [NEW] Stage Progress
     const [isClaimingInSession, setIsClaimingInSession] = useState(false);
     const [mounted, setMounted] = useState(false);
     const [showSafeMode, setShowSafeMode] = useState(false); // [NEW] Safe Mode Recovery
@@ -100,40 +104,40 @@ export function UserProvider({ children }: { children: React.ReactNode }) {
         setIsClaimingInSession(false);
         setStarterPackAvailable(false);
         setQuests([]); // [NEW] Reset Quests
+        setResearch(null); // [NEW] Reset Research
+        setStageProgress(null); // [NEW] Reset Stage Progress
         setError(null);
         gameStorage.clearAllSessionData();
     }, []);
 
     const handleSignOut = useCallback(async () => {
-        console.log("🚀 [Auth] Initiating Hardened Sign Out...");
+        console.log("🚀 [Auth] Initiating Secure Sign Out...");
 
-        // 1. Set a flag to indicate logout is in progress.
-        localStorage.setItem('pending_logout', 'true');
-
-        try {
-            // 2. Switch persistence to in-memory to detach from IndexedDB.
-            // (This is also handled in signOutUser but valid to do here too)
-            await setAuthPersistence('in-memory');
-
-            // 3. Call the server-side API to destroy the session cookie. (Jules's Fix)
+        // [Secure Sync] Force save critical data before scorching earth
+        if (user?.uid) {
             try {
-                await fetch('/api/auth/logout', { method: 'POST' });
-            } catch (apiError) {
-                console.warn("[Auth] Server-side logout failed (non-critical):", apiError);
+                console.log("[Auth] Saving final state (Quests, Research, Stage Progress)...");
+                const { saveQuestsToFirebase } = await import('@/lib/quest-system');
+                const { saveResearchToFirestore, saveStageProgressToFirestore } = await import('@/lib/firebase-db');
+
+                await Promise.all([
+                    saveQuestsToFirebase(user.uid, quests),
+                    research ? saveResearchToFirestore(research, user.uid) : Promise.resolve(),
+                    stageProgress ? saveStageProgressToFirestore(stageProgress, user.uid) : Promise.resolve()
+                ]);
+            } catch (e) {
+                console.error("[Auth] Pre-logout sync failed:", e);
             }
-
-            // 4. Sign out from Firebase & Nuke Local Data
-            // This utility function will handle the nuking of local storage and force a redirect to '/'
-            await signOutUser();
-
-        } catch (error) {
-            console.error("Sign-out process failed:", error);
-            // Even if it fails, still try to clean up and redirect.
-            gameStorage.clearAllSessionData();
-            sessionStorage.clear();
-            window.location.href = '/intro';
         }
-    }, [resetState]);
+
+        // Use the shared "Scorched Earth" utility
+        const { performSecureLogout } = await import('@/lib/secure-logout');
+
+        await performSecureLogout(user?.uid);
+
+        // The utility handles the redirect, but just in case logic falls through or utility fails silently (unlikely)
+        // we can force a backup redirect here if the utility promise resolves (which it shouldn't if it redirects)
+    }, [user?.uid, quests, research, stageProgress]);
 
 
     useEffect(() => {
@@ -208,13 +212,38 @@ export function UserProvider({ children }: { children: React.ReactNode }) {
                 });
             }, 5000);
 
-            // [NEW] Load quests using local storage (for now)
-            const loadedQuests = loadQuests();
-            setQuests(loadedQuests);
-
             // [NEW] Load inventory and subscriptions with commander logic
             const syncUserData = async () => {
                 try {
+                    // [NEW] Load quests, research, and stage progress
+                    const { loadQuestsFromFirebase, getFreshQuestState, saveQuestsToFirebase } = await import('@/lib/quest-system');
+                    const { loadResearchFromFirestore, loadStageProgressFromFirestore } = await import('@/lib/firebase-db');
+
+                    let loadedQuests = await loadQuestsFromFirebase(user.uid);
+
+                    if (!loadedQuests) {
+                        console.log("[QuestSystem] No remote quests found. Initialization with FRESH state (Strict Safe Mode).");
+                        loadedQuests = getFreshQuestState();
+                        await saveQuestsToFirebase(user.uid, loadedQuests);
+                    }
+                    setQuests(loadedQuests);
+
+                    // Load research data
+                    const loadedResearch = await loadResearchFromFirestore(user.uid);
+                    if (loadedResearch) {
+                        setResearch(loadedResearch);
+                    } else {
+                        console.log("[Research] No remote research found. Will initialize on first research page visit.");
+                    }
+
+                    // Load stage progress
+                    const loadedProgress = await loadStageProgressFromFirestore(user.uid);
+                    if (loadedProgress) {
+                        setStageProgress(loadedProgress);
+                    } else {
+                        console.log("[StageProgress] No remote progress found. Will initialize on first battle.");
+                    }
+
                     // Sync was successful, so we can now set the last known UID to this user.
                     localStorage.setItem('last_known_uid', user.uid);
 
@@ -326,13 +355,11 @@ export function UserProvider({ children }: { children: React.ReactNode }) {
     const completeTutorial = useCallback(async () => {
         if (!user?.uid || !profile) return;
 
-        // 1. Immediate local feedback
-        localStorage.setItem(`tutorial_completed_${user.uid}`, 'true');
-
         try {
+            // [DB-FIRST] Only update Firebase, no localStorage
             await saveUserProfile({ tutorialCompleted: true }, user.uid);
             await reloadProfile();
-            console.log("[UserContext] Tutorial status saved to Firebase and LocalStorage.");
+            console.log("[UserContext] Tutorial status saved to Firebase (DB-First).");
         } catch (error) {
             console.error("Failed to save tutorial completion status:", error);
         }
@@ -376,7 +403,8 @@ export function UserProvider({ children }: { children: React.ReactNode }) {
                 setTokens(profile.tokens); // Ensure sync
             }
 
-            const isTutorialCompleted = localStorage.getItem(`tutorial_completed_${user.uid}`) === 'true' || profile.tutorialCompleted;
+            // [DB-FIRST] Use only profile.tutorialCompleted from DB
+            const isTutorialCompleted = profile.tutorialCompleted === true;
 
             // Starter Pack eligibility: Level 1, NO received flag, NO cards, and Tutorial MUST be completed.
             if (!isClaimingInSession &&
@@ -648,6 +676,8 @@ export function UserProvider({ children }: { children: React.ReactNode }) {
                 trackMissionEvent, // [NEW]
                 claimQuest,        // [NEW]
                 handleSignOut,
+                research,          // [NEW]
+                stageProgress,     // [NEW]
             }}
         >
             {children}

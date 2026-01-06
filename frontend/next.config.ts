@@ -12,6 +12,15 @@ const nextConfig: NextConfig = {
   },
   // Production optimizations
   poweredByHeader: false,
+  // URL Rewrites for clean admin URLs
+  async rewrites() {
+    return [
+      {
+        source: '/admin-panel',
+        destination: '/admin/users',
+      },
+    ];
+  },
 };
 
 export default nextConfig;
