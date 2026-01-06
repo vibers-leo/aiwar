@@ -113,6 +113,7 @@ export function UserProvider({ children }: { children: React.ReactNode }) {
 
     const handleSignOut = useCallback(async () => {
         console.log("🚀 [Auth] Initiating Secure Sign Out...");
+        setIsLoggingOut(true); // Show overlay
 
         // [Secure Sync] Force save critical data before scorching earth
         if (user?.uid) {

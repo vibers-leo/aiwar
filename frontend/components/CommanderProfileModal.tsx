@@ -244,6 +244,7 @@ export default function CommanderProfileModal({ isOpen, onClose }: CommanderProf
                                             </div>
                                         )}
                                     </div>
+                                )}
                             </div>
                         </ModalHeader>
 
