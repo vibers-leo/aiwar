@@ -2,21 +2,23 @@
 
 import { useState, useEffect } from 'react';
 import Link from 'next/link';
-import { getCurrentUser, logout, User } from '@/lib/auth-utils';
+import { getCurrentUser, User } from '@/lib/auth-utils';
 import { useRouter } from 'next/navigation';
+import { useUser } from '@/context/UserContext';
 
 export default function HamburgerMenu() {
     const [isOpen, setIsOpen] = useState(false);
     const [user, setUser] = useState<User | null>(null);
     const router = useRouter();
 
+    const { handleSignOut } = useUser();
+
     useEffect(() => {
         setUser(getCurrentUser());
     }, []);
 
-    const handleLogout = () => {
-        logout();
-        router.push('/');
+    const handleLogout = async () => {
+        await handleSignOut();
     };
 
     return (

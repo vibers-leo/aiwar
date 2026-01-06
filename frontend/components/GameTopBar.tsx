@@ -1,16 +1,13 @@
 'use client';
 
 import { useState, useEffect } from 'react';
-// import { useUserProfile } from '@/hooks/useUserProfile';
 import Link from 'next/link';
 import { usePathname, useRouter } from 'next/navigation';
+import { Bell, LogOut, Settings } from 'lucide-react';
 import { useTranslation } from '@/context/LanguageContext';
-import { onGameStateChange, getGameState } from '@/lib/game-state';
-import { Settings, LogOut, Bell } from 'lucide-react';
-import { logout } from '@/lib/auth-utils';
+import { useUser } from '@/context/UserContext';
 import { useAlert } from '@/context/AlertContext';
 import { useNotification } from '@/context/NotificationContext';
-import { useUser } from '@/context/UserContext';
 import { useUserProfile } from '@/hooks/useUserProfile';
 import NotificationPanel from '@/components/NotificationPanel';
 
@@ -60,6 +57,8 @@ export default function GameTopBar({ sidebarCollapsed = false }: GameTopBarProps
     const { unreadCount } = useNotification();
     const [isNotificationOpen, setIsNotificationOpen] = useState(false);
 
+    const { handleSignOut } = useUser();
+
     const handleLogout = () => {
         showConfirm({
             title: '로그아웃',
@@ -67,9 +66,8 @@ export default function GameTopBar({ sidebarCollapsed = false }: GameTopBarProps
             type: 'warning',
             confirmText: '로그아웃',
             cancelText: '취소',
-            onConfirm: () => {
-                logout();
-                router.push('/');
+            onConfirm: async () => {
+                await handleSignOut();
             }
         });
     };

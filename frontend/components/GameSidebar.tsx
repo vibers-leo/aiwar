@@ -4,8 +4,7 @@ import Link from 'next/link';
 import { usePathname } from 'next/navigation';
 import { useTranslation } from '@/context/LanguageContext';
 import { useState, useEffect } from 'react';
-import { Settings, LogOut, ChevronLeft, ChevronRight } from 'lucide-react';
-import { logout } from '@/lib/auth-utils';
+import { Settings, ChevronLeft, ChevronRight } from 'lucide-react';
 import CommanderProfileModal from '@/components/CommanderProfileModal';
 import { useUserProfile } from '@/hooks/useUserProfile';
 import { useUser } from '@/context/UserContext';
@@ -66,11 +65,7 @@ export default function GameSidebar({ isCollapsed, onToggle }: GameSidebarProps)
         }
     };
 
-    const handleLogout = () => {
-        if (confirm('LOGOUT_CONFIRM?')) {
-            logout();
-        }
-    };
+
 
     const getColorClasses = (color: string) => {
         const colors: Record<string, { bg: string; glow: string }> = {
