@@ -14,6 +14,7 @@ import { useFirebase } from '@/components/FirebaseProvider';
 import { distributeStarterPack, InventoryCard } from '@/lib/inventory-system'; // Import Starter Pack logic
 import { Card as CardType } from '@/lib/types'; // Import Card Type
 import { useUser } from '@/context/UserContext';
+import { gameStorage } from '@/lib/game-storage';
 
 export default function TutorialManager() {
     const pathname = usePathname();
