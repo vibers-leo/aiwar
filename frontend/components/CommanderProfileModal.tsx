@@ -244,16 +244,6 @@ export default function CommanderProfileModal({ isOpen, onClose }: CommanderProf
                                             </div>
                                         )}
                                     </div>
-                                )}
-                            </div>
-                            <div className="flex items-center gap-3">
-                                <Button
-                                    onClick={handleSignOut}
-                                    className="h-10 px-4 bg-red-500/10 hover:bg-red-500/20 text-red-400 border border-red-500/30 font-bold orbitron text-[10px] flex items-center gap-2"
-                                >
-                                    <LogOut size={14} />
-                                    LOGOUT
-                                </Button>
                             </div>
                         </ModalHeader>
 

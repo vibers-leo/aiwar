@@ -89,6 +89,7 @@ export function UserProvider({ children }: { children: React.ReactNode }) {
     const [isClaimingInSession, setIsClaimingInSession] = useState(false);
     const [mounted, setMounted] = useState(false);
     const [showSafeMode, setShowSafeMode] = useState(false); // [NEW] Safe Mode Recovery
+    const [isLoggingOut, setIsLoggingOut] = useState(false); // [NEW] Logout UX Overlay
 
     const isAdmin = user?.email === 'admin@example.com';
 
@@ -726,6 +727,40 @@ export function UserProvider({ children }: { children: React.ReactNode }) {
                 stageProgress,     // [NEW]
             }}
         >
+            {isLoggingOut && (
+                <div className="fixed inset-0 z-[100000] flex flex-col items-center justify-center bg-black/90 backdrop-blur-xl pointer-events-auto">
+                    {/* Top Left Effect - Similar to Login */}
+                    <div className="absolute top-8 left-8 flex items-center gap-3">
+                        <div className="w-1.5 h-1.5 bg-cyan-500 rounded-full animate-pulse shadow-[0_0_10px_#06b6d4]" />
+                        <span className="text-[10px] text-cyan-500 font-bold orbitron tracking-[0.3em] uppercase">Security Protocol Active</span>
+                    </div>
+
+                    <div className="flex flex-col items-center gap-6">
+                        <div className="relative">
+                            <div className="w-16 h-16 border-2 border-cyan-500/20 rounded-full animate-spin border-t-cyan-500 shadow-[0_0_15px_rgba(6,182,212,0.2)]" />
+                            <div className="absolute inset-0 flex items-center justify-center">
+                                <div className="w-2 h-2 bg-cyan-500 rounded-full animate-ping" />
+                            </div>
+                        </div>
+
+                        <div className="text-center space-y-2">
+                            <h2 className="text-2xl font-black orbitron tracking-tighter text-white italic">
+                                SECURING COMMAND DATA
+                            </h2>
+                            <div className="flex items-center justify-center gap-1.5">
+                                <span className="w-1.5 h-1.5 bg-green-500 rounded-full animate-pulse" />
+                                <p className="text-[11px] text-gray-400 font-mono uppercase tracking-widest">
+                                    지휘관님의 정보를 안전하게 저장 중입니다...
+                                </p>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div className="absolute bottom-12 left-1/2 -translate-x-1/2 text-[9px] text-white/20 font-mono tracking-[0.5em] uppercase">
+                        System Shutdown in Progress
+                    </div>
+                </div>
+            )}
             {children}
         </UserContext.Provider>
     );
