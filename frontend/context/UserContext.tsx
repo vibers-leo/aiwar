@@ -116,17 +116,23 @@ export function UserProvider({ children }: { children: React.ReactNode }) {
         // [Secure Sync] Force save critical data before scorching earth
         if (user?.uid) {
             try {
-                console.log("[Auth] Saving final state (Quests, Research, Stage Progress)...");
+                console.log("[Auth] Saving final state with timeout...");
                 const { saveQuestsToFirebase } = await import('@/lib/quest-system');
                 const { saveResearchToFirestore, saveStageProgressToFirestore } = await import('@/lib/firebase-db');
 
-                await Promise.all([
+                const syncPromise = Promise.all([
                     saveQuestsToFirebase(user.uid, quests),
                     research ? saveResearchToFirestore(research, user.uid) : Promise.resolve(),
                     stageProgress ? saveStageProgressToFirestore(stageProgress, user.uid) : Promise.resolve()
                 ]);
-            } catch (e) {
-                console.error("[Auth] Pre-logout sync failed:", e);
+
+                // Max 1.5s for Context-level sync
+                await Promise.race([
+                    syncPromise,
+                    new Promise((_, reject) => setTimeout(() => reject(new Error('CONTEXT_SYNC_TIMEOUT')), 1500))
+                ]);
+            } catch (e: any) {
+                console.warn("[Auth] Pre-logout sync skipped or timed out:", e.message);
             }
         }
 

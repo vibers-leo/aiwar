@@ -39,31 +39,38 @@ async function nukeAllStorage() {
         if (registrations.length > 0) console.log("✅ Service Workers Unregistered");
     }
 
+    const cleanupTasks: Promise<any>[] = [];
+
     if ('caches' in window) {
-        try {
-            const keys = await caches.keys();
-            await Promise.all(keys.map(key => caches.delete(key)));
-            console.log(`✅ CacheStorage Cleared (${keys.length} caches)`);
-        } catch (e) {
-            console.warn("⚠️ CacheStorage cleanup failed:", e);
-        }
+        cleanupTasks.push((async () => {
+            try {
+                const keys = await caches.keys();
+                await Promise.all(keys.map(key => caches.delete(key)));
+                console.log(`✅ CacheStorage Cleared (${keys.length} caches)`);
+            } catch (e) {
+                console.warn("⚠️ CacheStorage cleanup failed:", e);
+            }
+        })());
     }
 
     // D. Delete IndexedDB (Firebase Persistence)
-    // This is critical for preventing Firebase from "remembering" the user on reload
     if (window.indexedDB && window.indexedDB.databases) {
-        try {
-            const dbs = await window.indexedDB.databases();
-            for (const db of dbs) {
-                if (db.name) {
-                    window.indexedDB.deleteDatabase(db.name);
-                    console.log(`🗑️ Deleted IndexedDB: ${db.name}`);
+        cleanupTasks.push((async () => {
+            try {
+                const dbs = await window.indexedDB.databases();
+                for (const db of dbs) {
+                    if (db.name) {
+                        window.indexedDB.deleteDatabase(db.name);
+                        console.log(`🗑️ Deleted IndexedDB: ${db.name}`);
+                    }
                 }
+            } catch (e) {
+                console.warn("⚠️ IndexedDB cleanup failed (browser may block it):", e);
             }
-        } catch (e) {
-            console.warn("⚠️ IndexedDB cleanup failed (browser may block it):", e);
-        }
+        })());
     }
+
+    await Promise.all(cleanupTasks);
 }
 
 // 2. The Main Logout Function
@@ -78,37 +85,36 @@ export async function performSecureLogout(
         localStorage.setItem('pending_logout', 'true');
     }
 
-    // STEP 1: LAST-GASP SYNC (If user exists)
-    if (userId) {
-        try {
-            console.log("💾 [Security] Syncing final user state to DB...");
-            // Force save user profile if data is provided, or just rely on previous auto-saves.
-            // If userState is provided, we could save it, but usually UserContext handles auto-save.
-            // We'll call saveUserProfile with an empty update just to ensure connection is alive/verified? 
-            // Actually, best to just trust the Context's last sync or force one if passed.
-            // For now, we'll assume the caller (UserContext) has done the heavy lifting,
-            // or we can trigger a 'last login' update as a sync ping.
+    // STEP 1: LAST-GASP SYNC & API & FIREBASE (PARALLEL)
+    console.log("⚡ [Security] Initiating parallel logout sequence...");
 
-            await saveUserProfile({ lastLogoutAt: new Date() }, userId);
+    // Timeout wrapper for sync
+    const syncWithTimeout = async () => {
+        if (!userId) return;
+        return Promise.race([
+            saveUserProfile({ lastLogoutAt: new Date() }, userId),
+            new Promise((_, reject) => setTimeout(() => reject(new Error('SYNC_TIMEOUT')), 1500))
+        ]).then(() => {
             console.log("✅ [Security] Final Sync Response: OK");
-        } catch (e) {
-            console.error("❌ [Security] Final Sync Failed (Network Down?). Proceeding to Nuke anyway.", e);
-        }
-    }
+        }).catch(e => {
+            console.warn("⚠️ [Security] Final Sync skipped or timed out:", e.message);
+        });
+    };
 
-    // STEP 2: SERVER SIDE LOGOUT (Cookie destruction)
-    try {
-        await fetch('/api/auth/logout', { method: 'POST' });
-    } catch (e) {
-        // Ignore network errors for logout api
-    }
+    const logoutTasks: Promise<any>[] = [
+        syncWithTimeout(),
+        fetch('/api/auth/logout', { method: 'POST' }).catch(() => { }), // API Logout
+        (async () => {
+            try {
+                if (auth) await signOut(auth);
+                console.log("✅ [Security] Firebase SignOut: OK");
+            } catch (e) {
+                console.warn("Firebase SignOut Warning:", e);
+            }
+        })()
+    ];
 
-    // STEP 3: FIREBASE SIGNOUT
-    try {
-        if (auth) await signOut(auth);
-    } catch (e) {
-        console.warn("Firebase SignOut Warning:", e);
-    }
+    await Promise.all(logoutTasks);
 
     // STEP 4: NUKE LOCAL DATA
     localStorage.removeItem('auth-session');
