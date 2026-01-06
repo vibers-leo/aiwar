@@ -316,22 +316,17 @@ export function UserProvider({ children }: { children: React.ReactNode }) {
                     setInventory(finalInventory);
                     setSubscriptions(subs);
 
-                    if (profile.level === 1 && profile.hasReceivedStarterPack && finalInventory.length === 0) {
-                        console.log("[SafetySystem] Rescue: Found claimed flag but 0 cards. Attempting silent re-distribution...");
-                        // Use a silent catch here to prevent blocking or intrusive alerts if the backend rejects it.
-                        try {
-                            await claimStarterPack(profile.nickname || '지휘관', true); // Pass silent=true
-                        } catch (e) {
-                            console.warn("[SafetySystem] Silent Rescue failed (likely expected):", e);
-                        }
-                    }
-
-                    if (!profile.hasReceivedStarterPack && finalInventory.length === 0) {
-                        console.log(`[StarterPack] ✅ User ELIGIBLE. (HasRecv: ${profile.hasReceivedStarterPack}, InvLen: ${finalInventory.length})`);
+                    // DETERMINISTIC STARTER PACK CHECK
+                    // Logic: Level 1 + Empty Inventory + Has NOT received flag = Available
+                    // We remove the "Rescue" logic (auto-claiming) as it's unpredictable.
+                    if (profile.level === 1 && finalInventory.length === 0 && !profile.hasReceivedStarterPack) {
+                        console.log(`[StarterPack] ✅ User ELIGIBLE for initial supply.`);
                         setStarterPackAvailable(true);
                     } else {
-                        console.log(`[StarterPack] ❌ User NOT Eligible. (HasRecv: ${profile.hasReceivedStarterPack}, InvLen: ${finalInventory.length})`);
                         setStarterPackAvailable(false);
+                        if (profile.level === 1 && finalInventory.length === 0) {
+                            console.warn(`[Sync] ⚠️ User has 0 cards but flag says already claimed. Manual sync recommended.`);
+                        }
                     }
                 } catch (error) {
                     console.error("[Auth] Failed to sync user data:", error);

@@ -2,6 +2,7 @@
 
 export interface User {
     id: string;
+    uid?: string; // Add Firebase UID for consistency
     username: string;
     nickname: string;
     createdAt: number;
@@ -74,17 +75,15 @@ export function login(username: string, password: string): { success: boolean; m
     return { success: true, message: '로그인 성공!', session };
 }
 
-import { gameStorage } from './game-storage';
+import { performSecureLogout } from './secure-logout';
 
 /**
  * 로그아웃
+ * @deprecated Use performSecureLogout from secure-logout.ts directly for robust session cleanup.
  */
-export function logout(): void {
-    // Aggressively clear all session-related data from localStorage
-    gameStorage.clearAllSessionData();
-    // The auth-session key is also cleared by the above function, but we'll leave this for good measure.
-    localStorage.removeItem('auth-session');
-    console.log("Logout successful and all session data cleared.");
+export async function logout(): Promise<void> {
+    console.warn("[Auth] Using deprecated logout() call. Redirecting to performSecureLogout.");
+    await performSecureLogout();
 }
 
 /**
@@ -145,6 +144,7 @@ export function startAsGuest(): { success: boolean; session: AuthSession } {
     };
 
     localStorage.setItem('auth-session', JSON.stringify(session));
+    localStorage.setItem('last_known_uid', guestUser.id); // Sync UID for Context
 
     return { success: true, session };
 }

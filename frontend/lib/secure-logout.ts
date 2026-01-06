@@ -111,6 +111,9 @@ export async function performSecureLogout(
     }
 
     // STEP 4: NUKE LOCAL DATA
+    localStorage.removeItem('auth-session');
+    localStorage.removeItem('last_known_uid');
+    localStorage.setItem('pending_logout', 'true'); // Guard for UserContext
     await nukeAllStorage();
 
     // STEP 5: HARD REDIRECT

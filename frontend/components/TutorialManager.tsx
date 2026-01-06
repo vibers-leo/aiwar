@@ -167,7 +167,8 @@ export default function TutorialManager() {
     const handleFactionTutorialClose = () => {
         setShowFactionTutorial(false);
         finalizeTutorial();
-        window.location.reload(); // Refresh to ensure complete state sync
+        // [Hard Refresh] To ensure all context states and subscriptions are fully finalized
+        window.location.href = '/main';
     };
 
     const finalizeTutorial = () => {

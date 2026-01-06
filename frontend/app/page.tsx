@@ -18,12 +18,14 @@ export default function IntroPage() {
     const router = useRouter();
     // [FIX] Direct window check to bypass Next.js router caching issues
     // Initialize synchronously to prevent auto-redirect race condition on first render
-    const [isLogout, setIsLogout] = useState(() => {
-        if (typeof window !== 'undefined') {
-            return window.location.search.includes('logout=success');
+    const [isLogout, setIsLogout] = useState(false);
+
+    useEffect(() => {
+        if (typeof window !== 'undefined' && window.location.search.includes('logout=success')) {
+            setIsLogout(true);
+            localStorage.setItem('pending_logout', 'false'); // Reset guard
         }
-        return false;
-    });
+    }, []);
 
     const [isLoaded, setIsLoaded] = useState(false);
     const [showLogin, setShowLogin] = useState(false);
@@ -44,12 +46,11 @@ export default function IntroPage() {
 
     // Auto-redirect if already logged in
     useEffect(() => {
-        // If just logged out, do NOT auto-redirect even if user object lingers
-        if (!loading && user && !isLogout) {
-            // Redirect to main dashboard for logged-in users
+        if (loading || isLogout) return;
+
+        if (user) {
+            console.log("[Intro] Active session detected. Redirecting to dashboard.");
             router.replace('/main');
-        } else if (isLogout) {
-            // Stay on intro page
         }
     }, [user, loading, router, isLogout]);
 
