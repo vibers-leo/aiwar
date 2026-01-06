@@ -17,9 +17,10 @@ async function nukeAllStorage() {
     console.log("🔥 [Scorched Earth] Initiating Storage Nuke...");
 
     // A. Clear Local & Session Storage
+    localStorage.removeItem('last_known_uid');
     localStorage.clear();
     sessionStorage.clear();
-    console.log("✅ Local/Session Storage Cleared");
+    console.log("✅ Local/Session Storage Cleared (including UID metadata)");
 
     // B. Clear Cookies
     document.cookie.split(";").forEach((c) => {

@@ -17,14 +17,13 @@ import { useUser } from '@/context/UserContext';
 export default function IntroPage() {
     const router = useRouter();
     // [FIX] Direct window check to bypass Next.js router caching issues
-    const [isLogout, setIsLogout] = useState(false);
-
-    useEffect(() => {
-        if (typeof window !== 'undefined' && window.location.search.includes('logout=success')) {
-            console.log("[Intro] Logout detected via URL param. Disabling auto-redirect.");
-            setIsLogout(true);
+    // Initialize synchronously to prevent auto-redirect race condition on first render
+    const [isLogout, setIsLogout] = useState(() => {
+        if (typeof window !== 'undefined') {
+            return window.location.search.includes('logout=success');
         }
-    }, []);
+        return false;
+    });
 
     const [isLoaded, setIsLoaded] = useState(false);
     const [showLogin, setShowLogin] = useState(false);
