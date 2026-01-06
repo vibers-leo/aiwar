@@ -933,13 +933,19 @@ export async function loadAchievements(): Promise<AchievementData[]> {
 export interface SupportTicket {
     id?: string;
     userId: string;
-    userNickname: string;
+    userNickname?: string;
     type: 'error' | 'idea';
     title: string;
     description: string;
-    status: 'open' | 'in_progress' | 'resolved' | 'rejected';
+    status: 'open' | 'pending' | 'in_progress' | 'resolved' | 'rejected' | 'closed';
     createdAt: any;
+    updatedAt?: any;
     adminReply?: string;
+    adminResponse?: {
+        message: string;
+        respondedAt: any;
+        respondedBy: string;
+    };
 }
 
 /**
@@ -1419,22 +1425,6 @@ export async function loadStageProgressFromFirestore(uid?: string): Promise<Stag
 
 // ==================== 지원 티켓 시스템 (Support Tickets) ====================
 
-export interface SupportTicket {
-    id?: string;
-    type: 'error' | 'idea';
-    title: string;
-    description: string;
-    status: 'pending' | 'in_progress' | 'resolved' | 'closed';
-    createdAt: any;
-    updatedAt: any;
-    userId: string;
-    userNickname?: string;
-    adminResponse?: {
-        message: string;
-        respondedAt: any;
-        respondedBy: string;
-    };
-}
 
 /**
  * 사용자의 지원 티켓 목록 조회
