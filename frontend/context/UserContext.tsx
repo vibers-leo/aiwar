@@ -475,7 +475,7 @@ export function UserProvider({ children }: { children: React.ReactNode }) {
 
             // [STARTER PACK] Auto-check
             // If user has NO cards and hasn't received pack, show modal
-            const isTutorialCompleted = localStorage.getItem(`tutorial_completed_${user.uid}`) === 'true';
+            const isTutorialCompleted = localStorage.getItem(`tutorial_completed_${user.uid}`) === 'true' || freshProfile?.tutorialCompleted === true;
 
             if (!isClaimingInSession &&
                 formattedInv.length === 0 &&

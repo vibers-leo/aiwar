@@ -8,6 +8,7 @@ import RightSidebar from './RightSidebar';
 import Sidebar from './Sidebar';
 import GameFooter from './GameFooter';
 import BattleInvitationNotification from './BattleInvitationNotification';
+import StarterPackModal from './StarterPackModal';
 
 export default function LayoutWrapper({ children }: { children: React.ReactNode }) {
     const pathname = usePathname();
@@ -54,7 +55,9 @@ export default function LayoutWrapper({ children }: { children: React.ReactNode 
             <GameFooter />
 
             {/* Global Notifications */}
+            {/* Global Notifications */}
             <BattleInvitationNotification />
+            <StarterPackModal />
         </div>
     );
 }
