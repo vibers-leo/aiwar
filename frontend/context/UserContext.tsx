@@ -79,7 +79,7 @@ export function UserProvider({ children }: { children: React.ReactNode }) {
 
     const [error, setError] = useState<string | null>(null);
     const [coins, setCoins] = useState(0);
-    const [tokens, setTokens] = useState(1000); // [Reliability] Initialize with 1000 to match default profile and prevent flicker
+    const [tokens, setTokens] = useState(0); // [Fix] Initialize with 0 to prevent "fake money" flicker
     const [maxTokens, setMaxTokens] = useState(1000); // [NEW]
     const [level, setLevel] = useState(1);
     const [experience, setExperience] = useState(0);
