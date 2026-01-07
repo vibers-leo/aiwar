@@ -41,7 +41,7 @@ interface SidebarProps {
 }
 
 export default function Sidebar({ isOpen, onToggle }: SidebarProps) {
-    const { coins, tokens, level, experience, handleSignOut } = useUser();
+    const { coins, tokens, level, experience, handleSignOut, profile, user } = useUser();
     // const [isOpen, setIsOpen] = useState(true); // Lifted to LayoutWrapper
     const router = useRouter();
     const pathname = usePathname();
@@ -106,7 +106,7 @@ export default function Sidebar({ isOpen, onToggle }: SidebarProps) {
                         >
                             <div className="absolute -inset-2 bg-gradient-to-tr from-purple-600 to-blue-600 rounded-full blur-lg opacity-30 group-hover:opacity-60 transition-opacity" />
                             <Avatar
-                                src={typeof window !== 'undefined' ? localStorage.getItem('user_avatar') || avatarPlaceholder.src : avatarPlaceholder.src}
+                                src={profile?.avatarUrl || (typeof window !== 'undefined' ? localStorage.getItem('user_avatar') || avatarPlaceholder.src : avatarPlaceholder.src)}
                                 className={`transition-all duration-300 text-large border-2 border-purple-500/50 ${isOpen ? 'w-16 h-16' : 'w-10 h-10'}`}
                                 isBordered
                                 color="secondary"
@@ -129,7 +129,9 @@ export default function Sidebar({ isOpen, onToggle }: SidebarProps) {
                                     exit={{ opacity: 0, y: 10 }}
                                     className="mt-4 text-center"
                                 >
-                                    <h2 className="text-sm font-black text-white orbitron tracking-tight">{t('sidebar.commander')}_7429</h2>
+                                    <h2 className="text-sm font-black text-white orbitron tracking-tight truncate max-w-[180px] mx-auto">
+                                        {profile?.nickname || `${t('sidebar.commander')}_${user?.uid?.slice(0, 4) || '7429'}`}
+                                    </h2>
                                     <p className="text-[10px] text-purple-400 font-bold tracking-[0.2em] uppercase opacity-80">{t('sidebar.eliteCommander')}</p>
                                 </motion.div>
                             )}
