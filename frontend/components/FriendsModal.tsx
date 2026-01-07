@@ -12,11 +12,12 @@ import {
     removeFriend,
     FriendUser
 } from '@/lib/friend-system';
+import { sendBattleInvitation } from '@/lib/battle-invitation-system';
 import { collection, query, onSnapshot, orderBy } from 'firebase/firestore';
 import { db } from '@/lib/firebase';
 import { Avatar } from '@/components/ui/custom/Avatar';
 import { Button } from '@/components/ui/custom/Button';
-import { Input } from '@/components/ui/custom/Input'; // Assuming Input exists or standard input
+import { Input } from '@/components/ui/custom/Input';
 import { useAlert } from '@/context/AlertContext';
 
 interface FriendsModalProps {
@@ -41,7 +42,7 @@ export default function FriendsModal({ isOpen, onClose }: FriendsModalProps) {
 
     // 실시간 친구 목록 리스너
     useEffect(() => {
-        if (!user || !isOpen) return;
+        if (!user || !isOpen || !db) return;
 
         const friendsRef = collection(db, 'users', user.uid, 'friends');
         // const q = query(friendsRef, orderBy('updatedAt', 'desc')); // updatedAt이 없는 경우 에러 방지 위해 단순 조회
@@ -123,6 +124,31 @@ export default function FriendsModal({ isOpen, onClose }: FriendsModalProps) {
         });
     };
 
+    const handleBattleChallenge = async (friend: FriendUser) => {
+        if (!user || !profile) return;
+
+        showConfirm({
+            title: '대전 신청',
+            message: `${friend.nickname}님에게 대전을 신청하시겠습니까?`,
+            onConfirm: async () => {
+                const result = await sendBattleInvitation(
+                    user.uid,
+                    profile.nickname,
+                    profile.avatarUrl || '',
+                    friend.uid,
+                    friend.nickname
+                );
+
+                if (result.success) {
+                    showAlert({ title: '성공', message: '대전 신청을 보냈습니다. 상대방의 수락을 기다리세요.', type: 'success' });
+                    onClose(); // Close modal to show waiting logic if implemented, or just wait
+                } else {
+                    showAlert({ title: '실패', message: result.message || '대전 신청 실패', type: 'error' });
+                }
+            }
+        });
+    };
+
     if (!isOpen) return null;
 
     return (
@@ -188,7 +214,11 @@ export default function FriendsModal({ isOpen, onClose }: FriendsModalProps) {
                                                 </div>
                                             </div>
                                             <div className="flex gap-1 opacity-0 group-hover:opacity-100 transition-opacity">
-                                                <button className="p-2 hover:bg-white/10 rounded-lg text-white/50 hover:text-cyan-400" title="Battle">
+                                                <button
+                                                    onClick={() => handleBattleChallenge(friend)}
+                                                    className="p-2 hover:bg-white/10 rounded-lg text-white/50 hover:text-cyan-400"
+                                                    title="Battle"
+                                                >
                                                     <Swords size={16} />
                                                 </button>
                                                 <button
@@ -308,5 +338,3 @@ export default function FriendsModal({ isOpen, onClose }: FriendsModalProps) {
         </div>
     );
 }
-
-// Custom simple Avatar fallback if needed, but assuming Avatar exists
