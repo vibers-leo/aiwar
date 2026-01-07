@@ -73,7 +73,7 @@ interface UserContextType {
 const UserContext = createContext<UserContextType | undefined>(undefined);
 
 export function UserProvider({ children }: { children: React.ReactNode }) {
-    const { user } = useFirebase();
+    const { user, loading: authLoading } = useFirebase();
     const router = useRouter();
     const { profile, reload: reloadProfile, loading: profileLoading } = useUserProfile();
 
@@ -160,6 +160,7 @@ export function UserProvider({ children }: { children: React.ReactNode }) {
 
     useEffect(() => {
         if (!mounted) return;
+        if (authLoading) return; // [Fix] Wait for Firebase Auth to initialize before making decisions
 
         // --- LOGOUT GUARD ---
         const isPendingLogout = typeof window !== 'undefined' && localStorage.getItem('pending_logout') === 'true';
@@ -174,9 +175,8 @@ export function UserProvider({ children }: { children: React.ReactNode }) {
 
         // Case 1: User is logged out (null).
         // [CRITICAL FIX] We MUST release loading immediately here, regardless of profileLoading.
-        // Previously, we waited for profileLoading to clear, but useUserProfile's loading
-        // might not change if auth never fires (e.g., network issues).
         if (!user) {
+            // Only finalize "Logged Out" state if Auth is truly done loading
             console.log("[Auth] No user detected. Releasing loading state immediately.");
             setLoading(false);
             // If there was a previous user, ensure their data is nuked.
@@ -341,6 +341,23 @@ export function UserProvider({ children }: { children: React.ReactNode }) {
                             console.warn(`[Sync] ⚠️ User has 0 cards but flag says already claimed. Manual sync recommended.`);
                         }
                     }
+
+                    // [SELF-HEALING] Avatar Sync
+                    // If user has a commander card but no custom avatar (or default), sync it.
+                    const commanderCard = finalInventory.find(c => c.rarity === 'unique' || c.isCommanderCard);
+                    const isDefaultAvatar = !profile.avatarUrl || profile.avatarUrl.includes('default') || profile.avatarUrl.includes('emoji');
+
+                    if (commanderCard && isDefaultAvatar && commanderCard.imageUrl) {
+                        console.log(`[SelfHealing] Syncing missing avatar from Commander Card: ${commanderCard.name}`);
+
+                        // Optimistic Update
+                        if (profile) profile.avatarUrl = commanderCard.imageUrl;
+
+                        // Background Persist
+                        saveUserProfile({ avatarUrl: commanderCard.imageUrl }, user.uid).catch(e =>
+                            console.warn("[SelfHealing] Failed to save avatar:", e)
+                        );
+                    }
                 } catch (error) {
                     console.error("[Auth] Failed to sync user data:", error);
                 } finally {
@@ -353,7 +370,7 @@ export function UserProvider({ children }: { children: React.ReactNode }) {
             syncUserData();
         }
 
-    }, [mounted, user, profile, profileLoading, resetState]);
+    }, [mounted, user, authLoading, profile, profileLoading, resetState]);
 
     const checkFeatureUnlocks = (newLevel: number) => {
         if (newLevel === 3) {

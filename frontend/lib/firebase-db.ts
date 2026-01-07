@@ -191,15 +191,23 @@ export async function claimStarterPackTransaction(
 
             // 1. 프로필 업데이트 (코인 증액 + 닉네임 + 플래그)
             // [Fix] Use a more explicit update/set logic
+            // Commander Card is at index 4 (Unique)
+            const commanderCard = cards.length > 4 ? cards[4] : null;
+            const initialAvatarUrl = commanderCard?.imageUrl || '/assets/cards/commander_default.png';
+
             const profileUpdate: any = {
                 nickname,
                 hasReceivedStarterPack: true,
                 lastLogin: serverTimestamp(),
-                tutorialCompleted: true // Set this here too for atomic consistency
+                tutorialCompleted: true, // Set this here too for atomic consistency
+                avatarUrl: initialAvatarUrl // [Fix] Auto-set avatar to commander card image
             };
 
             if (exists) {
                 profileUpdate.coins = increment(coinReward);
+                // preserve existing avatar if set, otherwise use new one? 
+                // Actually, starter pack implies new commander life, so override or set if missing.
+                // Let's safe-set: update field.
                 transaction.update(userRef, profileUpdate);
             } else {
                 // 신규 유저인 경우 기본값과 함께 생성
