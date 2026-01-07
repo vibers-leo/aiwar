@@ -674,6 +674,19 @@ export interface InventoryCard {
     power: number;
     rarity: string;
     acquiredAt?: any;
+    imageUrl?: string;
+    templateId?: string;
+    isCommanderCard?: boolean;
+    description?: string;
+    specialty?: string;
+    aiFactionId?: string;
+    type?: string;
+    level?: number;
+    experience?: number;
+    stats?: any;
+    instanceId?: string;
+    ownerId?: string;
+    isLocked?: boolean;
 }
 
 /**
