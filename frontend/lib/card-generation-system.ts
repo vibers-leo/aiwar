@@ -269,7 +269,7 @@ export function createCardFromTemplate(template: any, factionEffects?: FactionEf
             ethics: stats.ethics,
             totalPower
         },
-        imageUrl: template.image,
+        imageUrl: template.imageUrl,
         description: template.story,
         specialSkill: template.specialAbility ? {
             name: template.specialAbility.name,

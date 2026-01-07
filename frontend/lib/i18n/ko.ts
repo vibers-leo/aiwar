@@ -219,6 +219,7 @@ export const ko: Translations = {
     'story.tasks': '임무',
     'story.enter': '진입',
     'story.rewards': '보상',
+    'battle.common.rewards': '보상', // Added for unifying battle result screen
     'story.battle': '전투 시작',
     'story.modal.taskComplete': '임무 완료',
     'story.modal.missionIncomplete': '임무 미완료',

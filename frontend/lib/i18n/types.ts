@@ -427,6 +427,7 @@ export type TranslationKey =
     | 'battle.common.stage'
     | 'battle.common.coins'
     | 'battle.common.exp'
+    | 'battle.common.rewards' // Added
     | 'battle.common.back'
     | 'battle.common.you'
     | 'battle.common.enemy'

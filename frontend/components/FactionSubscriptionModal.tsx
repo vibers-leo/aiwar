@@ -12,6 +12,9 @@ import {
 } from '@/lib/faction-subscription';
 import { subscribeToFaction, updateTokens } from '@/lib/firebase-db';
 import { CATEGORY_TOKEN_BONUS, FACTION_CATEGORY_MAP } from '@/lib/token-constants';
+import { COMMANDERS } from '@/data/card-database';
+import { createCardFromTemplate } from '@/lib/card-generation-system';
+import { addCardToInventory, loadInventory } from '@/lib/inventory-system';
 
 interface Props {
     isOpen: boolean;
@@ -60,9 +63,28 @@ export default function FactionSubscriptionModal({ isOpen, onClose }: Props) {
             // Save subscription to DB
             await subscribeToFaction(user.uid, factionId, tier);
 
-            // [NEW] Token Reward
             if (tierConfig.tokenReward > 0) {
                 await updateTokens(tierConfig.tokenReward);
+            }
+
+            // [NEW] Commander Unlock Logic
+            try {
+                // Find the commander for this faction
+                const commanderTemplate = COMMANDERS.find(c => c.aiFactionId === factionId);
+                if (commanderTemplate) {
+                    // Check if already owned
+                    const inventory = await loadInventory(user.uid);
+                    const hasCommander = inventory.some(c => c.templateId === commanderTemplate.id);
+
+                    if (!hasCommander) {
+                        const newCommanderCard = createCardFromTemplate(commanderTemplate);
+                        await addCardToInventory(newCommanderCard, user.uid);
+                        alert(`🎖️ 축하합니다! [${commanderTemplate.name}] 지휘관 카드를 획득했습니다!`);
+                    }
+                }
+            } catch (cmdErr) {
+                console.error("Commander unlock failed:", cmdErr);
+                // Non-blocking error
             }
 
             await refreshData();

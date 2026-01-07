@@ -16,7 +16,8 @@ import {
     collectionGroup,
     limit,
     runTransaction,
-    writeBatch
+    writeBatch,
+    documentId
 } from 'firebase/firestore';
 import { createUniqueCardFromApplication } from './unique-card-factory';
 import { db, isFirebaseConfigured } from './firebase';
@@ -198,7 +199,7 @@ export async function claimStarterPackTransaction(
                 // 신규 유저인 경우 기본값과 함께 생성
                 transaction.set(userRef, {
                     ...profileUpdate,
-                    tokens: 100,
+                    tokens: 1000,
                     level: 1,
                     exp: 0,
                     createdAt: serverTimestamp()
@@ -442,7 +443,7 @@ export async function loadUserProfile(uid?: string): Promise<UserProfile | null>
         // 프로필이 없으면 기본값 생성
         const defaultProfile: UserProfile = {
             coins: 0,
-            tokens: 100,
+            tokens: 1000,
             level: 1,
             exp: 0,
             hasReceivedStarterPack: false,
@@ -972,15 +973,16 @@ export async function createSupportTicket(data: { title: string, description: st
             if (userProfile?.nickname) nickname = userProfile.nickname;
         }
 
-        const ticketsRef = collection(db, 'support_tickets');
+        // [Fix] Redirect to user-owned subcollection to bypass top-level permission issues
+        const ticketsRef = collection(db, 'users', userId, 'support');
 
-        const docRef = await addDoc(ticketsRef, {
+        const docRef = await addDoc(ticketsRef, cleanDataForFirestore({
             ...data,
             userId: userId,
             userNickname: nickname,
             status: 'open',
             createdAt: serverTimestamp()
-        });
+        }));
 
         console.log('✅ 티켓 생성 성공:', data.title);
         return docRef.id;
@@ -999,7 +1001,8 @@ export async function loadSupportTickets(status?: string): Promise<SupportTicket
     }
 
     try {
-        const ticketsRef = collection(db, 'support_tickets');
+        // [Fix] Use collectionGroup to fetch support tickets from all users
+        const ticketsRef = collectionGroup(db, 'support');
         // Simple query, ideally indexed.
         // For now, load all or filter by status if provided
         let q = query(ticketsRef, orderBy('createdAt', 'desc'));
@@ -1023,14 +1026,29 @@ export async function updateTicketStatus(ticketId: string, status: 'open' | 'in_
     if (!isFirebaseConfigured || !db) return;
 
     try {
-        const ticketRef = doc(db, 'support_tickets', ticketId);
-        const updateData: any = { status };
+        // [Fix] Try to find the ticket in the legacy top-level collection first
+        let ticketRef = doc(db, 'support_tickets', ticketId);
+        let docSnap = await getDoc(ticketRef);
+
+        // If not found, search in all user 'support' subcollections
+        if (!docSnap.exists()) {
+            console.log(`[Admin] Ticket ${ticketId} not in legacy collection. Searching subcollections...`);
+            const q = query(collectionGroup(db, 'support'), where(documentId(), '==', ticketId));
+            const snapshot = await getDocs(q);
+            if (!snapshot.empty) {
+                ticketRef = snapshot.docs[0].ref;
+            } else {
+                throw new Error('Ticket not found in any collection');
+            }
+        }
+
+        const updateData: any = { status, updatedAt: serverTimestamp() };
         if (reply) {
             updateData.adminReply = reply;
         }
 
         await updateDoc(ticketRef, updateData);
-        console.log('✅ 티켓 상태 업데이트:', ticketId, status);
+        console.log('✅ 티켓 상태 업데이트 성공:', ticketId, status);
     } catch (error) {
         console.error('❌ 티켓 업데이트 실패:', error);
         throw error;
@@ -1062,14 +1080,15 @@ export async function createUniqueRequest(data: { name: string, description: str
 
     try {
         const userId = await getUserId();
-        const requestsRef = collection(db, 'unique_requests');
+        // [Fix] Redirect to user-owned subcollection to bypass top-level permission issues
+        const requestsRef = collection(db, 'users', userId, 'unique_requests');
 
-        const docRef = await addDoc(requestsRef, {
+        const docRef = await addDoc(requestsRef, cleanDataForFirestore({
             ...data,
             userId,
             status: 'pending',
             createdAt: serverTimestamp()
-        });
+        }));
 
         console.log('✅ 유니크 신청 생성:', docRef.id);
         return docRef.id;
@@ -1086,7 +1105,8 @@ export async function loadUniqueRequests(status?: string): Promise<UniqueRequest
     if (!isFirebaseConfigured || !db) return [];
 
     try {
-        const requestsRef = collection(db, 'unique_requests');
+        // [Fix] Use collectionGroup to fetch unique requests from all users
+        const requestsRef = collectionGroup(db, 'unique_requests');
         let q = query(requestsRef, orderBy('createdAt', 'desc'));
 
         if (status) {
@@ -1108,14 +1128,28 @@ export async function updateUniqueRequestStatus(requestId: string, status: 'pend
     if (!isFirebaseConfigured || !db) return;
 
     try {
-        const requestRef = doc(db, 'unique_requests', requestId);
-        const updateData: any = { status };
+        // [Fix] Try to find the request in the legacy top-level collection first
+        let requestRef = doc(db, 'unique_requests', requestId);
+        let docSnap = await getDoc(requestRef); // Need to use getDoc
+
+        if (!docSnap.exists()) {
+            console.log(`[Admin] Request ${requestId} not in legacy collection. Searching subcollections...`);
+            const q = query(collectionGroup(db, 'unique_requests'), where(documentId(), '==', requestId));
+            const snapshot = await getDocs(q);
+            if (!snapshot.empty) {
+                requestRef = snapshot.docs[0].ref;
+            } else {
+                throw new Error('Unique request not found in any collection');
+            }
+        }
+
+        const updateData: any = { status, updatedAt: serverTimestamp() };
         if (comment) {
             updateData.adminComment = comment;
         }
 
         await updateDoc(requestRef, updateData);
-        console.log('✅ 유니크 신청 업데이트:', requestId, status);
+        console.log('✅ 유니크 신청 업데이트 성공:', requestId, status);
 
         // [NEW] 만약 승인(approved)되었다면, 실제 카드를 생성하여 유저에게 지급
         if (status === 'approved') {

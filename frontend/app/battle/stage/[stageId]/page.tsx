@@ -617,327 +617,366 @@ export default function StageBattlePage() {
                 )}
 
                 {/* 4. Battle Animation (PVP Sync) */}
-                {phase === 'battle' && battleResult && (
-                    <div className="flex-1 flex flex-col p-4">
-                        {/* Floating Header (Round & Score) */}
-                        <div className="text-center mb-6 pt-2">
-                            <motion.div
-                                initial={{ opacity: 0, scale: 0.9 }}
-                                animate={{ opacity: 1, scale: 1 }}
-                                className="bg-black/60 backdrop-blur-xl border border-white/10 px-6 py-3 rounded-2xl inline-flex items-center gap-8 shadow-2xl mx-auto"
-                            >
-                                <div className="text-center">
-                                    <p className="text-[8px] text-gray-500 font-bold orbitron uppercase tracking-[0.2em] mb-0.5">{t('pvp.battle.round')}</p>
-                                    <p className="text-2xl font-black text-white orbitron italic">{currentRound}/5</p>
-                                </div>
+                {phase === 'battle' && battleResult && battleResult.rounds.length > 0 && (() => {
+                    // Safe Round Index
+                    const roundIndex = Math.min(Math.max(0, currentRound - 1), battleResult.rounds.length - 1);
+                    const round = battleResult.rounds[roundIndex];
 
-                                <div className="flex items-center gap-6">
-                                    <div className="text-right">
-                                        <p className="text-[8px] text-blue-400 font-bold orbitron uppercase tracking-widest">{t('battle.common.you')}</p>
-                                        <p className="text-3xl font-black text-white orbitron">{battleResult.rounds.slice(0, currentRound).filter(r => r.winner === 'player').length}</p>
+                    return (
+                        <div className="flex-1 flex flex-col p-4">
+                            {/* Floating Header (Round & Score) */}
+                            <div className="text-center mb-6 pt-2">
+                                <motion.div
+                                    initial={{ opacity: 0, scale: 0.9 }}
+                                    animate={{ opacity: 1, scale: 1 }}
+                                    className="bg-black/60 backdrop-blur-xl border border-white/10 px-6 py-3 rounded-2xl inline-flex items-center gap-8 shadow-2xl mx-auto"
+                                >
+                                    <div className="text-center">
+                                        <p className="text-[8px] text-gray-500 font-bold orbitron uppercase tracking-[0.2em] mb-0.5">{t('pvp.battle.round')}</p>
+                                        <p className="text-2xl font-black text-white orbitron italic">{round.round}/5</p>
                                     </div>
-                                    <div className="text-lg font-black text-gray-700 font-mono">VS</div>
-                                    <div className="text-left">
-                                        <p className="text-[8px] text-red-500 font-bold orbitron uppercase tracking-widest">{t('battle.common.enemy')}</p>
-                                        <p className="text-3xl font-black text-white orbitron">{battleResult.rounds.slice(0, currentRound).filter(r => r.winner === 'opponent').length}</p>
-                                    </div>
-                                </div>
-                            </motion.div>
-                        </div>
 
-                        {/* Enemy Mini Deck */}
-                        <div className="grid grid-cols-5 gap-2 h-16 max-w-lg mx-auto w-full mb-4">
-                            {enemies.slice(0, 5).map((card, index) => (
-                                <AnimatePresence key={index}>
-                                    {aliveEnemyCards[index] && (
-                                        <motion.div
-                                            initial={{ opacity: 1, scale: 1 }}
-                                            animate={{
-                                                scale: (currentRound - 1) === index ? 1.05 : 1,
-                                                y: (currentRound - 1) === index && animationPhase === 'clash' ? 30 : 0,
-                                            }}
-                                            exit={{ opacity: 0, scale: 0.5, rotate: 15, filter: 'blur(8px)' }}
-                                            className={cn(
-                                                "bg-black/40 border border-red-500/20 rounded-xl flex flex-col items-center justify-center p-1 relative overflow-hidden",
-                                                (currentRound - 1) === index ? "border-red-500 bg-red-500/5 shadow-[0_0_15px_rgba(239,68,68,0.15)]" : "opacity-40"
-                                            )}
-                                        >
-                                            <div className="text-lg">{getTypeIcon(card.type)}</div>
-                                            <div className="text-[9px] font-black text-red-400 orbitron">{card.stats.totalPower}</div>
-                                        </motion.div>
-                                    )}
-                                </AnimatePresence>
-                            ))}
-                        </div>
-
-                        {/* Clash Arena */}
-                        <div className="flex-1 flex items-center justify-center py-4">
-                            <AnimatePresence>
-                                {animationPhase !== 'idle' && (
-                                    <motion.div
-                                        initial={{ opacity: 0, scale: 0.8 }}
-                                        animate={{ opacity: 1, scale: 1 }}
-                                        exit={{ opacity: 0, scale: 1.1, filter: 'blur(15px)' }}
-                                        className="flex items-center gap-6"
-                                    >
-                                        {/* Player Card Container */}
-                                        <motion.div
-                                            animate={{ x: animationPhase === 'clash' ? [0, 30, 0] : 0 }}
-                                            transition={{ duration: 0.6, repeat: animationPhase === 'clash' ? Infinity : 0 }}
-                                            className={cn(
-                                                "relative p-6 rounded-[2rem] border-2 bg-black/60 backdrop-blur-3xl min-w-[160px] text-center transition-all duration-500",
-                                                animationPhase === 'reveal' ? getTypeGlow(activeBattleDeck[currentRound - 1]?.type || activeBattleDeck[0].type) : "border-white/10"
-                                            )}
-                                        >
-                                            <div className="text-4xl mb-3 filter drop-shadow-xl">
-                                                {animationPhase === 'reveal' ? getTypeIcon(activeBattleDeck[currentRound - 1]?.type) : "❓"}
-                                            </div>
-                                            <div className="text-[10px] font-bold text-gray-400 mb-0.5 truncate max-w-[120px] mx-auto">
-                                                {animationPhase === 'reveal' ? activeBattleDeck[currentRound - 1]?.name : "???"}
-                                            </div>
-                                            <div className="text-2xl font-black text-blue-500 orbitron">
-                                                {animationPhase === 'reveal' ? activeBattleDeck[currentRound - 1]?.stats.totalPower : "--"}
-                                            </div>
-                                            <h2 className="text-[7px] font-black text-white/20 orbitron mt-1 tracking-[0.2em] uppercase">{t('pvp.battle.commanderUnit')}</h2>
-                                        </motion.div>
-
-                                        {/* Vs Zap Icon */}
-                                        <div className="relative">
-                                            <motion.div
-                                                animate={{ scale: [1, 1.3, 1], rotate: [0, 5, -5, 0] }}
-                                                transition={{ duration: 0.4, repeat: Infinity }}
-                                                className="w-12 h-12 rounded-full bg-white flex items-center justify-center z-10 relative"
-                                            >
-                                                <Zap size={24} fill="black" className="text-black" />
-                                            </motion.div>
-                                            <motion.div
-                                                animate={{ scale: [1, 2, 1], opacity: [0.3, 0, 0.3] }}
-                                                transition={{ duration: 1, repeat: Infinity }}
-                                                className="absolute inset-0 bg-white/20 blur-xl rounded-full"
-                                            />
+                                    <div className="flex items-center gap-6">
+                                        <div className="text-right">
+                                            <p className="text-[8px] text-blue-400 font-bold orbitron uppercase tracking-widest">{t('battle.common.you')}</p>
+                                            <p className="text-3xl font-black text-white orbitron">{battleResult.rounds.slice(0, currentRound + (animationPhase === 'reveal' ? 1 : 0)).filter(r => r.winner === 'player').length}</p>
                                         </div>
+                                        <div className="text-lg font-black text-gray-700 font-mono">VS</div>
+                                        <div className="text-left">
+                                            <p className="text-[8px] text-red-500 font-bold orbitron uppercase tracking-widest">{t('battle.common.enemy')}</p>
+                                            <p className="text-3xl font-black text-white orbitron">{battleResult.rounds.slice(0, currentRound + (animationPhase === 'reveal' ? 1 : 0)).filter(r => r.winner === 'opponent').length}</p>
+                                        </div>
+                                    </div>
+                                </motion.div>
+                            </div>
 
-                                        {/* Enemy Card Container */}
-                                        <motion.div
-                                            animate={{ x: animationPhase === 'clash' ? [0, -30, 0] : 0 }}
-                                            transition={{ duration: 0.6, repeat: animationPhase === 'clash' ? Infinity : 0 }}
-                                            className={cn(
-                                                "relative p-6 rounded-[2rem] border-2 bg-black/60 backdrop-blur-3xl min-w-[160px] text-center transition-all duration-500",
-                                                animationPhase === 'reveal' ? getTypeGlow(enemies[currentRound - 1]?.type || enemies[0].type) : "border-white/10"
-                                            )}
-                                        >
-                                            <div className="text-4xl mb-3 filter drop-shadow-xl">
-                                                {animationPhase === 'reveal' ? getTypeIcon(enemies[currentRound - 1]?.type) : "❓"}
-                                            </div>
-                                            <div className="text-[10px] font-bold text-gray-400 mb-0.5 truncate max-w-[120px] mx-auto">
-                                                {animationPhase === 'reveal' ? enemies[currentRound - 1]?.name : "???"}
-                                            </div>
-                                            <div className="text-2xl font-black text-red-500 orbitron">
-                                                {animationPhase === 'reveal' ? enemies[currentRound - 1]?.stats.totalPower : "--"}
-                                            </div>
-                                            <h2 className="text-[7px] font-black text-white/20 orbitron mt-1 tracking-[0.2em] uppercase">{t('pvp.battle.enemyModel')}</h2>
-                                        </motion.div>
-                                    </motion.div>
-                                )}
-                            </AnimatePresence>
-                        </div>
+                            {/* Enemy Mini Deck */}
+                            <div className="grid grid-cols-5 gap-2 h-16 max-w-lg mx-auto w-full mb-4">
+                                {enemies.slice(0, 5).map((card, index) => (
+                                    <AnimatePresence key={index}>
+                                        {aliveEnemyCards[index] && (
+                                            <motion.div
+                                                initial={{ opacity: 1, scale: 1 }}
+                                                animate={{
+                                                    scale: (currentRound - 1) === index ? 1.05 : 1,
+                                                    y: (currentRound - 1) === index && animationPhase === 'clash' ? 30 : 0,
+                                                }}
+                                                exit={{ opacity: 0, scale: 0.5, rotate: 15, filter: 'blur(8px)' }}
+                                                className={cn(
+                                                    "bg-black/40 border border-red-500/20 rounded-xl flex flex-col items-center justify-center p-1 relative overflow-hidden",
+                                                    (currentRound - 1) === index ? "border-red-500 bg-red-500/5 shadow-[0_0_15px_rgba(239,68,68,0.15)]" : "opacity-40"
+                                                )}
+                                            >
+                                                <div className="text-lg">{getTypeIcon(card.type)}</div>
+                                                <div className="text-[9px] font-black text-red-400 orbitron">{card.stats.totalPower}</div>
+                                            </motion.div>
+                                        )}
+                                    </AnimatePresence>
+                                ))}
+                            </div>
 
-                        {/* Player Mini Deck */}
-                        <div className="grid grid-cols-5 gap-2 h-16 max-w-lg mx-auto w-full mt-4">
-                            {activeBattleDeck.slice(0, 5).map((card, index) => (
-                                <AnimatePresence key={index}>
-                                    {alivePlayerCards[index] && (
+                            {/* Clash Arena */}
+                            <div className="flex-1 flex items-center justify-center py-4">
+                                <AnimatePresence>
+                                    {animationPhase !== 'idle' && (
                                         <motion.div
-                                            initial={{ opacity: 1, scale: 1 }}
-                                            animate={{
-                                                scale: (currentRound - 1) === index ? 1.05 : 1,
-                                                y: (currentRound - 1) === index && animationPhase === 'clash' ? -30 : 0,
-                                            }}
-                                            exit={{ opacity: 0, scale: 0.5, rotate: -15, filter: 'blur(8px)' }}
-                                            className={cn(
-                                                "bg-black/40 border border-blue-500/20 rounded-xl flex flex-col items-center justify-center p-1 relative overflow-hidden",
-                                                (currentRound - 1) === index ? "border-blue-500 bg-blue-500/5 shadow-[0_0_15px_rgba(59,130,246,0.15)]" : "opacity-40"
-                                            )}
+                                            initial={{ opacity: 0, scale: 0.8 }}
+                                            animate={{ opacity: 1, scale: 1 }}
+                                            exit={{ opacity: 0, scale: 1.1, filter: 'blur(15px)' }}
+                                            className="flex items-center gap-6"
                                         >
-                                            <div className="text-lg">{getTypeIcon(card.type)}</div>
-                                            <div className="text-[9px] font-black text-blue-400 orbitron">{card.stats.totalPower}</div>
+                                            {/* Player Card Container */}
+                                            <motion.div
+                                                animate={{ x: animationPhase === 'clash' ? [0, 30, 0] : 0 }}
+                                                transition={{ duration: 0.6, repeat: animationPhase === 'clash' ? Infinity : 0 }}
+                                                className={cn(
+                                                    "relative p-6 rounded-[2rem] border-2 bg-black/60 backdrop-blur-3xl min-w-[160px] text-center transition-all duration-500",
+                                                    animationPhase === 'reveal' ? getTypeGlow(round.playerCard.type) : "border-white/10"
+                                                )}
+                                            >
+                                                <div className="text-4xl mb-3 filter drop-shadow-xl">
+                                                    {animationPhase === 'reveal' ? getTypeIcon(round.playerCard.type) : "❓"}
+                                                </div>
+                                                <div className="text-[10px] font-bold text-gray-400 mb-0.5 truncate max-w-[120px] mx-auto">
+                                                    {animationPhase === 'reveal' ? round.playerCard.name : "???"}
+                                                </div>
+                                                <div className="text-2xl font-black text-blue-500 orbitron">
+                                                    {animationPhase === 'reveal' ? round.playerCard.stats.totalPower : "--"}
+                                                </div>
+                                                <h2 className="text-[7px] font-black text-white/20 orbitron mt-1 tracking-[0.2em] uppercase">{t('pvp.battle.commanderUnit')}</h2>
+                                            </motion.div>
+
+                                            {/* Vs Zap Icon */}
+                                            <div className="relative">
+                                                <motion.div
+                                                    animate={{ scale: [1, 1.3, 1], rotate: [0, 5, -5, 0] }}
+                                                    transition={{ duration: 0.4, repeat: Infinity }}
+                                                    className="w-12 h-12 rounded-full bg-white flex items-center justify-center z-10 relative"
+                                                >
+                                                    <Zap size={24} fill="black" className="text-black" />
+                                                </motion.div>
+                                                <motion.div
+                                                    animate={{ scale: [1, 2, 1], opacity: [0.3, 0, 0.3] }}
+                                                    transition={{ duration: 1, repeat: Infinity }}
+                                                    className="absolute inset-0 bg-white/20 blur-xl rounded-full"
+                                                />
+                                            </div>
+
+                                            {/* Enemy Card Container */}
+                                            <motion.div
+                                                animate={{ x: animationPhase === 'clash' ? [0, -30, 0] : 0 }}
+                                                transition={{ duration: 0.6, repeat: animationPhase === 'clash' ? Infinity : 0 }}
+                                                className={cn(
+                                                    "relative p-6 rounded-[2rem] border-2 bg-black/60 backdrop-blur-3xl min-w-[160px] text-center transition-all duration-500",
+                                                    animationPhase === 'reveal' ? getTypeGlow(round.opponentCard.type) : "border-white/10"
+                                                )}
+                                            >
+                                                <div className="text-4xl mb-3 filter drop-shadow-xl">
+                                                    {animationPhase === 'reveal' ? getTypeIcon(round.opponentCard.type) : "❓"}
+                                                </div>
+                                                <div className="text-[10px] font-bold text-gray-400 mb-0.5 truncate max-w-[120px] mx-auto">
+                                                    {animationPhase === 'reveal' ? round.opponentCard.name : "???"}
+                                                </div>
+                                                <div className="text-2xl font-black text-red-500 orbitron">
+                                                    {animationPhase === 'reveal' ? round.opponentCard.stats.totalPower : "--"}
+                                                </div>
+                                                <h2 className="text-[7px] font-black text-white/20 orbitron mt-1 tracking-[0.2em] uppercase">{t('pvp.battle.enemyModel')}</h2>
+                                            </motion.div>
                                         </motion.div>
                                     )}
                                 </AnimatePresence>
-                            ))}
-                        </div>
-                    </div>
-                )}
+                            </div>
 
-                {/* 4-B. Double Battle Interactive */}
-                {phase === 'double-battle' && (
-                    <div className="flex-1 flex flex-col items-center justify-center p-4">
-                        <div className="text-center mb-8">
-                            <h2 className="text-4xl font-black text-white mb-2">{t('battle.common.roundStatus', { n: doubleBattleState.round, total: 3 })}</h2>
-                            <div className="text-xl text-cyan-400 font-mono">
-                                {doubleBattleState.phase === 'ready' && t('battle.common.ready')}
-                                {doubleBattleState.phase === 'choice' && t('battle.common.choosing', { n: doubleBattleState.timer })}
-                                {doubleBattleState.phase === 'clash' && t('battle.common.clash')}
+                            {/* Player Mini Deck */}
+                            <div className="grid grid-cols-5 gap-2 h-16 max-w-lg mx-auto w-full mt-4">
+                                {activeBattleDeck.slice(0, 5).map((card, index) => (
+                                    <AnimatePresence key={index}>
+                                        {alivePlayerCards[index] && (
+                                            <motion.div
+                                                initial={{ opacity: 1, scale: 1 }}
+                                                animate={{
+                                                    scale: (currentRound - 1) === index ? 1.05 : 1,
+                                                    y: (currentRound - 1) === index && animationPhase === 'clash' ? -30 : 0,
+                                                }}
+                                                exit={{ opacity: 0, scale: 0.5, rotate: -15, filter: 'blur(8px)' }}
+                                                className={cn(
+                                                    "bg-black/40 border border-blue-500/20 rounded-xl flex flex-col items-center justify-center p-1 relative overflow-hidden",
+                                                    (currentRound - 1) === index ? "border-blue-500 bg-blue-500/5 shadow-[0_0_15px_rgba(59,130,246,0.15)]" : "opacity-40"
+                                                )}
+                                            >
+                                                <div className="text-lg">{getTypeIcon(card.type)}</div>
+                                                <div className="text-[9px] font-black text-blue-400 orbitron">{card.stats.totalPower}</div>
+                                            </motion.div>
+                                        )}
+                                    </AnimatePresence>
+                                ))}
                             </div>
                         </div>
+                    );
+                })()}
 
-                        <div className="flex gap-20 items-center">
-                            {/* Player Cards (2 options) */}
-                            <div className="flex gap-4">
-                                {[0, 1].map(offset => {
-                                    const idx = (doubleBattleState.round - 1) * 2 + offset;
-                                    const card = activeBattleDeck[idx];
-                                    if (!card) return null;
+                {/* 4-B. Double Battle Interactive (PVP Sync) */}
+                {phase === 'double-battle' && doubleBattleState && (
+                    <motion.div
+                        key="double-battle"
+                        initial={{ opacity: 0 }}
+                        animate={{ opacity: 1 }}
+                        className="fixed inset-0 z-50 flex flex-col items-center justify-center bg-black/90"
+                    >
+                        {/* Round Indicator */}
+                        <div className="absolute top-8 text-4xl font-black text-white orbitron">
+                            ROUND {doubleBattleState.round} / 3
+                        </div>
 
-                                    const isSelected = doubleBattleState.playerSelection?.id === card.id;
+                        {/* Score */}
+                        <div className="absolute top-20 flex gap-12 text-2xl font-bold">
+                            <div className="text-cyan-400">YOU: {doubleBattleState.playerWins}</div>
+                            <div className="text-red-400">ENEMY: {doubleBattleState.opponentWins}</div>
+                        </div>
 
-                                    return (
-                                        <motion.div
-                                            key={card.id}
-                                            whileHover={{ y: -20, scale: 1.1 }}
-                                            onClick={() => handleDoubleBattleSelection(card)}
-                                            className={cn(
-                                                "cursor-pointer transition-all duration-300",
-                                                doubleBattleState.phase !== 'choice' && !isSelected && "opacity-30 blur-sm scale-90",
-                                                isSelected && "ring-4 ring-cyan-400 shadow-[0_0_30px_cyan]"
+                        {/* Opponent Cards (Top) - Hidden unless revealed */}
+                        <div className="flex justify-center gap-8 mb-12">
+                            {[0, 1].map(offset => {
+                                const idx = (doubleBattleState.round - 1) * 2 + offset;
+                                const card = enemies[idx];
+                                if (!card) return null;
+
+                                const isSelected = doubleBattleState.opponentSelection?.id === card.id;
+                                const isRevealed = doubleBattleState.phase === 'clash';
+
+                                return (
+                                    <motion.div
+                                        key={`opp-${idx}`}
+                                        animate={{
+                                            y: isSelected && isRevealed ? 50 : 0,
+                                            scale: isSelected && isRevealed ? 1.2 : 1,
+                                            opacity: isRevealed && !isSelected ? 0.3 : 1
+                                        }}
+                                        className="relative"
+                                    >
+                                        <div className={cn(
+                                            "w-48 h-64 rounded-xl border-2 transition-all overflow-hidden",
+                                            isRevealed && isSelected ? "border-red-500 shadow-[0_0_30px_rgba(239,68,68,0.5)]" : "border-white/20"
+                                        )}>
+                                            {isRevealed && isSelected || doubleBattleState.phase === 'choice' ? (
+                                                <GameCard card={card} /> // Show card during choice (if we want to be nice) or strictly hidden? PVP keeps opp hidden.
+                                            ) : (
+                                                // Card Back
+                                                <div className="w-full h-full bg-slate-900 bg-[repeating-linear-gradient(45deg,transparent,transparent_10px,#333_10px,#333_20px)] flex items-center justify-center">
+                                                    <span className="text-4xl">👹</span>
+                                                </div>
                                             )}
-                                        >
+                                        </div>
+                                    </motion.div>
+                                );
+                            })}
+                        </div>
+
+                        {/* Timer / VS Status */}
+                        <div className="my-8 h-24 flex items-center justify-center">
+                            {doubleBattleState.phase === 'ready' && (
+                                <div className="text-3xl text-white/50 animate-pulse">준비하세요...</div>
+                            )}
+                            {doubleBattleState.phase === 'choice' && (
+                                <div className="text-6xl font-black text-yellow-400 orbitron animate-ping">
+                                    {doubleBattleState.timer}
+                                </div>
+                            )}
+                            {doubleBattleState.phase === 'clash' && (
+                                <div className="text-5xl font-black text-white orbitron">
+                                    {doubleBattleState.roundWinner === 'player' ?
+                                        <span className="text-cyan-400">WIN!</span> :
+                                        doubleBattleState.roundWinner === 'opponent' ?
+                                            <span className="text-red-400">LOSE!</span> :
+                                            <span className="text-gray-400">DRAW</span>
+                                    }
+                                </div>
+                            )}
+                        </div>
+
+                        {/* Player Cards (Bottom) - Choice */}
+                        <div className="flex justify-center gap-8 mt-4">
+                            {[0, 1].map(offset => {
+                                const idx = (doubleBattleState.round - 1) * 2 + offset;
+                                const card = activeBattleDeck[idx];
+                                if (!card) return null;
+
+                                const isSelected = doubleBattleState.playerSelection?.id === card.id;
+                                const isPhaseChoice = doubleBattleState.phase === 'choice';
+                                const isRevealed = doubleBattleState.phase === 'clash';
+
+                                return (
+                                    <motion.div
+                                        key={`player-${idx}`}
+                                        whileHover={isPhaseChoice ? { scale: 1.05, y: -20 } : {}}
+                                        whileTap={isPhaseChoice ? { scale: 0.95 } : {}}
+                                        animate={{
+                                            y: isRevealed && isSelected ? -50 : 0,
+                                            scale: isRevealed && isSelected ? 1.2 : 1,
+                                            opacity: isRevealed && !isSelected ? 0.3 : 1,
+                                            filter: isPhaseChoice && doubleBattleState.playerSelection && !isSelected ? 'grayscale(100%)' : 'none'
+                                        }}
+                                        className={cn(
+                                            "cursor-pointer transition-all",
+                                            isSelected ? "ring-4 ring-cyan-400 rounded-xl" : ""
+                                        )}
+                                        onClick={() => handleDoubleBattleSelection(card)}
+                                    >
+                                        <div className="w-48 h-64 pointer-events-none">
                                             <GameCard card={card} />
-                                        </motion.div>
-                                    );
-                                })}
-                            </div>
-
-                            {/* Vertical VS Divider */}
-                            <div className="w-px h-64 bg-white/20 relative">
-                                <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 bg-black p-2 rounded-full border border-white/20">
-                                    VS
-                                </div>
-                            </div>
-
-                            {/* Enemy Cards (2 options - Hidden) */}
-                            <div className="flex gap-4">
-                                {[0, 1].map(offset => {
-                                    const idx = (doubleBattleState.round - 1) * 2 + offset;
-                                    const card = enemies[idx];
-                                    if (!card) return null;
-
-                                    // Reveal only selected card during clash
-                                    const isSelectedRole = doubleBattleState.opponentSelection?.id === card.id;
-                                    const isRevealed = doubleBattleState.phase === 'clash' && isSelectedRole;
-
-                                    return (
-                                        <motion.div
-                                            key={idx}
-                                            className={cn(
-                                                "transition-all duration-300",
-                                                doubleBattleState.phase === 'clash' && !isSelectedRole && "opacity-30 blur-sm scale-90",
-                                                isRevealed && "ring-4 ring-red-500 shadow-[0_0_30px_red]"
-                                            )}
-                                        >
-                                            <GameCard card={card} isFlipped={!isRevealed} />
-                                        </motion.div>
-                                    );
-                                })}
-                            </div>
+                                        </div>
+                                        {isPhaseChoice && (
+                                            <div className="mt-4 text-center">
+                                                <span className={cn(
+                                                    "px-4 py-2 rounded-full font-bold",
+                                                    isSelected ? "bg-cyan-500 text-white" : "bg-white/10 text-white/50"
+                                                )}>
+                                                    {isSelected ? "선택됨" : "선택"}
+                                                </span>
+                                            </div>
+                                        )}
+                                    </motion.div>
+                                );
+                            })}
                         </div>
 
-                        {/* Clash Result Overlay */}
-                        {doubleBattleState.phase === 'clash' && doubleBattleState.roundWinner && (
-                            <motion.div
-                                initial={{ scale: 0.5, opacity: 0 }}
-                                animate={{ scale: 1, opacity: 1 }}
-                                className="absolute inset-0 flex items-center justify-center bg-black/50 z-50 pointer-events-none"
-                            >
-                                <div className={cn(
-                                    "text-8xl font-black italic orbitron drop-shadow-[0_0_20px_rgba(0,0,0,1)]",
-                                    doubleBattleState.roundWinner === 'player' ? "text-yellow-400" :
-                                        doubleBattleState.roundWinner === 'opponent' ? "text-red-600" : "text-gray-400"
-                                )}>
-                                    {doubleBattleState.roundWinner === 'player' ? t('battle.common.win') :
-                                        doubleBattleState.roundWinner === 'opponent' ? t('battle.common.lose') : t('battle.common.draw')}
-                                </div>
-                            </motion.div>
+                        {/* Instruction Text */}
+                        {doubleBattleState.phase === 'choice' && (
+                            <div className="absolute bottom-10 text-white/60 animate-bounce">
+                                카드를 선택하여 하나빼기 승부!
+                            </div>
                         )}
-                    </div>
+                    </motion.div>
                 )}
 
                 {/* 5. Result (PVP Sync) */}
                 {phase === 'result' && battleResult && (
-                    <div className="absolute inset-0 z-50 flex items-center justify-center bg-[#050505]/95 backdrop-blur-xl p-4 overflow-hidden">
-                        <BackgroundBeams className="opacity-40" />
-                        <motion.div
-                            initial={{ scale: 0.5, opacity: 0 }}
-                            animate={{ scale: 1, opacity: 1 }}
-                            className="relative z-10 w-full max-w-sm text-center"
-                        >
-                            <motion.div
-                                animate={{ scale: [1, 1.05, 1], rotate: [0, 3, -3, 0] }}
-                                transition={{ repeat: 3, duration: 0.8 }}
-                                className="mb-4"
-                            >
-                                {battleResult.winner === 'player' ? (
-                                    <div className="relative inline-block">
-                                        <Trophy size={80} className="mx-auto text-yellow-500" />
-                                        <motion.div animate={{ opacity: [0, 1, 0] }} transition={{ repeat: Infinity, duration: 1 }} className="absolute inset-0 bg-yellow-500/20 blur-2xl rounded-full" />
-                                    </div>
-                                ) : (
-                                    <XCircle size={80} className="mx-auto text-red-500 opacity-60" />
-                                )}
-                            </motion.div>
-
-                            <h1 className={cn(
-                                "text-4xl font-black orbitron italic mb-1 tracking-[0.1em]",
-                                battleResult.winner === 'player' ? 'text-white drop-shadow-[0_0_15px_rgba(255,255,255,0.2)]' : 'text-red-500/60'
+                    <motion.div
+                        key="result"
+                        initial={{ opacity: 0, scale: 0.9 }}
+                        animate={{ opacity: 1, scale: 1 }}
+                        exit={{ opacity: 0, scale: 0.9 }}
+                        className="max-w-2xl mx-auto py-12"
+                    >
+                        <div className={cn(
+                            "text-center mb-8 p-12 rounded-2xl border-2 bg-black/80 backdrop-blur-xl",
+                            battleResult.winner === 'player'
+                                ? "bg-green-500/10 border-green-500/50"
+                                : "bg-red-500/10 border-red-500/50"
+                        )}>
+                            <div className="text-8xl mb-4">
+                                {battleResult.winner === 'player' ? '🏆' : '😢'}
+                            </div>
+                            <h2 className={cn(
+                                "text-5xl font-black mb-4 orbitron",
+                                battleResult.winner === 'player' ? "text-green-400" : "text-red-400"
                             )}>
                                 {battleResult.winner === 'player' ? t('pvp.battle.victory') : t('pvp.battle.defeat')}
-                            </h1>
-                            <p className="text-[8px] font-black orbitron text-gray-500 tracking-[0.3em] mb-4">
-                                {battleResult.winner === 'player' ? t('battle.common.missionComplete') : t('battle.common.tacticalFailure')}
-                            </p>
-
-                            <div className="text-2xl text-white orbitron font-black mb-4 p-3 bg-white/5 rounded-2xl border border-white/5 inline-block px-8">
-                                {battleResult.playerWins} <span className="text-gray-600 px-2">-</span> {battleResult.opponentWins}
+                            </h2>
+                            <div className="text-2xl font-bold text-white/60 mb-8 orbitron">
+                                {battleResult.playerWins} : {battleResult.opponentWins}
                             </div>
 
-                            <div className="grid grid-cols-3 gap-2 mb-6">
-                                <div className="bg-black/40 backdrop-blur-xl rounded-xl p-3 border border-white/5">
-                                    <div className="text-[8px] text-gray-500 orbitron uppercase mb-0.5">{t('battle.common.stage')}</div>
-                                    <div className="text-lg font-black orbitron text-cyan-400">
-                                        {storyStage.id.split('-').slice(1).join('-')}
+                            {/* 보상 */}
+                            {battleResult.winner === 'player' && (
+                                <div className="bg-black/40 rounded-xl p-6 mb-6 border border-white/5">
+                                    <h3 className="text-lg font-bold text-white mb-4">{t('battle.common.rewards')}</h3>
+                                    <div className="grid grid-cols-2 gap-4">
+                                        <div className="flex items-center justify-center gap-2">
+                                            {/* <Coins className="text-yellow-400" size={24} /> */}
+                                            <span className="text-2xl font-bold text-yellow-400">
+                                                +{battleResult.rewards.coins} Coins
+                                            </span>
+                                        </div>
+                                        <div className="flex items-center justify-center gap-2">
+                                            {/* <TrendingUp className="text-cyan-400" size={24} /> */}
+                                            <span className="text-2xl font-bold text-cyan-400">
+                                                +{battleResult.rewards.experience} EXP
+                                            </span>
+                                        </div>
                                     </div>
                                 </div>
-                                <div className="bg-black/40 backdrop-blur-xl rounded-xl p-3 border border-white/5">
-                                    <div className="text-[8px] text-gray-500 orbitron uppercase mb-0.5">{t('battle.common.coins')}</div>
-                                    <div className="text-lg font-black orbitron text-yellow-400">
-                                        +{battleResult.winner === 'player' ? storyStage.rewards.coins : 0}
-                                    </div>
-                                </div>
-                                <div className="bg-black/40 backdrop-blur-xl rounded-xl p-3 border border-white/5">
-                                    <div className="text-[8px] text-gray-500 orbitron uppercase mb-0.5">{t('battle.common.exp')}</div>
-                                    <div className="text-lg font-black orbitron text-purple-400">
-                                        +{battleResult.winner === 'player' ? storyStage.rewards.experience : 10}
-                                    </div>
-                                </div>
-                            </div>
+                            )}
 
-                            <Button
-                                fullWidth
-                                size="lg"
-                                onPress={handleResultConfirm}
-                                className={cn(
-                                    "h-14 font-black orbitron text-sm rounded-xl shadow-lg transition-all",
-                                    battleResult.winner === 'player'
-                                        ? "bg-white text-black hover:bg-gray-200"
-                                        : "bg-zinc-800 text-white hover:bg-zinc-700"
-                                )}
-                            >
-                                {battleResult.winner === 'player'
-                                    ? t('battle.common.nextStage')
-                                    : t('battle.common.retryMission')}
-                            </Button>
-                        </motion.div>
-                    </div>
+                            {/* 버튼 */}
+                            <div className="flex gap-4 justify-center">
+                                <Button
+                                    size="lg"
+                                    onPress={handleResultConfirm}
+                                    className={cn(
+                                        "px-8 py-6 font-bold text-xl rounded-xl transition-all shadow-lg",
+                                        battleResult.winner === 'player'
+                                            ? "bg-gradient-to-r from-cyan-600 to-blue-600 hover:from-cyan-500 hover:to-blue-500 text-white"
+                                            : "bg-white/10 hover:bg-white/20 text-white"
+                                    )}
+                                >
+                                    {battleResult.winner === 'player'
+                                        ? t('battle.common.nextStage')
+                                        : t('battle.common.retryMission')}
+                                </Button>
+                            </div>
+                        </div>
+                    </motion.div>
                 )}
 
             </div>

@@ -220,6 +220,7 @@ export const en: Translations = {
     'story.tasks': 'Tasks',
     'story.enter': 'Enter',
     'story.rewards': 'Rewards',
+    'battle.common.rewards': 'Rewards', // Added for unifying battle result screen
     'story.battle': 'Start Battle',
     'story.modal.taskComplete': 'Task Complete',
     'story.modal.missionIncomplete': 'Mission Incomplete',

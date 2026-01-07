@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useEffect, useCallback } from 'react';
+import { useState, useEffect, useCallback, useRef } from 'react';
 import { usePathname } from 'next/navigation';
 import UnifiedTutorialModal from '@/components/UnifiedTutorialModal';
 import NicknameModal from '@/components/NicknameModal';
@@ -32,17 +32,29 @@ export default function TutorialManager() {
     const [starterCards, setStarterCards] = useState<CardType[]>([]); // Rewards
     const { showFooter, hideFooter } = useFooter();
 
+    // [FIX] Prevent duplicate onboarding triggers
+    const onboardingTriggeredRef = useRef(false);
+
     useEffect(() => {
         // Only trigger on Main Lobby - other pages control their own footer
         if (pathname !== '/main') {
             return;
         }
 
-        if (!user) return;
+        if (!user) {
+            // Reset trigger flag when user logs out
+            onboardingTriggeredRef.current = false;
+            return;
+        }
 
         // Wait for profile AND global context (inventory) to load
         // This prevents the "Inventory Check" from running on empty default state
         if (profileLoading || contextLoading) return;
+
+        // [FIX] Prevent duplicate triggers when profile/inventory updates
+        if (onboardingTriggeredRef.current) {
+            return;
+        }
 
         // [LOGOUT GUARD / SELF-HEAL]
         // If we have a user but the flag is stuck, attempt to consume it once.
@@ -106,12 +118,14 @@ export default function TutorialManager() {
 
             if (!hasNickname) {
                 console.log("[TutorialManager] 🚩 Nickname missing. Triggering NicknameModal.");
+                onboardingTriggeredRef.current = true; // Mark as triggered
                 setShowNicknameModal(true);
                 hideFooter();
                 return;
             }
 
             console.log("[TutorialManager] 🚩 Tutorial not completed. Triggering WelcomeTutorialModal.");
+            onboardingTriggeredRef.current = true; // Mark as triggered
             setShowTutorialModal(true);
             hideFooter();
         };

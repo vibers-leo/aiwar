@@ -137,6 +137,12 @@ export default function UnifiedTutorialModal({ onClose, onClaim }: UnifiedTutori
         if (isProcessing) return;
         const step = steps[currentStepIndex];
 
+        console.log('[UnifiedTutorialModal] handleAction called:', {
+            stepIndex: currentStepIndex,
+            action: step.action,
+            hasOnClaim: !!onClaim
+        });
+
         if (step.action === 'next') {
             if (currentStepIndex < steps.length - 1) {
                 setCurrentStepIndex(prev => prev + 1);
@@ -144,9 +150,12 @@ export default function UnifiedTutorialModal({ onClose, onClaim }: UnifiedTutori
                 completeTutorial();
             }
         } else if (step.action === 'claim') {
+            console.log('[UnifiedTutorialModal] 🎁 Claim action triggered!');
             if (onClaim) {
+                console.log('[UnifiedTutorialModal] ✅ Calling onClaim callback...');
                 onClaim();
             } else {
+                console.log('[UnifiedTutorialModal] ⚠️ No onClaim callback, using internal handler');
                 setIsProcessing(true);
                 try {
                     await handleClaimReward();
