@@ -174,7 +174,7 @@ export default function UnifiedTutorialModal({ onClose, onClaim }: UnifiedTutori
         try {
             const cards = await claimStarterPack('신입 지휘관');
             if (cards && cards.length > 0) {
-                setClaimedCards(cards);
+                setClaimedCards(cards as unknown as Card[]);
                 setShowRewardModal(true);
                 setIsVisible(false);
             } else {
