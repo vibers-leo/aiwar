@@ -29,6 +29,13 @@ export interface InventoryCard extends Omit<Card, 'acquiredAt'> {
     faction?: string; // 추가 메타데이터
     power?: number; // 총 파워 (stats.totalPower의 별칭)
     affinity?: number; // Commander Affinity (0-100)
+    imageUrl?: string;
+    templateId?: string;
+    isCommanderCard?: boolean;
+    description?: string;
+    specialty?: string;
+    aiFactionId?: string;
+    isLocked?: boolean;
 }
 
 export type CardFilter = {
