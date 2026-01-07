@@ -27,10 +27,12 @@ import {
     User,
     Heart,
     Trophy,
+    Users,
 } from "lucide-react";
 import { useRouter, usePathname } from 'next/navigation';
 import SettingsModal from './SettingsModal';
 import CommanderProfileModal from './CommanderProfileModal';
+import FriendsModal from './FriendsModal';
 import { useTranslation } from '@/context/LanguageContext';
 
 interface SidebarProps {
@@ -46,6 +48,7 @@ export default function Sidebar({ isOpen, onToggle }: SidebarProps) {
     const expPercentage = Math.min(100, (experience / (level * 100)) * 100);
     const [isSettingsOpen, setIsSettingsOpen] = useState(false);
     const [isProfileOpen, setIsProfileOpen] = useState(false);
+    const [isFriendsModalOpen, setIsFriendsModalOpen] = useState(false);
 
     const { t, language } = useTranslation();
     const navItems = [
@@ -210,6 +213,20 @@ export default function Sidebar({ isOpen, onToggle }: SidebarProps) {
                     <Divider className="bg-white/5" />
 
                     <div className="p-4 space-y-2 pb-8">
+                        {/* Friends Button - 새로 추가된 부분 */}
+                        <div className="flex gap-2">
+                            <Button
+                                fullWidth
+                                variant="light"
+                                color="default"
+                                onPress={() => setIsFriendsModalOpen(true)}
+                                className={`h-10 text-gray-400 hover:text-cyan-400 hover:bg-white/5 ${!isOpen ? "min-w-0 px-0 justify-center" : "!justify-start"}`}
+                                startContent={<Users size={18} />}
+                            >
+                                {isOpen && <span className="ml-2 font-bold text-xs orbitron">FRIENDS LIST</span>}
+                            </Button>
+                        </div>
+
                         <div className="flex gap-2">
                             <Button
                                 fullWidth
@@ -249,6 +266,11 @@ export default function Sidebar({ isOpen, onToggle }: SidebarProps) {
             <CommanderProfileModal
                 isOpen={isProfileOpen}
                 onClose={() => setIsProfileOpen(false)}
+            />
+
+            <FriendsModal
+                isOpen={isFriendsModalOpen}
+                onClose={() => setIsFriendsModalOpen(false)}
             />
         </motion.aside >
     );
