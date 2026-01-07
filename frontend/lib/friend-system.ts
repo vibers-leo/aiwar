@@ -10,7 +10,8 @@ import {
     deleteDoc,
     updateDoc,
     serverTimestamp,
-    runTransaction
+    runTransaction,
+    Timestamp
 } from 'firebase/firestore';
 import { db } from './firebase';
 
@@ -26,13 +27,15 @@ export interface FriendUser {
 // 닉네임으로 사용자 검색
 export async function searchUsers(nickname: string): Promise<FriendUser[]> {
     if (!nickname) return [];
-
-    // 정확한 일치 검색 (Firebase는 startsWith 쿼리가 제한적일 수 있음)
-    // 여기서는 간단히 정확한 닉네임 검색 또는 >=, <= 를 이용한 유사 검색 시도
+    if (!db) {
+        console.error("Database not initialized");
+        return [];
+    }
 
     try {
         const usersRef = collection(db, 'users');
         // 'nickname' 필드가 있다고 가정
+        // 정확한 일치 검색 또는 유사 검색
         const q = query(
             usersRef,
             where('nickname', '>=', nickname),
@@ -64,6 +67,7 @@ export async function searchUsers(nickname: string): Promise<FriendUser[]> {
 // 친구 요청 전송
 export async function sendFriendRequest(currentUserId: string, currentUserProfile: any, targetUserId: string, targetUserProfile: any) {
     if (!currentUserId || !targetUserId) throw new Error("Invalid User IDs");
+    if (!db) return { success: false, message: "Database not initialized" };
 
     const userFriendRef = doc(db, 'users', currentUserId, 'friends', targetUserId);
     const targetFriendRef = doc(db, 'users', targetUserId, 'friends', currentUserId);
@@ -104,6 +108,8 @@ export async function sendFriendRequest(currentUserId: string, currentUserProfil
 
 // 친구 요청 수락
 export async function acceptFriendRequest(currentUserId: string, targetUserId: string) {
+    if (!db) return { success: false, message: "Database not initialized" };
+
     const userFriendRef = doc(db, 'users', currentUserId, 'friends', targetUserId);
     const targetFriendRef = doc(db, 'users', targetUserId, 'friends', currentUserId);
 
@@ -127,6 +133,8 @@ export async function acceptFriendRequest(currentUserId: string, targetUserId: s
 
 // 친구 요청 거절 또는 취소 또는 친구 삭제
 export async function removeFriend(currentUserId: string, targetUserId: string) {
+    if (!db) return { success: false, message: "Database not initialized" };
+
     const userFriendRef = doc(db, 'users', currentUserId, 'friends', targetUserId);
     const targetFriendRef = doc(db, 'users', targetUserId, 'friends', currentUserId);
 

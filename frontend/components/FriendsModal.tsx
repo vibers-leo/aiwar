@@ -133,7 +133,7 @@ export default function FriendsModal({ isOpen, onClose }: FriendsModalProps) {
             onConfirm: async () => {
                 const result = await sendBattleInvitation(
                     user.uid,
-                    profile.nickname,
+                    profile.nickname || 'Unknown User',
                     profile.avatarUrl || '',
                     friend.uid,
                     friend.nickname
@@ -177,8 +177,8 @@ export default function FriendsModal({ isOpen, onClose }: FriendsModalProps) {
                             key={tab}
                             onClick={() => setActiveTab(tab)}
                             className={`flex-1 py-2 text-xs font-bold rounded-md transition-all orbitron ${activeTab === tab
-                                    ? 'bg-zinc-700 text-white shadow-sm'
-                                    : 'text-white/50 hover:text-white hover:bg-white/5'
+                                ? 'bg-zinc-700 text-white shadow-sm'
+                                : 'text-white/50 hover:text-white hover:bg-white/5'
                                 }`}
                         >
                             {tab === 'list' && `MY FRIENDS (${friends.length})`}
