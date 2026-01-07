@@ -34,17 +34,7 @@ export default function LayoutWrapper({ children }: { children: React.ReactNode 
 
                 {/* Main Content */}
                 <main className="flex-1 mr-20">
-                    <AnimatePresence mode="wait">
-                        <motion.div
-                            key={pathname}
-                            initial={{ opacity: 0, y: 20 }}
-                            animate={{ opacity: 1, y: 0 }}
-                            exit={{ opacity: 0, y: -20 }}
-                            transition={{ duration: 0.3 }}
-                        >
-                            {children}
-                        </motion.div>
-                    </AnimatePresence>
+                    {children}
                 </main>
 
                 {/* Right Sidebar */}
