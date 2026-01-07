@@ -17,6 +17,7 @@ import { Zap, Shield, ArrowLeft } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import GameCard from '@/components/GameCard';
 import { BackgroundBeams } from '@/components/ui/aceternity/background-beams';
+import { BattleArena } from '@/components/BattleArena';
 
 interface BattleLog {
     id: string;
@@ -380,6 +381,45 @@ export default function StageBattlePage() {
         }
     };
 
+    const handleBattleFinish = async (result: {
+        isWin: boolean;
+        playerWins: number;
+        enemyWins: number;
+        rounds: any[];
+    }) => {
+        if (!storyStage) return;
+        const { isWin, playerWins: pWins, enemyWins: eWins } = result;
+
+        const res: BattleResult = {
+            winner: isWin ? 'player' : 'opponent',
+            rounds: result.rounds.map(r => ({
+                round: r.round,
+                winner: r.winner === 'player' ? 'player' : r.winner === 'enemy' ? 'opponent' : 'draw',
+                playerCard: r.playerCard,
+                opponentCard: r.enemyCard,
+                playerPower: r.playerPower,
+                opponentPower: r.enemyPower,
+                playerType: (r.playerCard.type || 'EFFICIENCY').toLowerCase() as any,
+                opponentType: (r.enemyCard.type || 'EFFICIENCY').toLowerCase() as any,
+                reason: r.reason
+            })),
+            playerWins: pWins,
+            opponentWins: eWins,
+            rewards: {
+                coins: isWin ? storyStage.rewards.coins : 0,
+                experience: isWin ? storyStage.rewards.experience : 10,
+                ratingChange: 0
+            }
+        };
+
+        setBattleResult(res);
+        setPhase('result');
+
+        if (isWin) {
+            trackMissionEvent('battle-win', 1);
+        }
+    };
+
     // --- Actions ---
 
     const handleStartBattle = (preparedDeck: Card[]) => {
@@ -402,7 +442,11 @@ export default function StageBattlePage() {
 
         if (storyStage.battleMode === 'double') {
             startDoubleBattle();
+        } else if (storyStage.battleMode === 'tactics' || storyStage.battleMode === 'sudden-death' || storyStage.battleMode === 'ambush') {
+            // [NEW] Use Unified BattleArena for standard modes
+            setPhase('battle');
         } else {
+            // Legacy / Special modes (Ambush, etc.)
             const result = simulateBattle(player, opponent, storyStage.battleMode as BattleMode);
             setBattleResult(result);
             setCurrentRound(0);
@@ -602,176 +646,21 @@ export default function StageBattlePage() {
                     />
                 )}
 
-                {/* 3. Card Placement */}
-                {phase === 'card-placement' && (
-                    <div className="flex-1 overflow-hidden">
-                        <CardPlacementBoard
-                            selectedCards={selectedHand}
-                            battleMode={storyStage.battleMode as BattleMode}
-                            onPlacementComplete={handlePlacementComplete}
-                            opponentDeck={enemies}
-                        />
-                    </div>
+                {/* 4. Battle Animation (Unified BattleArena) */}
+                {phase === 'battle' && (
+                    <BattleArena
+                        playerDeck={activeBattleDeck}
+                        enemyDeck={enemies}
+                        opponent={{
+                            name: language === 'ko' ? storyStage.enemy.name_ko : storyStage.enemy.name,
+                            level: storyStage.step
+                        }}
+                        onFinish={handleBattleFinish}
+                        title={language === 'ko' ? storyStage.title_ko : storyStage.title}
+                        maxRounds={storyStage.battleMode === 'sudden-death' ? 1 : 5}
+                        enemySelectionMode={storyStage.battleMode === 'ambush' ? 'random' : 'ordered'}
+                    />
                 )}
-
-                {/* 4. Battle Animation (PVP Sync) */}
-                {phase === 'battle' && battleResult && battleResult.rounds.length > 0 && (() => {
-                    // Safe Round Index
-                    const roundIndex = Math.min(Math.max(0, currentRound - 1), battleResult.rounds.length - 1);
-                    const round = battleResult.rounds[roundIndex];
-
-                    return (
-                        <div className="flex-1 flex flex-col p-4">
-                            {/* Floating Header (Round & Score) */}
-                            <div className="text-center mb-6 pt-2">
-                                <motion.div
-                                    initial={{ opacity: 0, scale: 0.9 }}
-                                    animate={{ opacity: 1, scale: 1 }}
-                                    className="bg-black/60 backdrop-blur-xl border border-white/10 px-6 py-3 rounded-2xl inline-flex items-center gap-8 shadow-2xl mx-auto"
-                                >
-                                    <div className="text-center">
-                                        <p className="text-[8px] text-gray-500 font-bold orbitron uppercase tracking-[0.2em] mb-0.5">{t('pvp.battle.round')}</p>
-                                        <p className="text-2xl font-black text-white orbitron italic">{round.round}/5</p>
-                                    </div>
-
-                                    <div className="flex items-center gap-6">
-                                        <div className="text-right">
-                                            <p className="text-[8px] text-blue-400 font-bold orbitron uppercase tracking-widest">{t('battle.common.you')}</p>
-                                            <p className="text-3xl font-black text-white orbitron">{battleResult.rounds.slice(0, currentRound + (animationPhase === 'reveal' ? 1 : 0)).filter(r => r.winner === 'player').length}</p>
-                                        </div>
-                                        <div className="text-lg font-black text-gray-700 font-mono">VS</div>
-                                        <div className="text-left">
-                                            <p className="text-[8px] text-red-500 font-bold orbitron uppercase tracking-widest">{t('battle.common.enemy')}</p>
-                                            <p className="text-3xl font-black text-white orbitron">{battleResult.rounds.slice(0, currentRound + (animationPhase === 'reveal' ? 1 : 0)).filter(r => r.winner === 'opponent').length}</p>
-                                        </div>
-                                    </div>
-                                </motion.div>
-                            </div>
-
-                            {/* Enemy Mini Deck */}
-                            <div className="grid grid-cols-5 gap-2 h-16 max-w-lg mx-auto w-full mb-4">
-                                {enemies.slice(0, 5).map((card, index) => (
-                                    <AnimatePresence key={index}>
-                                        {aliveEnemyCards[index] && (
-                                            <motion.div
-                                                initial={{ opacity: 1, scale: 1 }}
-                                                animate={{
-                                                    scale: (currentRound - 1) === index ? 1.05 : 1,
-                                                    y: (currentRound - 1) === index && animationPhase === 'clash' ? 30 : 0,
-                                                }}
-                                                exit={{ opacity: 0, scale: 0.5, rotate: 15, filter: 'blur(8px)' }}
-                                                className={cn(
-                                                    "bg-black/40 border border-red-500/20 rounded-xl flex flex-col items-center justify-center p-1 relative overflow-hidden",
-                                                    (currentRound - 1) === index ? "border-red-500 bg-red-500/5 shadow-[0_0_15px_rgba(239,68,68,0.15)]" : "opacity-40"
-                                                )}
-                                            >
-                                                <div className="text-lg">{getTypeIcon(card.type)}</div>
-                                                <div className="text-[9px] font-black text-red-400 orbitron">{card.stats.totalPower}</div>
-                                            </motion.div>
-                                        )}
-                                    </AnimatePresence>
-                                ))}
-                            </div>
-
-                            {/* Clash Arena */}
-                            <div className="flex-1 flex items-center justify-center py-4">
-                                <AnimatePresence>
-                                    {animationPhase !== 'idle' && (
-                                        <motion.div
-                                            initial={{ opacity: 0, scale: 0.8 }}
-                                            animate={{ opacity: 1, scale: 1 }}
-                                            exit={{ opacity: 0, scale: 1.1, filter: 'blur(15px)' }}
-                                            className="flex items-center gap-6"
-                                        >
-                                            {/* Player Card Container */}
-                                            <motion.div
-                                                animate={{ x: animationPhase === 'clash' ? [0, 30, 0] : 0 }}
-                                                transition={{ duration: 0.6, repeat: animationPhase === 'clash' ? Infinity : 0 }}
-                                                className={cn(
-                                                    "relative p-6 rounded-[2rem] border-2 bg-black/60 backdrop-blur-3xl min-w-[160px] text-center transition-all duration-500",
-                                                    animationPhase === 'reveal' ? getTypeGlow(round.playerCard.type) : "border-white/10"
-                                                )}
-                                            >
-                                                <div className="text-4xl mb-3 filter drop-shadow-xl">
-                                                    {animationPhase === 'reveal' ? getTypeIcon(round.playerCard.type) : "❓"}
-                                                </div>
-                                                <div className="text-[10px] font-bold text-gray-400 mb-0.5 truncate max-w-[120px] mx-auto">
-                                                    {animationPhase === 'reveal' ? round.playerCard.name : "???"}
-                                                </div>
-                                                <div className="text-2xl font-black text-blue-500 orbitron">
-                                                    {animationPhase === 'reveal' ? round.playerCard.stats.totalPower : "--"}
-                                                </div>
-                                                <h2 className="text-[7px] font-black text-white/20 orbitron mt-1 tracking-[0.2em] uppercase">{t('pvp.battle.commanderUnit')}</h2>
-                                            </motion.div>
-
-                                            {/* Vs Zap Icon */}
-                                            <div className="relative">
-                                                <motion.div
-                                                    animate={{ scale: [1, 1.3, 1], rotate: [0, 5, -5, 0] }}
-                                                    transition={{ duration: 0.4, repeat: Infinity }}
-                                                    className="w-12 h-12 rounded-full bg-white flex items-center justify-center z-10 relative"
-                                                >
-                                                    <Zap size={24} fill="black" className="text-black" />
-                                                </motion.div>
-                                                <motion.div
-                                                    animate={{ scale: [1, 2, 1], opacity: [0.3, 0, 0.3] }}
-                                                    transition={{ duration: 1, repeat: Infinity }}
-                                                    className="absolute inset-0 bg-white/20 blur-xl rounded-full"
-                                                />
-                                            </div>
-
-                                            {/* Enemy Card Container */}
-                                            <motion.div
-                                                animate={{ x: animationPhase === 'clash' ? [0, -30, 0] : 0 }}
-                                                transition={{ duration: 0.6, repeat: animationPhase === 'clash' ? Infinity : 0 }}
-                                                className={cn(
-                                                    "relative p-6 rounded-[2rem] border-2 bg-black/60 backdrop-blur-3xl min-w-[160px] text-center transition-all duration-500",
-                                                    animationPhase === 'reveal' ? getTypeGlow(round.opponentCard.type) : "border-white/10"
-                                                )}
-                                            >
-                                                <div className="text-4xl mb-3 filter drop-shadow-xl">
-                                                    {animationPhase === 'reveal' ? getTypeIcon(round.opponentCard.type) : "❓"}
-                                                </div>
-                                                <div className="text-[10px] font-bold text-gray-400 mb-0.5 truncate max-w-[120px] mx-auto">
-                                                    {animationPhase === 'reveal' ? round.opponentCard.name : "???"}
-                                                </div>
-                                                <div className="text-2xl font-black text-red-500 orbitron">
-                                                    {animationPhase === 'reveal' ? round.opponentCard.stats.totalPower : "--"}
-                                                </div>
-                                                <h2 className="text-[7px] font-black text-white/20 orbitron mt-1 tracking-[0.2em] uppercase">{t('pvp.battle.enemyModel')}</h2>
-                                            </motion.div>
-                                        </motion.div>
-                                    )}
-                                </AnimatePresence>
-                            </div>
-
-                            {/* Player Mini Deck */}
-                            <div className="grid grid-cols-5 gap-2 h-16 max-w-lg mx-auto w-full mt-4">
-                                {activeBattleDeck.slice(0, 5).map((card, index) => (
-                                    <AnimatePresence key={index}>
-                                        {alivePlayerCards[index] && (
-                                            <motion.div
-                                                initial={{ opacity: 1, scale: 1 }}
-                                                animate={{
-                                                    scale: (currentRound - 1) === index ? 1.05 : 1,
-                                                    y: (currentRound - 1) === index && animationPhase === 'clash' ? -30 : 0,
-                                                }}
-                                                exit={{ opacity: 0, scale: 0.5, rotate: -15, filter: 'blur(8px)' }}
-                                                className={cn(
-                                                    "bg-black/40 border border-blue-500/20 rounded-xl flex flex-col items-center justify-center p-1 relative overflow-hidden",
-                                                    (currentRound - 1) === index ? "border-blue-500 bg-blue-500/5 shadow-[0_0_15px_rgba(59,130,246,0.15)]" : "opacity-40"
-                                                )}
-                                            >
-                                                <div className="text-lg">{getTypeIcon(card.type)}</div>
-                                                <div className="text-[9px] font-black text-blue-400 orbitron">{card.stats.totalPower}</div>
-                                            </motion.div>
-                                        )}
-                                    </AnimatePresence>
-                                ))}
-                            </div>
-                        </div>
-                    );
-                })()}
 
                 {/* 4-B. Double Battle Interactive (PVP Sync) */}
                 {phase === 'double-battle' && doubleBattleState && (
@@ -976,7 +865,6 @@ export default function StageBattlePage() {
                         </div>
                     </motion.div>
                 )}
-
             </div>
         </div>
     );

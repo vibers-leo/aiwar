@@ -9,7 +9,8 @@ import {
     saveUserProfile,
     loadUserProfile,
     claimStarterPackTransaction,
-    purchaseCardPackTransaction
+    purchaseCardPackTransaction,
+    checkAndRechargeTokens
 } from '@/lib/firebase-db';
 import {
     Quest,
@@ -444,8 +445,21 @@ export function UserProvider({ children }: { children: React.ReactNode }) {
 
             // [SYNC] Global Stats
             if (freshProfile) {
+                // [NEW] Token Auto-Refill Logic
+                let finalTokens = freshProfile.tokens;
+                try {
+                    finalTokens = await checkAndRechargeTokens(
+                        user.uid,
+                        freshProfile.tokens,
+                        freshProfile.lastTokenUpdate,
+                        fetchedSubscriptions
+                    );
+                } catch (err) {
+                    console.error("[UserContext] Token recharge failed:", err);
+                }
+
                 setCoins(freshProfile.coins);
-                setTokens(freshProfile.tokens);
+                setTokens(finalTokens);
                 setLevel(freshProfile.level);
                 setExperience(freshProfile.exp);
 
