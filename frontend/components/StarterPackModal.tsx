@@ -47,7 +47,7 @@ export default function StarterPackModal() {
         const cards = await claimStarterPack(nickname);
 
         if (cards && cards.length > 0) {
-            setRevealedCards(cards);
+            setRevealedCards(cards as unknown as Card[]);
             setShowReveal(true);
         } else {
             hideStarterPack();
