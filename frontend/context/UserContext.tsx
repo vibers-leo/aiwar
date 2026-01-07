@@ -486,7 +486,7 @@ export function UserProvider({ children }: { children: React.ReactNode }) {
                     tokens: freshProfile.tokens,
                     level: freshProfile.level,
                     experience: freshProfile.exp,
-                    inventory: formattedInv
+                    inventory: formattedInv as unknown as Card[]
                 }, user.uid);
             }
 
