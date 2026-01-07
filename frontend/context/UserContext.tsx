@@ -319,7 +319,7 @@ export function UserProvider({ children }: { children: React.ReactNode }) {
                                         isCommanderCard: true,
                                         isLocked: false,
                                         specialty: cmdTemplate.specialty
-                                    } as InventoryCard);
+                                    } as unknown as Card);
                                 }
                             }
                         }
