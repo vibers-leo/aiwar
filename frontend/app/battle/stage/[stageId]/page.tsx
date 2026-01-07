@@ -106,7 +106,9 @@ export default function StageBattlePage() {
 
         // Load User Deck from Inventory
         if (!userLoading) {
-            setUserDeck(inventory || []);
+            // [Fix] Ensure templateId exists and cast to Card[] to satisfy type requirements
+            const validCards = (inventory || []).filter(c => c.templateId) as unknown as Card[];
+            setUserDeck(validCards);
         }
 
         // Load Enemies (Specific to Story Stage)
