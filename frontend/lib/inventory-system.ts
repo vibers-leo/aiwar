@@ -23,14 +23,14 @@ import {
     updateDoc
 } from 'firebase/firestore';
 
-export interface InventoryCard extends Omit<Card, 'acquiredAt'> {
+export interface InventoryCard extends Omit<Card, 'acquiredAt' | 'templateId'> {
     acquiredAt: Timestamp | Date;
     instanceId: string; // 고유 인스턴스 ID (같은 카드 여러 개 소유 가능)
     faction?: string; // 추가 메타데이터
     power?: number; // 총 파워 (stats.totalPower의 별칭)
     affinity?: number; // Commander Affinity (0-100)
     imageUrl?: string;
-    templateId?: string;
+    templateId?: string; // Made optional here
     isCommanderCard?: boolean;
     description?: string;
     specialty?: string;
