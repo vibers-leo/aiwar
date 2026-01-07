@@ -9,9 +9,9 @@ import StarterPackOpeningModal from '@/components/StarterPackOpeningModal'; // I
 import FactionTutorialModal from '@/components/FactionTutorialModal'; // Import Faction Tutorial Modal
 import { useFooter } from '@/context/FooterContext';
 import { useUserProfile } from '@/hooks/useUserProfile';
-import { updateNickname } from '@/lib/firebase-db';
+import { updateNickname, claimStarterPackTransaction } from '@/lib/firebase-db';
 import { useFirebase } from '@/components/FirebaseProvider';
-import { distributeStarterPack, InventoryCard } from '@/lib/inventory-system'; // Import Starter Pack logic
+import { InventoryCard } from '@/lib/inventory-system'; // Import Inventory types
 import { Card as CardType } from '@/lib/types'; // Import Card Type
 import { useUser } from '@/context/UserContext';
 import { gameStorage } from '@/lib/game-storage';
@@ -136,35 +136,82 @@ export default function TutorialManager() {
 
     /**
      * Phase 1: Tutorial Close -> Distribute Pack & Show Crate
+     * [ATOMIC TRANSACTION] Uses claimStarterPackTransaction for reliability
      */
     const handleTutorialClose = async () => {
         setShowTutorialModal(false);
 
-        // Distribute Starter Pack Logic
+        // [ATOMIC TRANSACTION] Distribute Starter Pack with all-or-nothing guarantee
         try {
-            console.log("[TutorialManager] Distributing Starter Pack...");
-            // Pass nickname for Custom Commander Card
-            const rewards = await distributeStarterPack(user?.uid, profile?.nickname);
-            if (rewards.length > 0) {
-                setStarterCards(rewards as unknown as CardType[]);
+            console.log("[TutorialManager] 🎁 Starting Atomic Starter Pack Transaction...");
 
-                // [Fix] Immediately refresh inventory so user context is in sync
-                await refreshData();
-
-                // Instead of showing Receipt immediately, show the Opening Ceremony first
-                setShowOpeningModal(true);
-            } else {
-                // Fallback if distribution fails (should rarely happen)
+            if (!user?.uid) {
+                console.error("[TutorialManager] ❌ No user UID found!");
                 finalizeTutorial();
+                return;
             }
+
+            if (!profile?.nickname) {
+                console.error("[TutorialManager] ❌ No nickname found!");
+                finalizeTutorial();
+                return;
+            }
+
+            // Generate cards first (same logic as before)
+            const { generateCardByRarity } = await import('@/lib/card-generation-system');
+            const commonCard = generateCardByRarity('common', user.uid);
+            const rareCard = generateCardByRarity('rare', user.uid);
+            const epicCard = generateCardByRarity('epic', user.uid);
+            const legendaryCard = generateCardByRarity('legendary', user.uid);
+            const uniqueCard = generateCardByRarity('unique', user.uid);
+
+            // Customize Unique Card with Nickname
+            uniqueCard.name = `군단장 ${profile.nickname}`;
+            uniqueCard.description = "전장에 새롭게 합류한 군단장의 전용 유닛입니다.";
+
+            const starterPack = [
+                commonCard,
+                rareCard,
+                epicCard,
+                legendaryCard,
+                uniqueCard
+            ];
+
+            // [ATOMIC TRANSACTION] This ensures cards + coins + flag are set together
+            await claimStarterPackTransaction(
+                user.uid,
+                profile.nickname,
+                starterPack,
+                1000 // Coin reward
+            );
+
+            console.log("[TutorialManager] ✅ Starter Pack Transaction Complete!");
+
+            // Prepare cards for UI display
+            const inventoryCards = starterPack.map(card => ({
+                ...card,
+                instanceId: '', // UI display only
+                acquiredAt: new Date()
+            } as InventoryCard));
+
+            setStarterCards(inventoryCards as unknown as CardType[]);
+
+            // [Fix] Immediately refresh inventory so user context is in sync
+            await refreshData();
+
+            // Show the Opening Ceremony
+            setShowOpeningModal(true);
+
         } catch (e: any) {
-            if (e.message === 'ALREADY_CLAIMED' || e.code === 'ALREADY_CLAIMED') {
-                console.log("[Tutorial] Starter pack already claimed. Skipping receipt.");
+            if (e.message === 'ALREADY_CLAIMED') {
+                console.log("[TutorialManager] ⚠️ Starter pack already claimed. Skipping receipt.");
                 // Ensure context is synced
                 await refreshData();
                 finalizeTutorial();
             } else {
-                console.error("[Tutorial] Claim failed:", e);
+                console.error("[TutorialManager] ❌ Starter Pack Transaction Failed:", e);
+                // Show error to user
+                alert(`스타터팩 지급 중 오류가 발생했습니다: ${e.message}`);
                 finalizeTutorial();
             }
         }

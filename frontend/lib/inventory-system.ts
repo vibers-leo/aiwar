@@ -378,6 +378,10 @@ export function getInventoryStats(cards: InventoryCard[]) {
 /**
  * 스타터팩 지급 (튜토리얼 완료 시)
  * 일반 1, 희귀 1, 영웅 1, 전설 1, 유니크 1 (군단장 카드) 지급
+ * 
+ * @deprecated This function does NOT set the hasReceivedStarterPack flag.
+ * Use claimStarterPackTransaction from firebase-db.ts instead for atomic operations.
+ * This function is kept for backward compatibility but should not be used for new code.
  */
 const UNIQUE_COMMANDER_PORTRAITS = [
     '/assets/cards/cyber-warlord.png',

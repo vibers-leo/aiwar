@@ -19,7 +19,7 @@ import {
     claimQuestReward as processQuestReward
 } from '@/lib/quest-system';
 import { generateCardByRarity } from '@/lib/card-generation-system';
-import { addCardToInventory, loadInventory, distributeStarterPack, InventoryCard } from '@/lib/inventory-system';
+import { addCardToInventory, loadInventory, InventoryCard } from '@/lib/inventory-system';
 import type { Card, Rarity } from '@/lib/types';
 import { useNotification } from '@/context/NotificationContext';
 import { useFirebase } from '@/components/FirebaseProvider';
