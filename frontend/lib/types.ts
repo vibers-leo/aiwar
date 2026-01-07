@@ -44,6 +44,8 @@ export interface CardTemplate {
     cardType: CardType;
     imageUrl: string;
     videoUrl?: string;
+    hoverSound?: string; // [NEW] 호버 시 재생될 효과음 URL
+    hoverVideo?: string; // [NEW] 호버 시 재생될 영상 URL
     description: string;
     baseStats: {
         creativity: { min: number; max: number };
@@ -75,6 +77,8 @@ export interface Card {
     type?: AIType; // Rock-Paper-Scissors type
     imageUrl?: string; // Card image URL
     videoUrl?: string; // Card video URL
+    hoverSound?: string; // Card hover sound URL
+    hoverVideo?: string; // Card hover video URL
     description?: string; // Card description
     specialSkill?: {
         name: string;

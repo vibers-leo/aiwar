@@ -128,9 +128,13 @@ function GameCard({
     const config = RARITY_CONFIG[rarity];
 
     // 카드 이미지/영상 가져오기
-    const characterImage = getCardCharacterImage(card.templateId, card.name, rarity);
+    const characterImage = card.imageUrl || getCardCharacterImage(card.templateId, card.name, rarity);
     const factionIcon = card.templateId ? getFactionIcon(card.templateId.split('-')[0]) : null;
-    const characterVideo = getCardCharacterVideo(card.templateId, rarity);
+
+    // [FIX] 호버 비디오 우선순위: hoverVideo > videoUrl > getCardCharacterVideo
+    const characterVideo = card.hoverVideo || card.videoUrl || getCardCharacterVideo(card.templateId, rarity);
+    const hoverSound = card.hoverSound;
+    const audioRef = useRef<HTMLAudioElement | null>(null);
 
     // 호버 시 영상 재생 제어
     useEffect(() => {
@@ -144,8 +148,32 @@ function GameCard({
         }
     }, [isHovered, characterVideo]);
 
-    // 전설/유니크는 상시 영상 표시 가능
-    const shouldShowVideo = characterVideo && (isHovered || rarity === 'unique');
+    // 호버 시 사운드 재생 제어
+    useEffect(() => {
+        if (!hoverSound) return;
+
+        if (!audioRef.current) {
+            audioRef.current = new Audio(hoverSound);
+            audioRef.current.volume = 0.5;
+        }
+
+        if (isHovered) {
+            audioRef.current.currentTime = 0;
+            audioRef.current.play().catch(e => console.warn("Audio play failed", e));
+        } else {
+            audioRef.current.pause();
+            audioRef.current.currentTime = 0;
+        }
+
+        return () => {
+            if (audioRef.current) {
+                audioRef.current.pause();
+            }
+        };
+    }, [isHovered, hoverSound]);
+
+    // 전설/유니크는 상시 영상 표시 가능, 또는 호버 비디오가 있을 때 호버 시 표시
+    const shouldShowVideo = characterVideo && (isHovered || (rarity === 'unique' && !card.hoverVideo));
     const isHighRarity = rarity === 'legendary' || rarity === 'unique' || rarity === 'commander';
 
     return (

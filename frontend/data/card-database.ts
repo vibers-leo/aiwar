@@ -287,7 +287,7 @@ export const CARD_DATABASE: CardTemplate[] = [
         rarity: 'unique',
         specialty: 'text',
         cardType: 'normal',
-        imageUrl: '/assets/cards/gemini-character.png',
+        imageUrl: '/assets/cards/shodan-echo.png',
         description: 'A fragment of a legendary malevolent AI. Speaks in riddles and nightmares.',
         baseStats: { creativity: { min: 90, max: 100 }, accuracy: { min: 90, max: 100 }, speed: { min: 80, max: 90 }, stability: { min: 40, max: 60 }, ethics: { min: 0, max: 5 } },
         specialAbility: { name: 'Neural Shock', description: 'Stuns enemy for 1 turn.', type: 'active' }
