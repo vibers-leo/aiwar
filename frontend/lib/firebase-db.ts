@@ -39,13 +39,17 @@ export function cleanDataForFirestore(data: any): any {
     if (data === null || typeof data !== 'object') return data;
     if (data instanceof Date) return data;
 
-    // Firebase FieldValue(sentinel) 인지 확인 (내부 속성 또는 생성자 이름으로 판단)
-    if (data.constructor && (data.constructor.name === 'FieldValue' || data.constructor.name === 'n')) {
-        return data;
-    }
-
-    // 더 안전한 방법: Firestore 특수 객체는 변환하지 않음
-    if (data._methodName || (data.constructor && data.constructor.name.includes('FieldValue'))) {
+    // [CRITICAL] Firebase FieldValue detection (supports production mangled names like 'n', 'o', etc.)
+    const constructorName = data.constructor?.name;
+    if (
+        (data._methodName && typeof data._methodName === 'string') ||
+        (constructorName && (
+            constructorName === 'FieldValue' ||
+            constructorName === 'n' ||
+            constructorName === 'o' ||
+            constructorName.includes('FieldValue')
+        ))
+    ) {
         return data;
     }
 
@@ -186,19 +190,22 @@ export async function claimStarterPackTransaction(
             }
 
             // 1. 프로필 업데이트 (코인 증액 + 닉네임 + 플래그)
-            const profileUpdate = {
+            // [Fix] Use a more explicit update/set logic
+            const profileUpdate: any = {
                 nickname,
-                coins: increment(coinReward),
                 hasReceivedStarterPack: true,
-                lastLogin: serverTimestamp()
+                lastLogin: serverTimestamp(),
+                tutorialCompleted: true // Set this here too for atomic consistency
             };
 
             if (exists) {
+                profileUpdate.coins = increment(coinReward);
                 transaction.update(userRef, profileUpdate);
             } else {
                 // 신규 유저인 경우 기본값과 함께 생성
                 transaction.set(userRef, {
                     ...profileUpdate,
+                    coins: coinReward, // Direct value for new doc
                     tokens: 1000,
                     level: 1,
                     exp: 0,
@@ -207,6 +214,7 @@ export async function claimStarterPackTransaction(
             }
 
             // 2. 카드 지급
+            console.log(`[Transaction] Distributing ${cards.length} cards...`);
             for (const card of cards) {
                 const instanceId = `${card.id}-${Date.now()}-${Math.random().toString(36).substr(2, 9)}`;
                 const cardRef = doc(db!, 'users', userId, 'inventory', instanceId);
@@ -215,6 +223,9 @@ export async function claimStarterPackTransaction(
                     instanceId,
                     acquiredAt: serverTimestamp()
                 });
+
+                // [LOG] Verify no undefined values in cleaned data
+                console.log(`[Transaction] Setting card: ${instanceId} (${card.id})`);
                 transaction.set(cardRef, cleanedCard);
             }
         });
@@ -256,8 +267,9 @@ function calculateTokenBonuses(subscriptions: { factionId: string; tier: Subscri
  * 군단 구독 처리 (생성 또는 갱신)
  */
 export async function subscribeToFaction(userId: string, factionId: string, tier: import('./faction-subscription').SubscriptionTier): Promise<boolean> {
+    if (!isFirebaseConfigured || !db) return false;
     try {
-        const subscriptionsRef = collection(db!, 'users', userId, 'subscriptions');
+        const subscriptionsRef = collection(db, 'users', userId, 'subscriptions');
 
         // 1. 기존 동일 팩션 구독 확인 (활성 상태인 것)
         const q = query(subscriptionsRef, where('factionId', '==', factionId), where('status', '==', 'active'));
@@ -305,8 +317,12 @@ export async function subscribeToFaction(userId: string, factionId: string, tier
  * 유저의 활성 구독 목록 조회
  */
 export async function fetchUserSubscriptions(userId: string): Promise<any[]> {
+    if (!isFirebaseConfigured || !db) {
+        console.warn('Firebase not ready for subscriptions');
+        return [];
+    }
     try {
-        const subscriptionsRef = collection(db!, 'users', userId, 'subscriptions');
+        const subscriptionsRef = collection(db, 'users', userId, 'subscriptions');
         const q = query(subscriptionsRef, where('status', '==', 'active'));
         const querySnapshot = await getDocs(q);
 

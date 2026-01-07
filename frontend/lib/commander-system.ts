@@ -1,5 +1,5 @@
 import { InventoryCard, addCardToInventory, removeCardFromInventory } from './inventory-system';
-import { db } from './firebase';
+import { db, isFirebaseConfigured } from './firebase';
 import { doc, updateDoc, increment, collection, query, where, getDocs, writeBatch } from 'firebase/firestore';
 import { getUserId } from './firebase-auth';
 

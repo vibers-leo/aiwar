@@ -300,9 +300,15 @@ export default function StageBattlePage() {
             await new Promise(resolve => setTimeout(resolve, 800));
 
             // Log Clash
-            addBattleLog((language === 'ko'
-                ? `${round.playerCard.name} (${round.playerCard.stats.totalPower}) vs ${round.opponentCard.name} (${round.opponentCard.stats.totalPower})`
-                : `${round.playerCard.name} (${round.playerCard.stats.totalPower}) vs ${round.opponentCard.name} (${round.opponentCard.stats.totalPower})`), 'system');
+            const pPower = round.playerPower || round.playerCard.stats.totalPower;
+            const oPower = round.opponentPower || round.opponentCard.stats.totalPower;
+            const pMult = round.playerMultiplier || 1.0;
+            const oMult = round.opponentMultiplier || 1.0;
+
+            const pLog = `${round.playerCard.name} (${pPower}${pMult > 1 ? ' ⚡️UP' : ''})`;
+            const oLog = `${round.opponentCard.name} (${oPower}${oMult > 1 ? ' ⚠️UP' : ''})`;
+
+            addBattleLog(`${pLog} vs ${oLog}`, 'system');
 
             setAnimationPhase('clash');
             await new Promise(resolve => setTimeout(resolve, 1500));
@@ -316,14 +322,16 @@ export default function StageBattlePage() {
                     next[i] = false;
                     return next;
                 });
-                addBattleLog(t('battle.log.victory', { name: String(round.playerCard.name) }), 'winner');
+                const advantageMsg = pMult > 1 ? t('battle.log.advantage') + "! " : "";
+                addBattleLog(advantageMsg + t('battle.log.victory', { name: String(round.playerCard.name) }), 'winner');
             } else if (round.winner === 'opponent') {
                 setAlivePlayerCards(prev => {
                     const next = [...prev];
                     next[i] = false;
                     return next;
                 });
-                addBattleLog(t('battle.log.victory', { name: String(round.opponentCard.name) }), 'enemy');
+                const advantageMsg = oMult > 1 ? t('battle.log.enemyAdvantage') + "! " : "";
+                addBattleLog(advantageMsg + t('battle.log.victory', { name: String(round.opponentCard.name) }), 'enemy');
             } else {
                 addBattleLog(t('battle.log.draw'), 'draw');
             }

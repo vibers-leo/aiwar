@@ -191,36 +191,36 @@ export async function loadInventory(uid?: string): Promise<InventoryCard[]> {
     // [Request] "로컬스토리지 내용을 불러오는 것부터 완전히 차단"
     // If logged in (uid exists), we strictly rely on DB.
     // If DB is not configured or not ready, return empty [] instead of risking local data bleed.
-    if (uid && (!isFirebaseConfigured || !db)) {
-        console.warn('[Inventory] DB Only Mode: Firebase not ready/configured, but UID present. Returning empty inventory.');
-        return [];
-    }
-
-    if (!isFirebaseConfigured || !db) {
-        console.warn('Firebase가 설정되지 않았습니다. localStorage 사용.');
-        const key = getInventoryKey(uid);
-        const inventory = JSON.parse(localStorage.getItem(key) || '[]');
-
-        // LocalStorage 데이터도 동기화
-        return inventory.map((card: InventoryCard) => {
-            const staticData = CARD_DATABASE.find(c => c.id === card.id);
-            if (staticData) {
-                return {
-                    ...card,
-                    ...staticData,
-                    instanceId: card.instanceId,
-                    acquiredAt: card.acquiredAt,
-                    level: card.level || 1,
-                    experience: card.experience || 0,
-                    stats: card.stats || staticData.baseStats
-                };
-            }
-            return card;
-        });
-    }
 
     try {
         const userId = uid || await getUserId();
+
+        if (!isFirebaseConfigured || !db) {
+            if (userId && userId !== 'guest' && userId !== 'local-user') {
+                console.warn('[Inventory] Firebase not ready for logged-in user, returning empty.');
+                return [];
+            }
+
+            console.warn('Firebase가 설정되지 않았습니다. localStorage 사용.');
+            const key = getInventoryKey(userId);
+            const inventory = JSON.parse(localStorage.getItem(key) || '[]');
+            return inventory.map((card: InventoryCard) => {
+                const staticData = CARD_DATABASE.find(c => c.id === card.id);
+                if (staticData) {
+                    return {
+                        ...card,
+                        ...staticData,
+                        instanceId: card.instanceId,
+                        acquiredAt: card.acquiredAt,
+                        level: card.level || 1,
+                        experience: card.experience || 0,
+                        stats: card.stats || staticData.baseStats
+                    };
+                }
+                return card;
+            });
+        }
+
         const inventoryRef = collection(db, 'users', userId, 'inventory');
         const querySnapshot = await getDocs(inventoryRef);
 

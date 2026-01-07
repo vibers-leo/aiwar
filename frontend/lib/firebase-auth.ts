@@ -9,7 +9,8 @@ import {
     inMemoryPersistence,
     browserLocalPersistence,
     createUserWithEmailAndPassword,
-    signInWithEmailAndPassword
+    signInWithEmailAndPassword,
+    sendPasswordResetEmail
 } from 'firebase/auth';
 import { auth, isFirebaseConfigured } from './firebase';
 import { gameStorage } from './game-storage';
@@ -117,6 +118,23 @@ export async function signInWithEmail(email: string, password: string): Promise<
         console.error('이메일 로그인 실패:', error);
         alert(`[Firebase Login Error] ${error.message}`);
         return null;
+    }
+}
+
+/**
+ * 비밀번호 재설정 이메일 전송
+ */
+export async function resetPassword(email: string): Promise<void> {
+    if (!isFirebaseConfigured || !auth) {
+        console.warn('Firebase가 설정되지 않았습니다.');
+        return;
+    }
+
+    try {
+        await sendPasswordResetEmail(auth, email);
+    } catch (error: any) {
+        console.error('비밀번호 재설정 이메일 전송 실패:', error);
+        throw error;
     }
 }
 

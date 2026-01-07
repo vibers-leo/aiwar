@@ -30,6 +30,7 @@ export default function TutorialManager() {
     const [showFactionTutorial, setShowFactionTutorial] = useState(false); // New Faction Tutorial
 
     const [starterCards, setStarterCards] = useState<CardType[]>([]); // Rewards
+    const [isProcessing, setIsProcessing] = useState(false); // [NEW] Loading state
     const { showFooter, hideFooter } = useFooter();
 
     // [FIX] Prevent duplicate onboarding triggers
@@ -153,7 +154,9 @@ export default function TutorialManager() {
      * [ATOMIC TRANSACTION] Uses claimStarterPackTransaction for reliability
      */
     const handleTutorialClose = async () => {
-        setShowTutorialModal(false);
+        // [Safety] Prevent simultaneous claims
+        if (isProcessing) return;
+        setIsProcessing(true);
 
         // [ATOMIC TRANSACTION] Distribute Starter Pack with all-or-nothing guarantee
         try {
@@ -180,8 +183,8 @@ export default function TutorialManager() {
             const uniqueCard = generateCardByRarity('unique', user.uid);
 
             // Customize Unique Card with Nickname
-            uniqueCard.name = `군단장 ${profile.nickname}`;
-            uniqueCard.description = "전장에 새롭게 합류한 군단장의 전용 유닛입니다.";
+            uniqueCard.name = `지휘관 ${profile.nickname}`; // [Fixed] Unified with UserContext
+            uniqueCard.description = "전장에 새롭게 합류한 지휘관의 전용 유닉입니다."; // [Fixed] typo
 
             const starterPack = [
                 commonCard,
@@ -211,23 +214,36 @@ export default function TutorialManager() {
             setStarterCards(inventoryCards as unknown as CardType[]);
 
             // [Fix] Immediately refresh inventory so user context is in sync
+            console.log("[TutorialManager] 🔄 Refreshing data after transaction...");
             await refreshData();
+
+            // ONLY NOW hide the tutorial modal
+            setShowTutorialModal(false);
 
             // Show the Opening Ceremony
             setShowOpeningModal(true);
 
         } catch (e: any) {
+            console.error("[TutorialManager] ❌ CRITICAL ERROR in handleTutorialClose:", e);
+
             if (e.message === 'ALREADY_CLAIMED') {
-                console.log("[TutorialManager] ⚠️ Starter pack already claimed. Skipping receipt.");
-                // Ensure context is synced
+                console.log("[TutorialManager] ⚠️ Starter pack already claimed. Proceeding to finalize.");
                 await refreshData();
+                setShowTutorialModal(false);
                 finalizeTutorial();
             } else {
-                console.error("[TutorialManager] ❌ Starter Pack Transaction Failed:", e);
-                // Show error to user
-                alert(`스타터팩 지급 중 오류가 발생했습니다: ${e.message}`);
-                finalizeTutorial();
+                // [CRITICAL FIX] DO NOT finalizeTutorial() on unknown errors!
+                // This allows the user to refresh the page and try again, 
+                // rather than being permanently locked out by the local storage flag.
+                console.error("[TutorialManager] ❌ Starter Pack Transaction Failed. User remains in tutorial state for retry.");
+                alert(`스타터팩 지급 중 오류가 발생했습니다: ${e.message}\n페이지를 새로고침 한 후 다시 시도해 주세요.`);
+
+                // Still hide the modal to avoid covering the whole screen, 
+                // but finalizeTutorial() is NOT called, so onboarding_completed remains false.
+                setShowTutorialModal(false);
             }
+        } finally {
+            setIsProcessing(false);
         }
     };
 

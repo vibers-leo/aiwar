@@ -479,6 +479,8 @@ export const ko: Translations = {
     'battle.log.roundStart': '라운드 {n} 시작!',
     'battle.log.victory': '{name} 승리!',
     'battle.log.draw': '무승부!',
+    'battle.log.advantage': '상성 우위 확보!',
+    'battle.log.enemyAdvantage': '적이 상성 우위를 확보했습니다!',
     'battle.result.win': 'WIN',
     'battle.result.lose': 'LOSE',
     'battle.result.draw': 'DRAW',

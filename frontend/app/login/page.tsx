@@ -6,6 +6,7 @@ import Link from 'next/link';
 import { login, validateUsername, validatePassword, signInAsGuest } from '@/lib/auth-utils';
 import GoogleLoginButton from '@/components/GoogleLoginButton';
 import { BackgroundBeams } from '@/components/ui/aceternity/background-beams';
+import PasswordResetModal from '@/components/PasswordResetModal';
 
 export default function LoginPage() {
     const router = useRouter();
@@ -13,6 +14,7 @@ export default function LoginPage() {
     const [password, setPassword] = useState('');
     const [error, setError] = useState('');
     const [isLoading, setIsLoading] = useState(false);
+    const [isResetModalOpen, setIsResetModalOpen] = useState(false);
 
     const handleSubmit = async (e: React.FormEvent) => {
         e.preventDefault();
@@ -101,6 +103,16 @@ export default function LoginPage() {
                             />
                         </div>
 
+                        <div className="flex justify-end">
+                            <button
+                                type="button"
+                                onClick={() => setIsResetModalOpen(true)}
+                                className="text-[10px] font-bold text-cyan-400/60 hover:text-cyan-400 transition-colors uppercase tracking-widest"
+                            >
+                                Forgot Access Key?
+                            </button>
+                        </div>
+
                         {/* 에러 메시지 */}
                         {error && (
                             <div className="bg-red-500/10 border border-red-500/30 rounded-lg p-3 text-red-400 text-xs font-bold text-center">
@@ -149,6 +161,11 @@ export default function LoginPage() {
                     </div>
                 </div>
             </div>
+
+            <PasswordResetModal
+                isOpen={isResetModalOpen}
+                onClose={() => setIsResetModalOpen(false)}
+            />
         </div>
     );
 }

@@ -469,6 +469,8 @@ export type TranslationKey =
     | 'battle.log.roundStart'
     | 'battle.log.victory'
     | 'battle.log.draw'
+    | 'battle.log.advantage'
+    | 'battle.log.enemyAdvantage'
     | 'battle.log.finalVictory'
     | 'battle.log.finalDefeat'
     | 'battle.result.win'

@@ -1,12 +1,13 @@
 'use client';
 
-import React, { createContext, useContext, useState, useEffect, useCallback } from 'react';
+import React, { createContext, useContext, useState, useEffect, useCallback, useRef } from 'react';
 import { useUserProfile } from '@/hooks/useUserProfile';
 import {
     updateCoins as firebaseUpdateCoins,
     updateTokens as firebaseUpdateTokens,
     updateExpAndLevel as firebaseUpdateExpAndLevel,
     saveUserProfile,
+    loadUserProfile,
     claimStarterPackTransaction,
     purchaseCardPackTransaction
 } from '@/lib/firebase-db';
@@ -34,6 +35,8 @@ import { UserSubscription } from '@/lib/faction-subscription';
 import { UserProfile, fetchUserSubscriptions } from '@/lib/firebase-db';
 import { User } from 'firebase/auth';
 import { gameStorage } from '@/lib/game-storage';
+import { updateGameState } from '@/lib/game-state';
+import { isFirebaseConfigured, db } from '@/lib/firebase';
 
 interface UserContextType {
     coins: number;
@@ -90,6 +93,7 @@ export function UserProvider({ children }: { children: React.ReactNode }) {
     const [mounted, setMounted] = useState(false);
     const [showSafeMode, setShowSafeMode] = useState(false); // [NEW] Safe Mode Recovery
     const [isLoggingOut, setIsLoggingOut] = useState(false); // [NEW] Logout UX Overlay
+    const isRefreshing = useRef(false);
 
     const isAdmin = user?.email === 'admin@example.com';
 
@@ -365,6 +369,7 @@ export function UserProvider({ children }: { children: React.ReactNode }) {
 
     const completeTutorial = useCallback(async () => {
         if (!user?.uid || !profile) return;
+        if (!isFirebaseConfigured || !db) return;
 
         try {
             // [DB-FIRST] Only update Firebase, no localStorage
@@ -377,8 +382,9 @@ export function UserProvider({ children }: { children: React.ReactNode }) {
     }, [user?.uid, profile, reloadProfile]);
 
     const refreshData = useCallback(async () => {
-        if (!mounted || !user || !profile) {
-            if (!user) resetState();
+        if (!mounted || !user || isRefreshing.current) return;
+        if (!isFirebaseConfigured || !db) {
+            console.warn("[UserContext] refreshData skipped - Firebase not configured or db not initialized.");
             setLoading(false);
             return;
         }
@@ -391,43 +397,75 @@ export function UserProvider({ children }: { children: React.ReactNode }) {
         }
 
         try {
-            await reloadProfile();
+            isRefreshing.current = true;
+            console.log("[UserContext] 🔄 Full data refresh triggered...");
+            const freshProfile = await loadUserProfile(user.uid);
             const inv = await loadInventory(user.uid);
-            const formattedInv = inv.map(c => ({
+            console.log(`[UserContext] 📦 Inventory loaded: ${inv.length} cards`);
+
+            const formattedInv: InventoryCard[] = inv.map(c => ({
                 ...c,
-                acquiredAt: (c.acquiredAt && 'toDate' in (c.acquiredAt as any)) ? (c.acquiredAt as any).toDate() : new Date(c.acquiredAt as any)
-            })) as InventoryCard[];
+                acquiredAt: (c.acquiredAt && (c.acquiredAt as any).toDate)
+                    ? (c.acquiredAt as any).toDate()
+                    : (c.acquiredAt instanceof Date ? c.acquiredAt : new Date(c.acquiredAt as any))
+            }));
+
             setInventory(formattedInv);
 
             const fetchedSubscriptions = await fetchUserSubscriptions(user.uid);
             setSubscriptions(fetchedSubscriptions);
 
-            // [NEW] Passive Token Recharge
-            const { processTokenRecharge, initTokenTimestamp } = await import('@/lib/token-system');
-
-            // Initialize timestamp if missing
-            if (!profile.lastTokenUpdate) {
-                await initTokenTimestamp(user.uid);
-                // Temporarily set for this run
-                profile.lastTokenUpdate = new Date();
+            // [MIGRATION] Firestore -> LocalStorage Sync for Factions
+            if (fetchedSubscriptions.length > 0) {
+                const subKey = `factionSubscriptions_${user.uid}`;
+                localStorage.setItem(subKey, JSON.stringify(fetchedSubscriptions));
             }
 
-            const rechargedTokens = await processTokenRecharge(profile, user.uid, fetchedSubscriptions);
-            if (rechargedTokens !== null) {
-                setTokens(rechargedTokens);
-                // Update local profile ref to avoid 'flicker' if reloadProfile is slow? 
-                // Context state 'tokens' is authority for UI.
-            } else {
-                setTokens(profile.tokens); // Ensure sync
+            // [QUEST] Sync Quests
+            const { loadQuestsFromFirebase, getFreshQuestState, saveQuestsToFirebase } = await import('@/lib/quest-system');
+            const { loadResearchFromFirestore, loadStageProgressFromFirestore } = await import('@/lib/firebase-db');
+
+            let loadedQuests = await loadQuestsFromFirebase(user.uid);
+            if (!loadedQuests) {
+                console.log("[UserContext] No quests in DB, creating fresh state...");
+                loadedQuests = getFreshQuestState();
+                await saveQuestsToFirebase(user.uid, loadedQuests);
+            }
+            setQuests(loadedQuests);
+            saveQuests(loadedQuests); // Local cache
+
+            // [RESEARCH] Sync Research
+            const loadedResearch = await loadResearchFromFirestore(user.uid);
+            if (loadedResearch) setResearch(loadedResearch);
+
+            // [PROGRESS] Sync Stage Progress
+            const loadedProgress = await loadStageProgressFromFirestore(user.uid);
+            if (loadedProgress) setStageProgress(loadedProgress);
+
+            // [SYNC] Global Stats
+            if (freshProfile) {
+                setCoins(freshProfile.coins);
+                setTokens(freshProfile.tokens);
+                setLevel(freshProfile.level);
+                setExperience(freshProfile.exp);
+
+                // [Fix] Ensure compatibility with legacy state
+                updateGameState({
+                    coins: freshProfile.coins,
+                    tokens: freshProfile.tokens,
+                    level: freshProfile.level,
+                    experience: freshProfile.exp,
+                    inventory: formattedInv
+                }, user.uid);
             }
 
-            // [DB-FIRST] Use only profile.tutorialCompleted from DB
-            const isTutorialCompleted = profile.tutorialCompleted === true;
+            // [STARTER PACK] Auto-check
+            // If user has NO cards and hasn't received pack, show modal
+            const isTutorialCompleted = localStorage.getItem(`tutorial_completed_${user.uid}`) === 'true';
 
-            // Starter Pack eligibility: Level 1, NO received flag, NO cards, and Tutorial MUST be completed.
             if (!isClaimingInSession &&
                 formattedInv.length === 0 &&
-                !profile.hasReceivedStarterPack &&
+                !freshProfile?.hasReceivedStarterPack &&
                 isTutorialCompleted) {
                 setStarterPackAvailable(true);
             } else {
@@ -436,9 +474,11 @@ export function UserProvider({ children }: { children: React.ReactNode }) {
             setError(null);
         } catch (err) {
             console.error("WARNING: Failed to refresh user data from DB (Non-fatal)", err);
+        } finally {
+            isRefreshing.current = false;
             setLoading(false);
         }
-    }, [mounted, profile, reloadProfile, user?.uid, isClaimingInSession, resetState]);
+    }, [mounted, user?.uid, isClaimingInSession, resetState]);
 
     const addCoinsByContext = async (amount: number) => {
         if (!mounted || !profile || !user) return;
@@ -530,6 +570,10 @@ export function UserProvider({ children }: { children: React.ReactNode }) {
 
     const claimStarterPack = async (nickname: string, silent: boolean = false): Promise<InventoryCard[]> => {
         if (!mounted || !user) return [];
+        if (!isFirebaseConfigured || !db) {
+            console.error("[UserContext] cannot claim starter pack: Firebase not configured.");
+            return [];
+        }
 
         // [LOGOUT GUARD]
         const isPendingLogout = typeof window !== 'undefined' && localStorage.getItem('pending_logout') === 'true';

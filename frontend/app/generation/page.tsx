@@ -47,6 +47,12 @@ export default function GenerationPage() {
     const [rewardModalTitle, setRewardModalTitle] = useState("카드 획득!");
     const [isProcessingAll, setIsProcessingAll] = useState(false);
 
+    const loadData = useCallback(() => {
+        const updatedSlots = updateAllSlotStatuses(userId);
+        setSlots(updatedSlots);
+        setSubscriptions(getSubscribedFactions(userId));
+    }, [userId]);
+
     useEffect(() => {
         try {
             const data = (aiFactionsData as { factions: AIFaction[] })?.factions || [];
@@ -57,7 +63,7 @@ export default function GenerationPage() {
             console.error("Data Load Error", e);
         }
         loadData();
-    }, [userId]);
+    }, [userId, loadData]);
 
     // Optimized polling: Separate the 1s UI "tick" from the expensive data reload
     useEffect(() => {
@@ -67,21 +73,14 @@ export default function GenerationPage() {
 
         // Periodically sync heavy state (every 10s or when needed)
         const stateSyncTimer = setInterval(() => {
-            updateAllSlotStatuses(userId);
-            setSlots(getGenerationSlots(userId));
+            loadData();
         }, 10000);
 
         return () => {
             clearInterval(timer);
             clearInterval(stateSyncTimer);
         };
-    }, [userId]);
-
-    const loadData = () => {
-        updateAllSlotStatuses(userId);
-        setSlots(getGenerationSlots(userId));
-        setSubscriptions(getSubscribedFactions(userId));
-    };
+    }, [userId, loadData]);
 
     const handleAssignFaction = async (slotIndex: number, factionId: string) => {
         const alreadyAssigned = slots.some(s => s.factionId === factionId);
@@ -210,8 +209,8 @@ export default function GenerationPage() {
 
             const readySlots = slots.filter(slot => {
                 if (!slot.factionId) return false;
-                const status = checkGenerationStatus(slot.index, userId);
-                return status.canGenerate;
+                const canGen = !!(slot.nextGenerationAt && new Date(slot.nextGenerationAt).getTime() <= Date.now());
+                return canGen;
             });
 
             if (readySlots.length === 0) return;
@@ -339,8 +338,7 @@ export default function GenerationPage() {
                         <div className="grid grid-cols-5 gap-4">
                             {slots.map((slot) => {
                                 const subscription = subscriptions.find(s => s.factionId === slot.factionId);
-                                const status = checkGenerationStatus(slot.index, userId);
-                                const canGenerate = status.canGenerate;
+                                const canGenerate = !!(slot.factionId && slot.nextGenerationAt && new Date(slot.nextGenerationAt).getTime() <= Date.now());
                                 const remainingTime = getRemainingTime(slot.nextGenerationAt);
                                 const remaining = slot.factionId ? getRemainingGenerations(slot.factionId, userId) : 0;
                                 const faction = factions.find(f => f.id === slot.factionId);

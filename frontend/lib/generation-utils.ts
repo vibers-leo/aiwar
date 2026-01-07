@@ -5,6 +5,7 @@ import aiFactionsData from '@/data/ai-factions.json';
 
 import { storage } from './utils';
 import { gameStorage } from './game-storage';
+import { getGameState } from './game-state';
 import { Card } from './types';
 import { generateId } from './utils';
 import {
@@ -48,7 +49,7 @@ export function getGenerationSlots(userId?: string): GenerationSlot[] {
             nextGenerationAt: null,
             generationInterval: 0
         }));
-        storage.set('generationSlots', initialSlots);
+        storage.set(key, initialSlots);
         return initialSlots;
     }
 
@@ -250,7 +251,7 @@ export async function generateCard(slotIndex: number, userId?: string): Promise<
     const { generateRandomCard } = require('./card-generation-system');
 
     // Research Stat Extraction
-    const gameState = await gameStorage.loadGameState(userId);
+    const gameState = getGameState(userId);
     const researchStats = gameState.research?.stats;
     const researchBonuses = {
         efficiency: researchStats?.efficiency?.currentLevel || 0,
@@ -292,7 +293,7 @@ export async function generateCard(slotIndex: number, userId?: string): Promise<
 /**
  * 모든 슬롯 상태 업데이트
  */
-export function updateAllSlotStatuses(userId?: string): void {
+export function updateAllSlotStatuses(userId?: string): GenerationSlot[] {
     const slots = getGenerationSlots(userId);
 
     slots.forEach(slot => {
@@ -311,6 +312,7 @@ export function updateAllSlotStatuses(userId?: string): void {
     });
 
     saveSlots(slots, userId);
+    return slots;
 }
 
 /**

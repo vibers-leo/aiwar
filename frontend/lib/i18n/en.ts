@@ -481,6 +481,8 @@ export const en: Translations = {
     'battle.log.roundStart': 'Round {n} Start!',
     'battle.log.victory': '{name} Victory!',
     'battle.log.draw': 'Draw!',
+    'battle.log.advantage': 'Secured tactical advantage!',
+    'battle.log.enemyAdvantage': 'Enemy secured tactical advantage!',
     'battle.result.win': 'WIN',
     'battle.result.lose': 'LOSE',
     'battle.result.draw': 'DRAW',
