@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { X, Users, Loader2, Copy, Check, RefreshCw } from 'lucide-react';
 import { cn } from '@/lib/utils';
@@ -34,6 +34,11 @@ export default function RealtimeMatchingModal({
     const [searching, setSearching] = useState(false);
     const [error, setError] = useState<string | null>(null);
 
+    // [FIX] Store unsubscribe functions in refs for cleanup
+    const matchListenerRef = useRef<(() => void) | null>(null);
+    const waitingRoomListenerRef = useRef<(() => void) | null>(null);
+    const timeoutRef = useRef<NodeJS.Timeout | null>(null);
+
     // 대기 시간 카운터
     useEffect(() => {
         let timer: NodeJS.Timeout;
@@ -65,23 +70,35 @@ export default function RealtimeMatchingModal({
                 return;
             }
 
-            // 매칭 리스너 설정
+            // [FIX] 매칭 리스너 설정 및 ref에 저장
             const unsubscribe = listenForMatch(battleMode, state.userId, (matchResult) => {
                 if (matchResult.success && matchResult.roomId) {
-                    unsubscribe();
+                    // 리스너 정리
+                    if (matchListenerRef.current) {
+                        matchListenerRef.current();
+                        matchListenerRef.current = null;
+                    }
+                    // 타임아웃 정리
+                    if (timeoutRef.current) {
+                        clearTimeout(timeoutRef.current);
+                        timeoutRef.current = null;
+                    }
                     setSearching(false);
                     onMatchFound(matchResult.roomId, matchResult.opponentName || '상대방');
                 }
             });
+            matchListenerRef.current = unsubscribe;
 
-            // 30초 후 타임아웃
-            setTimeout(() => {
-                if (searching) {
-                    unsubscribe();
-                    leaveMatchmaking(battleMode, state.userId);
-                    setSearching(false);
-                    setError('매칭 시간 초과. 다시 시도해주세요.');
+            // [FIX] 30초 후 타임아웃 (ref에 저장)
+            timeoutRef.current = setTimeout(async () => {
+                // 리스너 정리
+                if (matchListenerRef.current) {
+                    matchListenerRef.current();
+                    matchListenerRef.current = null;
                 }
+                await leaveMatchmaking(battleMode, state.userId);
+                setSearching(false);
+                setError('매칭 시간 초과. 다시 시도해주세요.');
             }, 30000);
 
         } catch (err) {
@@ -119,27 +136,39 @@ export default function RealtimeMatchingModal({
                 status: 'waiting'
             });
 
-            // 상대방 입장 리스너
+            // [FIX] 상대방 입장 리스너 (ref에 저장)
             const unsubscribe = onValue(waitingRoomRef, async (snapshot) => {
                 if (snapshot.exists()) {
                     const data = snapshot.val();
                     if (data.status === 'matched' && data.roomId) {
-                        off(waitingRoomRef);
+                        // 리스너 정리
+                        if (waitingRoomListenerRef.current) {
+                            waitingRoomListenerRef.current();
+                            waitingRoomListenerRef.current = null;
+                        }
+                        // 타임아웃 정리
+                        if (timeoutRef.current) {
+                            clearTimeout(timeoutRef.current);
+                            timeoutRef.current = null;
+                        }
                         setSearching(false);
                         onMatchFound(data.roomId, data.guestName || '친구');
                     }
                 }
             });
+            waitingRoomListenerRef.current = unsubscribe;
 
-            // 5분 후 만료
-            setTimeout(async () => {
-                if (searching) {
-                    off(waitingRoomRef);
-                    const { remove } = await import('firebase/database');
-                    await remove(waitingRoomRef);
-                    setSearching(false);
-                    setError('대기 시간 초과. 다시 시도해주세요.');
+            // [FIX] 5분 후 만료 (ref에 저장)
+            timeoutRef.current = setTimeout(async () => {
+                // 리스너 정리
+                if (waitingRoomListenerRef.current) {
+                    waitingRoomListenerRef.current();
+                    waitingRoomListenerRef.current = null;
                 }
+                const { remove } = await import('firebase/database');
+                await remove(waitingRoomRef);
+                setSearching(false);
+                setError('대기 시간 초과. 다시 시도해주세요.');
             }, 5 * 60 * 1000);
 
         } catch (err) {
@@ -248,16 +277,43 @@ export default function RealtimeMatchingModal({
         setTimeout(() => setCopied(false), 2000);
     };
 
-    // 취소
+    // [FIX] 취소 - 모든 리스너와 타임아웃 정리
     const handleCancel = async () => {
-        if (searching) {
-            const { leaveMatchmaking } = await import('@/lib/realtime-pvp-service');
-            const { getGameState } = await import('@/lib/game-state');
-            const state = getGameState();
-            await leaveMatchmaking(battleMode, state.userId);
+        // 매칭 리스너 정리
+        if (matchListenerRef.current) {
+            matchListenerRef.current();
+            matchListenerRef.current = null;
         }
+
+        // 대기실 리스너 정리
+        if (waitingRoomListenerRef.current) {
+            waitingRoomListenerRef.current();
+            waitingRoomListenerRef.current = null;
+        }
+
+        // 타임아웃 정리
+        if (timeoutRef.current) {
+            clearTimeout(timeoutRef.current);
+            timeoutRef.current = null;
+        }
+
+        // Firebase에서 매칭 큐 제거
+        if (searching) {
+            try {
+                const { leaveMatchmaking } = await import('@/lib/realtime-pvp-service');
+                const { getGameState } = await import('@/lib/game-state');
+                const state = getGameState();
+                await leaveMatchmaking(battleMode, state.userId);
+            } catch (err) {
+                console.error('Failed to leave matchmaking:', err);
+            }
+        }
+
+        // 상태 초기화
         setSearching(false);
         setMode('select');
+        setError(null);
+        setWaitTime(0);
         onClose();
     };
 
