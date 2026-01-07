@@ -7,11 +7,12 @@ import aiFactionsData from '@/data/ai-factions.json';
 import { cn } from '@/lib/utils';
 import { useUserProfile } from '@/hooks/useUserProfile';
 import { useAlert } from '@/context/AlertContext';
-import { Info, X, Check, Crown, Zap, Clock, Infinity } from 'lucide-react';
+import { Info, X, Check, Crown, Zap, Clock, Infinity, Shield, Battery } from 'lucide-react';
 import FactionLoreModal from '@/components/FactionLoreModal';
 import { FACTION_LORE_DATA, FactionLore } from '@/lib/faction-lore';
 import { getCardCharacterImage } from '@/lib/card-images';
 import { useFirebase } from '@/components/FirebaseProvider';
+import SubscriptionStatusPanel from '@/components/SubscriptionStatusPanel';
 import {
     getSubscribedFactions,
     subscribeFaction,
@@ -103,7 +104,7 @@ export default function FactionsPage() {
         const subscription = getFactionSubscription(factionId, userId);
         if (!subscription) return;
 
-        // 환불 금액 미리 계산 (로직 복제)
+        // 환불 금액 미리 계산
         const calculateRefundPreview = () => {
             if (subscription.dailyCost === 0) return 0;
 
@@ -118,7 +119,6 @@ export default function FactionsPage() {
                 const subscriptionStart = new Date(subscription.subscribedAt);
                 const hoursUsed = (now.getTime() - subscriptionStart.getTime()) / (1000 * 60 * 60);
 
-                // 24시간 이내 취소: 전액 환불
                 if (hoursUsed < 24) {
                     return subscription.dailyCost;
                 }
@@ -169,7 +169,12 @@ export default function FactionsPage() {
             color="purple"
         >
             <div className="flex flex-col">
-                {/* Subscription Info */}
+                {/* Subscription Status Panel (New) */}
+                <div className="mb-6">
+                    <SubscriptionStatusPanel />
+                </div>
+
+                {/* Subscription Info & Market Economy Warning */}
                 <div className="mb-6 bg-gradient-to-r from-purple-500/10 to-cyan-500/10 border border-purple-500/20 rounded-lg p-6 flex-shrink-0">
                     <div className="flex items-start justify-between mb-4">
                         <div>
@@ -187,9 +192,10 @@ export default function FactionsPage() {
                         </div>
                     </div>
 
+                    {/* Tier Benefits Summary */}
                     <div className="bg-black/30 rounded-lg p-4 flex items-start gap-3">
                         <Info className="text-cyan-400 flex-shrink-0 mt-0.5" size={20} />
-                        <div className="text-sm text-white/80">
+                        <div className="text-sm text-white/80 w-full">
                             <p className="font-bold mb-2">💎 티어별 혜택</p>
                             <div className="grid grid-cols-3 gap-3 text-xs">
                                 <div className="bg-gray-500/10 border border-gray-500/20 rounded p-2">
@@ -198,11 +204,13 @@ export default function FactionsPage() {
                                 </div>
                                 <div className="bg-blue-500/10 border border-blue-500/20 rounded p-2">
                                     <p className="font-bold text-blue-400 mb-1">Pro</p>
-                                    <p className="text-white/60">40코인 • Lv.10 • 20회/일</p>
+                                    <p className="text-white/60">40코인 • 20회/일</p>
+                                    <p className="text-green-400 font-bold mt-1">+충전 속도 UP</p>
                                 </div>
-                                <div className="bg-purple-500/10 border border-blue-500/20 rounded p-2">
+                                <div className="bg-purple-500/10 border border-purple-500/20 rounded p-2">
                                     <p className="font-bold text-purple-400 mb-1">Ultra</p>
-                                    <p className="text-white/60">200코인 • Lv.30 • 무제한</p>
+                                    <p className="text-white/60">200코인 • 무제한</p>
+                                    <p className="text-green-400 font-bold mt-1">+최대 토큰 UP</p>
                                 </div>
                             </div>
                         </div>
@@ -258,8 +266,12 @@ export default function FactionsPage() {
 
                             <div className="p-8">
                                 <div className="flex items-center gap-4 mb-6">
-                                    <div className="w-16 h-16 bg-black rounded-lg flex items-center justify-center text-3xl">
-                                        🤖
+                                    <div className="w-16 h-16 bg-black rounded-lg flex items-center justify-center text-3xl overflow-hidden relative">
+                                        {selectedFaction.iconUrl ? (
+                                            <img src={selectedFaction.iconUrl} alt="icon" className="w-full h-full object-contain p-2" />
+                                        ) : (
+                                            '🤖'
+                                        )}
                                     </div>
                                     <div>
                                         <h2 className="text-2xl font-bold text-white">{selectedFaction.displayName}</h2>
@@ -282,7 +294,7 @@ export default function FactionsPage() {
                                                 onClick={() => setSelectedTier(tier)}
                                                 disabled={(!canAfford && tier !== 'free') || !isLevelSufficient}
                                                 className={cn(
-                                                    "p-4 rounded-xl border-2 transition-all text-left relative overflow-hidden",
+                                                    "p-4 rounded-xl border-2 transition-all text-left relative overflow-hidden flex flex-col h-full",
                                                     isSelected
                                                         ? "border-cyan-500 bg-cyan-500/10"
                                                         : "border-white/10 hover:border-white/30",
@@ -290,7 +302,7 @@ export default function FactionsPage() {
                                                 )}
                                             >
                                                 {!isLevelSufficient && (
-                                                    <div className="absolute inset-0 bg-black/80 flex flex-col items-center justify-center z-10 backdrop-blur-[1px] border border-white/5">
+                                                    <div className="absolute inset-0 bg-black/80 flex flex-col items-center justify-center z-20 backdrop-blur-[1px] border border-white/5">
                                                         <span className="text-xl mb-1">🔒</span>
                                                         <span className="text-xs font-bold text-red-400">Lv.{reqLevel} 필요</span>
                                                     </div>
@@ -301,7 +313,8 @@ export default function FactionsPage() {
                                                     {config.cost === 0 ? 'FREE' : `${config.cost.toLocaleString()}`}
                                                     {config.cost > 0 && <span className="text-xs text-white/60 ml-1">코인</span>}
                                                 </div>
-                                                <div className="space-y-1 text-xs text-white/60">
+
+                                                <div className="space-y-2 text-xs text-white/60 flex-1">
                                                     <div className="flex items-center gap-1">
                                                         <Clock size={12} />
                                                         {config.generationInterval}분 주기
@@ -310,6 +323,20 @@ export default function FactionsPage() {
                                                         {config.dailyLimit === 999999 ? <Infinity size={12} /> : <Zap size={12} />}
                                                         {config.dailyLimit === 999999 ? '무제한' : `${config.dailyLimit}회/일`}
                                                     </div>
+
+                                                    {/* Tier Specific Bonuses */}
+                                                    {tier === 'pro' && (
+                                                        <div className="pt-2 border-t border-white/10 text-green-400 font-bold flex items-center gap-1">
+                                                            <Battery size={12} />
+                                                            토큰 충전속도 +2
+                                                        </div>
+                                                    )}
+                                                    {tier === 'ultra' && (
+                                                        <div className="pt-2 border-t border-white/10 text-green-400 font-bold flex items-center gap-1">
+                                                            <Shield size={12} />
+                                                            최대 토큰 +1000
+                                                        </div>
+                                                    )}
                                                 </div>
                                             </button>
                                         );
@@ -321,9 +348,9 @@ export default function FactionsPage() {
                                     onClick={() => handleSubscribe(selectedFaction.id, selectedTier)}
                                     disabled={(coins < TIER_CONFIG[selectedTier].cost && selectedTier !== 'free') || level < TIER_LEVEL_REQ[selectedTier]}
                                     className={cn(
-                                        "w-full py-3 rounded-lg font-bold transition-colors",
+                                        "w-full py-3 rounded-lg font-bold transition-colors shadow-lg",
                                         (coins >= TIER_CONFIG[selectedTier].cost || selectedTier === 'free') && level >= TIER_LEVEL_REQ[selectedTier]
-                                            ? "bg-gradient-to-r from-purple-500 to-cyan-500 text-white hover:from-purple-400 hover:to-cyan-400"
+                                            ? "bg-gradient-to-r from-purple-500 to-cyan-500 text-white hover:from-purple-400 hover:to-cyan-400 shadow-cyan-500/20"
                                             : "bg-gray-700 text-gray-400 cursor-not-allowed"
                                     )}
                                 >
