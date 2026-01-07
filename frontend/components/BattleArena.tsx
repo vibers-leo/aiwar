@@ -61,7 +61,9 @@ export function BattleArena({
     // Game State
     const [status, setStatus] = useState<'strategy' | 'battling' | 'finished'>('strategy');
     const [timer, setTimer] = useState(strategyTime);
-    const [selectedOrder, setSelectedOrder] = useState<number[]>([0, 1, 2, 3, 4]);
+    const [selectedOrder, setSelectedOrder] = useState<number[]>(() =>
+        Array.from({ length: Math.min(playerDeck.length, maxRounds) }, (_, i) => i)
+    );
 
     // Battle Animation State
     const [currentRound, setCurrentRound] = useState(0);
@@ -72,16 +74,13 @@ export function BattleArena({
     const [battleLogs, setBattleLogs] = useState<BattleLog[]>([]);
 
     // 카드 상태
-    const [alivePlayerCards, setAlivePlayerCards] = useState<boolean[]>([]);
-    const [aliveEnemyCards, setAliveEnemyCards] = useState<boolean[]>([]);
+    const [alivePlayerCards, setAlivePlayerCards] = useState<boolean[]>(() =>
+        new Array(playerDeck.length).fill(true)
+    );
+    const [aliveEnemyCards, setAliveEnemyCards] = useState<boolean[]>(() =>
+        new Array(enemyDeck.length).fill(true)
+    );
     const [currentBattleCards, setCurrentBattleCards] = useState<{ player: number, enemy: number } | null>(null);
-
-    // 초기 상태 설정
-    useEffect(() => {
-        setSelectedOrder(Array.from({ length: Math.min(playerDeck.length, maxRounds) }, (_, i) => i));
-        setAlivePlayerCards(new Array(playerDeck.length).fill(true));
-        setAliveEnemyCards(new Array(enemyDeck.length).fill(true));
-    }, [playerDeck.length, enemyDeck.length, maxRounds]);
 
     // 로그 추가 함수
     const addBattleLog = useCallback((message: string, type: BattleLog['type'] = 'system') => {
