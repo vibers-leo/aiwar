@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useCallback } from 'react';
 import { useParams, useRouter } from 'next/navigation';
 import { motion, AnimatePresence } from 'framer-motion';
 import { Card, BattleMode } from '@/lib/types';
@@ -13,7 +13,7 @@ import CardPlacementBoard, { RoundPlacement as BoardPlacement } from '@/componen
 import { useTranslation } from '@/context/LanguageContext';
 import BattleDeckSelection from '@/components/battle/BattleDeckSelection';
 import { useUser } from '@/context/UserContext';
-import { Award, Trophy, XCircle, Zap, Users, Shield, Eye, Swords, ArrowLeft } from 'lucide-react';
+import { Zap, Shield, ArrowLeft } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import GameCard from '@/components/GameCard';
 import { BackgroundBeams } from '@/components/ui/aceternity/background-beams';
@@ -36,9 +36,10 @@ type Phase =
 export default function StageBattlePage() {
     const params = useParams();
     const router = useRouter();
-    const { playSound } = useGameSound();
+    // const { playSound } = useGameSound(); // Removed unused
+
     const { t, language } = useTranslation();
-    const { inventory, loading: userLoading, coins, level, user, trackMissionEvent } = useUser(); // [Updated] Added user & trackMissionEvent
+    const { inventory, loading: userLoading, level, user, trackMissionEvent } = useUser(); // [Updated] Added user & trackMissionEvent
 
     // Stage Data
     const [storyStage, setStoryStage] = useState<StoryStage | null>(null);
@@ -50,11 +51,11 @@ export default function StageBattlePage() {
     // Battle State
     const [phase, setPhase] = useState<Phase>('intro');
     const [selectedHand, setSelectedHand] = useState<Card[]>([]); // Current selection in deck-select
-    const [cardPlacement, setCardPlacement] = useState<BoardPlacement | null>(null);
+    // const [cardPlacement, setCardPlacement] = useState<BoardPlacement | null>(null); // Removed unused
+    // const [animating, setAnimating] = useState(false); // Removed unused
+    const [animationPhase, setAnimationPhase] = useState<'idle' | 'ready' | 'clash' | 'reveal'>('idle');
     const [battleResult, setBattleResult] = useState<BattleResult | null>(null);
     const [currentRound, setCurrentRound] = useState(0);
-    const [animating, setAnimating] = useState(false);
-    const [animationPhase, setAnimationPhase] = useState<'idle' | 'ready' | 'clash' | 'reveal'>('idle');
 
     // Mini Card States
     const [alivePlayerCards, setAlivePlayerCards] = useState<boolean[]>([true, true, true, true, true]);
@@ -70,7 +71,7 @@ export default function StageBattlePage() {
         roundWinner: 'player' | 'opponent' | 'draw' | null;
         playerWins: number;
         opponentWins: number;
-        history: any[];
+        history: { round: number; winner: string }[];
     }>({
         round: 1,
         phase: 'ready',
@@ -132,7 +133,7 @@ export default function StageBattlePage() {
                 generatedEnemies.push({ ...generatedEnemies[0], id: `enemy-extra-${generatedEnemies.length}` });
             }
 
-            const enemyCards = generatedEnemies.slice(0, targetCount).map((e: any, i: number) => ({
+            const enemyCards = generatedEnemies.slice(0, targetCount).map((e: { id?: string; name: string; attribute: string; power: number }, i: number) => ({
                 id: `enemy-${i}`,
                 templateId: e.id || `enemy-${i}`,
                 name: language === 'ko' ? e.name : e.name,
@@ -153,133 +154,60 @@ export default function StageBattlePage() {
     }, [params.stageId, router, language, inventory, userLoading]);
 
     // --- Actions ---
+    // --- UI Helpers & Battle Logic ---
 
-    const startDeckSelection = () => {
-        setPhase('deck-select');
-    };
-
-    const confirmDeck = (selected: Card[]) => {
-        setSelectedHand(selected);
-        setPhase('card-placement');
-    };
-
-    const handlePlacementComplete = (placement: BoardPlacement) => {
-        if (!storyStage) return;
-        setCardPlacement(placement);
-
-        // Flatten BoardPlacement to Card List for Battle Logic
-        let playerBattleDeck: Card[] = [];
-        if (storyStage.battleMode === 'sudden-death') {
-            playerBattleDeck = [placement.round1.main, placement.round2.main, placement.round3.main, placement.round4.main, placement.round5.main].filter((c): c is Card => !!c);
-        } else if (storyStage.battleMode === 'double' || storyStage.battleMode === 'ambush') {
-            // Re-constructing deck for Double Battle / Ambush logic
-            if (storyStage.battleMode === 'double') {
-                // Double Battle needs 6 cards in sequence: R1(2), R2(2), R3(2)
-                playerBattleDeck = [
-                    placement.round1.main, placement.round1.hidden,
-                    placement.round2.main, placement.round2.hidden,
-                    placement.round3.main, placement.round3.hidden
-                ].filter((c): c is Card => !!c);
-            } else {
-                // Ambush: R1, R2, R3, R4, R5, R3(Hidden Ambush)
-                playerBattleDeck = [
-                    placement.round1.main,
-                    placement.round2.main,
-                    placement.round3.main,
-                    placement.round4.main,
-                    placement.round5.main,
-                    placement.round3.hidden // The Ambush Card
-                ].filter((c): c is Card => !!c);
-            }
-        } else {
-            // Tactics & Standard
-            playerBattleDeck = [placement.round1.main, placement.round2.main, placement.round3.main, placement.round4.main, placement.round5.main].filter((c): c is Card => !!c);
+    const getTypeGlow = (type: string | undefined) => {
+        switch (type) {
+            case 'EFFICIENCY': return 'shadow-[0_0_20px_rgba(239,68,68,0.5)] border-red-500/50';
+            case 'COST': return 'shadow-[0_0_20px_rgba(245,158,11,0.5)] border-amber-500/50';
+            case 'CREATIVITY': return 'shadow-[0_0_20px_rgba(59,130,246,0.5)] border-blue-500/50';
+            case 'FUNCTION': return 'shadow-[0_0_20px_rgba(168,85,247,0.5)] border-purple-500/50';
+            default: return 'border-white/10';
         }
-
-        handleStartBattle(playerBattleDeck);
     };
 
-    const handleStartBattle = (preparedDeck: Card[]) => {
-        if (!storyStage) return;
-        setActiveBattleDeck(preparedDeck); // SAVE DECK for View/Interaction
+    const getTypeIcon = (type: string | undefined) => {
+        switch (type) {
+            case 'EFFICIENCY': return '✊';
+            case 'COST': return '✌️';
+            case 'CREATIVITY': return '✋';
+            case 'FUNCTION': return '✂️';
+            default: return '❓';
+        }
+    };
 
-        const player: BattleParticipant = {
-            name: `Player_${level}`,
-            level: level,
-            deck: preparedDeck,
-            cardOrder: [0, 1, 2, 3, 4, 5], // Simple index order
+    const addBattleLog = useCallback((message: string, type: BattleLog['type'] = 'system') => {
+        const id = Math.random().toString(36).substring(2, 9);
+        setBattleLogs(prev => [...prev, { id, message, type }]);
+        setTimeout(() => {
+            setBattleLogs(prev => prev.filter(log => log.id !== id));
+        }, 6000);
+    }, []);
+
+    const finishDoubleBattle = useCallback((finalState: typeof doubleBattleState) => {
+        // Calculate Winner
+        let finalWinner: 'player' | 'opponent' = 'opponent';
+        if (finalState.playerWins > finalState.opponentWins) finalWinner = 'player';
+        else if (finalState.playerWins === finalState.opponentWins) finalWinner = 'opponent'; // Draw is loss in PVE?
+
+        const result: BattleResult = {
+            winner: finalWinner,
+            rounds: [],
+            playerWins: finalState.playerWins,
+            opponentWins: finalState.opponentWins,
+            rewards: {
+                coins: finalWinner === 'player' ? storyStage!.rewards.coins : 0,
+                experience: finalWinner === 'player' ? storyStage!.rewards.experience : 10,
+                ratingChange: 0
+            }
         };
 
-        const opponent: BattleParticipant = {
-            name: language === 'ko' ? storyStage.enemy.name_ko : storyStage.enemy.name,
-            level: storyStage.step,
-            deck: enemies,
-            cardOrder: [0, 1, 2, 3, 4, 5],
-        };
+        addBattleLog(t('battle.log.roundStart', { n: 1 }), 'system');
+        setBattleResult(result);
+        setPhase('result');
+    }, [storyStage, t, addBattleLog]);
 
-        if (storyStage.battleMode === 'double') {
-            startDoubleBattle(player, opponent);
-        } else {
-            const result = simulateBattle(player, opponent, storyStage.battleMode as BattleMode);
-            setBattleResult(result);
-            setCurrentRound(0);
-            setPhase('battle');
-            runBattleAnimation(result);
-        }
-    };
-
-    // --- Double Battle Logic (Ported from PVP) ---
-
-    const startDoubleBattle = (player: BattleParticipant, opponent: BattleParticipant) => {
-        setDoubleBattleState({
-            round: 1,
-            phase: 'ready',
-            timer: 3,
-            playerSelection: null,
-            opponentSelection: null,
-            roundWinner: null,
-            playerWins: 0,
-            opponentWins: 0,
-            history: []
-        });
-        setPhase('double-battle');
-        // Initial setup for first round
-        setDoubleBattleState(prev => ({ ...prev, round: 1, phase: 'ready', timer: 3 }));
-    };
-
-    // Auto-transition: Ready -> Choice
-    useEffect(() => {
-        if (phase === 'double-battle' && doubleBattleState.phase === 'ready') {
-            const t = setTimeout(() => {
-                setDoubleBattleState(prev => ({ ...prev, phase: 'choice', timer: 3 }));
-            }, 1500);
-            return () => clearTimeout(t);
-        }
-    }, [phase, doubleBattleState.phase, doubleBattleState.round]);
-
-
-    // Auto-timer: Choice -> Resolve
-    useEffect(() => {
-        if (phase === 'double-battle' && doubleBattleState.phase === 'choice') {
-            if (activeBattleDeck.length === 0) return;
-
-            if (doubleBattleState.timer > 0) {
-                const timerId = setTimeout(() => {
-                    setDoubleBattleState(prev => ({ ...prev, timer: prev.timer - 1 }));
-                }, 1000);
-                return () => clearTimeout(timerId);
-            } else {
-                resolveDoubleBattleRound();
-            }
-        }
-    }, [phase, doubleBattleState.phase, doubleBattleState.timer, activeBattleDeck]);
-
-    const handleDoubleBattleSelection = (card: Card) => {
-        if (doubleBattleState.phase !== 'choice') return;
-        setDoubleBattleState(prev => ({ ...prev, playerSelection: card }));
-    };
-
-    const resolveDoubleBattleRound = async () => {
+    const resolveDoubleBattleRound = useCallback(async () => {
         if (activeBattleDeck.length === 0) return;
 
         setDoubleBattleState(prev => {
@@ -309,6 +237,7 @@ export default function StageBattlePage() {
                 phase: 'clash',
                 playerWins: prev.playerWins + (winner === 'player' ? 1 : 0),
                 opponentWins: prev.opponentWins + (winner === 'opponent' ? 1 : 0),
+                history: [...prev.history, { round: prev.round, winner }]
             };
         });
 
@@ -330,97 +259,29 @@ export default function StageBattlePage() {
                 roundWinner: null
             };
         });
+    }, [activeBattleDeck, enemies, finishDoubleBattle]);
+
+    const handleDoubleBattleSelection = (card: Card) => {
+        if (doubleBattleState.phase !== 'choice') return;
+        setDoubleBattleState(prev => ({ ...prev, playerSelection: card }));
     };
 
-    const finishDoubleBattle = (finalState: any) => {
-        // Calculate Winner
-        let finalWinner: 'player' | 'opponent' = 'opponent';
-        if (finalState.playerWins > finalState.opponentWins) finalWinner = 'player';
-        else if (finalState.playerWins === finalState.opponentWins) finalWinner = 'opponent'; // Draw is loss in PVE?
-
-        const result: BattleResult = {
-            winner: finalWinner,
-            rounds: [],
-            playerWins: finalState.playerWins,
-            opponentWins: finalState.opponentWins,
-            rewards: {
-                coins: finalWinner === 'player' ? storyStage!.rewards.coins : 0,
-                experience: finalWinner === 'player' ? storyStage!.rewards.experience : 10,
-                ratingChange: 0
-            }
-        };
-
-        addBattleLog(t('battle.log.roundStart', { n: 1 }), 'system');
-        setBattleResult(result);
-        setPhase('result');
-    };
-
-
-    // --- UI Helpers (Ported from PVP Fight) ---
-    const getTypeColor = (type: string | undefined) => {
-        switch (type) {
-            case 'EFFICIENCY': return 'rgba(239, 68, 68, 0.6)';
-            case 'COST': return 'rgba(245, 158, 11, 0.6)';
-            case 'CREATIVITY': return 'rgba(59, 130, 246, 0.6)';
-            case 'FUNCTION': return 'rgba(168, 85, 247, 0.6)';
-            default: return 'rgba(255, 255, 255, 0.2)';
-        }
-    };
-
-    const getTypeGlow = (type: string | undefined) => {
-        switch (type) {
-            case 'EFFICIENCY': return 'shadow-[0_0_20px_rgba(239,68,68,0.5)] border-red-500/50';
-            case 'COST': return 'shadow-[0_0_20px_rgba(245,158,11,0.5)] border-amber-500/50';
-            case 'CREATIVITY': return 'shadow-[0_0_20px_rgba(59,130,246,0.5)] border-blue-500/50';
-            case 'FUNCTION': return 'shadow-[0_0_20px_rgba(168,85,247,0.5)] border-purple-500/50';
-            default: return 'border-white/10';
-        }
-    };
-
-    const getTypeIcon = (type: string | undefined) => {
-        switch (type) {
-            case 'EFFICIENCY': return '✊';
-            case 'COST': return '✌️';
-            case 'CREATIVITY': return '✋';
-            case 'FUNCTION': return '✂️';
-            default: return '❓';
-        }
-    };
-
-    const addBattleLog = (message: string, type: BattleLog['type'] = 'system') => {
-        const id = Math.random().toString(36).substring(2, 9);
-        setBattleLogs(prev => [...prev, { id, message, type }]);
-        setTimeout(() => {
-            setBattleLogs(prev => prev.filter(log => log.id !== id));
-        }, 6000);
-    };
-
-    const CombatLogDisplay = () => (
-        <div className="fixed bottom-32 left-8 z-50 flex flex-col gap-2 max-w-sm pointer-events-none">
-            <AnimatePresence mode="popLayout">
-                {battleLogs.map((log) => (
-                    <motion.div
-                        key={log.id}
-                        initial={{ opacity: 0, x: -20, scale: 0.9 }}
-                        animate={{ opacity: 1, x: 0, scale: 1 }}
-                        exit={{ opacity: 0, x: 20, scale: 0.8, filter: 'blur(10px)' }}
-                        className={cn(
-                            "px-4 py-2 rounded-xl backdrop-blur-md border shadow-lg text-[11px] font-bold orbitron tracking-tight",
-                            log.type === 'system' ? "bg-black/60 border-white/10 text-gray-300" :
-                                log.type === 'advantage' ? "bg-yellow-500/20 border-yellow-500/40 text-yellow-400" :
-                                    log.type === 'player' ? "bg-blue-500/20 border-blue-500/40 text-blue-400" :
-                                        log.type === 'enemy' ? "bg-red-500/20 border-red-500/40 text-red-400" :
-                                            log.type === 'winner' ? "bg-green-500/20 border-green-500/40 text-green-400" :
-                                                "bg-gray-500/20 border-gray-500/40 text-gray-400"
-                        )}
-                    >
-                        {log.message}
-                    </motion.div>
-                ))}
-            </AnimatePresence>
-        </div>
-    );
-
+    const startDoubleBattle = useCallback(() => {
+        setDoubleBattleState({
+            round: 1,
+            phase: 'ready',
+            timer: 3,
+            playerSelection: null,
+            opponentSelection: null,
+            roundWinner: null,
+            playerWins: 0,
+            opponentWins: 0,
+            history: []
+        });
+        setPhase('double-battle');
+        // Initial setup for first round
+        setDoubleBattleState(prev => ({ ...prev, round: 1, phase: 'ready', timer: 3 }));
+    }, []);
 
     // --- Generic Battle Animation ---
     const runBattleAnimation = async (result: BattleResult) => {
@@ -435,7 +296,7 @@ export default function StageBattlePage() {
             addBattleLog(t('pvp.log.roundStart', { n: i + 1 }), 'system');
 
             setAnimationPhase('ready');
-            setAnimating(true);
+            // setAnimating(true); // Removed
             await new Promise(resolve => setTimeout(resolve, 800));
 
             // Log Clash
@@ -470,7 +331,7 @@ export default function StageBattlePage() {
             await new Promise(resolve => setTimeout(resolve, 2000));
 
             setAnimationPhase('idle');
-            setAnimating(false);
+            // setAnimating(false); // Removed
             await new Promise(resolve => setTimeout(resolve, 500));
         }
 
@@ -505,11 +366,140 @@ export default function StageBattlePage() {
         } else {
             setPhase('intro');
             setBattleResult(null);
-            setCardPlacement(null);
+            // setCardPlacement(null); // Removed
             setSelectedHand([]);
             setActiveBattleDeck([]);
         }
     };
+
+    // --- Actions ---
+
+    const handleStartBattle = (preparedDeck: Card[]) => {
+        if (!storyStage) return;
+        setActiveBattleDeck(preparedDeck); // SAVE DECK for View/Interaction
+
+        const player: BattleParticipant = {
+            name: `Player_${level}`,
+            level: level,
+            deck: preparedDeck,
+            cardOrder: [0, 1, 2, 3, 4, 5], // Simple index order
+        };
+
+        const opponent: BattleParticipant = {
+            name: language === 'ko' ? storyStage.enemy.name_ko : storyStage.enemy.name,
+            level: storyStage.step,
+            deck: enemies,
+            cardOrder: [0, 1, 2, 3, 4, 5],
+        };
+
+        if (storyStage.battleMode === 'double') {
+            startDoubleBattle();
+        } else {
+            const result = simulateBattle(player, opponent, storyStage.battleMode as BattleMode);
+            setBattleResult(result);
+            setCurrentRound(0);
+            setPhase('battle');
+            runBattleAnimation(result);
+        }
+    };
+
+    const handlePlacementComplete = (placement: BoardPlacement) => {
+        if (!storyStage) return;
+        // setCardPlacement(placement); // Removed
+
+        // Flatten BoardPlacement to Card List for Battle Logic
+        let playerBattleDeck: Card[] = [];
+        if (storyStage.battleMode === 'sudden-death') {
+            playerBattleDeck = [placement.round1.main, placement.round2.main, placement.round3.main, placement.round4.main, placement.round5.main].filter((c): c is Card => !!c);
+        } else if (storyStage.battleMode === 'double' || storyStage.battleMode === 'ambush') {
+            // Re-constructing deck for Double Battle / Ambush logic
+            if (storyStage.battleMode === 'double') {
+                // Double Battle needs 6 cards in sequence: R1(2), R2(2), R3(2)
+                playerBattleDeck = [
+                    placement.round1.main, placement.round1.hidden,
+                    placement.round2.main, placement.round2.hidden,
+                    placement.round3.main, placement.round3.hidden
+                ].filter((c): c is Card => !!c);
+            } else {
+                // Ambush: R1, R2, R3, R4, R5, R3(Hidden Ambush)
+                playerBattleDeck = [
+                    placement.round1.main,
+                    placement.round2.main,
+                    placement.round3.main,
+                    placement.round4.main,
+                    placement.round5.main,
+                    placement.round3.hidden // The Ambush Card
+                ].filter((c): c is Card => !!c);
+            }
+        } else {
+            // Tactics & Standard
+            playerBattleDeck = [placement.round1.main, placement.round2.main, placement.round3.main, placement.round4.main, placement.round5.main].filter((c): c is Card => !!c);
+        }
+
+        handleStartBattle(playerBattleDeck);
+    };
+
+    const startDeckSelection = () => {
+        setPhase('deck-select');
+    };
+
+    const confirmDeck = (selected: Card[]) => {
+        setSelectedHand(selected);
+        setPhase('card-placement');
+    };
+
+    // Auto-transition: Ready -> Choice
+    useEffect(() => {
+        if (phase === 'double-battle' && doubleBattleState.phase === 'ready') {
+            const t = setTimeout(() => {
+                setDoubleBattleState(prev => ({ ...prev, phase: 'choice', timer: 3 }));
+            }, 1500);
+            return () => clearTimeout(t);
+        }
+    }, [phase, doubleBattleState.phase, doubleBattleState.round]);
+
+
+    // Auto-timer: Choice -> Resolve
+    useEffect(() => {
+        if (phase === 'double-battle' && doubleBattleState.phase === 'choice') {
+            if (activeBattleDeck.length === 0) return;
+
+            if (doubleBattleState.timer > 0) {
+                const timerId = setTimeout(() => {
+                    setDoubleBattleState(prev => ({ ...prev, timer: prev.timer - 1 }));
+                }, 1000);
+                return () => clearTimeout(timerId);
+            } else {
+                resolveDoubleBattleRound();
+            }
+        }
+    }, [phase, doubleBattleState.phase, doubleBattleState.timer, activeBattleDeck, resolveDoubleBattleRound]);
+
+    const CombatLogDisplay = () => (
+        <div className="fixed bottom-32 left-8 z-50 flex flex-col gap-2 max-w-sm pointer-events-none">
+            <AnimatePresence mode="popLayout">
+                {battleLogs.map((log) => (
+                    <motion.div
+                        key={log.id}
+                        initial={{ opacity: 0, x: -20, scale: 0.9 }}
+                        animate={{ opacity: 1, x: 0, scale: 1 }}
+                        exit={{ opacity: 0, x: 20, scale: 0.8, filter: 'blur(10px)' }}
+                        className={cn(
+                            "px-4 py-2 rounded-xl backdrop-blur-md border shadow-lg text-[11px] font-bold orbitron tracking-tight",
+                            log.type === 'system' ? "bg-black/60 border-white/10 text-gray-300" :
+                                log.type === 'advantage' ? "bg-yellow-500/20 border-yellow-500/40 text-yellow-400" :
+                                    log.type === 'player' ? "bg-blue-500/20 border-blue-500/40 text-blue-400" :
+                                        log.type === 'enemy' ? "bg-red-500/20 border-red-500/40 text-red-400" :
+                                            log.type === 'winner' ? "bg-green-500/20 border-green-500/40 text-green-400" :
+                                                "bg-gray-500/20 border-gray-500/40 text-gray-400"
+                        )}
+                    >
+                        {log.message}
+                    </motion.div>
+                ))}
+            </AnimatePresence>
+        </div>
+    );
 
     if (!storyStage) return <div className="min-h-screen bg-black text-white flex items-center justify-center">{t('common.loading')}</div>;
 
@@ -581,7 +571,7 @@ export default function StageBattlePage() {
                                         {language === 'ko' ? storyStage.enemy.name_ko : storyStage.enemy.name}
                                     </div>
                                     <p className="text-xl text-gray-300">
-                                        "{language === 'ko' ? (storyStage.enemy.dialogue.start_ko || storyStage.enemy.dialogue.intro_ko) : (storyStage.enemy.dialogue.start || storyStage.enemy.dialogue.intro)}"
+                                        &quot;{language === 'ko' ? (storyStage.enemy.dialogue.start_ko || storyStage.enemy.dialogue.intro_ko) : (storyStage.enemy.dialogue.start || storyStage.enemy.dialogue.intro)}&quot;
                                     </p>
                                 </div>
                             </div>

@@ -296,7 +296,7 @@ class UnifiedStorage {
         // 기본 상태 정의
         const defaultState: GameState = {
             coins: 0,
-            tokens: 100,
+            tokens: 1000,
             level: 1,
             experience: 0,
             inventory: [],
