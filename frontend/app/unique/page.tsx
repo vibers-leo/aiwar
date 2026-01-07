@@ -121,7 +121,7 @@ export default function UniqueCreationPage() {
 
         return {
             id: generateId(),
-            templateId: materials[0].templateId,
+            templateId: materials[0].templateId || materials[0].id, // [Fix] Fallback to ID if templateId is missing
             name: `${materials[0].name} (Unique)`, // Or better naming logic
             ownerId: userId,
             level: 1, // Reset level
