@@ -23,7 +23,7 @@ import {
     updateDoc
 } from 'firebase/firestore';
 
-export interface InventoryCard extends Omit<Card, 'acquiredAt' | 'templateId'> {
+export interface InventoryCard extends Omit<Card, 'acquiredAt' | 'templateId' | 'isLocked'> {
     acquiredAt: Timestamp | Date;
     instanceId: string; // 고유 인스턴스 ID (같은 카드 여러 개 소유 가능)
     faction?: string; // 추가 메타데이터
