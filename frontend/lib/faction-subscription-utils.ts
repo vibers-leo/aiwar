@@ -20,6 +20,23 @@ export interface FactionSubscription {
 }
 
 /**
+ * [FIX] Firestore Timestamp 또는 객체 형태의 날짜를 JS Date 객체로 변환
+ */
+function ensureDate(dateVal: any): Date {
+    if (!dateVal) return new Date();
+    if (dateVal instanceof Date) return dateVal;
+
+    // Firestore Timestamp { seconds, nanoseconds }
+    if (typeof dateVal === 'object' && 'seconds' in dateVal) {
+        return new Date(dateVal.seconds * 1000);
+    }
+
+    // Generic string or number
+    const date = new Date(dateVal);
+    return isNaN(date.getTime()) ? new Date() : date;
+}
+
+/**
  * 티어별 설정 (게임 밸런스 고려)
  * - cost는 '일간 유지비'로 설정 (Option 2 반영)
  * - 최초 가입 시에도 1일치 비용 선납
@@ -72,7 +89,8 @@ export function getSubscribedFactions(userId?: string): FactionSubscription[] {
     const currentSubs = subscriptions.map(sub => {
         const subscription = {
             ...sub,
-            subscribedAt: new Date(sub.subscribedAt)
+            subscribedAt: ensureDate(sub.subscribedAt),
+            lastBilledAt: sub.lastBilledAt || new Date().toISOString()
         };
 
         // 티어 설정에서 최신 값 가져와서 동기화

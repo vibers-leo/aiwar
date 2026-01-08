@@ -135,25 +135,32 @@ export default function GenerationPage() {
 
                     // Commander Rental Logic
                     try {
+                        console.log(`[Rental] Starting commander rental for faction: ${factionId}`);
                         if (commanderTemplate) {
-                            const inventory = await loadInventory(userId);
-                            const hasCommander = inventory.some(c => c.templateId === commanderTemplate.id);
+                            // Fetch fresh inventory to double check
+                            const currentInventory = await loadInventory(userId);
+                            const alreadyHasCommander = currentInventory.some(c => c.templateId === commanderTemplate.id && c.isRented);
 
-                            if (!hasCommander) {
-                                // Mark as rented
+                            if (!alreadyHasCommander) {
+                                console.log(`[Rental] Commander card not found in inventory, adding rental card: ${commanderTemplate.name}`);
                                 const newCommanderCard = {
                                     ...createCardFromTemplate(commanderTemplate),
                                     isRented: true,
                                     ownerId: userId as string
                                 };
-                                await addCardToInventory(newCommanderCard);
+                                const instanceId = await addCardToInventory(newCommanderCard);
+                                console.log(`[Rental] Successfully added commander card. InstanceID: ${instanceId}`);
                                 setRewardCards([newCommanderCard]);
                                 setRewardModalTitle("🎖️ COMMANDER RENTED 🎖️");
                                 setRewardModalOpen(true);
+                            } else {
+                                console.log(`[Rental] User already has a rented commander card for ${factionId}, skipping.`);
                             }
+                        } else {
+                            console.warn(`[Rental] No commander template found for faction: ${factionId}`);
                         }
                     } catch (error) {
-                        console.error("Failed to process Commander rental:", error);
+                        console.error("[Rental] Failed to process Commander rental:", error);
                     }
 
                     // Slot Assignment Reward (50 Tokens)
