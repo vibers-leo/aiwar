@@ -222,16 +222,16 @@ export function UserProvider({ children }: { children: React.ReactNode }) {
             console.log(`[Auth] User ${user.uid} and profile loaded. Syncing data...`);
             setLoading(true);
 
-            // [Safety] Force release loading state after 5 seconds if sync hangs
+            // [Safety] Force release loading state after 12 seconds if sync hangs
             const forceReleaseTimer = setTimeout(() => {
                 setLoading(prev => {
                     if (prev) {
-                        console.warn("⚠️ [Auth] Sync took too long. Force releasing loading state.");
+                        console.warn("⚠️ [Auth] Sync took too long (>12s). Force releasing loading state to prevent lock.");
                         return false;
                     }
                     return prev;
                 });
-            }, 5000);
+            }, 12000);
 
             // [NEW] Load inventory and subscriptions with commander logic
             const syncUserData = async () => {
@@ -240,6 +240,7 @@ export function UserProvider({ children }: { children: React.ReactNode }) {
                     const { loadQuestsFromFirebase, getFreshQuestState, saveQuestsToFirebase } = await import('@/lib/quest-system');
                     const { loadResearchFromFirestore, loadStageProgressFromFirestore } = await import('@/lib/firebase-db');
 
+                    console.log(`[Sync] 📥 Phase 1: Loading Quests for ${user.uid}...`);
                     let loadedQuests = await loadQuestsFromFirebase(user.uid);
 
                     if (!loadedQuests) {
@@ -250,6 +251,7 @@ export function UserProvider({ children }: { children: React.ReactNode }) {
                     setQuests(loadedQuests);
 
                     // Load research data
+                    console.log(`[Sync] 📥 Phase 2: Loading Research & Progress...`);
                     const loadedResearch = await loadResearchFromFirestore(user.uid);
                     if (loadedResearch) {
                         setResearch(loadedResearch);
@@ -733,11 +735,11 @@ export function UserProvider({ children }: { children: React.ReactNode }) {
         }
 
         const safetyTimer = setTimeout(() => {
-            if (loading) {
-                console.error("🚨 [CRITICAL] Application stuck in loading state for >5s. Activating Safe Mode Overlay.");
+            if (loading && user) {
+                console.error("🚨 [CRITICAL] Application stuck in loading state for >15s. Activating Safe Mode Overlay.");
                 setShowSafeMode(true);
             }
-        }, 5000);
+        }, 15000);
 
         return () => clearTimeout(safetyTimer);
     }, [mounted, loading]);
