@@ -472,7 +472,7 @@ export async function saveUserProfile(profile: Partial<UserProfile>, uid?: strin
 
         // 2. Sync Key Stats to Root Document (For Leaderboard Query)
         // We only update if these specific fields are present to avoid overwriting with nulls if partial update
-        const rootUpdates: any = { lastLogin: serverTimestamp() };
+        const rootUpdates: any = { lastLogin: serverTimestamp(), userId };
         if (profile.nickname) rootUpdates.nickname = profile.nickname;
         if (profile.avatarUrl) rootUpdates.avatarUrl = profile.avatarUrl;
         if (profile.rating !== undefined) rootUpdates.rating = profile.rating;

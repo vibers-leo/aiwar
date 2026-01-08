@@ -16,6 +16,7 @@ const firebaseConfig = {
     storageBucket: process.env.NEXT_PUBLIC_FIREBASE_STORAGE_BUCKET || '',
     messagingSenderId: process.env.NEXT_PUBLIC_FIREBASE_MESSAGING_SENDER_ID || '',
     appId: process.env.NEXT_PUBLIC_FIREBASE_APP_ID || '',
+    databaseURL: process.env.NEXT_PUBLIC_FIREBASE_DATABASE_URL || 'https://aiwar-14246-default-rtdb.firebaseio.com/',
 };
 
 // Firebase가 설정되었는지 확인

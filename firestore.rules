@@ -19,8 +19,8 @@ service cloud.firestore {
       allow read: if isAuthenticated();
       
       // Allow write only to own document
-      allow write: if isOwner(userId) && 
-                      request.resource.data.userId == userId;
+      // [FIX] Relaxed to allow partial updates (e.g. stats sync) which might not include full userId field
+      allow write: if isOwner(userId);
       
       // Profile subcollection (users/{userId}/profile/data)
       match /profile/{document=**} {

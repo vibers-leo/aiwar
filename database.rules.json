@@ -1,0 +1,25 @@
+{
+    "rules": {
+        "waitingRooms": {
+            ".read": "auth != null",
+            "$code": {
+                ".write": "auth != null",
+                ".validate": "newData.hasChildren(['hostId', 'status'])"
+            }
+        },
+        "battles": {
+            ".read": "auth != null",
+            "$roomId": {
+                ".write": "auth != null && (data.exists() ? (data.child('player1/playerId').val() == auth.uid || data.child('player2/playerId').val() == auth.uid) : true)"
+            }
+        },
+        "matchmaking": {
+            ".read": "auth != null",
+            "$mode": {
+                "$uid": {
+                    ".write": "auth != null && (auth.uid == $uid || !data.exists())"
+                }
+            }
+        }
+    }
+}
