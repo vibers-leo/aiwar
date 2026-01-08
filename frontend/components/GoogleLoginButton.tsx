@@ -2,19 +2,35 @@
 
 import { signInWithGoogle } from '@/lib/auth-utils';
 import { useRouter } from 'next/navigation';
-import { useState } from 'react';
+import { useState, useEffect } from 'react'; // [FIX] Added useEffect
+import { useUser } from '@/context/UserContext'; // [FIX] Added useUser
 
 export default function GoogleLoginButton() {
     const router = useRouter();
+    const { user } = useUser(); // [FIX] Get user from context
     const [isLoading, setIsLoading] = useState(false);
+
+    // [Safety] If user is detected while loading (even if promise hangs), redirect.
+    useEffect(() => {
+        if (isLoading && user) {
+            console.log("[GoogleLogin] User detected via Context. Redirecting...");
+            router.push('/');
+        }
+    }, [user, isLoading, router]);
 
     const handleGoogleLogin = async () => {
         setIsLoading(true);
-        const result = await signInWithGoogle();
-        if (result.success) {
-            router.push('/');
-        } else {
-            if (result.message) alert(result.message);
+        try {
+            const result = await signInWithGoogle();
+            if (result.success) {
+                // router.push('/') handled by effect or here
+                router.push('/');
+            } else {
+                if (result.message) alert(result.message);
+                setIsLoading(false);
+            }
+        } catch (e) {
+            console.error(e);
             setIsLoading(false);
         }
     };
