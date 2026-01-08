@@ -1170,6 +1170,10 @@ export default function PVPArenaPage() {
                                 selectedCards={playerDeck}
                                 battleMode={selectedMode}
                                 opponentDeck={opponentDeck}
+                                onCancel={() => {
+                                    setPhase('deck-reveal');
+                                    setRevealTimer(20);
+                                }}
                                 onPlacementComplete={(placement: RoundPlacement) => {
                                     let orderedDeck: Card[] = [];
 

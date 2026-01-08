@@ -6,11 +6,12 @@ import { cn } from '@/lib/utils';
 import RoundPlacementSlot from './RoundPlacementSlot';
 import { BattleMode } from '@/lib/pvp-battle-system';
 import { getTypeIcon, getTypeColor } from '@/lib/type-system';
-import { RefreshCcw, Wand2, Trash2, Swords } from 'lucide-react';
+import { RefreshCcw, Wand2, Trash2, Swords, ArrowRight } from 'lucide-react';
 
 interface CardPlacementBoardProps {
     selectedCards: any[];
     onPlacementComplete: (placement: RoundPlacement) => void;
+    onCancel?: () => void; // NEW: Cancel callback
     battleMode?: BattleMode; // 'sudden-death' 모드 확인용
     opponentDeck?: any[]; // 상대방 덱 정보
 }
@@ -23,7 +24,7 @@ export interface RoundPlacement {
     round5: { main: any; hidden?: any };
 }
 
-export default function CardPlacementBoard({ selectedCards, onPlacementComplete, battleMode = 'tactics', opponentDeck = [] }: CardPlacementBoardProps) {
+export default function CardPlacementBoard({ selectedCards, onPlacementComplete, onCancel, battleMode = 'tactics', opponentDeck = [] }: CardPlacementBoardProps) {
     const hasHiddenSlots = battleMode === 'ambush';
 
     const [placement, setPlacement] = useState<{
@@ -540,6 +541,16 @@ export default function CardPlacementBoard({ selectedCards, onPlacementComplete,
 
                     {/* Quick Access Bar (Reset/Auto/Start) */}
                     <div className="flex items-center justify-center gap-4 mt-2">
+                        {onCancel && (
+                            <button
+                                onClick={onCancel}
+                                className="px-6 py-2 bg-white/10 hover:bg-white/20 text-white font-bold rounded-full transition-all flex items-center gap-2"
+                            >
+                                <ArrowRight className="rotate-180" size={16} />
+                                취소
+                            </button>
+                        )}
+
                         <button
                             onClick={handleReset}
                             className="p-2 hover:bg-white/10 rounded-full text-white/40 hover:text-white transition-colors"
