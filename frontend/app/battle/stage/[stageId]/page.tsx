@@ -4,6 +4,7 @@ import { useState, useEffect, useCallback } from 'react';
 import { useParams, useRouter } from 'next/navigation';
 import { motion, AnimatePresence } from 'framer-motion';
 import { Card, BattleMode } from '@/lib/types';
+import { InventoryCard } from '@/lib/inventory-system';
 import { getStoryStage, completeStage, StoryStage } from '@/lib/story-system';
 import { generateEnemies, StageConfig } from '@/lib/stage-system';
 import { simulateBattle, BattleResult, BattleParticipant, applyBattleResult, determineRoundWinner } from '@/lib/pvp-battle-system';
@@ -47,11 +48,11 @@ export default function StageBattlePage() {
     const [enemies, setEnemies] = useState<Card[]>([]);
 
     // User State
-    const [userDeck, setUserDeck] = useState<Card[]>([]);
+    const [userDeck, setUserDeck] = useState<InventoryCard[]>([]);
 
     // Battle State
     const [phase, setPhase] = useState<Phase>('intro');
-    const [selectedHand, setSelectedHand] = useState<Card[]>([]); // Current selection in deck-select
+    const [selectedHand, setSelectedHand] = useState<InventoryCard[]>([]); // Current selection in deck-select
     // const [cardPlacement, setCardPlacement] = useState<BoardPlacement | null>(null); // Removed unused
     // const [animating, setAnimating] = useState(false); // Removed unused
     const [animationPhase, setAnimationPhase] = useState<'idle' | 'ready' | 'clash' | 'reveal'>('idle');
@@ -106,9 +107,8 @@ export default function StageBattlePage() {
 
         // Load User Deck from Inventory
         if (!userLoading) {
-            // [Fix] Ensure templateId exists and cast to Card[] to satisfy type requirements
-            const validCards = (inventory || []).filter(c => c.templateId) as unknown as Card[];
-            setUserDeck(validCards);
+            // InventoryCard now properly extends Card with guaranteed templateId
+            setUserDeck(inventory || []);
         }
 
         // Load Enemies (Specific to Story Stage)
@@ -138,6 +138,7 @@ export default function StageBattlePage() {
 
             const enemyCards = generatedEnemies.slice(0, targetCount).map((e: { id?: string; name: string; attribute: string; power: number }, i: number) => ({
                 id: `enemy-${i}`,
+                instanceId: `enemy-instance-${i}-${Date.now()}`,
                 templateId: e.id || `enemy-${i}`,
                 name: language === 'ko' ? e.name : e.name,
                 type: (e.attribute === 'rock' ? 'EFFICIENCY' : e.attribute === 'scissors' ? 'CREATIVITY' : 'FUNCTION') as 'EFFICIENCY' | 'CREATIVITY' | 'FUNCTION',

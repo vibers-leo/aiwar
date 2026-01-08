@@ -4,6 +4,7 @@ import { useState, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { useUser } from '@/context/UserContext';
 import { Card } from '@/lib/types';
+import { InventoryCard } from '@/lib/inventory-system';
 import GachaRevealModal from '@/components/GachaRevealModal';
 import {
     Terminal, Swords, Shield, Zap, Gift, ChevronRight, X, AlertCircle
@@ -65,7 +66,7 @@ export default function UnifiedTutorialModal({ onClose, onClaim }: UnifiedTutori
     const [isLoading, setIsLoading] = useState(true);
 
     // Reward State (deprecated if handled by onClaim, but keeping for safety in standalone use)
-    const [claimedCards, setClaimedCards] = useState<Card[]>([]);
+    const [claimedCards, setClaimedCards] = useState<InventoryCard[]>([]);
     const [showRewardModal, setShowRewardModal] = useState(false);
     const [isProcessing, setIsProcessing] = useState(false);
 
@@ -174,7 +175,7 @@ export default function UnifiedTutorialModal({ onClose, onClaim }: UnifiedTutori
         try {
             const cards = await claimStarterPack('신입 지휘관');
             if (cards && cards.length > 0) {
-                setClaimedCards(cards as unknown as Card[]);
+                setClaimedCards(cards);
                 setShowRewardModal(true);
                 setIsVisible(false);
             } else {

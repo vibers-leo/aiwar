@@ -42,6 +42,7 @@ const createBattleCard = (temp: CardTemplate, ownerId: string): Card => {
     return {
         ...temp,
         id: `${temp.id}_${ownerId}_${Date.now()}_${Math.random().toString(36).substr(2, 5)}`,
+        instanceId: `${temp.id}_${ownerId}_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`,
         templateId: temp.id,
         ownerId,
         level: 1,

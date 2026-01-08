@@ -79,6 +79,7 @@ export function generateRandomCard(ownerId: string, forcedRarity?: Rarity, insig
 
     return {
         id: generateId(),
+        instanceId: `${generateId()}-${Date.now()}`,
         templateId: `gen-${rarity}-${Date.now()}`,
         ownerId,
         name,

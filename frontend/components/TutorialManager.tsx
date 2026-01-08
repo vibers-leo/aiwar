@@ -29,7 +29,7 @@ export default function TutorialManager() {
     const [showStarterPackModal, setShowStarterPackModal] = useState(false); // The Cards UI (UnitReceipt)
     const [showFactionTutorial, setShowFactionTutorial] = useState(false); // New Faction Tutorial
 
-    const [starterCards, setStarterCards] = useState<CardType[]>([]); // Rewards
+    const [starterCards, setStarterCards] = useState<InventoryCard[]>([]); // Rewards
     const [isProcessing, setIsProcessing] = useState(false); // [NEW] Loading state
     const { showFooter, hideFooter } = useFooter();
 
@@ -37,13 +37,23 @@ export default function TutorialManager() {
     const onboardingTriggeredRef = useRef(false);
 
     useEffect(() => {
+        console.log("[TutorialManager] 📍 useEffect triggered", {
+            pathname,
+            hasUser: !!user,
+            profileLoading,
+            contextLoading,
+            onboardingTriggered: onboardingTriggeredRef.current
+        });
+
         // Only trigger on Main Lobby - other pages control their own footer
         if (pathname !== '/main') {
+            console.log("[TutorialManager] ⏭️ Skipping - Not on /main page");
             return;
         }
 
         if (!user) {
             // Reset trigger flag when user logs out
+            console.log("[TutorialManager] ⏭️ Skipping - No user logged in");
             onboardingTriggeredRef.current = false;
             return;
         }
@@ -211,7 +221,7 @@ export default function TutorialManager() {
                 acquiredAt: new Date()
             } as InventoryCard));
 
-            setStarterCards(inventoryCards as unknown as CardType[]);
+            setStarterCards(inventoryCards);
 
             // [Fix] Immediately refresh inventory so user context is in sync
             console.log("[TutorialManager] 🔄 Refreshing data after transaction...");

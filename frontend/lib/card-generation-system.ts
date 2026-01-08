@@ -250,6 +250,7 @@ export function createCardFromTemplate(template: any, factionEffects?: FactionEf
 
     const card: Card = {
         id: generateId(),
+        instanceId: `${generateId()}-${Date.now()}`, // Unique instance identifier
         templateId: template.id,
         name: template.name,
         rarity: rarity,

@@ -5,7 +5,7 @@ import { motion, AnimatePresence } from 'framer-motion';
 import { useUser } from '@/context/UserContext';
 import { Terminal, X, ChevronRight, Package, User, Zap } from 'lucide-react';
 import GachaRevealModal from './GachaRevealModal';
-import { Card } from '@/lib/types';
+import { InventoryCard } from '@/lib/inventory-system';
 import { useEscapeKey } from '@/hooks/useEscapeKey';
 import { cn } from '@/lib/utils';
 import { HoverBorderGradient } from '@/components/ui/aceternity/hover-border-gradient';
@@ -17,7 +17,7 @@ export default function StarterPackModal() {
     const [step, setStep] = useState<'welcome' | 'nickname' | 'confirm'>('welcome');
     const [nickname, setNickname] = useState('');
     const [isClaiming, setIsClaiming] = useState(false);
-    const [revealedCards, setRevealedCards] = useState<Card[]>([]);
+    const [revealedCards, setRevealedCards] = useState<InventoryCard[]>([]);
     const [showReveal, setShowReveal] = useState(false);
     const [error, setError] = useState('');
 
@@ -47,7 +47,7 @@ export default function StarterPackModal() {
         const cards = await claimStarterPack(nickname);
 
         if (cards && cards.length > 0) {
-            setRevealedCards(cards as unknown as Card[]);
+            setRevealedCards(cards);
             setShowReveal(true);
         } else {
             hideStarterPack();

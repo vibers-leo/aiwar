@@ -198,6 +198,7 @@ export function fuseCards(
     // 새 카드 생성 (레벨 1로 리셋)
     const fusedCard: Card = {
         id: generateId(),
+        instanceId: `${generateId()}-${Date.now()}`,
         templateId: materialCards[0].templateId, // 첫 번째 카드의 템플릿 사용
         name: materialCards[0].name,
         ownerId: userId,

@@ -11,7 +11,7 @@ import { getGameState } from '@/lib/game-state';
 import { useAlert } from '@/context/AlertContext';
 import { useUser } from '@/context/UserContext'; // [NEW] Added import
 import { gameStorage } from '@/lib/game-storage';
-import { loadInventory } from '@/lib/inventory-system';
+import { loadInventory, InventoryCard } from '@/lib/inventory-system';
 import { groupCardsByRarity, selectBalancedDeck, getMainCards } from '@/lib/balanced-deck-selector';
 import {
     BattleMode,
@@ -159,10 +159,10 @@ export default function PVPArenaPage() {
     const stats = getPVPStats();
     const state = getGameState();
 
-    const [inventory, setInventory] = useState<Card[]>([]);
+    const [inventory, setInventory] = useState<InventoryCard[]>([]);
 
     // 카드 선택 (푸터 대신 로컬 state)
-    const [selectedCards, setSelectedCards] = useState<Card[]>([]);
+    const [selectedCards, setSelectedCards] = useState<InventoryCard[]>([]);
 
     // 실시간 매칭 모달
     const [showMatchingModal, setShowMatchingModal] = useState(false);
@@ -171,7 +171,7 @@ export default function PVPArenaPage() {
     useEffect(() => {
         const loadCards = async () => {
             const cards = await gameStorage.getCards();
-            setInventory(cards as unknown as Card[]);
+            setInventory(cards);
         };
         loadCards();
     }, []);
@@ -255,7 +255,7 @@ export default function PVPArenaPage() {
                 acquiredAt: c.acquiredAt && typeof (c.acquiredAt as any).toDate === 'function'
                     ? (c.acquiredAt as any).toDate()
                     : new Date(c.acquiredAt as any)
-            })) as unknown as Card[];
+            }));
 
             setInventory(mappedInventory);
 
@@ -560,7 +560,7 @@ export default function PVPArenaPage() {
         setBattleResult(null);
         setCurrentRound(0);
         // Refresh cards
-        gameStorage.getCards().then(cards => setInventory(cards as unknown as Card[]));
+        gameStorage.getCards().then(cards => setInventory(cards));
     };
 
     return (

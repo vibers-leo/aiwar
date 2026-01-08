@@ -76,7 +76,7 @@ export function generateId(): string {
 }
 
 // 랜덤 카드 생성
-export function generateCard() {
+export function generateCard(): Card {
     const rarity = getRandomRarity({
         common: 60,
         rare: 30,
@@ -85,10 +85,12 @@ export function generateCard() {
     });
 
     const stats = generateRandomStats(rarity);
+    const id = generateId();
 
     return {
-        id: generateId(),
-        templateId: `generated-${generateId()}`,
+        id,
+        instanceId: `${id}-${Date.now()}`, // Unique instance identifier
+        templateId: `generated-${id}`,
         ownerId: 'user-001',
         level: 1,
         experience: 0,

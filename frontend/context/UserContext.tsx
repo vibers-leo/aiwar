@@ -292,7 +292,7 @@ export function UserProvider({ children }: { children: React.ReactNode }) {
                     })) as InventoryCard[];
 
                     const { COMMANDERS } = await import('@/data/card-database');
-                    const rentalCommanders: Card[] = [];
+                    const rentalCommanders: InventoryCard[] = [];
 
                     for (const sub of subs) {
                         // [Policy Change] All active subscribers get Commander access (Free included)
@@ -319,7 +319,7 @@ export function UserProvider({ children }: { children: React.ReactNode }) {
                                         isCommanderCard: true,
                                         isLocked: false,
                                         specialty: cmdTemplate.specialty
-                                    } as unknown as Card);
+                                    });
                                 }
                             }
                         }
@@ -486,7 +486,7 @@ export function UserProvider({ children }: { children: React.ReactNode }) {
                     tokens: freshProfile.tokens,
                     level: freshProfile.level,
                     experience: freshProfile.exp,
-                    inventory: formattedInv as unknown as Card[]
+                    inventory: formattedInv
                 }, user.uid);
             }
 

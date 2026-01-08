@@ -34,7 +34,19 @@ class SoundManager {
         }
     }
 
-    public playBGM(url: string) {
+    public async playBGM(url: string) {
+        // [FIX] Check if BGM file exists before attempting to play
+        try {
+            const response = await fetch(url, { method: 'HEAD' });
+            if (!response.ok) {
+                console.warn(`[SoundManager] BGM file not found: ${url}`);
+                return;
+            }
+        } catch {
+            console.warn(`[SoundManager] Could not check BGM file: ${url}`);
+            return;
+        }
+
         if (this.bgmAudio) {
             this.bgmAudio.pause();
         }
@@ -48,6 +60,7 @@ class SoundManager {
             console.warn('BGM play failed (autoplay policy?):', e);
         });
     }
+
 
     public stopBGM() {
         if (this.bgmAudio) {

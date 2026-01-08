@@ -202,6 +202,7 @@ export function claimUniqueUnit(): {
 
     const card: Card = {
         id: `unique-${Date.now()}`,
+        instanceId: `unique-${Date.now()}-${Math.random().toString(36).substr(2, 9)}`,
         templateId: unitData.id,
         ownerId: state.userId,
         level: 1,

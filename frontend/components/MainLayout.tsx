@@ -1,19 +1,28 @@
 'use client';
 
-import { useState, createContext, useContext } from 'react';
+import { useState, createContext, useContext, Suspense } from 'react';
 import { usePathname } from 'next/navigation';
 import GameSidebar from './GameSidebar';
 import GameTopBar from './GameTopBar';
 import MobileNav from './MobileNav'; // [NEW]
 import dynamic from 'next/dynamic';
 
+// Loading placeholder for hydration
+const LoadingPlaceholder = () => (
+    <div className="animate-pulse flex items-center justify-center p-4">
+        <div className="w-6 h-6 border-2 border-cyan-500/30 border-t-cyan-500 rounded-full animate-spin" />
+    </div>
+);
+
 const DynamicFooter = dynamic(() => import('@/components/DynamicFooter'), {
     ssr: false,
+    loading: () => <LoadingPlaceholder />,
 });
 
 // [NEW] Unified Tutorial Manager
 const TutorialManager = dynamic(() => import('@/components/TutorialManager'), {
     ssr: false,
+    loading: () => null, // TutorialManager should not show loading state
 });
 
 import { useFooter } from '@/context/FooterContext';
@@ -70,7 +79,9 @@ export default function MainLayout({ children }: { children: React.ReactNode }) 
                         )}
                     >
                         <TutorialManager />
-                        {children}
+                        <Suspense fallback={<LoadingPlaceholder />}>
+                            {children}
+                        </Suspense>
 
                         {/* Dynamic Footer - Only renders when FooterContext.visible is true */}
                         <div className="hidden md:block">

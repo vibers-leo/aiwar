@@ -23,19 +23,26 @@ import {
     updateDoc
 } from 'firebase/firestore';
 
-export interface InventoryCard extends Omit<Card, 'acquiredAt' | 'templateId' | 'isLocked'> {
+/**
+ * InventoryCard extends Card with additional inventory-specific properties.
+ * 
+ * [PROPER TYPE DESIGN]
+ * - InventoryCard IS-A Card, so it inherits all Card properties
+ * - Additional properties are added for inventory management
+ * - This ensures InventoryCard[] is assignable to Card[] without casting
+ */
+export interface InventoryCard extends Omit<Card, 'acquiredAt'> {
+    // Override acquiredAt to support Firestore Timestamp
     acquiredAt: Timestamp | Date;
-    instanceId: string; // 고유 인스턴스 ID (같은 카드 여러 개 소유 가능)
-    faction?: string; // 추가 메타데이터
-    power?: number; // 총 파워 (stats.totalPower의 별칭)
-    affinity?: number; // Commander Affinity (0-100)
-    imageUrl?: string;
-    templateId?: string; // Made optional here
+
+    // Required inventory-specific field
+    instanceId: string;
+
+    // Optional inventory metadata
+    faction?: string;
+    power?: number;
+    affinity?: number;
     isCommanderCard?: boolean;
-    description?: string;
-    specialty?: string;
-    aiFactionId?: string;
-    isLocked?: boolean;
 }
 
 export type CardFilter = {
@@ -213,18 +220,22 @@ export async function loadInventory(uid?: string): Promise<InventoryCard[]> {
             const inventory = JSON.parse(localStorage.getItem(key) || '[]');
             return inventory.map((card: InventoryCard) => {
                 const staticData = CARD_DATABASE.find(c => c.id === card.id);
+                // Ensure templateId is always set (fallback to id)
+                const templateId = card.templateId || card.id;
                 if (staticData) {
                     return {
                         ...card,
                         ...staticData,
+                        templateId,
                         instanceId: card.instanceId,
                         acquiredAt: card.acquiredAt,
                         level: card.level || 1,
                         experience: card.experience || 0,
-                        stats: card.stats || staticData.baseStats
+                        stats: card.stats || staticData.baseStats,
+                        isLocked: card.isLocked ?? false
                     };
                 }
-                return card;
+                return { ...card, templateId, isLocked: card.isLocked ?? false };
             });
         }
 
@@ -235,22 +246,29 @@ export async function loadInventory(uid?: string): Promise<InventoryCard[]> {
             const data = doc.data() as InventoryCard;
             const staticData = CARD_DATABASE.find(c => c.id === data.id);
 
+            // Ensure templateId is always set (fallback to id or doc.id)
+            const templateId = data.templateId || data.id || doc.id;
+
             if (staticData) {
                 return {
                     ...data,
                     ...staticData,
+                    templateId,
                     instanceId: data.instanceId,
                     acquiredAt: data.acquiredAt || new Date(),
                     level: data.level || 1,
                     experience: data.experience || 0,
                     stats: data.stats || staticData.baseStats,
+                    isLocked: data.isLocked ?? false
                 } as InventoryCard;
             }
 
             return {
                 ...data,
-                acquiredAt: data.acquiredAt || new Date()
-            };
+                templateId,
+                acquiredAt: data.acquiredAt || new Date(),
+                isLocked: data.isLocked ?? false
+            } as InventoryCard;
         });
 
         console.log(`✅ 인벤토리 로드: ${cards.length}개 카드`);

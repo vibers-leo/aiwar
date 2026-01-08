@@ -82,6 +82,7 @@ export function createUniqueCard(
 
     const uniqueCard: Card = {
         id: generateId(),
+        instanceId: `${generateId()}-${Date.now()}`,
         templateId: randomTemplate.id,
         name: randomTemplate.name,
         ownerId: userId,

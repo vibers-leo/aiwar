@@ -71,7 +71,7 @@ export interface Card {
     stats: Stats;
     rarity?: Rarity;
     acquiredAt: Date | any;
-    instanceId?: string;
+    instanceId: string; // Unique instance identifier (required)
     isLocked: boolean;
     isUnique?: boolean; // 유니크 유닛 여부
     type?: AIType; // Rock-Paper-Scissors type
@@ -87,6 +87,7 @@ export interface Card {
     };
     equipment?: Equipment[];
     aiFactionId?: string; // 소속 군단 ID
+    specialty?: Specialty; // 전문 분야
     plusStats?: Stats;
 }
 
