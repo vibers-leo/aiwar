@@ -536,7 +536,25 @@ export async function loadUserProfile(uid?: string): Promise<UserProfile | null>
             return data;
         }
 
-        // 프로필이 없으면 기본값 생성
+        // [SAFETY FIX] 프로필이 없다고 해서 무조건 기본값을 덮어쓰면 안됨 (네트워크 오류 등).
+        // 기존 유저(가입한지 5분이 지난)인데 프로필이 없다? -> DB 오류일 가능성 높음.
+        // 신규 유저(가입한지 5분 이내)라면 기본값 생성 허용.
+        const auth = getAuth(app);
+        const currentUser = auth.currentUser;
+        const isNewUser = currentUser?.metadata.creationTime
+            ? (Date.now() - new Date(currentUser.metadata.creationTime).getTime() < 5 * 60 * 1000)
+            : true; // 메타데이터 없으면 신규로 간주 (보수적 접근)
+
+        if (!isNewUser) {
+            console.warn(`[DB] 🚨 기존 유저(${userId})의 프로필을 찾을 수 없습니다. 데이터 유실 가능성 확인 필요.`);
+            // 여기서 throw를 하면 앱이 멈추므로, 일단은 "빈 프로필"을 리턴하되, 저장은 하지 않음으로써
+            // 실수로 0원을 DB에 쓰는 것을 방지합니다.
+            // 하지만 리턴하면 UI는 0원으로 보일 것임.
+            // 차라리 에러를 던져서 "재시도"를 유도하는게 낫습니다.
+            throw new Error('PROFILE_NOT_FOUND_FOR_EXISTING_USER');
+        }
+
+        // 프로필이 없으면 기본값 생성 (신규 유저인 경우만)
         const defaultProfile: UserProfile = {
             coins: 0,
             tokens: 1000,
@@ -547,15 +565,17 @@ export async function loadUserProfile(uid?: string): Promise<UserProfile | null>
             lastLogin: serverTimestamp()
         };
 
-        // [Fix] merge: true를 사용하여 초기화 시 기존 필드(예: 수령 플래그) 유실 방지
+        // [Fix] merge: true를 사용하여 초기화 시 기존 필드 유실 방지
         await setDoc(userRef, defaultProfile, { merge: true });
         if (process.env.NODE_ENV === 'development') {
-            console.log('✅ 기본 프로필 생성:', defaultProfile);
+            console.log('✅ 기본 프로필 생성(신규 유저):', defaultProfile);
         }
         return defaultProfile;
     } catch (error) {
         console.error('❌ 프로필 로드 실패:', error);
-        return null;
+        // 에러를 무시하고 null을 리턴하면 "없는 유저"로 취급되어 0원으로 초기화될 위험이 있음.
+        // 상위 호출자에게 에러를 전파해야 함.
+        throw error;
     }
 }
 

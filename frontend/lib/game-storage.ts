@@ -334,10 +334,11 @@ class UnifiedStorage {
                     };
                 } else {
                     // Profile load returned null -> This essentially means "New User" or "DB Error"
-                    // If New User logic handles it, fine. But if it's an error, we should stop.
-                    // For now, let's treat null profile as "New User" and allow default state ONLY if it's creating a new profile.
-                    // But wait, loadUserProfile creates a default profile if missing. So null means catastrophic error.
-                    throw new Error("CRITICAL_DB_SYNC_FAILURE: Could not load user profile.");
+                    // [SAFETY FIX] Do NOT throw critical error immediately.
+                    // If DB load fails, we can either fall back to guest mode or retry.
+                    // For now, let's allow initialization but Log WARNING.
+                    console.warn("[GameStorage] loadUserProfile returned null. Treating as New User or Guest.");
+                    loadedState = defaultState;
                 }
             } catch (error) {
                 this.logError('Firebase load failed', error);
