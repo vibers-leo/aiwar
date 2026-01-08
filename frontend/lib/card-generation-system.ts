@@ -271,7 +271,7 @@ export function createCardFromTemplate(template: any, factionEffects?: FactionEf
             totalPower
         },
         imageUrl: template.imageUrl,
-        description: template.story,
+        description: template.description,
         ...(template.specialAbility ? {
             specialSkill: {
                 name: template.specialAbility.name,
