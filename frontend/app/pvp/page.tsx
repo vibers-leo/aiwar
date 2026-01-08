@@ -944,6 +944,17 @@ export default function PVPArenaPage() {
                                     <div className="flex items-center justify-between gap-4">
                                         <button
                                             onClick={() => {
+                                                setPhase('stats');
+                                                setSelectedCards([]);
+                                            }}
+                                            className="px-6 py-3 bg-white/10 hover:bg-white/20 text-white font-bold rounded-xl transition-all flex items-center gap-2"
+                                        >
+                                            <ArrowRight className="rotate-180" size={20} />
+                                            뒤로 가기
+                                        </button>
+
+                                        <button
+                                            onClick={() => {
                                                 // 자동 선택 - 등급별로 균형 잡힌 덱 구성 (주력카드 우선)
                                                 let targetSize = 5;
                                                 if (selectedMode === 'ambush' || selectedMode === 'double') targetSize = 6;
@@ -1028,6 +1039,19 @@ export default function PVPArenaPage() {
                                     </div>
                                 </button>
                             </div>
+
+                            <div className="text-center mt-8">
+                                <button
+                                    onClick={() => {
+                                        setPhase('deck-select');
+                                        setSelectedMatchType('ai-training');
+                                    }}
+                                    className="px-8 py-3 bg-white/10 hover:bg-white/20 text-white font-bold rounded-xl transition-all flex items-center gap-2 mx-auto"
+                                >
+                                    <ArrowRight className="rotate-180" size={20} />
+                                    뒤로 가기
+                                </button>
+                            </div>
                         </motion.div>
                     )}
 
@@ -1094,6 +1118,18 @@ export default function PVPArenaPage() {
                                     >
                                         <Zap className="w-4 h-4 group-hover:text-yellow-300 transition-colors" />
                                         BATTLE START!
+                                    </button>
+
+                                    <button
+                                        onClick={() => {
+                                            setPhase('match-type');
+                                            setOpponentDeck([]);
+                                            setRevealTimer(20);
+                                        }}
+                                        className="px-6 py-2 bg-white/10 hover:bg-white/20 text-white font-bold rounded-full transition-all flex items-center gap-2 text-sm"
+                                    >
+                                        <ArrowRight className="rotate-180" size={16} />
+                                        취소
                                     </button>
                                 </div>
                             </div>
