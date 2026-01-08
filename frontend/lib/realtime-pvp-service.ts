@@ -126,11 +126,11 @@ export async function findMatch(
             const levelDiff = Math.abs(player.playerLevel - myLevel);
             if (levelDiff <= tolerance) {
                 // 매칭 성공! 전투 방 생성
-                const roomId = await createBattleRoom(battleMode, myPlayerId, playerId);
+                const roomId = await createBattleRoom(battleMode, myPlayerId, playerId, myQueueData, player);
 
-                // 두 플레이어 모두 매칭 상태로 변경
-                await update(ref(db, `matchmaking/${battleMode}/${myPlayerId}`), { status: 'matched' });
-                await update(ref(db, `matchmaking/${battleMode}/${playerId}`), { status: 'matched' });
+                // 두 플레이어 모두 매칭 상태로 변경 (roomId 포함)
+                await update(ref(db, `matchmaking/${battleMode}/${myPlayerId}`), { status: 'matched', roomId });
+                await update(ref(db, `matchmaking/${battleMode}/${playerId}`), { status: 'matched', roomId });
 
                 return {
                     success: true,
@@ -226,13 +226,9 @@ export function listenForMatch(
     const unsubscribe = onValue(queueRef, (snapshot) => {
         if (snapshot.exists()) {
             const data = snapshot.val() as MatchmakingQueue;
-            if (data.status === 'matched') {
-                // 매칭 성공 - 전투 방 찾기
-                findBattleRoomForPlayer(playerId).then((roomId) => {
-                    if (roomId) {
-                        onMatch({ success: true, roomId });
-                    }
-                });
+            if (data.status === 'matched' && data.roomId) {
+                // 매칭 성공 - roomId를 직접 사용
+                onMatch({ success: true, roomId: data.roomId });
             }
         }
     });
@@ -248,7 +244,9 @@ export function listenForMatch(
 async function createBattleRoom(
     battleMode: RealtimeBattleMode,
     player1Id: string,
-    player2Id: string
+    player2Id: string,
+    player1Data?: MatchmakingQueue,
+    player2Data?: MatchmakingQueue
 ): Promise<string> {
     const roomsRef = ref(db, 'battles');
     const newRoomRef = push(roomsRef);
@@ -262,9 +260,17 @@ async function createBattleRoom(
     const room: BattleRoom = {
         roomId,
         battleMode,
-        phase: 'waiting',
-        player1: createEmptyPlayerState(player1Id, state.nickname || 'Player 1', state.level),
-        player2: createEmptyPlayerState(player2Id, 'Player 2', 1), // 상대 정보는 나중에 업데이트
+        phase: 'ordering',
+        player1: createEmptyPlayerState(
+            player1Id,
+            player1Data?.playerName || state.nickname || 'Player 1',
+            player1Data?.playerLevel || state.level
+        ),
+        player2: createEmptyPlayerState(
+            player2Id,
+            player2Data?.playerName || 'Player 2',
+            player2Data?.playerLevel || 1
+        ),
         currentRound: 0,
         maxRounds: config.maxRounds,
         winsNeeded: config.winsNeeded,

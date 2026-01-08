@@ -35,6 +35,7 @@ export interface MatchmakingQueue {
     battleMode: RealtimeBattleMode;
     joinedAt: number;
     status: 'waiting' | 'matched';
+    roomId?: string; // [NEW] Room ID for matched players
 }
 
 /**

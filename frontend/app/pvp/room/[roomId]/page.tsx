@@ -22,6 +22,9 @@ import { applyBattleResult, BattleResult, PVP_REWARDS } from '@/lib/pvp-battle-s
 import { useAlert } from '@/context/AlertContext';
 import { cn } from '@/lib/utils';
 import { Loader2, Swords, Clock, Trophy, XCircle, CheckCircle, Shuffle } from 'lucide-react';
+import { BattleArena } from '@/components/BattleArena';
+import BattleDeckSelection from '@/components/battle/BattleDeckSelection';
+import { BackgroundBeams } from '@/components/ui/aceternity/background-beams';
 
 export default function RealtimeBattleRoomPage() {
     const router = useRouter();
@@ -87,10 +90,19 @@ export default function RealtimeBattleRoomPage() {
             setIsConnected(true);
 
             // 실시간 리스너 설정
-            unsubscribe = listenToBattleRoom(roomId, (updatedRoom) => {
+            unsubscribe = listenToBattleRoom(roomId, async (updatedRoom) => {
                 setRoom(updatedRoom);
                 setPhase(updatedRoom.phase);
                 setCurrentRound(updatedRoom.currentRound);
+
+                // [FIX] 양쪽 플레이어가 연결되면 deck-select로 전환
+                if (updatedRoom.phase === 'waiting' || updatedRoom.phase === 'ordering') {
+                    if (updatedRoom.player1.connected && updatedRoom.player2.connected) {
+                        if (updatedRoom.phase !== 'deck-select') {
+                            await updateBattleRoom(roomId, { phase: 'deck-select' });
+                        }
+                    }
+                }
             });
 
             // 하트비트 시작 (5초마다)
@@ -151,7 +163,7 @@ export default function RealtimeBattleRoomPage() {
         const isSelected = selectedCards.find(c => c.id === card.id);
         if (isSelected) {
             setSelectedCards(prev => prev.filter(c => c.id !== card.id));
-        } else if (selectedCards.length < 5) {
+        } else if (selectedCards.length < 6) {
             setSelectedCards(prev => [...prev, card as Card]);
         }
     };
@@ -166,14 +178,14 @@ export default function RealtimeBattleRoomPage() {
 
     // 덱 확정
     const handleConfirmDeck = async () => {
-        if (selectedCards.length !== 5) {
-            showAlert({ title: '오류', message: '카드 5장을 선택해주세요.', type: 'warning' });
+        if (selectedCards.length !== 6) {
+            showAlert({ title: '오류', message: '카드 6장을 선택해주세요.', type: 'warning' });
             return;
         }
 
         await updatePlayerState(roomId, playerId, {
             selectedCards: selectedCards,
-            cardOrder: [0, 1, 2, 3, 4]
+            cardOrder: [0, 1, 2, 3, 4, 5]
         });
 
         // phase를 ordering으로 변경 (처음 확정한 플레이어만)
@@ -198,7 +210,66 @@ export default function RealtimeBattleRoomPage() {
             currentRound: 1
         });
         setPhase('battle');
-        runBattle();
+        // BattleArena handles the battle now
+    };
+
+    // [NEW] BattleArena의 onFinish 콜백
+    const handleBattleFinish = async (result: {
+        isWin: boolean;
+        playerWins: number;
+        enemyWins: number;
+        rounds: any[];
+    }) => {
+        if (!room) return;
+
+        const myPlayer = getMyPlayer();
+        const opponent = getOpponent();
+        if (!myPlayer || !opponent) return;
+
+        const { isWin, playerWins: pWins, enemyWins: eWins } = result;
+
+        const isGhost = (room as any).isGhost || false;
+        const winnerId = isWin ? playerId : opponent.playerId;
+
+        const battleResult: BattleResult = {
+            winner: isWin ? 'player' : 'opponent',
+            rounds: result.rounds.map(r => ({
+                round: r.round,
+                winner: r.winner === 'player' ? 'player' : r.winner === 'enemy' ? 'opponent' : 'draw',
+                playerCard: r.playerCard,
+                opponentCard: r.enemyCard,
+                playerPower: r.playerPower,
+                opponentPower: r.enemyPower,
+                playerType: (r.playerCard?.type || 'EFFICIENCY').toLowerCase() as any,
+                opponentType: (r.enemyCard?.type || 'EFFICIENCY').toLowerCase() as any,
+                reason: r.reason
+            })),
+            playerWins: pWins,
+            opponentWins: eWins,
+            rewards: {
+                coins: isWin ? ((PVP_REWARDS[room.battleMode as keyof typeof PVP_REWARDS] as any)?.win || 200) : PVP_REWARDS.loss.coins,
+                experience: isWin ? ((PVP_REWARDS[room.battleMode as keyof typeof PVP_REWARDS] as any)?.exp || 100) : PVP_REWARDS.loss.exp,
+                ratingChange: isWin ? ((PVP_REWARDS[room.battleMode as keyof typeof PVP_REWARDS] as any)?.rating || 25) : PVP_REWARDS.loss.rating
+            }
+        };
+
+        await updateBattleRoom(roomId, {
+            phase: 'result',
+            winner: winnerId ?? undefined,
+            finished: true
+        });
+
+        // Apply rewards
+        await applyBattleResult(
+            battleResult,
+            myPlayer.selectedCards,
+            opponent.selectedCards,
+            true,
+            isGhost,
+            false
+        );
+
+        setPhase('result');
     };
 
     // 전투 진행
@@ -519,73 +590,20 @@ export default function RealtimeBattleRoomPage() {
                         </motion.div>
                     )}
 
-                    {/* 전투 진행 */}
-                    {phase === 'battle' && (
-                        <motion.div
-                            key="battle"
-                            initial={{ opacity: 0 }}
-                            animate={{ opacity: 1 }}
-                            exit={{ opacity: 0 }}
-                        >
-                            {/* 스코어보드 */}
-                            <div className="flex items-center justify-between mb-8 p-4 bg-black/50 rounded-xl border border-white/10">
-                                <div className="text-center">
-                                    <p className="text-sm text-white/60">{myPlayer?.playerName}</p>
-                                    <p className="text-4xl font-black text-cyan-400">{myPlayer?.wins || 0}</p>
-                                </div>
-                                <div className="text-center">
-                                    <p className="text-sm text-white/40">라운드</p>
-                                    <p className="text-2xl font-bold text-white">{currentRound}/{room?.maxRounds}</p>
-                                </div>
-                                <div className="text-center">
-                                    <p className="text-sm text-white/60">{opponent?.playerName}</p>
-                                    <p className="text-4xl font-black text-red-400">{opponent?.wins || 0}</p>
-                                </div>
-                            </div>
-
-                            {/* 현재 라운드 카드 대결 */}
-                            <div className="flex items-center justify-center gap-8 mb-8">
-                                {myPlayer?.selectedCards[currentRound - 1] && (
-                                    <motion.div
-                                        initial={{ x: -100, opacity: 0 }}
-                                        animate={{ x: 0, opacity: 1 }}
-                                    >
-                                        <GameCard card={myPlayer.selectedCards[currentRound - 1]} />
-                                    </motion.div>
-                                )}
-
-                                <motion.div
-                                    animate={{ rotate: [0, 360] }}
-                                    transition={{ duration: 2, repeat: Infinity, ease: 'linear' }}
-                                >
-                                    <Swords className="text-red-500" size={48} />
-                                </motion.div>
-
-                                {opponent?.selectedCards[currentRound - 1] && (
-                                    <motion.div
-                                        initial={{ x: 100, opacity: 0 }}
-                                        animate={{ x: 0, opacity: 1 }}
-                                    >
-                                        <GameCard card={opponent.selectedCards[currentRound - 1]} />
-                                    </motion.div>
-                                )}
-                            </div>
-
-                            {/* 라운드 결과 */}
-                            {roundResult && (
-                                <motion.div
-                                    initial={{ scale: 0 }}
-                                    animate={{ scale: 1 }}
-                                    className={cn(
-                                        "text-center text-4xl font-black mb-4",
-                                        roundResult === 'win' ? "text-green-400" :
-                                            roundResult === 'lose' ? "text-red-400" : "text-gray-400"
-                                    )}
-                                >
-                                    {roundResult === 'win' ? '승리!' : roundResult === 'lose' ? '패배' : '무승부'}
-                                </motion.div>
-                            )}
-                        </motion.div>
+                    {/* 전투 진행 - BattleArena 사용 */}
+                    {phase === 'battle' && myPlayer && opponent && myPlayer.selectedCards.length > 0 && opponent.selectedCards.length > 0 && (
+                        <BattleArena
+                            playerDeck={myPlayer.selectedCards}
+                            enemyDeck={opponent.selectedCards}
+                            opponent={{
+                                name: opponent.playerName,
+                                level: opponent.playerLevel
+                            }}
+                            onFinish={handleBattleFinish}
+                            title="REALTIME BATTLE"
+                            maxRounds={room?.maxRounds || 5}
+                            enemySelectionMode="ordered"
+                        />
                     )}
 
                     {/* 결과 화면 */}

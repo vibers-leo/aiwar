@@ -5,35 +5,27 @@ import { useParams, useRouter } from 'next/navigation';
 import { motion, AnimatePresence } from 'framer-motion';
 import { Card, BattleMode } from '@/lib/types';
 import { InventoryCard } from '@/lib/inventory-system';
-import { getStoryStage, completeStage, StoryStage } from '@/lib/story-system';
+import { StoryStage, getStoryStage, completeStage } from '@/lib/story-system';
 import { generateEnemies, StageConfig } from '@/lib/stage-system';
-import { simulateBattle, BattleResult, BattleParticipant, applyBattleResult, determineRoundWinner } from '@/lib/pvp-battle-system';
-import { useGameSound } from '@/hooks/useGameSound';
+import { applyBattleResult, BattleResult } from '@/lib/pvp-battle-system';
 import { Button } from '@/components/ui/custom/Button';
 import CardPlacementBoard, { RoundPlacement as BoardPlacement } from '@/components/battle/CardPlacementBoard';
 import { useTranslation } from '@/context/LanguageContext';
 import BattleDeckSelection from '@/components/battle/BattleDeckSelection';
 import { useUser } from '@/context/UserContext';
-import { Zap, Shield, ArrowLeft } from 'lucide-react';
+import { Shield, ArrowLeft } from 'lucide-react';
 import { cn } from '@/lib/utils';
-import GameCard from '@/components/GameCard';
 import { BackgroundBeams } from '@/components/ui/aceternity/background-beams';
 import { BattleArena } from '@/components/BattleArena';
 
-interface BattleLog {
-    id: string;
-    message: string;
-    type: 'system' | 'player' | 'enemy' | 'winner' | 'draw' | 'advantage';
-}
 
 // Shared Phase Type
 type Phase =
-    | 'intro' // Story specific: Dialogue
-    | 'deck-select' // Unified
-    | 'card-placement' // Unified
-    | 'battle' // Unified
-    | 'double-battle' // Interactive for Double Mode
-    | 'result'; // Unified
+    | 'intro'
+    | 'deck-select'
+    | 'card-placement'
+    | 'battle'
+    | 'result';
 
 export default function StageBattlePage() {
     const params = useParams();
@@ -53,42 +45,7 @@ export default function StageBattlePage() {
     // Battle State
     const [phase, setPhase] = useState<Phase>('intro');
     const [selectedHand, setSelectedHand] = useState<InventoryCard[]>([]); // Current selection in deck-select
-    // const [cardPlacement, setCardPlacement] = useState<BoardPlacement | null>(null); // Removed unused
-    // const [animating, setAnimating] = useState(false); // Removed unused
-    const [animationPhase, setAnimationPhase] = useState<'idle' | 'ready' | 'clash' | 'reveal'>('idle');
     const [battleResult, setBattleResult] = useState<BattleResult | null>(null);
-    const [currentRound, setCurrentRound] = useState(0);
-
-    // Mini Card States
-    const [alivePlayerCards, setAlivePlayerCards] = useState<boolean[]>([true, true, true, true, true]);
-    const [aliveEnemyCards, setAliveEnemyCards] = useState<boolean[]>([true, true, true, true, true]);
-
-    // Double Battle State (Shared from PVP)
-    const [doubleBattleState, setDoubleBattleState] = useState<{
-        round: number;
-        phase: 'ready' | 'choice' | 'clash' | 'result';
-        timer: number;
-        playerSelection: Card | null;
-        opponentSelection: Card | null;
-        roundWinner: 'player' | 'opponent' | 'draw' | null;
-        playerWins: number;
-        opponentWins: number;
-        history: { round: number; winner: string }[];
-    }>({
-        round: 1,
-        phase: 'ready',
-        timer: 3,
-        playerSelection: null,
-        opponentSelection: null,
-        roundWinner: null,
-        playerWins: 0,
-        opponentWins: 0,
-        history: []
-    });
-
-    const [battleLogs, setBattleLogs] = useState<BattleLog[]>([]);
-
-    // ⚠️ Active Deck for Battle (Ordered)
     const [activeBattleDeck, setActiveBattleDeck] = useState<Card[]>([]);
 
 
@@ -160,204 +117,8 @@ export default function StageBattlePage() {
     // --- Actions ---
     // --- UI Helpers & Battle Logic ---
 
-    const getTypeGlow = (type: string | undefined) => {
-        switch (type) {
-            case 'EFFICIENCY': return 'shadow-[0_0_20px_rgba(239,68,68,0.5)] border-red-500/50';
-            case 'COST': return 'shadow-[0_0_20px_rgba(245,158,11,0.5)] border-amber-500/50';
-            case 'CREATIVITY': return 'shadow-[0_0_20px_rgba(59,130,246,0.5)] border-blue-500/50';
-            case 'FUNCTION': return 'shadow-[0_0_20px_rgba(168,85,247,0.5)] border-purple-500/50';
-            default: return 'border-white/10';
-        }
-    };
 
-    const getTypeIcon = (type: string | undefined) => {
-        switch (type) {
-            case 'EFFICIENCY': return '✊';
-            case 'COST': return '✌️';
-            case 'CREATIVITY': return '✋';
-            case 'FUNCTION': return '✂️';
-            default: return '❓';
-        }
-    };
 
-    const addBattleLog = useCallback((message: string, type: BattleLog['type'] = 'system') => {
-        const id = Math.random().toString(36).substring(2, 9);
-        setBattleLogs(prev => [...prev, { id, message, type }]);
-        setTimeout(() => {
-            setBattleLogs(prev => prev.filter(log => log.id !== id));
-        }, 6000);
-    }, []);
-
-    const finishDoubleBattle = useCallback((finalState: typeof doubleBattleState) => {
-        // Calculate Winner
-        let finalWinner: 'player' | 'opponent' = 'opponent';
-        if (finalState.playerWins > finalState.opponentWins) finalWinner = 'player';
-        else if (finalState.playerWins === finalState.opponentWins) finalWinner = 'opponent'; // Draw is loss in PVE?
-
-        const result: BattleResult = {
-            winner: finalWinner,
-            rounds: [],
-            playerWins: finalState.playerWins,
-            opponentWins: finalState.opponentWins,
-            rewards: {
-                coins: finalWinner === 'player' ? storyStage!.rewards.coins : 0,
-                experience: finalWinner === 'player' ? storyStage!.rewards.experience : 10,
-                ratingChange: 0
-            }
-        };
-
-        addBattleLog(t('battle.log.roundStart', { n: 1 }), 'system');
-        setBattleResult(result);
-        setPhase('result');
-    }, [storyStage, t, addBattleLog]);
-
-    const resolveDoubleBattleRound = useCallback(async () => {
-        if (activeBattleDeck.length === 0) return;
-
-        setDoubleBattleState(prev => {
-            const baseIdx = (prev.round - 1) * 2;
-            const aiCard1 = enemies[baseIdx];
-            const aiCard2 = enemies[baseIdx + 1];
-
-            // Simple AI: Random
-            const aiSelection = Math.random() > 0.5 ? aiCard1 : (aiCard2 || aiCard1);
-
-            let playerSel = prev.playerSelection;
-            const myCard1 = activeBattleDeck[baseIdx];
-            const myCard2 = activeBattleDeck[baseIdx + 1];
-
-            // Default random if not selected
-            if (!playerSel) {
-                playerSel = Math.random() > 0.5 ? myCard1 : (myCard2 || myCard1);
-            }
-
-            const winner = determineRoundWinner(playerSel, aiSelection);
-
-            return {
-                ...prev,
-                playerSelection: playerSel,
-                opponentSelection: aiSelection,
-                roundWinner: winner,
-                phase: 'clash',
-                playerWins: prev.playerWins + (winner === 'player' ? 1 : 0),
-                opponentWins: prev.opponentWins + (winner === 'opponent' ? 1 : 0),
-                history: [...prev.history, { round: prev.round, winner }]
-            };
-        });
-
-        // Clash Effect Duration
-        await new Promise(r => setTimeout(r, 2500));
-
-        setDoubleBattleState(prev => {
-            if (prev.round >= 3) {
-                finishDoubleBattle(prev);
-                return prev;
-            }
-            return {
-                ...prev,
-                round: prev.round + 1,
-                phase: 'ready',
-                timer: 3,
-                playerSelection: null,
-                opponentSelection: null,
-                roundWinner: null
-            };
-        });
-    }, [activeBattleDeck, enemies, finishDoubleBattle]);
-
-    const handleDoubleBattleSelection = (card: Card) => {
-        if (doubleBattleState.phase !== 'choice') return;
-        setDoubleBattleState(prev => ({ ...prev, playerSelection: card }));
-    };
-
-    const startDoubleBattle = useCallback(() => {
-        setDoubleBattleState({
-            round: 1,
-            phase: 'ready',
-            timer: 3,
-            playerSelection: null,
-            opponentSelection: null,
-            roundWinner: null,
-            playerWins: 0,
-            opponentWins: 0,
-            history: []
-        });
-        setPhase('double-battle');
-        // Initial setup for first round
-        setDoubleBattleState(prev => ({ ...prev, round: 1, phase: 'ready', timer: 3 }));
-    }, []);
-
-    // --- Generic Battle Animation ---
-    const runBattleAnimation = async (result: BattleResult) => {
-        setAlivePlayerCards(new Array(5).fill(true));
-        setAliveEnemyCards(new Array(5).fill(true));
-
-        for (let i = 0; i < result.rounds.length; i++) {
-            const round = result.rounds[i];
-            setCurrentRound(i + 1);
-
-            // Log Round Start
-            addBattleLog(t('pvp.log.roundStart', { n: i + 1 }), 'system');
-
-            setAnimationPhase('ready');
-            // setAnimating(true); // Removed
-            await new Promise(resolve => setTimeout(resolve, 800));
-
-            // Log Clash
-            const pPower = round.playerPower || round.playerCard.stats.totalPower;
-            const oPower = round.opponentPower || round.opponentCard.stats.totalPower;
-            const pMult = round.playerMultiplier || 1.0;
-            const oMult = round.opponentMultiplier || 1.0;
-
-            const pLog = `${round.playerCard.name} (${pPower}${pMult > 1 ? ' ⚡️UP' : ''})`;
-            const oLog = `${round.opponentCard.name} (${oPower}${oMult > 1 ? ' ⚠️UP' : ''})`;
-
-            addBattleLog(`${pLog} vs ${oLog}`, 'system');
-
-            setAnimationPhase('clash');
-            await new Promise(resolve => setTimeout(resolve, 1500));
-
-            setAnimationPhase('reveal');
-
-            // Update Alive States & Log Winner
-            if (round.winner === 'player') {
-                setAliveEnemyCards(prev => {
-                    const next = [...prev];
-                    next[i] = false;
-                    return next;
-                });
-                const advantageMsg = pMult > 1 ? t('battle.log.advantage') + "! " : "";
-                addBattleLog(advantageMsg + t('battle.log.victory', { name: String(round.playerCard.name) }), 'winner');
-            } else if (round.winner === 'opponent') {
-                setAlivePlayerCards(prev => {
-                    const next = [...prev];
-                    next[i] = false;
-                    return next;
-                });
-                const advantageMsg = oMult > 1 ? t('battle.log.enemyAdvantage') + "! " : "";
-                addBattleLog(advantageMsg + t('battle.log.victory', { name: String(round.opponentCard.name) }), 'enemy');
-            } else {
-                addBattleLog(t('battle.log.draw'), 'draw');
-            }
-
-            await new Promise(resolve => setTimeout(resolve, 2000));
-
-            setAnimationPhase('idle');
-            // setAnimating(false); // Removed
-            await new Promise(resolve => setTimeout(resolve, 500));
-        }
-
-        // Final Result Log
-        const isWin = result.winner === 'player';
-        addBattleLog(
-            isWin
-                ? t('battle.log.finalVictory')
-                : t('battle.log.finalDefeat'),
-            isWin ? 'winner' : 'enemy'
-        );
-
-        setPhase('result');
-    };
 
     const handleResultConfirm = async () => {
         if (battleResult?.winner === 'player') {
@@ -443,19 +204,7 @@ export default function StageBattlePage() {
             cardOrder: [0, 1, 2, 3, 4, 5],
         };
 
-        if (storyStage.battleMode === 'double') {
-            startDoubleBattle();
-        } else if (storyStage.battleMode === 'tactics' || storyStage.battleMode === 'sudden-death' || storyStage.battleMode === 'ambush') {
-            // [NEW] Use Unified BattleArena for standard modes
-            setPhase('battle');
-        } else {
-            // Legacy / Special modes (Ambush, etc.)
-            const result = simulateBattle(player, opponent, storyStage.battleMode as BattleMode);
-            setBattleResult(result);
-            setCurrentRound(0);
-            setPhase('battle');
-            runBattleAnimation(result);
-        }
+        setPhase('battle');
     };
 
     const handlePlacementComplete = (placement: BoardPlacement) => {
@@ -503,58 +252,7 @@ export default function StageBattlePage() {
         setPhase('card-placement');
     };
 
-    // Auto-transition: Ready -> Choice
-    useEffect(() => {
-        if (phase === 'double-battle' && doubleBattleState.phase === 'ready') {
-            const t = setTimeout(() => {
-                setDoubleBattleState(prev => ({ ...prev, phase: 'choice', timer: 3 }));
-            }, 1500);
-            return () => clearTimeout(t);
-        }
-    }, [phase, doubleBattleState.phase, doubleBattleState.round]);
 
-
-    // Auto-timer: Choice -> Resolve
-    useEffect(() => {
-        if (phase === 'double-battle' && doubleBattleState.phase === 'choice') {
-            if (activeBattleDeck.length === 0) return;
-
-            if (doubleBattleState.timer > 0) {
-                const timerId = setTimeout(() => {
-                    setDoubleBattleState(prev => ({ ...prev, timer: prev.timer - 1 }));
-                }, 1000);
-                return () => clearTimeout(timerId);
-            } else {
-                resolveDoubleBattleRound();
-            }
-        }
-    }, [phase, doubleBattleState.phase, doubleBattleState.timer, activeBattleDeck, resolveDoubleBattleRound]);
-
-    const CombatLogDisplay = () => (
-        <div className="fixed bottom-32 left-8 z-50 flex flex-col gap-2 max-w-sm pointer-events-none">
-            <AnimatePresence mode="popLayout">
-                {battleLogs.map((log) => (
-                    <motion.div
-                        key={log.id}
-                        initial={{ opacity: 0, x: -20, scale: 0.9 }}
-                        animate={{ opacity: 1, x: 0, scale: 1 }}
-                        exit={{ opacity: 0, x: 20, scale: 0.8, filter: 'blur(10px)' }}
-                        className={cn(
-                            "px-4 py-2 rounded-xl backdrop-blur-md border shadow-lg text-[11px] font-bold orbitron tracking-tight",
-                            log.type === 'system' ? "bg-black/60 border-white/10 text-gray-300" :
-                                log.type === 'advantage' ? "bg-yellow-500/20 border-yellow-500/40 text-yellow-400" :
-                                    log.type === 'player' ? "bg-blue-500/20 border-blue-500/40 text-blue-400" :
-                                        log.type === 'enemy' ? "bg-red-500/20 border-red-500/40 text-red-400" :
-                                            log.type === 'winner' ? "bg-green-500/20 border-green-500/40 text-green-400" :
-                                                "bg-gray-500/20 border-gray-500/40 text-gray-400"
-                        )}
-                    >
-                        {log.message}
-                    </motion.div>
-                ))}
-            </AnimatePresence>
-        </div>
-    );
 
     if (!storyStage) return <div className="min-h-screen bg-black text-white flex items-center justify-center">{t('common.loading')}</div>;
 
@@ -570,10 +268,9 @@ export default function StageBattlePage() {
                 <BackgroundBeams className="opacity-35" />
             </div>
 
-            <CombatLogDisplay />
 
             {/* Header - Only layout for non-battle phases */}
-            {phase !== 'battle' && phase !== 'double-battle' && (
+            {phase !== 'battle' && (
                 <div className="relative z-10 p-4 flex justify-between items-start shrink-0">
                     <Button variant="ghost" className="text-white hover:text-cyan-400 gap-2" onPress={() => router.back()} startContent={<ArrowLeft size={16} />}>
                         {t('battle.common.back')}
@@ -671,211 +368,73 @@ export default function StageBattlePage() {
                         }}
                         onFinish={handleBattleFinish}
                         title={language === 'ko' ? storyStage.title_ko : storyStage.title}
-                        maxRounds={storyStage.battleMode === 'sudden-death' ? 1 : 5}
+                        maxRounds={storyStage.battleMode === 'sudden-death' ? 1 : storyStage.battleMode === 'double' ? 6 : 5}
                         enemySelectionMode={storyStage.battleMode === 'ambush' ? 'random' : 'ordered'}
                     />
                 )}
 
-                {/* 4-B. Double Battle Interactive (PVP Sync) */}
-                {phase === 'double-battle' && doubleBattleState && (
-                    <motion.div
-                        key="double-battle"
-                        initial={{ opacity: 0 }}
-                        animate={{ opacity: 1 }}
-                        className="fixed inset-0 z-50 flex flex-col items-center justify-center bg-black/90"
-                    >
-                        {/* Round Indicator */}
-                        <div className="absolute top-8 text-4xl font-black text-white orbitron">
-                            ROUND {doubleBattleState.round} / 3
-                        </div>
 
-                        {/* Score */}
-                        <div className="absolute top-20 flex gap-12 text-2xl font-bold">
-                            <div className="text-cyan-400">YOU: {doubleBattleState.playerWins}</div>
-                            <div className="text-red-400">ENEMY: {doubleBattleState.opponentWins}</div>
-                        </div>
-
-                        {/* Opponent Cards (Top) - Hidden unless revealed */}
-                        <div className="flex justify-center gap-8 mb-12">
-                            {[0, 1].map(offset => {
-                                const idx = (doubleBattleState.round - 1) * 2 + offset;
-                                const card = enemies[idx];
-                                if (!card) return null;
-
-                                const isSelected = doubleBattleState.opponentSelection?.id === card.id;
-                                const isRevealed = doubleBattleState.phase === 'clash';
-
-                                return (
-                                    <motion.div
-                                        key={`opp-${idx}`}
-                                        animate={{
-                                            y: isSelected && isRevealed ? 50 : 0,
-                                            scale: isSelected && isRevealed ? 1.2 : 1,
-                                            opacity: isRevealed && !isSelected ? 0.3 : 1
-                                        }}
-                                        className="relative"
-                                    >
-                                        <div className={cn(
-                                            "w-48 h-64 rounded-xl border-2 transition-all overflow-hidden",
-                                            isRevealed && isSelected ? "border-red-500 shadow-[0_0_30px_rgba(239,68,68,0.5)]" : "border-white/20"
-                                        )}>
-                                            {isRevealed && isSelected || doubleBattleState.phase === 'choice' ? (
-                                                <GameCard card={card} /> // Show card during choice (if we want to be nice) or strictly hidden? PVP keeps opp hidden.
-                                            ) : (
-                                                // Card Back
-                                                <div className="w-full h-full bg-slate-900 bg-[repeating-linear-gradient(45deg,transparent,transparent_10px,#333_10px,#333_20px)] flex items-center justify-center">
-                                                    <span className="text-4xl">👹</span>
-                                                </div>
-                                            )}
-                                        </div>
-                                    </motion.div>
-                                );
-                            })}
-                        </div>
-
-                        {/* Timer / VS Status */}
-                        <div className="my-8 h-24 flex items-center justify-center">
-                            {doubleBattleState.phase === 'ready' && (
-                                <div className="text-3xl text-white/50 animate-pulse">준비하세요...</div>
-                            )}
-                            {doubleBattleState.phase === 'choice' && (
-                                <div className="text-6xl font-black text-yellow-400 orbitron animate-ping">
-                                    {doubleBattleState.timer}
-                                </div>
-                            )}
-                            {doubleBattleState.phase === 'clash' && (
-                                <div className="text-5xl font-black text-white orbitron">
-                                    {doubleBattleState.roundWinner === 'player' ?
-                                        <span className="text-cyan-400">WIN!</span> :
-                                        doubleBattleState.roundWinner === 'opponent' ?
-                                            <span className="text-red-400">LOSE!</span> :
-                                            <span className="text-gray-400">DRAW</span>
-                                    }
-                                </div>
-                            )}
-                        </div>
-
-                        {/* Player Cards (Bottom) - Choice */}
-                        <div className="flex justify-center gap-8 mt-4">
-                            {[0, 1].map(offset => {
-                                const idx = (doubleBattleState.round - 1) * 2 + offset;
-                                const card = activeBattleDeck[idx];
-                                if (!card) return null;
-
-                                const isSelected = doubleBattleState.playerSelection?.id === card.id;
-                                const isPhaseChoice = doubleBattleState.phase === 'choice';
-                                const isRevealed = doubleBattleState.phase === 'clash';
-
-                                return (
-                                    <motion.div
-                                        key={`player-${idx}`}
-                                        whileHover={isPhaseChoice ? { scale: 1.05, y: -20 } : {}}
-                                        whileTap={isPhaseChoice ? { scale: 0.95 } : {}}
-                                        animate={{
-                                            y: isRevealed && isSelected ? -50 : 0,
-                                            scale: isRevealed && isSelected ? 1.2 : 1,
-                                            opacity: isRevealed && !isSelected ? 0.3 : 1,
-                                            filter: isPhaseChoice && doubleBattleState.playerSelection && !isSelected ? 'grayscale(100%)' : 'none'
-                                        }}
-                                        className={cn(
-                                            "cursor-pointer transition-all",
-                                            isSelected ? "ring-4 ring-cyan-400 rounded-xl" : ""
-                                        )}
-                                        onClick={() => handleDoubleBattleSelection(card)}
-                                    >
-                                        <div className="w-48 h-64 pointer-events-none">
-                                            <GameCard card={card} />
-                                        </div>
-                                        {isPhaseChoice && (
-                                            <div className="mt-4 text-center">
-                                                <span className={cn(
-                                                    "px-4 py-2 rounded-full font-bold",
-                                                    isSelected ? "bg-cyan-500 text-white" : "bg-white/10 text-white/50"
-                                                )}>
-                                                    {isSelected ? "선택됨" : "선택"}
-                                                </span>
-                                            </div>
-                                        )}
-                                    </motion.div>
-                                );
-                            })}
-                        </div>
-
-                        {/* Instruction Text */}
-                        {doubleBattleState.phase === 'choice' && (
-                            <div className="absolute bottom-10 text-white/60 animate-bounce">
-                                카드를 선택하여 하나빼기 승부!
-                            </div>
-                        )}
-                    </motion.div>
-                )}
-
-                {/* 5. Result (PVP Sync) */}
+                {/* 5. Result (PVP Sync Aesthetic) */}
                 {phase === 'result' && battleResult && (
                     <motion.div
                         key="result"
                         initial={{ opacity: 0, scale: 0.9 }}
                         animate={{ opacity: 1, scale: 1 }}
                         exit={{ opacity: 0, scale: 0.9 }}
-                        className="max-w-2xl mx-auto py-12"
+                        className="fixed inset-0 z-[100] flex items-center justify-center bg-black p-4 overflow-hidden"
                     >
-                        <div className={cn(
-                            "text-center mb-8 p-12 rounded-2xl border-2 bg-black/80 backdrop-blur-xl",
-                            battleResult.winner === 'player'
-                                ? "bg-green-500/10 border-green-500/50"
-                                : "bg-red-500/10 border-red-500/50"
-                        )}>
-                            <div className="text-8xl mb-4">
-                                {battleResult.winner === 'player' ? '🏆' : '😢'}
-                            </div>
-                            <h2 className={cn(
-                                "text-5xl font-black mb-4 orbitron",
-                                battleResult.winner === 'player' ? "text-green-400" : "text-red-400"
+                        <BackgroundBeams className="opacity-35" />
+                        <div className="relative z-10 w-full max-w-md text-center">
+                            <motion.div
+                                animate={{ scale: [1, 1.05, 1], rotate: [0, 3, -3, 0] }}
+                                transition={{ repeat: 3, duration: 0.8 }}
+                                className="mb-6"
+                            >
+                                {battleResult.winner === 'player' ? (
+                                    <div className="relative inline-block">
+                                        <span className="text-8xl block mb-2">🏆</span>
+                                        <motion.div animate={{ opacity: [0, 1, 0] }} transition={{ repeat: Infinity, duration: 1 }} className="absolute inset-0 bg-yellow-500/20 blur-3xl rounded-full" />
+                                    </div>
+                                ) : (
+                                    <span className="text-8xl block mb-2 opacity-60">😢</span>
+                                )}
+                            </motion.div>
+
+                            <h1 className={cn(
+                                "text-5xl font-black orbitron italic mb-2 tracking-[0.1em]",
+                                battleResult.winner === 'player' ? 'text-white' : 'text-red-500/60'
                             )}>
                                 {battleResult.winner === 'player' ? t('pvp.battle.victory') : t('pvp.battle.defeat')}
-                            </h2>
-                            <div className="text-2xl font-bold text-white/60 mb-8 orbitron">
-                                {battleResult.playerWins} : {battleResult.opponentWins}
+                            </h1>
+                            <p className="text-[10px] font-black orbitron text-gray-500 tracking-[0.4em] mb-8">MISSION_SEQUENCE_COMPLETE</p>
+
+                            <div className="text-3xl text-white orbitron font-black mb-8 p-4 bg-white/5 rounded-2xl border border-white/10 inline-block px-12">
+                                {battleResult.playerWins} <span className="text-gray-600 px-3">-</span> {battleResult.opponentWins}
                             </div>
 
-                            {/* 보상 */}
                             {battleResult.winner === 'player' && (
-                                <div className="bg-black/40 rounded-xl p-6 mb-6 border border-white/5">
-                                    <h3 className="text-lg font-bold text-white mb-4">{t('battle.common.rewards')}</h3>
-                                    <div className="grid grid-cols-2 gap-4">
-                                        <div className="flex items-center justify-center gap-2">
-                                            {/* <Coins className="text-yellow-400" size={24} /> */}
-                                            <span className="text-2xl font-bold text-yellow-400">
-                                                +{battleResult.rewards.coins} Coins
-                                            </span>
-                                        </div>
-                                        <div className="flex items-center justify-center gap-2">
-                                            {/* <TrendingUp className="text-cyan-400" size={24} /> */}
-                                            <span className="text-2xl font-bold text-cyan-400">
-                                                +{battleResult.rewards.experience} EXP
-                                            </span>
-                                        </div>
+                                <div className="grid grid-cols-2 gap-4 mb-10">
+                                    <div className="bg-white/5 backdrop-blur-xl rounded-2xl p-5 border border-white/10">
+                                        <div className="text-[10px] text-gray-500 orbitron uppercase mb-1">Coins</div>
+                                        <div className="text-2xl font-black orbitron text-yellow-400">+{battleResult.rewards.coins}</div>
+                                    </div>
+                                    <div className="bg-white/5 backdrop-blur-xl rounded-2xl p-5 border border-white/10">
+                                        <div className="text-[10px] text-gray-500 orbitron uppercase mb-1">EXP</div>
+                                        <div className="text-2xl font-black orbitron text-cyan-400">+{battleResult.rewards.experience}</div>
                                     </div>
                                 </div>
                             )}
 
-                            {/* 버튼 */}
-                            <div className="flex gap-4 justify-center">
-                                <Button
-                                    size="lg"
-                                    onPress={handleResultConfirm}
-                                    className={cn(
-                                        "px-8 py-6 font-bold text-xl rounded-xl transition-all shadow-lg",
-                                        battleResult.winner === 'player'
-                                            ? "bg-gradient-to-r from-cyan-600 to-blue-600 hover:from-cyan-500 hover:to-blue-500 text-white"
-                                            : "bg-white/10 hover:bg-white/20 text-white"
-                                    )}
-                                >
-                                    {battleResult.winner === 'player'
-                                        ? t('battle.common.nextStage')
-                                        : t('battle.common.retryMission')}
-                                </Button>
-                            </div>
+                            <Button
+                                size="lg"
+                                onPress={handleResultConfirm}
+                                className={cn(
+                                    "w-full h-16 font-black orbitron text-lg rounded-2xl shadow-2xl transition-all",
+                                    battleResult.winner === 'player' ? "bg-white text-black hover:bg-gray-200" : "bg-white/10 text-white hover:bg-white/20"
+                                )}
+                            >
+                                {battleResult.winner === 'player' ? t('battle.common.nextStage').toUpperCase() : t('battle.common.retryMission').toUpperCase()}
+                            </Button>
                         </div>
                     </motion.div>
                 )}

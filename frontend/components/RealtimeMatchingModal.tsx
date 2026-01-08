@@ -58,7 +58,7 @@ export default function RealtimeMatchingModal({
         setError(null);
 
         try {
-            const { joinMatchmaking, listenForMatch, leaveMatchmaking } = await import('@/lib/realtime-pvp-service');
+            const { joinMatchmaking, listenForMatch, leaveMatchmaking, findMatch } = await import('@/lib/realtime-pvp-service');
             const { getGameState } = await import('@/lib/game-state');
 
             const state = getGameState();
@@ -89,8 +89,33 @@ export default function RealtimeMatchingModal({
             });
             matchListenerRef.current = unsubscribe;
 
-            // [FIX] 30초 후 타임아웃 (ref에 저장)
+            // [NEW] 매칭 폴링: 3초마다 findMatch 호출하여 상대 검색
+            const pollInterval = setInterval(async () => {
+                try {
+                    const matchFound = await findMatch(battleMode, state.userId, playerLevel);
+                    if (matchFound.success && matchFound.roomId) {
+                        clearInterval(pollInterval);
+                        // 리스너 정리
+                        if (matchListenerRef.current) {
+                            matchListenerRef.current();
+                            matchListenerRef.current = null;
+                        }
+                        // 타임아웃 정리
+                        if (timeoutRef.current) {
+                            clearTimeout(timeoutRef.current);
+                            timeoutRef.current = null;
+                        }
+                        setSearching(false);
+                        onMatchFound(matchFound.roomId, matchFound.opponentName || '상대방');
+                    }
+                } catch (pollErr) {
+                    console.warn('Polling error:', pollErr);
+                }
+            }, 3000);
+
+            // [FIX] 60초 후 타임아웃 (ref에 저장)
             timeoutRef.current = setTimeout(async () => {
+                clearInterval(pollInterval);
                 // 리스너 정리
                 if (matchListenerRef.current) {
                     matchListenerRef.current();
@@ -99,7 +124,7 @@ export default function RealtimeMatchingModal({
                 await leaveMatchmaking(battleMode, state.userId);
                 setSearching(false);
                 setError('매칭 시간 초과. 다시 시도해주세요.');
-            }, 30000);
+            }, 60000);
 
         } catch (err) {
             console.error('Matching error:', err);
