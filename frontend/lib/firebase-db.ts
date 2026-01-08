@@ -644,6 +644,7 @@ export async function checkNicknameUnique(nickname: string, currentUid?: string)
 
             // setDoc with merge: 프로필이 없으면 생성, 있으면 업데이트
             await setDoc(userRef, {
+                userId, // [Fix] Security rules require userId field
                 nickname,
                 lastLogin: serverTimestamp()
             }, { merge: true });
