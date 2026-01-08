@@ -83,6 +83,11 @@ export default function GenerationPage() {
     }, [userId, loadData]);
 
     const handleAssignFaction = async (slotIndex: number, factionId: string) => {
+        if (!userId) {
+            showAlert({ title: '로그인 필요', message: '로그인이 필요한 기능입니다.', type: 'error' });
+            return;
+        }
+
         const alreadyAssigned = slots.some(s => s.factionId === factionId);
         if (alreadyAssigned) {
             showAlert({ title: '중복 배치 불가', message: '이 군단은 이미 다른 슬롯에 배치되어 있습니다.', type: 'warning' });
@@ -113,7 +118,7 @@ export default function GenerationPage() {
                                 const newCommanderCard = {
                                     ...createCardFromTemplate(commanderTemplate),
                                     isRented: true,
-                                    ownerId: userId
+                                    ownerId: userId as string
                                 };
                                 await addCardToInventory(newCommanderCard);
                                 setRewardCards([newCommanderCard]);
