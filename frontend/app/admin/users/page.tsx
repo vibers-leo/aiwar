@@ -1,25 +1,14 @@
 'use client';
 
 import { useState, useEffect } from 'react';
-import { getAllUsersWithStatus, migrateUserStarterPackStatus, db } from '@/lib/firebase-db';
+import { getAllUsersWithStatus, migrateUserStarterPackStatus } from '@/lib/firebase-db';
+import { db } from '@/lib/firebase';
 import { useUser } from '@/context/UserContext';
 import { useRouter } from 'next/navigation';
 import { doc, writeBatch, collection, serverTimestamp } from 'firebase/firestore';
-import { generateCard, Card } from '@/lib/card-generation-system'; // Correct import? No, generateCard is not in card-generation-system export based on my read?
-// Wait, I didn't verify generateCard export. I'll use check-import trick or just implement simple generator here if needed.
-// Actually, card-generation-system.ts HAS generateCard? I previously assumed it did but 'card-generation-system.ts' had 'selectRandomRarity'.
-// The file is 13KB, I only viewed 100 lines. 
-// I'll stick to 'generateCard' assuming it exists or similar. If not, I'll fix it. 
-// Actually I'll use a safer approach: create cards manually or use a known function.
-// Let's assume I can import generateCard. I'll add a fallback if it errors.
-// Wait, 'starter-pack.ts' creates cards? 
-// Let's check imports in next step if I fail. But for now I will write assuming I need to implement a simple helper or import.
-import { createCard } from '@/lib/unique-card-factory'; // Maybe? 
-// Let's look at `starter-pack.ts` first? 
-// No, I'm inside replace_file_content.
-// I will implement a minimal card generator inside the component or use direct object creation to be safe.
-// User said "5 cards by grade".
-// I'll create a helper function `createRescueCards` inside the file.
+import { generateRandomCard as generateCard } from '@/lib/card-generation-system';
+import { Card } from '@/lib/types';
+
 
 interface UserStatus {
     uid: string;
@@ -129,7 +118,7 @@ export default function AdminUsersPage() {
                             },
                             level: 1,
                             exp: 0,
-                            image: \`/assets/factions/\${faction}.png\`, // Fallback image
+                            image: `/assets/factions/${faction}.png`, // Fallback image
                             createdAt: serverTimestamp(),
                             isFoil: false,
                             isLocked: false
@@ -139,7 +128,7 @@ export default function AdminUsersPage() {
 
                 await batch.commit();
                 processed += chunk.length;
-                console.log(`Rescued ${ processed } / ${ targetUsers.length } users...`);
+                console.log(`Rescued ${processed} / ${targetUsers.length} users...`);
             }
 
             alert('✅ 구조 작업 완료!');
@@ -172,7 +161,7 @@ export default function AdminUsersPage() {
         total: users.length,
         tutorialCompleted: users.filter(u => u.tutorialCompleted).length,
         starterPackReceived: users.filter(u => u.hasReceivedStarterPack).length,
-        rescueNeeded: users.filter(u => u.coins === 0 && user.tokens === 0).length
+        rescueNeeded: users.filter(u => u.coins === 0 && u.tokens === 0).length
     };
 
     if (userLoading || !isAdmin) {
@@ -216,8 +205,8 @@ export default function AdminUsersPage() {
                         <div className="text-blue-400 text-sm mb-1">스타터팩 수령</div>
                         <div className="text-2xl font-bold text-blue-400">{stats.starterPackReceived}</div>
                     </div>
-                    <div className={`bg - red - 500 / 10 border border - red - 500 / 30 rounded - lg p - 4 cursor - pointer hover: bg - red - 500 / 20 transition - colors ${ filter === 'rescue-needed' ? 'ring-2 ring-red-500' : ''}`}
-                         onClick={() => setFilter('rescue-needed')}
+                    <div className={`bg - red - 500 / 10 border border - red - 500 / 30 rounded - lg p - 4 cursor - pointer hover: bg - red - 500 / 20 transition - colors ${filter === 'rescue-needed' ? 'ring-2 ring-red-500' : ''}`}
+                        onClick={() => setFilter('rescue-needed')}
                     >
                         <div className="text-red-400 text-sm mb-1">구조 필요 (파산)</div>
                         <div className="text-2xl font-bold text-red-400">{stats.rescueNeeded}</div>
@@ -250,13 +239,12 @@ export default function AdminUsersPage() {
                         <button
                             onClick={() => handleRescue(filteredUsers)}
                             disabled={rescuing}
-                            className={`px - 4 py - 2 rounded - lg font - bold text - white transition - colors ${
-                        rescuing
-                        ? 'bg-gray-500 cursor-not-allowed'
-                            : 'bg-red-600 hover:bg-red-700 animate-pulse'
-                    }`}
+                            className={`px - 4 py - 2 rounded - lg font - bold text - white transition - colors ${rescuing
+                                ? 'bg-gray-500 cursor-not-allowed'
+                                : 'bg-red-600 hover:bg-red-700 animate-pulse'
+                                }`}
                         >
-                            {rescuing ? '구조 진행 중...' : `🚑 ${ filteredUsers.length }명 일괄 구조 실행`}
+                            {rescuing ? '구조 진행 중...' : `🚑 ${filteredUsers.length}명 일괄 구조 실행`}
                         </button>
                     )}
                 </div>
@@ -280,14 +268,14 @@ export default function AdminUsersPage() {
                             </thead>
                             <tbody>
                                 {filteredUsers.map((user, idx) => (
-                                    <tr key={user.uid} className={`border - b border - white / 5 ${ idx % 2 === 0 ? 'bg-white/[0.02]' : ''} `}>
+                                    <tr key={user.uid} className={`border - b border - white / 5 ${idx % 2 === 0 ? 'bg-white/[0.02]' : ''} `}>
                                         <td className="px-4 py-3 font-medium">{user.nickname}</td>
                                         <td className="px-4 py-3 text-white/60 text-sm">{user.email || '-'}</td>
                                         <td className="px-4 py-3 text-center">
                                             <div className="text-xs">
-                                                <span className={`${ user.coins === 0 ? 'text-red-400' : 'text-yellow-400' } `}>{user.coins.toLocaleString()} C</span>
+                                                <span className={`${user.coins === 0 ? 'text-red-400' : 'text-yellow-400'} `}>{user.coins.toLocaleString()} C</span>
                                                 <span className="mx-1">/</span>
-                                                <span className={`${ user.tokens === 0 ? 'text-red-400' : 'text-blue-400' } `}>{user.tokens.toLocaleString()} T</span>
+                                                <span className={`${user.tokens === 0 ? 'text-red-400' : 'text-blue-400'} `}>{user.tokens.toLocaleString()} T</span>
                                             </div>
                                         </td>
                                         <td className="px-4 py-3 text-center">Lv.{user.level}</td>
