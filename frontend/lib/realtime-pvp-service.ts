@@ -42,6 +42,17 @@ export async function joinMatchmaking(
     deckPower: number
 ): Promise<{ success: boolean; message: string }> {
     try {
+        // [NEW] Pay entry fee before joining queue
+        const { payPVPEntryFee } = await import('./pvp-battle-system');
+        const payment = await payPVPEntryFee();
+
+        if (!payment.success) {
+            return {
+                success: false,
+                message: payment.message || '참가비 결제 실패'
+            };
+        }
+
         const state = getGameState();
         const playerId = state.userId || 'guest';
 
@@ -62,6 +73,7 @@ export async function joinMatchmaking(
         // 연결 끊김 시 자동 제거
         onDisconnect(queueRef).remove();
 
+        console.log(`✅ Joined matchmaking queue. Entry fee paid: 50 coins + 50 tokens`);
         return { success: true, message: '매칭 대기 중...' };
     } catch (error) {
         console.error('Failed to join matchmaking:', error);

@@ -259,23 +259,23 @@ export default function PVPArenaPage() {
 
             setInventory(mappedInventory);
 
-            // Corrected: checkPVPRequirements now receives current level and coins from context
-            const check = await checkPVPRequirements(mappedInventory, level, coins);
+            // Check PVP requirements (AI practice mode - no tokens required)
+            const check = await checkPVPRequirements(mappedInventory, level, coins, tokens, false);
+
+            if (!check.canJoin) {
+                showAlert({
+                    title: '참가 불가',
+                    message: check.reason || '입장 조건을 만족하지 못했습니다.',
+                    type: 'error'
+                });
+                return;
+            }
 
             // [FIX] Manual Coin Check with Context State (More accurate than gameStorage)
             if (coins < PVP_REQUIREMENTS.entryFee) {
                 showAlert({
                     title: '참가 불가',
                     message: `코인이 부족합니다. (필요: ${PVP_REQUIREMENTS.entryFee})`,
-                    type: 'error'
-                });
-                return;
-            }
-
-            if (!check.canJoin) {
-                showAlert({
-                    title: '참가 불가',
-                    message: check.reason || '입장 조건을 만족하지 못했습니다.',
                     type: 'error'
                 });
                 return;

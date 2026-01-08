@@ -65,6 +65,7 @@ export interface BattleResult {
         coins: number;
         experience: number;
         ratingChange: number;
+        tokens?: number;  // Optional tokens for real-time PVP
     };
     dailyStats?: {
         aiWinsToday: number;
@@ -95,7 +96,8 @@ export interface BattleResult {
  */
 export const PVP_REQUIREMENTS = {
     minLevel: 1,
-    entryFee: 50,
+    entryFeeCoins: 50,    // Real-time PVP entry fee (coins)
+    entryFeeTokens: 50,   // Real-time PVP entry fee (tokens)
     minCards: 5,
 };
 
@@ -106,6 +108,7 @@ export interface RewardConfig {
     coins: number;
     exp: number;
     rating: number;
+    tokens?: number;  // Optional tokens reward for real-time PVP
 }
 
 /**
@@ -117,7 +120,10 @@ export const PVP_REWARDS: Record<string, RewardConfig> = {
     'ambush': { coins: 100, exp: 70, rating: 35 },
     'double': { coins: 100, exp: 60, rating: 30 },
     loss: { coins: 0, exp: 10, rating: -10 },
-    draw: { coins: 20, exp: 20, rating: 0 }
+    draw: { coins: 20, exp: 20, rating: 0 },
+    // Real-time PVP rewards (entry fee: 50 coins + 50 tokens)
+    'realtime-win': { coins: 100, exp: 50, rating: 50, tokens: 100 },   // Net: +50 coins, +50 tokens
+    'realtime-loss': { coins: 0, exp: 10, rating: -25, tokens: 0 },     // No additional penalty (entry fee already paid)
 };
 
 /**
@@ -137,9 +143,10 @@ export async function applyBattleResult(
     opponentDeck: Card[],
     isRanked: boolean = false,
     isGhost: boolean = false,
-    manualRewards?: { coins: number; experience: number }
+    isRealtime: boolean = false,  // NEW: Real-time PVP flag
+    manualRewards?: { coins: number; experience: number; tokens?: number }
 ): Promise<void> {
-    console.log(`📊 Applying battle result (Ranked: ${isRanked}, Ghost: ${isGhost})...`);
+    console.log(`📊 Applying battle result (Ranked: ${isRanked}, Ghost: ${isGhost}, Realtime: ${isRealtime})...`);
 
     try {
         const state = getGameState();
@@ -185,11 +192,18 @@ export async function applyBattleResult(
 
         let coinsEarned = manualRewards ? manualRewards.coins : Math.floor(result.rewards.coins * rewardMultiplier);
         let expEarned = manualRewards ? manualRewards.experience : Math.floor(result.rewards.experience * rewardMultiplier);
+        let tokensEarned = 0;
+
+        // Real-time PVP token rewards
+        if (isRealtime && result.rewards.tokens !== undefined) {
+            tokensEarned = manualRewards?.tokens !== undefined ? manualRewards.tokens : result.rewards.tokens;
+        }
 
         const updatedState = {
             ...state,
             coins: state.coins + coinsEarned,
             experience: state.experience + expEarned,
+            tokens: state.tokens + tokensEarned,  // Add tokens
             pvpStats: newPvpStats,
         };
 
@@ -216,6 +230,13 @@ export async function applyBattleResult(
         if (coinsEarned > 0) await gameStorage.addCoins(coinsEarned);
         if (expEarned > 0) await gameStorage.addExperience(expEarned);
 
+        // Award tokens for real-time PVP
+        if (tokensEarned !== 0) {
+            const { updateTokens } = await import('./firebase-db');
+            await updateTokens(tokensEarned);
+            console.log(`🪙 Tokens awarded: ${tokensEarned}`);
+        }
+
         // [Jung-Gong-Beop] Persist PVP Stats to Firebase for Leaderboard
         // We must explicitly save the profile updates to trigger the root-doc sync we just added
         const { saveUserProfile } = await import('./firebase-db');
@@ -231,6 +252,48 @@ export async function applyBattleResult(
         console.error("❌ Failed to apply battle result:", error);
     }
 }
+
+/**
+ * Pay PVP entry fee (real-time PVP only)
+ */
+export async function payPVPEntryFee(): Promise<{ success: boolean; message?: string }> {
+    try {
+        const state = getGameState();
+
+        if (state.coins < PVP_REQUIREMENTS.entryFeeCoins) {
+            return {
+                success: false,
+                message: `코인이 부족합니다. (필요: ${PVP_REQUIREMENTS.entryFeeCoins}, 보유: ${state.coins})`
+            };
+        }
+
+        if (state.tokens < PVP_REQUIREMENTS.entryFeeTokens) {
+            return {
+                success: false,
+                message: `토큰이 부족합니다. (필요: ${PVP_REQUIREMENTS.entryFeeTokens}, 보유: ${state.tokens})`
+            };
+        }
+
+        // Deduct entry fees
+        const { updateCoins, updateTokens } = await import('./firebase-db');
+        await updateCoins(-PVP_REQUIREMENTS.entryFeeCoins);
+        await updateTokens(-PVP_REQUIREMENTS.entryFeeTokens);
+
+        // Update local state
+        await gameStorage.addCoins(-PVP_REQUIREMENTS.entryFeeCoins);
+
+        console.log(`💰 Entry fee paid: ${PVP_REQUIREMENTS.entryFeeCoins} coins + ${PVP_REQUIREMENTS.entryFeeTokens} tokens`);
+
+        return { success: true };
+    } catch (error) {
+        console.error("❌ Failed to pay entry fee:", error);
+        return {
+            success: false,
+            message: '참가비 결제 중 오류가 발생했습니다.'
+        };
+    }
+}
+
 
 /**
  * 카드 타입 결정
@@ -306,12 +369,19 @@ export function getPVPStats(): PVPStats {
 /**
  * 참가 조건 확인
  */
-export async function checkPVPRequirements(currentInventory?: Card[], currentLevel?: number, currentCoins?: number): Promise<{ canJoin: boolean; reason?: string }> {
-    const state = typeof window !== 'undefined' ? getGameState() : { level: 0, coins: 0, inventory: [] } as any;
+export async function checkPVPRequirements(
+    currentInventory?: Card[],
+    currentLevel?: number,
+    currentCoins?: number,
+    currentTokens?: number,  // NEW: Token check
+    isRealtime: boolean = false  // NEW: Check if real-time PVP
+): Promise<{ canJoin: boolean; reason?: string }> {
+    const state = typeof window !== 'undefined' ? getGameState() : { level: 0, coins: 0, tokens: 0, inventory: [] } as any;
 
     const inventory = currentInventory || state.inventory || [];
     const level = currentLevel !== undefined ? currentLevel : state.level;
     const coins = currentCoins !== undefined ? currentCoins : state.coins;
+    const tokens = currentTokens !== undefined ? currentTokens : state.tokens;
 
     if (level < PVP_REQUIREMENTS.minLevel) {
         return {
@@ -320,11 +390,29 @@ export async function checkPVPRequirements(currentInventory?: Card[], currentLev
         };
     }
 
-    if (coins < PVP_REQUIREMENTS.entryFee) {
-        return {
-            canJoin: false,
-            reason: `참가비 ${PVP_REQUIREMENTS.entryFee} 코인이 필요합니다.`
-        };
+    // Check entry fees for real-time PVP
+    if (isRealtime) {
+        if (coins < PVP_REQUIREMENTS.entryFeeCoins) {
+            return {
+                canJoin: false,
+                reason: `참가비 ${PVP_REQUIREMENTS.entryFeeCoins} 코인이 필요합니다.`
+            };
+        }
+
+        if (tokens < PVP_REQUIREMENTS.entryFeeTokens) {
+            return {
+                canJoin: false,
+                reason: `참가비 ${PVP_REQUIREMENTS.entryFeeTokens} 토큰이 필요합니다.`
+            };
+        }
+    } else {
+        // AI practice mode - only check coins
+        if (coins < PVP_REQUIREMENTS.entryFeeCoins) {
+            return {
+                canJoin: false,
+                reason: `참가비 ${PVP_REQUIREMENTS.entryFeeCoins} 코인이 필요합니다.`
+            };
+        }
     }
 
     if (inventory.length < PVP_REQUIREMENTS.minCards) {
