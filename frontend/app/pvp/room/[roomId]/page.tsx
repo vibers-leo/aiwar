@@ -1,11 +1,10 @@
 'use client';
 
-import { useEffect, useState, useCallback } from 'react';
+import { useEffect, useState, useCallback, useRef } from 'react';
 import { useRouter, useParams } from 'next/navigation';
 import { motion, AnimatePresence } from 'framer-motion';
-import CyberPageLayout from '@/components/CyberPageLayout';
 import GameCard from '@/components/GameCard';
-import { Card } from '@/lib/types';
+import { Card, Rarity } from '@/lib/types';
 import { InventoryCard, loadInventory } from '@/lib/inventory-system';
 import { getGameState } from '@/lib/game-state';
 import {
@@ -18,13 +17,16 @@ import {
     leaveMatchmaking
 } from '@/lib/realtime-pvp-service';
 import { BattleRoom, PlayerState, BattlePhase } from '@/lib/realtime-pvp-types';
-import { applyBattleResult, BattleResult, PVP_REWARDS } from '@/lib/pvp-battle-system'; // [NEW] Imports
+import { applyBattleResult, BattleResult, PVP_REWARDS } from '@/lib/pvp-battle-system';
 import { useAlert } from '@/context/AlertContext';
 import { cn } from '@/lib/utils';
-import { Loader2, Swords, Clock, Trophy, XCircle, CheckCircle, Shuffle } from 'lucide-react';
+import { Loader2, Swords, Clock, Trophy, XCircle, CheckCircle, Shuffle, Users, ArrowRight, Zap, Shield } from 'lucide-react';
 import { BattleArena } from '@/components/BattleArena';
-import BattleDeckSelection from '@/components/battle/BattleDeckSelection';
 import { BackgroundBeams } from '@/components/ui/aceternity/background-beams';
+import { Button } from '@/components/ui/custom/Button';
+
+// Extended local phase for UI control
+type LocalPhase = 'loading' | 'waiting' | 'vs-matchup' | 'deck-select' | 'ordering' | 'battle' | 'result' | 'error';
 
 export default function RealtimeBattleRoomPage() {
     const router = useRouter();
@@ -33,14 +35,17 @@ export default function RealtimeBattleRoomPage() {
     const { showAlert } = useAlert();
 
     const [room, setRoom] = useState<BattleRoom | null>(null);
-    const [phase, setPhase] = useState<BattlePhase>('waiting');
+    const [localPhase, setLocalPhase] = useState<LocalPhase>('loading');
     const [myCards, setMyCards] = useState<InventoryCard[]>([]);
     const [selectedCards, setSelectedCards] = useState<Card[]>([]);
     const [countdown, setCountdown] = useState(30);
-    const [currentRound, setCurrentRound] = useState(0);
-    const [roundResult, setRoundResult] = useState<'win' | 'lose' | 'draw' | null>(null);
     const [isConnected, setIsConnected] = useState(false);
     const [isReady, setIsReady] = useState(false);
+    const [error, setError] = useState<string | null>(null);
+    const [vsCountdown, setVsCountdown] = useState(5);
+
+    const heartbeatRef = useRef<NodeJS.Timeout | null>(null);
+    const listenerRef = useRef<(() => void) | null>(null);
 
     const state = getGameState();
     const playerId = state.userId || 'guest';
@@ -56,11 +61,19 @@ export default function RealtimeBattleRoomPage() {
         return room.player1.playerId === playerId ? room.player2 : room.player1;
     }, [room, playerId]);
 
+    const myPlayer = getMyPlayer();
+    const opponent = getOpponent();
+
     // 카드 로드
     useEffect(() => {
         const loadCards = async () => {
             const cards = await loadInventory();
-            setMyCards(cards);
+            setMyCards(cards.map(c => ({
+                ...c,
+                acquiredAt: c.acquiredAt && typeof (c.acquiredAt as any).toDate === 'function'
+                    ? (c.acquiredAt as any).toDate()
+                    : new Date(c.acquiredAt as any)
+            })));
         };
         loadCards();
     }, []);
@@ -68,73 +81,95 @@ export default function RealtimeBattleRoomPage() {
     // 방 연결 및 리스너
     useEffect(() => {
         if (!roomId) {
-            showAlert({ title: '오류', message: '유효하지 않은 방입니다.', type: 'error' });
-            router.push('/pvp');
+            setError('유효하지 않은 방입니다.');
+            setLocalPhase('error');
             return;
         }
 
-        let unsubscribe: (() => void) | null = null;
-        let heartbeatInterval: NodeJS.Timeout | null = null;
-
         const initRoom = async () => {
-            // 방 정보 가져오기
-            const roomData = await getBattleRoom(roomId);
-            if (!roomData) {
-                showAlert({ title: '오류', message: '방을 찾을 수 없습니다.', type: 'error' });
-                router.push('/pvp');
-                return;
-            }
-
-            setRoom(roomData);
-            setPhase(roomData.phase);
-            setIsConnected(true);
-
-            // 실시간 리스너 설정
-            unsubscribe = listenToBattleRoom(roomId, async (updatedRoom) => {
-                setRoom(updatedRoom);
-                setPhase(updatedRoom.phase);
-                setCurrentRound(updatedRoom.currentRound);
-
-                // [FIX] 양쪽 플레이어가 연결되면 deck-select로 전환
-                if (updatedRoom.phase === 'waiting' || updatedRoom.phase === 'ordering') {
-                    if (updatedRoom.player1.connected && updatedRoom.player2.connected) {
-                        await updateBattleRoom(roomId, { phase: 'deck-select' });
-                    }
+            try {
+                const roomData = await getBattleRoom(roomId);
+                if (!roomData) {
+                    setError('방을 찾을 수 없습니다.');
+                    setLocalPhase('error');
+                    return;
                 }
-            });
 
-            // 하트비트 시작 (5초마다)
-            heartbeatInterval = setInterval(() => {
-                sendHeartbeat(roomId, playerId);
-            }, 5000);
+                setRoom(roomData);
+                setIsConnected(true);
 
-            // 연결 상태 업데이트
-            await updatePlayerState(roomId, playerId, {
-                playerName: state.nickname || `Player_${state.level}`,
-                playerLevel: state.level,
-                connected: true,
-                lastHeartbeat: Date.now()
-            });
+                // 내 연결 상태 업데이트
+                await updatePlayerState(roomId, playerId, {
+                    playerName: state.nickname || `Player_${state.level}`,
+                    playerLevel: state.level,
+                    connected: true,
+                    lastHeartbeat: Date.now()
+                });
+
+                // 양쪽 모두 연결되었는지 확인
+                const bothConnected = roomData.player1.connected && roomData.player2.connected;
+                if (bothConnected) {
+                    setLocalPhase('vs-matchup');
+                } else {
+                    setLocalPhase('waiting');
+                }
+
+                // 실시간 리스너 설정
+                const unsubscribe = listenToBattleRoom(roomId, async (updatedRoom) => {
+                    setRoom(updatedRoom);
+
+                    // 양쪽 연결 확인 → VS 화면
+                    if (updatedRoom.player1.connected && updatedRoom.player2.connected) {
+                        setLocalPhase(prev => {
+                            if (prev === 'loading' || prev === 'waiting') return 'vs-matchup';
+                            return prev;
+                        });
+                    }
+
+                    // 서버 phase 동기화
+                    if (updatedRoom.phase === 'deck-select') {
+                        setLocalPhase(prev => prev === 'vs-matchup' || prev === 'waiting' || prev === 'loading' ? prev : 'deck-select');
+                    } else if (updatedRoom.phase === 'ordering') {
+                        // 상대가 덱 확정했으면 ordering으로
+                        setLocalPhase(prev => prev === 'deck-select' ? 'ordering' : prev);
+                    } else if (updatedRoom.phase === 'battle' || updatedRoom.phase === 'combat') {
+                        setLocalPhase('battle');
+                    } else if (updatedRoom.phase === 'result' || updatedRoom.phase === 'finished') {
+                        setLocalPhase('result');
+                    }
+                });
+                listenerRef.current = unsubscribe;
+
+                // 하트비트 시작
+                heartbeatRef.current = setInterval(() => {
+                    sendHeartbeat(roomId, playerId);
+                }, 5000);
+
+            } catch (err) {
+                console.error('Room init error:', err);
+                setError('방 연결에 실패했습니다.');
+                setLocalPhase('error');
+            }
         };
 
         initRoom();
 
         return () => {
-            if (unsubscribe) unsubscribe();
-            if (heartbeatInterval) clearInterval(heartbeatInterval);
+            if (listenerRef.current) listenerRef.current();
+            if (heartbeatRef.current) clearInterval(heartbeatRef.current);
         };
     }, [roomId]);
 
-    // 카운트다운 타이머
+    // VS 화면 카운트다운
     useEffect(() => {
-        if (phase !== 'deck-select' && phase !== 'ordering') return;
+        if (localPhase !== 'vs-matchup') return;
 
         const timer = setInterval(() => {
-            setCountdown(prev => {
+            setVsCountdown(prev => {
                 if (prev <= 1) {
                     clearInterval(timer);
-                    if (phase === 'deck-select') handleAutoSelect();
-                    if (phase === 'ordering') handleReady();
+                    setLocalPhase('deck-select');
+                    setCountdown(60);
                     return 0;
                 }
                 return prev - 1;
@@ -142,19 +177,25 @@ export default function RealtimeBattleRoomPage() {
         }, 1000);
 
         return () => clearInterval(timer);
-    }, [phase]);
+    }, [localPhase]);
 
-    // 양쪽 준비 완료 시 전투 시작
+    // 덱 선택 카운트다운
     useEffect(() => {
-        if (!room) return;
+        if (localPhase !== 'deck-select') return;
 
-        const myPlayer = getMyPlayer();
-        const opponent = getOpponent();
+        const timer = setInterval(() => {
+            setCountdown(prev => {
+                if (prev <= 1) {
+                    clearInterval(timer);
+                    handleAutoSelect();
+                    return 0;
+                }
+                return prev - 1;
+            });
+        }, 1000);
 
-        if (myPlayer?.ready && opponent?.ready && phase === 'ordering') {
-            startBattle();
-        }
-    }, [room, phase]);
+        return () => clearInterval(timer);
+    }, [localPhase]);
 
     // 카드 선택
     const handleCardClick = (card: InventoryCard) => {
@@ -167,51 +208,40 @@ export default function RealtimeBattleRoomPage() {
     };
 
     // 자동 선택
-    const handleAutoSelect = () => {
+    const handleAutoSelect = async () => {
         const topCards = [...myCards]
             .sort((a, b) => (b.stats?.totalPower || 0) - (a.stats?.totalPower || 0))
-            .slice(0, 5) as Card[];
+            .slice(0, 6) as Card[];
         setSelectedCards(topCards);
+        await handleConfirmDeck(topCards);
     };
 
     // 덱 확정
-    const handleConfirmDeck = async () => {
-        if (selectedCards.length !== 6) {
+    const handleConfirmDeck = async (deckOverride?: Card[]) => {
+        const deck = deckOverride || selectedCards;
+        if (deck.length !== 6) {
             showAlert({ title: '오류', message: '카드 6장을 선택해주세요.', type: 'warning' });
             return;
         }
 
         await updatePlayerState(roomId, playerId, {
-            selectedCards: selectedCards,
-            cardOrder: [0, 1, 2, 3, 4, 5]
+            selectedCards: deck,
+            cardOrder: [0, 1, 2, 3, 4, 5],
+            ready: true
         });
 
-        // phase를 ordering으로 변경 (처음 확정한 플레이어만)
-        if (phase === 'deck-select') {
+        // 상대방도 준비되었는지 확인
+        const opponentPlayer = getOpponent();
+        if (opponentPlayer?.ready) {
+            await updateBattleRoom(roomId, { phase: 'battle' });
+            setLocalPhase('battle');
+        } else {
             await updateBattleRoom(roomId, { phase: 'ordering' });
+            setLocalPhase('ordering');
         }
-
-        setCountdown(20);
-        setPhase('ordering');
     };
 
-    // 준비 완료
-    const handleReady = async () => {
-        setIsReady(true);
-        await updatePlayerState(roomId, playerId, { ready: true });
-    };
-
-    // 전투 시작
-    const startBattle = async () => {
-        await updateBattleRoom(roomId, {
-            phase: 'battle',
-            currentRound: 1
-        });
-        setPhase('battle');
-        // BattleArena handles the battle now
-    };
-
-    // [NEW] BattleArena의 onFinish 콜백
+    // 전투 종료 콜백
     const handleBattleFinish = async (result: {
         isWin: boolean;
         playerWins: number;
@@ -220,14 +250,13 @@ export default function RealtimeBattleRoomPage() {
     }) => {
         if (!room) return;
 
-        const myPlayer = getMyPlayer();
-        const opponent = getOpponent();
-        if (!myPlayer || !opponent) return;
+        const myPlayerData = getMyPlayer();
+        const opponentData = getOpponent();
+        if (!myPlayerData || !opponentData) return;
 
         const { isWin, playerWins: pWins, enemyWins: eWins } = result;
-
         const isGhost = (room as any).isGhost || false;
-        const winnerId = isWin ? playerId : opponent.playerId;
+        const winnerId = isWin ? playerId : opponentData.playerId;
 
         const battleResult: BattleResult = {
             winner: isWin ? 'player' : 'opponent',
@@ -245,152 +274,28 @@ export default function RealtimeBattleRoomPage() {
             playerWins: pWins,
             opponentWins: eWins,
             rewards: {
-                coins: isWin ? ((PVP_REWARDS[room.battleMode as keyof typeof PVP_REWARDS] as any)?.win || 200) : PVP_REWARDS.loss.coins,
-                experience: isWin ? ((PVP_REWARDS[room.battleMode as keyof typeof PVP_REWARDS] as any)?.exp || 100) : PVP_REWARDS.loss.exp,
-                ratingChange: isWin ? ((PVP_REWARDS[room.battleMode as keyof typeof PVP_REWARDS] as any)?.rating || 25) : PVP_REWARDS.loss.rating
+                coins: isWin ? 200 : 0,
+                experience: isWin ? 100 : 20,
+                ratingChange: isWin ? 25 : -15
             }
         };
 
         await updateBattleRoom(roomId, {
-            phase: 'result',
+            phase: 'finished',
             winner: winnerId ?? undefined,
             finished: true
         });
 
-        // Apply rewards
         await applyBattleResult(
             battleResult,
-            myPlayer.selectedCards,
-            opponent.selectedCards,
+            myPlayerData.selectedCards,
+            opponentData.selectedCards,
             true,
             isGhost,
             false
         );
 
-        setPhase('result');
-    };
-
-    // 전투 진행
-    const runBattle = async () => {
-        if (!room) return;
-
-        const myPlayer = getMyPlayer();
-        const opponent = getOpponent();
-        if (!myPlayer || !opponent) return;
-
-        const maxRounds = room.winsNeeded * 2 - 1; // 3선승이면 최대 5라운드
-        let myWins = 0;
-        let opponentWins = 0;
-
-        for (let round = 0; round < maxRounds; round++) {
-            if (myWins >= room.winsNeeded || opponentWins >= room.winsNeeded) break;
-
-            setCurrentRound(round + 1);
-            await new Promise(resolve => setTimeout(resolve, 2000));
-
-            // 라운드 결과 계산 (간단한 로직)
-            const myCard = myPlayer.selectedCards[round];
-            const oppCard = opponent.selectedCards[round];
-
-            let result: 'win' | 'lose' | 'draw';
-
-            if (myCard && oppCard) {
-                const myPower = myCard.stats?.totalPower || 0;
-                const oppPower = oppCard.stats?.totalPower || 0;
-
-                // 타입 상성 적용
-                const typeAdvantage = getTypeAdvantage(myCard.type, oppCard.type);
-                const adjustedMyPower = myPower * typeAdvantage;
-
-                if (adjustedMyPower > oppPower) {
-                    result = 'win';
-                    myWins++;
-                } else if (adjustedMyPower < oppPower) {
-                    result = 'lose';
-                    opponentWins++;
-                } else {
-                    result = 'draw';
-                }
-            } else {
-                result = 'draw';
-            }
-
-            setRoundResult(result);
-
-            // 상태 업데이트
-            await updatePlayerState(roomId, playerId, {
-                wins: myWins,
-                roundResults: [...(myPlayer.roundResults || []), result]
-            });
-        }
-
-        // 전투 종료
-        await new Promise(resolve => setTimeout(resolve, 1000));
-
-        const winnerId = myWins >= room.winsNeeded ? playerId :
-            opponentWins >= room.winsNeeded ? opponent.playerId : null;
-
-        const isWinner = winnerId === playerId;
-        const resultType = isWinner ? 'player' : (winnerId ? 'opponent' : 'draw');
-
-        await updateBattleRoom(roomId, {
-            phase: 'result',
-            winner: winnerId ?? undefined,
-            finished: true
-        });
-
-        // [NEW] Apply Battle Result for Ranking & Rewards (Local Update + Firestore Sync)
-        if (myPlayer && opponent) {
-            const isGhost = (room as any).isGhost || false;
-
-            // Show alert for ghost match
-            if (isGhost) {
-                alert("고스트 매칭입니다. 레이팅 및 보상이 50%만 지급됩니다.");
-            }
-
-            const battleResult: BattleResult = {
-                winner: resultType,
-                rounds: [],
-                playerWins: myWins,
-                opponentWins: opponentWins,
-                rewards: {
-                    coins: isWinner ? ((PVP_REWARDS[room.battleMode as keyof typeof PVP_REWARDS] as any)?.win || 100) : PVP_REWARDS.loss.coins,
-                    experience: isWinner ? ((PVP_REWARDS[room.battleMode as keyof typeof PVP_REWARDS] as any)?.exp || 50) : PVP_REWARDS.loss.exp,
-                    ratingChange: isWinner ? ((PVP_REWARDS[room.battleMode as keyof typeof PVP_REWARDS] as any)?.rating || 20) : PVP_REWARDS.loss.rating
-                }
-            };
-
-            console.log("🏆 Updating Ranked Stats:", battleResult);
-            // Pass isRanked = true, and isGhost from room
-            await applyBattleResult(
-                battleResult,
-                myPlayer.selectedCards,
-                opponent.selectedCards,
-                true,
-                isGhost,
-                false
-            );
-        }
-
-        setPhase('result');
-    };
-
-    // 타입 상성
-    const getTypeAdvantage = (myType?: string, oppType?: string): number => {
-        if (!myType || !oppType) return 1;
-
-        // 가위바위보 상성
-        if ((myType === 'EFFICIENCY' && oppType === 'CREATIVITY') ||
-            (myType === 'CREATIVITY' && oppType === 'FUNCTION') ||
-            (myType === 'FUNCTION' && oppType === 'EFFICIENCY')) {
-            return 1.3; // 30% 보너스
-        }
-        if ((myType === 'EFFICIENCY' && oppType === 'FUNCTION') ||
-            (myType === 'CREATIVITY' && oppType === 'EFFICIENCY') ||
-            (myType === 'FUNCTION' && oppType === 'CREATIVITY')) {
-            return 0.7; // 30% 패널티
-        }
-        return 1;
+        setLocalPhase('result');
     };
 
     // 나가기
@@ -404,270 +309,386 @@ export default function RealtimeBattleRoomPage() {
         router.push('/pvp');
     };
 
-    const myPlayer = getMyPlayer();
-    const opponent = getOpponent();
     const isWinner = room?.winner === playerId;
 
     return (
-        <CyberPageLayout
-            title="실시간 대전"
-            englishTitle="REALTIME BATTLE"
-            description={`방 ID: ${roomId?.slice(0, 8)}...`}
-            color="red"
-            showBack={false}
-        >
-            <div className="max-w-5xl mx-auto">
-                <AnimatePresence mode="wait">
-                    {/* 대기 중 */}
-                    {phase === 'waiting' && (
-                        <motion.div
-                            key="waiting"
-                            initial={{ opacity: 0 }}
-                            animate={{ opacity: 1 }}
-                            exit={{ opacity: 0 }}
-                            className="text-center py-20"
+        <div className="min-h-screen bg-black text-white overflow-hidden">
+            <BackgroundBeams className="opacity-20" />
+
+            <AnimatePresence mode="wait">
+                {/* 로딩 */}
+                {localPhase === 'loading' && (
+                    <motion.div
+                        key="loading"
+                        initial={{ opacity: 0 }}
+                        animate={{ opacity: 1 }}
+                        exit={{ opacity: 0 }}
+                        className="min-h-screen flex flex-col items-center justify-center"
+                    >
+                        <Loader2 className="w-16 h-16 text-cyan-400 animate-spin mb-4" />
+                        <p className="text-white/60">전투방 연결 중...</p>
+                    </motion.div>
+                )}
+
+                {/* 에러 */}
+                {localPhase === 'error' && (
+                    <motion.div
+                        key="error"
+                        initial={{ opacity: 0 }}
+                        animate={{ opacity: 1 }}
+                        exit={{ opacity: 0 }}
+                        className="min-h-screen flex flex-col items-center justify-center gap-4"
+                    >
+                        <XCircle className="w-20 h-20 text-red-500" />
+                        <p className="text-red-400 text-xl font-bold">{error}</p>
+                        <Button onPress={() => router.push('/pvp')}>돌아가기</Button>
+                    </motion.div>
+                )}
+
+                {/* 대기 중 */}
+                {localPhase === 'waiting' && (
+                    <motion.div
+                        key="waiting"
+                        initial={{ opacity: 0 }}
+                        animate={{ opacity: 1 }}
+                        exit={{ opacity: 0 }}
+                        className="min-h-screen flex flex-col items-center justify-center"
+                    >
+                        <Loader2 className="w-16 h-16 text-cyan-400 animate-spin mb-6" />
+                        <h2 className="text-2xl font-bold text-white mb-2">상대방을 기다리는 중...</h2>
+                        <p className="text-white/60 mb-8">친구가 코드를 입력하면 자동으로 시작됩니다</p>
+
+                        <div className="flex items-center gap-8">
+                            <div className="text-center p-6 bg-cyan-500/10 border border-cyan-500/30 rounded-2xl">
+                                <div className="w-20 h-20 bg-cyan-500/20 rounded-full flex items-center justify-center mx-auto mb-3">
+                                    <span className="text-4xl">🎮</span>
+                                </div>
+                                <p className="text-white font-bold">{myPlayer?.playerName || '나'}</p>
+                                <p className="text-cyan-400 text-sm">Lv.{myPlayer?.playerLevel || state.level}</p>
+                                <div className="mt-2 text-green-400 text-xs">✅ 연결됨</div>
+                            </div>
+
+                            <Swords className="text-red-500" size={48} />
+
+                            <div className="text-center p-6 bg-white/5 border border-white/10 rounded-2xl">
+                                <div className="w-20 h-20 bg-white/10 rounded-full flex items-center justify-center mx-auto mb-3">
+                                    <Loader2 className="w-8 h-8 text-white/40 animate-spin" />
+                                </div>
+                                <p className="text-white/60 font-bold">대기 중...</p>
+                                <p className="text-white/40 text-sm">-</p>
+                            </div>
+                        </div>
+
+                        <button
+                            onClick={handleLeave}
+                            className="mt-12 px-8 py-3 bg-white/10 text-white/60 rounded-xl hover:bg-white/20 transition"
                         >
-                            <Loader2 className="w-16 h-16 mx-auto mb-6 text-cyan-400 animate-spin" />
-                            <h2 className="text-2xl font-bold text-white mb-2">
-                                {isConnected ? '상대방을 기다리는 중...' : '전투방 연결 중...'}
-                            </h2>
-                            <p className="text-white/60">잠시만 기다려주세요</p>
+                            나가기
+                        </button>
+                    </motion.div>
+                )}
 
-                            {opponent && (
-                                <div className="mt-8 p-4 bg-green-500/10 border border-green-500/30 rounded-xl inline-block">
-                                    <p className="text-green-400">✅ {opponent.playerName} 연결됨!</p>
-                                </div>
-                            )}
-
-                            <button
-                                onClick={handleLeave}
-                                className="mt-8 px-6 py-2 bg-white/10 text-white/60 rounded-lg hover:bg-white/20 transition"
-                            >
-                                나가기
-                            </button>
-                        </motion.div>
-                    )}
-
-                    {/* 덱 선택 */}
-                    {phase === 'deck-select' && (
-                        <motion.div
-                            key="deck-select"
-                            initial={{ opacity: 0 }}
-                            animate={{ opacity: 1 }}
-                            exit={{ opacity: 0 }}
-                        >
-                            <div className="flex items-center justify-between mb-6">
-                                <h2 className="text-xl font-bold text-white">덱 선택 ({selectedCards.length}/5)</h2>
-                                <div className="flex items-center gap-2 text-amber-400">
-                                    <Clock size={20} />
-                                    <span className="text-2xl font-black orbitron">{countdown}</span>
-                                </div>
-                            </div>
-
-                            {/* 카드 그리드 */}
-                            <div className="grid grid-cols-5 md:grid-cols-7 gap-3 mb-6 pb-[180px]">
-                                {myCards.map(card => {
-                                    const isSelected = selectedCards.find(c => c.id === card.id);
-                                    return (
-                                        <div
-                                            key={card.instanceId}
-                                            onClick={() => handleCardClick(card)}
-                                            className={cn(
-                                                "cursor-pointer transition-all",
-                                                isSelected && "ring-2 ring-cyan-400 scale-105"
-                                            )}
-                                        >
-                                            <GameCard card={card} isSelected={!!isSelected} />
-                                        </div>
-                                    );
-                                })}
-                            </div>
-
-                            {/* 푸터 */}
-                            <div className="fixed bottom-0 left-0 right-0 bg-black/90 border-t border-white/10 p-4">
-                                <div className="max-w-5xl mx-auto flex items-center justify-between">
-                                    <div className="flex gap-2">
-                                        {selectedCards.map((card, i) => (
-                                            <div key={i} className="w-12 h-16">
-                                                <GameCard card={card} showDetails={false} />
-                                            </div>
-                                        ))}
-                                        {Array(5 - selectedCards.length).fill(null).map((_, i) => (
-                                            <div key={`empty-${i}`} className="w-12 h-16 border-2 border-dashed border-white/20 rounded-lg" />
-                                        ))}
-                                    </div>
-
-                                    <div className="flex gap-3">
-                                        <button
-                                            onClick={handleAutoSelect}
-                                            className="px-4 py-2 bg-cyan-500/20 text-cyan-400 rounded-lg flex items-center gap-2 hover:bg-cyan-500/30 transition"
-                                        >
-                                            <Shuffle size={18} />
-                                            자동 선택
-                                        </button>
-                                        <button
-                                            onClick={handleConfirmDeck}
-                                            disabled={selectedCards.length !== 5}
-                                            className={cn(
-                                                "px-6 py-2 font-bold rounded-lg flex items-center gap-2 transition",
-                                                selectedCards.length === 5
-                                                    ? "bg-gradient-to-r from-green-600 to-emerald-600 text-white hover:from-green-500 hover:to-emerald-500"
-                                                    : "bg-gray-700 text-gray-400 cursor-not-allowed"
-                                            )}
-                                        >
-                                            <CheckCircle size={18} />
-                                            확정
-                                        </button>
-                                    </div>
-                                </div>
-                            </div>
-                        </motion.div>
-                    )}
-
-                    {/* 순서 정하기 / 준비 대기 */}
-                    {phase === 'ordering' && (
-                        <motion.div
-                            key="ordering"
-                            initial={{ opacity: 0 }}
-                            animate={{ opacity: 1 }}
-                            exit={{ opacity: 0 }}
-                            className="text-center py-10"
-                        >
-                            <div className="flex items-center justify-center gap-2 text-amber-400 mb-8">
-                                <Clock size={24} />
-                                <span className="text-4xl font-black orbitron">{countdown}</span>
-                            </div>
-
-                            {/* VS 표시 */}
-                            <div className="flex items-center justify-center gap-12 mb-8">
-                                <div className={cn(
-                                    "text-center p-6 rounded-xl border-2 transition-all",
-                                    isReady
-                                        ? "border-green-500 bg-green-500/10"
-                                        : "border-white/20 bg-white/5"
-                                )}>
-                                    <div className="w-16 h-16 bg-cyan-500/20 rounded-full flex items-center justify-center mx-auto mb-2">
-                                        <span className="text-2xl">🎮</span>
-                                    </div>
-                                    <p className="text-white font-bold">{myPlayer?.playerName}</p>
-                                    <p className="text-cyan-400 text-sm">Lv.{myPlayer?.playerLevel}</p>
-                                    {isReady && <p className="text-green-400 text-sm mt-2">✅ 준비 완료</p>}
-                                </div>
-
-                                <Swords className="text-red-500" size={48} />
-
-                                <div className={cn(
-                                    "text-center p-6 rounded-xl border-2 transition-all",
-                                    opponent?.ready
-                                        ? "border-green-500 bg-green-500/10"
-                                        : "border-white/20 bg-white/5"
-                                )}>
-                                    <div className="w-16 h-16 bg-red-500/20 rounded-full flex items-center justify-center mx-auto mb-2">
-                                        <span className="text-2xl">👤</span>
-                                    </div>
-                                    <p className="text-white font-bold">{opponent?.playerName || '상대방'}</p>
-                                    <p className="text-red-400 text-sm">Lv.{opponent?.playerLevel}</p>
-                                    {opponent?.ready && <p className="text-green-400 text-sm mt-2">✅ 준비 완료</p>}
-                                </div>
-                            </div>
-
-                            <p className="text-white/60 mb-6">양쪽 모두 준비되면 전투가 시작됩니다</p>
-
-                            {!isReady ? (
-                                <button
-                                    onClick={handleReady}
-                                    className="px-10 py-4 bg-gradient-to-r from-green-600 to-emerald-600 text-white text-xl font-bold rounded-xl hover:from-green-500 hover:to-emerald-500 transition transform hover:scale-105"
-                                >
-                                    준비 완료!
-                                </button>
-                            ) : (
-                                <div className="text-green-400 text-xl font-bold">
-                                    상대방을 기다리는 중...
-                                </div>
-                            )}
-                        </motion.div>
-                    )}
-
-                    {/* 전투 진행 - BattleArena 사용 */}
-                    {phase === 'battle' && myPlayer && opponent && myPlayer.selectedCards.length > 0 && opponent.selectedCards.length > 0 && (
-                        <BattleArena
-                            playerDeck={myPlayer.selectedCards}
-                            enemyDeck={opponent.selectedCards}
-                            opponent={{
-                                name: opponent.playerName,
-                                level: opponent.playerLevel
-                            }}
-                            onFinish={handleBattleFinish}
-                            title="REALTIME BATTLE"
-                            maxRounds={room?.maxRounds || 5}
-                            enemySelectionMode="ordered"
-                        />
-                    )}
-
-                    {/* 결과 화면 */}
-                    {phase === 'result' && (
-                        <motion.div
-                            key="result"
-                            initial={{ opacity: 0, scale: 0.9 }}
-                            animate={{ opacity: 1, scale: 1 }}
-                            exit={{ opacity: 0 }}
-                            className="text-center py-10"
-                        >
+                {/* VS 매치업 화면 */}
+                {localPhase === 'vs-matchup' && (
+                    <motion.div
+                        key="vs-matchup"
+                        initial={{ opacity: 0 }}
+                        animate={{ opacity: 1 }}
+                        exit={{ opacity: 0 }}
+                        className="min-h-screen flex flex-col items-center justify-center relative"
+                    >
+                        {/* 배경 효과 */}
+                        <div className="absolute inset-0 overflow-hidden">
                             <motion.div
-                                initial={{ scale: 0 }}
-                                animate={{ scale: 1 }}
-                                transition={{ type: 'spring', bounce: 0.5 }}
+                                animate={{ rotate: 360 }}
+                                transition={{ duration: 20, repeat: Infinity, ease: 'linear' }}
+                                className="absolute -top-1/2 -left-1/2 w-[200%] h-[200%] bg-gradient-conic from-red-500/20 via-transparent to-cyan-500/20"
+                            />
+                        </div>
+
+                        <div className="relative z-10">
+                            {/* 카운트다운 */}
+                            <motion.div
+                                animate={{ scale: [1, 1.1, 1] }}
+                                transition={{ duration: 1, repeat: Infinity }}
+                                className="text-center mb-8"
                             >
-                                {isWinner ? (
-                                    <Trophy className="w-32 h-32 mx-auto text-yellow-400 mb-4" />
-                                ) : (
-                                    <XCircle className="w-32 h-32 mx-auto text-red-400 mb-4" />
-                                )}
+                                <p className="text-white/60 text-sm mb-2">전투 시작까지</p>
+                                <span className="text-6xl font-black text-white orbitron">{vsCountdown}</span>
                             </motion.div>
 
-                            <h2 className={cn(
-                                "text-4xl font-black mb-4",
-                                isWinner ? "text-yellow-400" : "text-red-400"
-                            )}>
-                                {isWinner ? '승리!' : myPlayer?.wins === opponent?.wins ? '무승부' : '패배'}
-                            </h2>
+                            {/* VS 표시 */}
+                            <div className="flex items-center gap-8 md:gap-16">
+                                {/* 내 정보 */}
+                                <motion.div
+                                    initial={{ x: -100, opacity: 0 }}
+                                    animate={{ x: 0, opacity: 1 }}
+                                    transition={{ delay: 0.2 }}
+                                    className="text-center"
+                                >
+                                    <div className="w-32 h-32 bg-gradient-to-br from-cyan-500/30 to-blue-500/30 rounded-full flex items-center justify-center mx-auto mb-4 border-4 border-cyan-500">
+                                        <span className="text-5xl">🎮</span>
+                                    </div>
+                                    <h3 className="text-xl font-black text-white orbitron">{myPlayer?.playerName || '나'}</h3>
+                                    <p className="text-cyan-400 font-bold">Lv.{myPlayer?.playerLevel || state.level}</p>
+                                </motion.div>
 
-                            <div className="flex items-center justify-center gap-8 mb-8">
-                                <div className="text-center">
-                                    <p className="text-6xl font-black text-cyan-400">{myPlayer?.wins || 0}</p>
-                                    <p className="text-white/60">{myPlayer?.playerName}</p>
-                                </div>
-                                <p className="text-2xl text-white/40">vs</p>
-                                <div className="text-center">
-                                    <p className="text-6xl font-black text-red-400">{opponent?.wins || 0}</p>
-                                    <p className="text-white/60">{opponent?.playerName}</p>
-                                </div>
+                                {/* VS */}
+                                <motion.div
+                                    initial={{ scale: 0, rotate: -180 }}
+                                    animate={{ scale: 1, rotate: 0 }}
+                                    transition={{ delay: 0.4, type: 'spring' }}
+                                    className="relative"
+                                >
+                                    <div className="w-24 h-24 bg-red-500/20 rounded-full flex items-center justify-center">
+                                        <span className="text-4xl font-black text-red-500 orbitron italic">VS</span>
+                                    </div>
+                                    <motion.div
+                                        animate={{ scale: [1, 1.5, 1] }}
+                                        transition={{ duration: 2, repeat: Infinity }}
+                                        className="absolute inset-0 bg-red-500/30 rounded-full blur-xl"
+                                    />
+                                </motion.div>
+
+                                {/* 상대 정보 */}
+                                <motion.div
+                                    initial={{ x: 100, opacity: 0 }}
+                                    animate={{ x: 0, opacity: 1 }}
+                                    transition={{ delay: 0.2 }}
+                                    className="text-center"
+                                >
+                                    <div className="w-32 h-32 bg-gradient-to-br from-red-500/30 to-orange-500/30 rounded-full flex items-center justify-center mx-auto mb-4 border-4 border-red-500">
+                                        <span className="text-5xl">👤</span>
+                                    </div>
+                                    <h3 className="text-xl font-black text-white orbitron">{opponent?.playerName || '상대방'}</h3>
+                                    <p className="text-red-400 font-bold">Lv.{opponent?.playerLevel || '?'}</p>
+                                </motion.div>
                             </div>
 
-                            {isWinner && (
-                                <div className="bg-yellow-500/10 border border-yellow-500/30 rounded-xl p-4 mb-8 inline-block">
-                                    <p className="text-yellow-400 font-bold">🎉 보상: +500 코인, +50 레이팅</p>
+                            <motion.p
+                                initial={{ opacity: 0 }}
+                                animate={{ opacity: 1 }}
+                                transition={{ delay: 0.6 }}
+                                className="text-center text-white/60 mt-8"
+                            >
+                                곧 덱 선택 화면으로 이동합니다...
+                            </motion.p>
+                        </div>
+                    </motion.div>
+                )}
+
+                {/* 덱 선택 */}
+                {localPhase === 'deck-select' && (
+                    <motion.div
+                        key="deck-select"
+                        initial={{ opacity: 0 }}
+                        animate={{ opacity: 1 }}
+                        exit={{ opacity: 0 }}
+                        className="min-h-screen p-4"
+                    >
+                        {/* 헤더 */}
+                        <div className="max-w-5xl mx-auto mb-6">
+                            <div className="flex items-center justify-between bg-black/50 backdrop-blur-sm p-4 rounded-2xl border border-white/10">
+                                <div>
+                                    <h2 className="text-xl font-bold text-white">덱 선택</h2>
+                                    <p className="text-sm text-white/60">6장의 카드를 선택하세요</p>
                                 </div>
+                                <div className="flex items-center gap-4">
+                                    <div className="text-right">
+                                        <p className="text-xs text-white/40">상대</p>
+                                        <p className="text-sm font-bold text-red-400">{opponent?.playerName}</p>
+                                    </div>
+                                    <div className="flex items-center gap-2 px-4 py-2 bg-amber-500/20 rounded-xl">
+                                        <Clock size={20} className="text-amber-400" />
+                                        <span className="text-2xl font-black text-amber-400 orbitron">{countdown}</span>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        {/* 선택된 카드 */}
+                        <div className="max-w-5xl mx-auto mb-6">
+                            <div className="flex items-center gap-3 p-4 bg-black/50 backdrop-blur-sm rounded-2xl border border-white/10">
+                                <span className="text-white/60 font-bold mr-2">{selectedCards.length}/6</span>
+                                {selectedCards.map((card, i) => (
+                                    <motion.div
+                                        key={i}
+                                        initial={{ scale: 0 }}
+                                        animate={{ scale: 1 }}
+                                        className="w-14 h-20 cursor-pointer"
+                                        onClick={() => setSelectedCards(prev => prev.filter(c => c.id !== card.id))}
+                                    >
+                                        <GameCard card={card} />
+                                    </motion.div>
+                                ))}
+                                {Array(6 - selectedCards.length).fill(null).map((_, i) => (
+                                    <div key={`empty-${i}`} className="w-14 h-20 border-2 border-dashed border-white/20 rounded-lg" />
+                                ))}
+
+                                <div className="ml-auto flex gap-2">
+                                    <button
+                                        onClick={() => handleAutoSelect()}
+                                        className="px-4 py-2 bg-cyan-500/20 text-cyan-400 rounded-lg flex items-center gap-2 hover:bg-cyan-500/30 transition"
+                                    >
+                                        <Shuffle size={18} />
+                                        자동
+                                    </button>
+                                    <button
+                                        onClick={() => handleConfirmDeck()}
+                                        disabled={selectedCards.length !== 6}
+                                        className={cn(
+                                            "px-6 py-2 font-bold rounded-lg flex items-center gap-2 transition",
+                                            selectedCards.length === 6
+                                                ? "bg-gradient-to-r from-green-600 to-emerald-600 text-white hover:from-green-500 hover:to-emerald-500"
+                                                : "bg-gray-700 text-gray-400 cursor-not-allowed"
+                                        )}
+                                    >
+                                        <CheckCircle size={18} />
+                                        확정
+                                    </button>
+                                </div>
+                            </div>
+                        </div>
+
+                        {/* 카드 그리드 */}
+                        <div className="max-w-5xl mx-auto grid grid-cols-4 sm:grid-cols-5 md:grid-cols-6 lg:grid-cols-8 gap-3">
+                            {myCards.map(card => {
+                                const isSelected = selectedCards.find(c => c.id === card.id);
+                                return (
+                                    <motion.div
+                                        key={card.instanceId}
+                                        whileTap={{ scale: 0.95 }}
+                                        onClick={() => handleCardClick(card)}
+                                        className={cn(
+                                            "cursor-pointer transition-all rounded-lg overflow-hidden",
+                                            isSelected && "ring-2 ring-cyan-400 scale-105"
+                                        )}
+                                    >
+                                        <GameCard card={card} isSelected={!!isSelected} />
+                                    </motion.div>
+                                );
+                            })}
+                        </div>
+                    </motion.div>
+                )}
+
+                {/* 상대방 대기 (ordering) */}
+                {localPhase === 'ordering' && (
+                    <motion.div
+                        key="ordering"
+                        initial={{ opacity: 0 }}
+                        animate={{ opacity: 1 }}
+                        exit={{ opacity: 0 }}
+                        className="min-h-screen flex flex-col items-center justify-center"
+                    >
+                        <CheckCircle className="w-20 h-20 text-green-400 mb-6" />
+                        <h2 className="text-3xl font-bold text-white mb-2">덱 선택 완료!</h2>
+                        <p className="text-white/60 mb-8">상대방이 덱을 선택할 때까지 기다리는 중...</p>
+
+                        <div className="flex gap-2">
+                            {selectedCards.slice(0, 6).map((card, i) => (
+                                <motion.div
+                                    key={i}
+                                    initial={{ y: 20, opacity: 0 }}
+                                    animate={{ y: 0, opacity: 1 }}
+                                    transition={{ delay: i * 0.1 }}
+                                    className="w-16 h-24"
+                                >
+                                    <GameCard card={card} />
+                                </motion.div>
+                            ))}
+                        </div>
+
+                        <Loader2 className="w-8 h-8 text-cyan-400 animate-spin mt-8" />
+                    </motion.div>
+                )}
+
+                {/* 전투 - BattleArena 사용 */}
+                {localPhase === 'battle' && myPlayer && opponent && myPlayer.selectedCards.length > 0 && opponent.selectedCards.length > 0 && (
+                    <BattleArena
+                        playerDeck={myPlayer.selectedCards}
+                        enemyDeck={opponent.selectedCards}
+                        opponent={{
+                            name: opponent.playerName,
+                            level: opponent.playerLevel
+                        }}
+                        onFinish={handleBattleFinish}
+                        title="REALTIME BATTLE"
+                        maxRounds={room?.maxRounds || 5}
+                        enemySelectionMode="ordered"
+                    />
+                )}
+
+                {/* 결과 화면 */}
+                {localPhase === 'result' && (
+                    <motion.div
+                        key="result"
+                        initial={{ opacity: 0, scale: 0.9 }}
+                        animate={{ opacity: 1, scale: 1 }}
+                        className="min-h-screen flex flex-col items-center justify-center p-4"
+                    >
+                        <motion.div
+                            initial={{ scale: 0 }}
+                            animate={{ scale: 1 }}
+                            transition={{ type: 'spring', bounce: 0.5 }}
+                            className="mb-8"
+                        >
+                            {isWinner ? (
+                                <Trophy className="w-32 h-32 text-yellow-400" />
+                            ) : (
+                                <XCircle className="w-32 h-32 text-red-400" />
                             )}
-
-                            <div className="flex justify-center gap-4">
-                                <button
-                                    onClick={() => router.push('/pvp')}
-                                    className="px-8 py-3 bg-gradient-to-r from-purple-600 to-pink-600 text-white font-bold rounded-xl hover:from-purple-500 hover:to-pink-500 transition"
-                                >
-                                    다시 매칭
-                                </button>
-                                <button
-                                    onClick={() => router.push('/main')}
-                                    className="px-8 py-3 bg-white/10 text-white font-bold rounded-xl hover:bg-white/20 transition"
-                                >
-                                    메인으로
-                                </button>
-                            </div>
                         </motion.div>
-                    )}
-                </AnimatePresence>
-            </div>
-        </CyberPageLayout>
+
+                        <h2 className={cn(
+                            "text-5xl font-black orbitron italic mb-4",
+                            isWinner ? "text-yellow-400" : "text-red-400"
+                        )}>
+                            {isWinner ? 'VICTORY' : 'DEFEAT'}
+                        </h2>
+
+                        <div className="flex items-center gap-8 mb-8">
+                            <div className="text-center">
+                                <p className="text-6xl font-black text-cyan-400">{myPlayer?.wins || 0}</p>
+                                <p className="text-white/60">{myPlayer?.playerName}</p>
+                            </div>
+                            <p className="text-2xl text-white/40">vs</p>
+                            <div className="text-center">
+                                <p className="text-6xl font-black text-red-400">{opponent?.wins || 0}</p>
+                                <p className="text-white/60">{opponent?.playerName}</p>
+                            </div>
+                        </div>
+
+                        {isWinner && (
+                            <div className="grid grid-cols-2 gap-4 mb-8">
+                                <div className="bg-yellow-500/10 border border-yellow-500/30 rounded-xl p-4 text-center">
+                                    <p className="text-yellow-400 text-sm">코인</p>
+                                    <p className="text-2xl font-black text-yellow-400">+200</p>
+                                </div>
+                                <div className="bg-cyan-500/10 border border-cyan-500/30 rounded-xl p-4 text-center">
+                                    <p className="text-cyan-400 text-sm">레이팅</p>
+                                    <p className="text-2xl font-black text-cyan-400">+25</p>
+                                </div>
+                            </div>
+                        )}
+
+                        <div className="flex gap-4">
+                            <button
+                                onClick={() => router.push('/pvp')}
+                                className="px-8 py-3 bg-gradient-to-r from-purple-600 to-pink-600 text-white font-bold rounded-xl hover:from-purple-500 hover:to-pink-500 transition"
+                            >
+                                다시 매칭
+                            </button>
+                            <button
+                                onClick={() => router.push('/main')}
+                                className="px-8 py-3 bg-white/10 text-white font-bold rounded-xl hover:bg-white/20 transition"
+                            >
+                                메인으로
+                            </button>
+                        </div>
+                    </motion.div>
+                )}
+            </AnimatePresence>
+        </div>
     );
 }
