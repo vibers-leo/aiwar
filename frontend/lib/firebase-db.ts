@@ -540,7 +540,7 @@ export async function loadUserProfile(uid?: string): Promise<UserProfile | null>
         // [SAFETY FIX] 프로필이 없다고 해서 무조건 기본값을 덮어쓰면 안됨 (네트워크 오류 등).
         // 기존 유저(가입한지 5분이 지난)인데 프로필이 없다? -> DB 오류일 가능성 높음.
         // 신규 유저(가입한지 5분 이내)라면 기본값 생성 허용.
-        const auth = getAuth(app);
+        const auth = getAuth(app!);
         const currentUser = auth.currentUser;
         const isNewUser = currentUser?.metadata.creationTime
             ? (Date.now() - new Date(currentUser.metadata.creationTime).getTime() < 5 * 60 * 1000)
