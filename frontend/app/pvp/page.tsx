@@ -272,10 +272,10 @@ export default function PVPArenaPage() {
             }
 
             // [FIX] Manual Coin Check with Context State (More accurate than gameStorage)
-            if (coins < PVP_REQUIREMENTS.entryFee) {
+            if (coins < PVP_REQUIREMENTS.entryFeeCoins) {
                 showAlert({
                     title: '참가 불가',
-                    message: `코인이 부족합니다. (필요: ${PVP_REQUIREMENTS.entryFee})`,
+                    message: `코인이 부족합니다. (필요: ${PVP_REQUIREMENTS.entryFeeCoins})`,
                     type: 'error'
                 });
                 return;
@@ -659,9 +659,9 @@ export default function PVPArenaPage() {
                                     <div className="w-px h-3 bg-white/20 hidden md:block" />
                                     <div className="flex items-center gap-2">
                                         <CheckCircle className={cn(
-                                            coins >= PVP_REQUIREMENTS.entryFee ? 'text-green-400' : 'text-red-400'
+                                            coins >= PVP_REQUIREMENTS.entryFeeCoins ? 'text-green-400' : 'text-red-400'
                                         )} size={16} />
-                                        <span className="text-white/80">참가비 {PVP_REQUIREMENTS.entryFee} 코인</span>
+                                        <span className="text-white/80">참가비 {PVP_REQUIREMENTS.entryFeeCoins} 코인</span>
                                     </div>
                                     <div className="w-px h-3 bg-white/20 hidden md:block" />
                                     <div className="flex items-center gap-2">
