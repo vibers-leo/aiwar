@@ -197,33 +197,57 @@ export async function processBattleRewards(
     const winner = isPlayer1Winner ? room.player1 : room.player2;
     const loser = isPlayer1Winner ? room.player2 : room.player1;
 
-    // 카드 교환 (승자는 패자의 일반 카드 5장 획득)
+    // 1. 카드 교환 (승자는 패자의 일반 카드 1장 획득)
     const { cardsGained, cardsLost } = await transferCards(
+        roomId,
         winner.playerId,
         loser.playerId
     );
 
-    // 코인 및 경험치 보상
-    const winnerRewards = calculateWinnerRewards(room.battleMode);
-    const loserRewards = calculateLoserRewards(room.battleMode);
+    // 2. 중앙 집중식 보상 시스템 적용 (pvp-battle-system’s applyBattleResult 호출)
+    const state = getGameState();
+    const isMeWinner = winnerId === state.userId;
+    const isMeLoser = loser.playerId === state.userId;
 
-    // 승자 보상 지급
-    if (winner.playerId === getGameState().userId) {
-        const state = getGameState();
-        updateGameState({
-            coins: state.coins + winnerRewards.coins,
-            experience: state.experience + winnerRewards.experience
-        });
+    if (isMeWinner || isMeLoser) {
+        const { applyBattleResult, PVP_REWARDS } = await import('./pvp-battle-system');
+
+        // 보상 정보 구성
+        const rewardKey = isMeWinner ? 'realtime-win' : 'realtime-loss';
+        const rewards = PVP_REWARDS[rewardKey];
+
+        const systemResult = {
+            winner: isMeWinner ? 'player' as const : 'opponent' as const,
+            rounds: [], // 상세 라운드 정보는 여기서는 생략 가능하나 필요시 채움
+            playerWins: isMeWinner ? winner.wins : loser.wins,
+            opponentWins: isMeWinner ? loser.wins : winner.wins,
+            rewards: {
+                coins: rewards.coins,
+                experience: rewards.exp,
+                ratingChange: rewards.rating,
+                tokens: rewards.tokens || 0
+            },
+            cardExchange: {
+                cardsLost: isMeLoser ? cardsLost : [],
+                cardsGained: isMeWinner ? cardsGained : []
+            }
+        };
+
+        // 중앙 시스템에 결과 적용 (여기서 코인, 토큰, 레이팅, 인벤토리 모두 업데이트됨)
+        await applyBattleResult(
+            systemResult,
+            isMeWinner ? winner.selectedCards : loser.selectedCards,
+            isMeWinner ? loser.selectedCards : winner.selectedCards,
+            true, // isRanked
+            false, // isGhost (실제 PVP)
+            true // isRealtime
+        );
     }
 
-    // 패자 보상 지급 (위로 보상)
-    if (loser.playerId === getGameState().userId) {
-        const state = getGameState();
-        updateGameState({
-            coins: state.coins + loserRewards.coins,
-            experience: state.experience + loserRewards.experience
-        });
-    }
+    // 결과 객체 반환 (UI 표시용)
+    const { PVP_REWARDS } = await import('./pvp-battle-system');
+    const winRewards = PVP_REWARDS['realtime-win'];
+    const lossRewards = PVP_REWARDS['realtime-loss'];
 
     const result: BattleResult = {
         roomId,
@@ -235,13 +259,17 @@ export async function processBattleRewards(
         loserScore: loser.wins,
         rewards: {
             winner: {
-                coins: winnerRewards.coins,
-                experience: winnerRewards.experience,
+                coins: winRewards.coins,
+                tokens: winRewards.tokens || 0,
+                experience: winRewards.exp,
+                ratingChange: winRewards.rating,
                 cardsGained
             },
             loser: {
-                coins: loserRewards.coins,
-                experience: loserRewards.experience,
+                coins: lossRewards.coins,
+                tokens: lossRewards.tokens || 0,
+                experience: lossRewards.exp,
+                ratingChange: lossRewards.rating,
                 cardsLost
             }
         },
@@ -251,51 +279,76 @@ export async function processBattleRewards(
     return result;
 }
 
+
 /**
  * 카드 교환 (승자 ← 패자)
  */
 async function transferCards(
+    roomId: string,
     winnerId: string,
     loserId: string
 ): Promise<{ cardsGained: Card[]; cardsLost: Card[] }> {
-    // 실제 구현에서는 Firebase에서 카드 데이터를 가져와야 함
-    // 여기서는 로컬 스토리지 기반으로 구현
-
     const state = getGameState();
-    const myCards = state.cards || [];
+    const myInventory = state.inventory || [];
+    const isMeWinner = winnerId === state.userId;
+    const isMeLoser = loserId === state.userId;
 
-    // 패자의 일반 카드 중 5장 랜덤 선택
-    const transferableCards = myCards.filter(
-        card => card.rarity === 'common' || card.rarity === 'rare'
-    );
-
-    const cardsToTransfer: Card[] = [];
-    const numToTransfer = Math.min(5, transferableCards.length);
-
-    for (let i = 0; i < numToTransfer; i++) {
-        const randomIndex = Math.floor(Math.random() * transferableCards.length);
-        cardsToTransfer.push(transferableCards[randomIndex]);
-        transferableCards.splice(randomIndex, 1);
-    }
-
-    // 현재 플레이어가 패자인 경우 카드 제거
-    if (loserId === state.userId) {
-        const remainingCards = myCards.filter(
-            card => !cardsToTransfer.find(c => c.id === card.id)
+    if (isMeLoser) {
+        // [패자 로직] 카드 소모 및 Firebase에 기록
+        const transferableCards = myInventory.filter(
+            card => card.rarity === 'common' || card.rarity === 'rare'
         );
-        updateGameState({ cards: remainingCards });
+
+        if (transferableCards.length > 0) {
+            const randomIndex = Math.floor(Math.random() * transferableCards.length);
+            const lostCard = transferableCards[randomIndex];
+
+            // 1. 내 인벤토리에서 제거
+            const remainingInventory = myInventory.filter(c => c.id !== lostCard.id);
+            updateGameState({ inventory: remainingInventory });
+
+            // 2. Firebase 방 정보에 내가 잃은 카드 기록 (승자가 가져갈 수 있게)
+            try {
+                await updatePlayerState(roomId, state.userId, { lostCard });
+                console.log(`❌ Card sacrificed and saved to room: ${lostCard.name}`);
+            } catch (err) {
+                console.error('Failed to save lostCard to room:', err);
+            }
+
+            return { cardsGained: [], cardsLost: [lostCard] };
+        }
     }
 
-    // 현재 플레이어가 승자인 경우 카드 추가
-    if (winnerId === state.userId) {
-        updateGameState({ cards: [...myCards, ...cardsToTransfer] });
+    if (isMeWinner) {
+        // [승자 로직] 상대방이 잃은 카드 대기 및 획득
+        console.log('⌛ Waiting for opponent to sacrifice a card...');
+
+        // 최대 5초간 상대방의 lostCard 대기 (폴링 방식)
+        for (let i = 0; i < 10; i++) {
+            const room = await getBattleRoom(roomId);
+            if (!room) break;
+
+            const opponent = room.player1.playerId === state.userId ? room.player2 : room.player1;
+
+            if (opponent.lostCard) {
+                const gainedCard = opponent.lostCard;
+
+                // 내 인벤토리에 추가
+                updateGameState({ inventory: [...myInventory, gainedCard] });
+                console.log(`🎁 Received card from opponent: ${gainedCard.name}`);
+
+                return { cardsGained: [gainedCard], cardsLost: [] };
+            }
+
+            await new Promise(resolve => setTimeout(resolve, 500));
+        }
+
+        console.log('⚠️ Could not receive card from opponent (timeout or no card available)');
     }
 
-    return {
-        cardsGained: winnerId === state.userId ? cardsToTransfer : [],
-        cardsLost: loserId === state.userId ? cardsToTransfer : []
-    };
+    return { cardsGained: [], cardsLost: [] };
 }
+
 
 /**
  * 승자 보상 계산

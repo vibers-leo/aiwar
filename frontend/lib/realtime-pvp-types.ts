@@ -58,6 +58,9 @@ export interface PlayerState {
     // 연결 상태
     connected: boolean;
     lastHeartbeat: number;
+
+    // 보상/소모 정보
+    lostCard?: Card;            // [NEW] 패배 시 소모된 카드 정보 (승자가 획득함)
 }
 
 /**
@@ -114,12 +117,16 @@ export interface BattleResult {
     rewards: {
         winner: {
             coins: number;
+            tokens: number;
             experience: number;
+            ratingChange: number;
             cardsGained: Card[];
         };
         loser: {
             coins: number;
+            tokens: number;
             experience: number;
+            ratingChange: number;
             cardsLost: Card[];
         };
     };

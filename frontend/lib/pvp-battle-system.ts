@@ -390,7 +390,7 @@ export async function checkPVPRequirements(
         };
     }
 
-    // Check entry fees for real-time PVP
+    // Check entry fees and spare card for real-time PVP
     if (isRealtime) {
         if (coins < PVP_REQUIREMENTS.entryFeeCoins) {
             return {
@@ -405,21 +405,37 @@ export async function checkPVPRequirements(
                 reason: `참가비 ${PVP_REQUIREMENTS.entryFeeTokens} 토큰이 필요합니다.`
             };
         }
+
+        // [NEW] Spare card requirement for card consumption
+        const commonOrRareCards = inventory.filter((c: Card) => c.rarity === 'common' || c.rarity === 'rare');
+        if (inventory.length < 6) {
+            return {
+                canJoin: false,
+                reason: `최소 6장의 카드가 필요합니다. (기본 덱 5장 + 소모용 여분 1장)`
+            };
+        }
+
+        if (commonOrRareCards.length < 1) {
+            return {
+                canJoin: false,
+                reason: `소모용 여분 카드(일반 또는 희귀 등급)가 최소 1장 필요합니다.`
+            };
+        }
     } else {
-        // AI practice mode - only check coins
+        // AI practice mode - existing checks
         if (coins < PVP_REQUIREMENTS.entryFeeCoins) {
             return {
                 canJoin: false,
                 reason: `참가비 ${PVP_REQUIREMENTS.entryFeeCoins} 코인이 필요합니다.`
             };
         }
-    }
 
-    if (inventory.length < PVP_REQUIREMENTS.minCards) {
-        return {
-            canJoin: false,
-            reason: `최소 ${PVP_REQUIREMENTS.minCards}장의 카드가 필요합니다.`
-        };
+        if (inventory.length < PVP_REQUIREMENTS.minCards) {
+            return {
+                canJoin: false,
+                reason: `최소 ${PVP_REQUIREMENTS.minCards}장의 카드가 필요합니다.`
+            };
+        }
     }
 
     return { canJoin: true };

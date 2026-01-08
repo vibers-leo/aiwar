@@ -2,7 +2,7 @@
 
 import { useState, useEffect, useRef } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { X, Users, Loader2, Copy, Check, RefreshCw } from 'lucide-react';
+import { X, Users, Loader2, Copy, Check, RefreshCw, Award } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { Button } from '@/components/ui/custom/Button';
 import { useEscapeKey } from '@/hooks/useEscapeKey';
@@ -400,6 +400,30 @@ export default function RealtimeMatchingModal({
                                 >
                                     <p className="text-white/80">초대 코드로 참가</p>
                                 </button>
+
+                                {/* [NEW] 참가비 공지 */}
+                                <div className="mt-6 flex flex-col items-center gap-2 p-4 bg-yellow-500/5 border border-yellow-500/20 rounded-xl">
+                                    <div className="flex items-center gap-2 text-yellow-400">
+                                        <Award size={16} />
+                                        <span className="text-xs font-bold uppercase tracking-wider">대전 입장 정보</span>
+                                    </div>
+                                    <div className="flex flex-col gap-1.5 w-full text-xs">
+                                        <div className="flex items-center gap-2">
+                                            <div className="w-1.5 h-1.5 rounded-full bg-yellow-400" />
+                                            <span className="text-white/70">참가비: </span>
+                                            <span className="font-bold text-yellow-500 text-sm">50 코인 + 50 토큰</span>
+                                        </div>
+                                        <div className="flex items-center gap-2">
+                                            <div className="w-1.5 h-1.5 rounded-full bg-blue-400" />
+                                            <span className="text-white/70">요구사항: </span>
+                                            <span className="font-bold text-blue-400">최소 6장 보유 (여분 1장 포함)</span>
+                                        </div>
+                                        <div className="ml-3.5 text-[10px] text-white/40 leading-tight">
+                                            * 대전 참여를 위해 기본 덱(5장) 외에 소모용 여분 카드(일반/희귀)가 1장 이상 필요합니다.
+                                        </div>
+                                    </div>
+                                    <p className="text-[10px] font-medium text-yellow-500/60 mt-2">매칭 시작 시 참가비가 즉시 차감됩니다.</p>
+                                </div>
                             </div>
                         )}
 

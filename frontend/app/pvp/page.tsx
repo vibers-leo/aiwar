@@ -307,14 +307,25 @@ export default function PVPArenaPage() {
     };
 
     // 대전 방식 선택
-    const handleMatchTypeSelect = (type: MatchType) => {
-        setSelectedMatchType(type);
-
+    const handleMatchTypeSelect = async (type: MatchType) => {
         if (type === 'realtime') {
-            // 실시간 매칭 모달 표시
+            // [NEW] 실시간 대전 입장 조건 체크 (여분 카드 포함)
+            const check = await checkPVPRequirements(inventory, level, coins, tokens, true);
+
+            if (!check.canJoin) {
+                showAlert({
+                    title: '참가 불가',
+                    message: check.reason || '실시간 대전 참여 조건을 만족하지 못했습니다.',
+                    type: 'error'
+                });
+                return;
+            }
+
+            setSelectedMatchType(type);
             setShowMatchingModal(true);
             return;
         } else {
+            setSelectedMatchType(type);
             // AI 훈련: AI 덱 생성 및 애니메이션화
             const targetSize = (selectedMode === 'ambush' || selectedMode === 'double') ? 6 : 5;
             const aiOpponent = generateOpponentDeck(state.level, [], targetSize);

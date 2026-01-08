@@ -306,13 +306,26 @@ function GameCard({
                 </div>
 
                 {/* 등급 배지 */}
-                <motion.div
-                    className={cn("absolute top-1.5 left-1.5 px-2 py-0.5 rounded text-[9px] font-bold uppercase tracking-wider z-20", config.badge)}
-                    animate={isHighRarity ? { scale: [1, 1.05, 1] } : undefined}
-                    transition={isHighRarity ? { repeat: Infinity, duration: 2 } : undefined}
-                >
-                    {RARITY_NAMES[rarity][lang]}
-                </motion.div>
+                <div className="flex flex-col gap-1 absolute top-1.5 left-1.5 z-20">
+                    <motion.div
+                        className={cn("px-2 py-0.5 rounded text-[9px] font-bold uppercase tracking-wider", config.badge)}
+                        animate={isHighRarity ? { scale: [1, 1.05, 1] } : undefined}
+                        transition={isHighRarity ? { repeat: Infinity, duration: 2 } : undefined}
+                    >
+                        {RARITY_NAMES[rarity][lang]}
+                    </motion.div>
+
+                    {/* [NEW] 대여 카드 표시 */}
+                    {('isRented' in card && card.isRented) && (
+                        <motion.div
+                            initial={{ x: -10, opacity: 0 }}
+                            animate={{ x: 0, opacity: 1 }}
+                            className="px-2 py-0.5 rounded text-[8px] font-black uppercase tracking-tighter bg-amber-500 text-black shadow-[0_0_10px_rgba(245,158,11,0.5)] border border-amber-300/50"
+                        >
+                            {lang === 'ko' ? '임시 대여됨' : 'RENTED'}
+                        </motion.div>
+                    )}
+                </div>
 
                 {/* 영상 재생 인디케이터 */}
                 {characterVideo && isHovered && (

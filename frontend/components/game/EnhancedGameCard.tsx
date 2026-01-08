@@ -109,8 +109,15 @@ export default function EnhancedGameCard({
                     </div>
 
                     {/* Level Badge - Moved to Bottom Right */}
-                    <div className="absolute bottom-3 right-3 px-3 py-1 rounded-md bg-slate-900/90 backdrop-blur-sm border border-white/20 z-40 shadow-lg">
-                        <span className="text-xs font-black text-white font-mono">LV.{card.level}</span>
+                    <div className="absolute bottom-3 right-3 flex flex-col items-end gap-1 z-40">
+                        {card.isRented && (
+                            <div className="px-2 py-0.5 rounded text-[8px] font-black uppercase tracking-tighter bg-amber-500 text-black shadow-lg border border-amber-300/50">
+                                RENTED
+                            </div>
+                        )}
+                        <div className="px-3 py-1 rounded-md bg-slate-900/90 backdrop-blur-sm border border-white/20 shadow-lg">
+                            <span className="text-xs font-black text-white font-mono">LV.{card.level}</span>
+                        </div>
                     </div>
                 </div>
 
