@@ -649,6 +649,17 @@ export default function StageBattlePage() {
                     />
                 )}
 
+                {/* 3. Card Placement Board */}
+                {phase === 'card-placement' && (
+                    <CardPlacementBoard
+                        selectedCards={selectedHand}
+                        battleMode={storyStage.battleMode as any} // Map to supported modes
+                        onPlacementComplete={handlePlacementComplete}
+                        onCancel={() => setPhase('deck-select')}
+                        opponentDeck={storyStage.battleMode === 'ambush' || storyStage.battleMode === 'double' ? [] : enemies} // Hide for fairness or show? Logic varies.
+                    />
+                )}
+
                 {/* 4. Battle Animation (Unified BattleArena) */}
                 {phase === 'battle' && (
                     <BattleArena

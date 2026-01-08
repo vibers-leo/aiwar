@@ -1766,6 +1766,8 @@ export async function getAllUsersWithStatus(): Promise<Array<{
     nickname: string;
     email?: string;
     level: number;
+    coins: number;
+    tokens: number;
     tutorialCompleted: boolean;
     hasReceivedStarterPack: boolean;
     createdAt: any;
@@ -1789,6 +1791,8 @@ export async function getAllUsersWithStatus(): Promise<Array<{
                 nickname: data.nickname || 'Unknown',
                 email: data.email,
                 level: data.level || 1,
+                coins: data.coins || 0,
+                tokens: data.tokens || 0,
                 tutorialCompleted: data.tutorialCompleted === true,
                 hasReceivedStarterPack: data.hasReceivedStarterPack === true,
                 createdAt: data.createdAt,

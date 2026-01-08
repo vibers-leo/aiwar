@@ -26,6 +26,7 @@ import { loadInventory, removeCardFromInventory } from '@/lib/inventory-system';
 import { useFirebase } from '@/components/FirebaseProvider';
 import { useUser } from '@/context/UserContext'; // [NEW]
 import GenerationSlot from '@/components/GenerationSlot';
+import GameCard from '@/components/GameCard';
 
 export default function GenerationPage() {
     const router = useRouter();
@@ -98,9 +99,34 @@ export default function GenerationPage() {
         const commanderTemplate = COMMANDERS.find(c => c.aiFactionId === factionId);
 
         // [FIX] 안내 모달 추가: 배치 시 군단장 카드 대여 알림
+        const tempCard = commanderTemplate ? { ...createCardFromTemplate(commanderTemplate), isRented: true } : null;
+
         showConfirm({
             title: '군단 배치 및 카드 대여',
-            message: `[${faction?.displayName || factionId}] 군단을 배치하시겠습니까? 배치된 동안 전용 군단장 카드(${commanderTemplate?.name || '군단장'})를 대여하여 전투에서 사용할 수 있습니다.`,
+            message: '', // Using content instead
+            content: (
+                <div className="flex flex-col items-center gap-6 py-2">
+                    <p className="text-gray-300 text-sm font-medium leading-relaxed text-center">
+                        <span className="text-cyan-400 font-bold">[{faction?.displayName || factionId}]</span> 군단을 배치하시겠습니까?<br />
+                        배치된 동안 전용 군단장 카드를 대여하여 <br />전투에서 사용할 수 있습니다.
+                    </p>
+                    {tempCard && (
+                        <div className="relative transform hover:scale-105 transition-transform duration-300">
+                            <div className="absolute -inset-4 bg-cyan-500/20 blur-xl rounded-full" />
+                            <GameCard
+                                card={tempCard}
+                                isHolographic
+
+                            />
+                            <div className="absolute -bottom-6 left-0 right-0 text-center">
+                                <span className="text-[10px] text-cyan-400 font-bold uppercase tracking-widest bg-black/80 px-3 py-1 rounded-full border border-cyan-500/30">
+                                    RENTAL CARD
+                                </span>
+                            </div>
+                        </div>
+                    )}
+                </div>
+            ),
             onConfirm: async () => {
                 const result = assignFactionToSlot(slotIndex, factionId, userId);
                 if (result.success) {

@@ -10,13 +10,8 @@ export default function GoogleLoginButton() {
     const { user } = useUser(); // [FIX] Get user from context
     const [isLoading, setIsLoading] = useState(false);
 
-    // [Safety] If user is detected while loading (even if promise hangs), redirect.
-    useEffect(() => {
-        if (isLoading && user) {
-            console.log("[GoogleLogin] User detected via Context. Redirecting...");
-            router.push('/');
-        }
-    }, [user, isLoading, router]);
+    // [Removed] Auto-redirect effect to prevent race conditions.
+    // We strictly rely on handleGoogleLogin's success or onAuthChange flow properly handled by the provider.
 
     const handleGoogleLogin = async () => {
         setIsLoading(true);

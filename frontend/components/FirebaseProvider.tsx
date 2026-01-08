@@ -69,12 +69,12 @@ export function FirebaseProvider({ children }: FirebaseProviderProps) {
         const safetyTimer = setTimeout(() => {
             setLoading(prev => {
                 if (prev) {
-                    console.warn('[FirebaseProvider] Auth initialization timed out (4s). releasing loading state.');
+                    console.warn('[FirebaseProvider] Auth initialization timed out (10s). releasing loading state.');
                     return false;
                 }
                 return prev;
             });
-        }, 4000);
+        }, 10000);
 
         return () => {
             unsubscribe();

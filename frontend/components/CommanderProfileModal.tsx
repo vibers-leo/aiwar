@@ -14,7 +14,7 @@ import { Divider } from "@/components/ui/custom/Divider";
 import { Chip } from "@/components/ui/custom/Chip";
 import { motion, AnimatePresence } from "framer-motion";
 import { Input } from "@/components/ui/custom/Input";
-import { updateNickname, saveUserProfile } from '@/lib/firebase-db';
+import { updateNickname, saveUserProfile, checkNicknameUnique } from '@/lib/firebase-db';
 import {
     User,
     Shield,
@@ -58,6 +58,8 @@ export default function CommanderProfileModal({ isOpen, onClose }: CommanderProf
     // Nickname Editing State
     const [isEditingName, setIsEditingName] = useState(false);
     const [editName, setEditName] = useState('');
+    const [isCheckingNickname, setIsCheckingNickname] = useState(false);
+    const [nicknameStatus, setNicknameStatus] = useState<'idle' | 'checking' | 'available' | 'taken' | 'error'>('idle');
 
     // ESC key handler
     const handleEscKey = useCallback((e: KeyboardEvent) => {
@@ -87,9 +89,48 @@ export default function CommanderProfileModal({ isOpen, onClose }: CommanderProf
         }
     }, [isOpen, user?.uid, profile?.nickname]);
 
+    // Real-time nickname duplicate check
+    useEffect(() => {
+        if (!editName.trim() || editName === profile?.nickname) {
+            setNicknameStatus('idle');
+            return;
+        }
+
+        const checkDuplicate = async () => {
+            setIsCheckingNickname(true);
+            setNicknameStatus('checking');
+
+            try {
+                const isUnique = await checkNicknameUnique(editName.trim(), user?.uid);
+                setNicknameStatus(isUnique ? 'available' : 'taken');
+            } catch (error) {
+                console.error('Nickname check error:', error);
+                setNicknameStatus('error');
+            } finally {
+                setIsCheckingNickname(false);
+            }
+        };
+
+        // Debounce: wait 500ms after user stops typing
+        const timer = setTimeout(checkDuplicate, 500);
+        return () => clearTimeout(timer);
+    }, [editName, profile?.nickname, user?.uid]);
+
     const handleSaveNickname = async () => {
         if (!editName.trim()) {
             alert('닉네임을 입력해주세요.');
+            return;
+        }
+
+        // Prevent saving if nickname is taken
+        if (nicknameStatus === 'taken') {
+            alert('이미 사용 중인 닉네임입니다. 다른 닉네임을 선택해주세요.');
+            return;
+        }
+
+        // Prevent saving while checking
+        if (isCheckingNickname) {
+            alert('닉네임 중복 확인 중입니다. 잠시만 기다려주세요.');
             return;
         }
 
@@ -97,6 +138,7 @@ export default function CommanderProfileModal({ isOpen, onClose }: CommanderProf
             await updateNickname(editName.trim(), user?.uid);
             await refreshData();
             setIsEditingName(false);
+            setNicknameStatus('idle');
             // alert('닉네임이 변경되었습니다.'); // Optional: Less intrusive UI preferred
         } catch (error: any) {
             alert(error.message || '닉네임 변경에 실패했습니다.');
@@ -207,21 +249,69 @@ export default function CommanderProfileModal({ isOpen, onClose }: CommanderProf
                             </div>
                             <div className="flex items-center justify-between w-full">
                                 {isEditingName ? (
-                                    <div className="flex items-center gap-2 w-full max-w-md">
-                                        <Input
-                                            value={editName}
-                                            onChange={(e) => setEditName(e.target.value)}
-                                            className="bg-black/50 border-cyan-500/50 text-2xl font-black orbitron h-12"
-                                            placeholder="Enter Legion Commander Name"
-                                            maxLength={12}
-                                            autoFocus
-                                        />
-                                        <Button size="lg" onClick={handleSaveNickname} className="p-0 h-12 w-12 bg-green-500/20 hover:bg-green-500/40 text-green-400 border border-green-500/50">
-                                            <Check size={20} />
-                                        </Button>
-                                        <Button size="lg" onClick={() => setIsEditingName(false)} className="p-0 h-12 w-12 bg-red-500/20 hover:bg-red-500/40 text-red-400 border border-red-500/50">
-                                            <X size={20} />
-                                        </Button>
+                                    <div className="flex flex-col gap-2 w-full max-w-md">
+                                        <div className="flex items-center gap-2">
+                                            <Input
+                                                value={editName}
+                                                onChange={(e) => setEditName(e.target.value)}
+                                                className="bg-black/50 border-cyan-500/50 text-2xl font-black orbitron h-12"
+                                                placeholder="Enter Legion Commander Name"
+                                                maxLength={12}
+                                                autoFocus
+                                            />
+                                            <Button
+                                                size="lg"
+                                                onClick={handleSaveNickname}
+                                                className="p-0 h-12 w-12 bg-green-500/20 hover:bg-green-500/40 text-green-400 border border-green-500/50"
+                                                disabled={nicknameStatus === 'taken' || isCheckingNickname}
+                                            >
+                                                <Check size={20} />
+                                            </Button>
+                                            <Button
+                                                size="lg"
+                                                onClick={() => {
+                                                    setIsEditingName(false);
+                                                    setNicknameStatus('idle');
+                                                }}
+                                                className="p-0 h-12 w-12 bg-red-500/20 hover:bg-red-500/40 text-red-400 border border-red-500/50"
+                                            >
+                                                <X size={20} />
+                                            </Button>
+                                        </div>
+                                        {/* Validation Status Indicator */}
+                                        {nicknameStatus !== 'idle' && (
+                                            <div className={cn(
+                                                "text-xs font-bold px-3 py-1.5 rounded-lg flex items-center gap-2",
+                                                nicknameStatus === 'checking' && "bg-blue-500/10 text-blue-400 border border-blue-500/30",
+                                                nicknameStatus === 'available' && "bg-green-500/10 text-green-400 border border-green-500/30",
+                                                nicknameStatus === 'taken' && "bg-red-500/10 text-red-400 border border-red-500/30",
+                                                nicknameStatus === 'error' && "bg-yellow-500/10 text-yellow-400 border border-yellow-500/30"
+                                            )}>
+                                                {nicknameStatus === 'checking' && (
+                                                    <>
+                                                        <div className="w-3 h-3 border-2 border-blue-400 border-t-transparent rounded-full animate-spin" />
+                                                        <span>중복 확인 중...</span>
+                                                    </>
+                                                )}
+                                                {nicknameStatus === 'available' && (
+                                                    <>
+                                                        <Check size={14} />
+                                                        <span>사용 가능한 닉네임입니다</span>
+                                                    </>
+                                                )}
+                                                {nicknameStatus === 'taken' && (
+                                                    <>
+                                                        <X size={14} />
+                                                        <span>이미 사용 중인 닉네임입니다</span>
+                                                    </>
+                                                )}
+                                                {nicknameStatus === 'error' && (
+                                                    <>
+                                                        <span>⚠️ 확인 실패 (네트워크 오류)</span>
+                                                    </>
+                                                )}
+                                            </div>
+                                        )}
                                     </div>
                                 ) : (
                                     <div className="flex flex-col">

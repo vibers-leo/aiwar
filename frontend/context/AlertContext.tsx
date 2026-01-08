@@ -11,7 +11,8 @@ type AlertType = 'success' | 'error' | 'info' | 'warning';
 
 interface AlertOptions {
     title: string;
-    message: string;
+    message?: string;
+    content?: ReactNode;
     type?: AlertType;
     confirmText?: string;
     cancelText?: string;
@@ -102,9 +103,13 @@ export const AlertProvider = ({ children }: { children: ReactNode }) => {
                     <h2 className="text-xl font-black text-white orbitron italic mb-2 tracking-tight">
                         {options?.title}
                     </h2>
-                    <p className="text-gray-400 text-sm font-medium leading-relaxed">
-                        {options?.message}
-                    </p>
+                    {options?.content ? (
+                        options.content
+                    ) : (
+                        <p className="text-gray-400 text-sm font-medium leading-relaxed">
+                            {options?.message}
+                        </p>
+                    )}
                 </ModalBody>
 
                 <ModalFooter className="border-none pb-8 pt-4 justify-center gap-3 relative z-10">

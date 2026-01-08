@@ -272,11 +272,13 @@ export function createCardFromTemplate(template: any, factionEffects?: FactionEf
         },
         imageUrl: template.imageUrl,
         description: template.story,
-        specialSkill: template.specialAbility ? {
-            name: template.specialAbility.name,
-            description: template.specialAbility.description,
-            effect: template.specialAbility.type
-        } : undefined
+        ...(template.specialAbility ? {
+            specialSkill: {
+                name: template.specialAbility.name,
+                description: template.specialAbility.description,
+                effect: template.specialAbility.type
+            }
+        } : {})
     };
 
     return card;

@@ -6,7 +6,7 @@ import { cn } from '@/lib/utils';
 import RoundPlacementSlot from './RoundPlacementSlot';
 import { BattleMode } from '@/lib/pvp-battle-system';
 import { getTypeIcon, getTypeColor } from '@/lib/type-system';
-import { RefreshCcw, Wand2, Trash2, Swords, ArrowRight } from 'lucide-react';
+import { RefreshCcw, Wand2, Trash2, Swords, ArrowRight, AlertTriangle } from 'lucide-react';
 
 interface CardPlacementBoardProps {
     selectedCards: any[];
@@ -461,6 +461,12 @@ export default function CardPlacementBoard({ selectedCards, onPlacementComplete,
                                     )}
                                 </div>
                             ))}
+                        </div>
+                        <div className="absolute top-full mt-2 left-1/2 -translate-x-1/2 whitespace-nowrap z-20">
+                            <div className="text-[10px] text-red-400 flex items-center gap-1.5 bg-black/60 px-3 py-1 rounded-full border border-red-500/30 shadow-lg backdrop-blur-md animate-pulse">
+                                <AlertTriangle size={12} className="text-red-500" />
+                                <span>주의: 적은 카드를 <span className="text-red-300 font-bold underline decoration-red-500/50 underline-offset-2">무작위 순서</span>로 제출합니다</span>
+                            </div>
                         </div>
                     </div>
                 )}
