@@ -98,9 +98,7 @@ export default function RealtimeBattleRoomPage() {
                 // [FIX] 양쪽 플레이어가 연결되면 deck-select로 전환
                 if (updatedRoom.phase === 'waiting' || updatedRoom.phase === 'ordering') {
                     if (updatedRoom.player1.connected && updatedRoom.player2.connected) {
-                        if (updatedRoom.phase !== 'deck-select') {
-                            await updateBattleRoom(roomId, { phase: 'deck-select' });
-                        }
+                        await updateBattleRoom(roomId, { phase: 'deck-select' });
                     }
                 }
             });

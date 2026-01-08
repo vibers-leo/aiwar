@@ -7,7 +7,7 @@ import { Card, BattleMode } from '@/lib/types';
 import { InventoryCard } from '@/lib/inventory-system';
 import { StoryStage, getStoryStage, completeStage } from '@/lib/story-system';
 import { generateEnemies, StageConfig } from '@/lib/stage-system';
-import { applyBattleResult, BattleResult } from '@/lib/pvp-battle-system';
+import { applyBattleResult, BattleResult, BattleParticipant } from '@/lib/pvp-battle-system';
 import { Button } from '@/components/ui/custom/Button';
 import CardPlacementBoard, { RoundPlacement as BoardPlacement } from '@/components/battle/CardPlacementBoard';
 import { useTranslation } from '@/context/LanguageContext';
