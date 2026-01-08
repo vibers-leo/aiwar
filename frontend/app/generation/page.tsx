@@ -89,65 +89,53 @@ export default function GenerationPage() {
             return;
         }
 
-        const result = assignFactionToSlot(slotIndex, factionId, userId);
-        if (result.success) {
-            showAlert({ title: '배치 완료', message: '군단이 배치되었으며, 카드 생성 타이머가 시작되었습니다.', type: 'success' });
-            loadData();
-            setSelectedSlotForAssignment(null);
+        const faction = factions.find(f => f.id === factionId);
+        const commanderTemplate = COMMANDERS.find(c => c.aiFactionId === factionId);
 
-            // Commander Acquisition Logic
-            try {
-                const commanderTemplate = COMMANDERS.find(c => c.aiFactionId === factionId);
-                if (commanderTemplate) {
-                    const inventory = await loadInventory();
-                    const hasCommander = inventory.some(c => c.templateId === commanderTemplate.id);
+        // [FIX] 안내 모달 추가: 배치 시 군단장 카드 대여 알림
+        showConfirm({
+            title: '군단 배치 및 카드 대여',
+            message: `[${faction?.displayName || factionId}] 군단을 배치하시겠습니까? 배치된 동안 전용 군단장 카드(${commanderTemplate?.name || '군단장'})를 대여하여 전투에서 사용할 수 있습니다.`,
+            onConfirm: async () => {
+                const result = assignFactionToSlot(slotIndex, factionId, userId);
+                if (result.success) {
+                    loadData();
+                    setSelectedSlotForAssignment(null);
 
-                    if (!hasCommander) {
-                        const newCommanderCard = createCardFromTemplate(commanderTemplate);
-                        await addCardToInventory(newCommanderCard);
-                        setRewardCards([newCommanderCard]);
-                        setRewardModalTitle("🎖️ COMMANDER ACQUIRED 🎖️");
-                        setRewardModalOpen(true);
+                    // Commander Rental Logic
+                    try {
+                        if (commanderTemplate) {
+                            const inventory = await loadInventory(userId);
+                            const hasCommander = inventory.some(c => c.templateId === commanderTemplate.id);
+
+                            if (!hasCommander) {
+                                // Mark as rented
+                                const newCommanderCard = {
+                                    ...createCardFromTemplate(commanderTemplate),
+                                    isRented: true,
+                                    ownerId: userId
+                                };
+                                await addCardToInventory(newCommanderCard);
+                                setRewardCards([newCommanderCard]);
+                                setRewardModalTitle("🎖️ COMMANDER RENTED 🎖️");
+                                setRewardModalOpen(true);
+                            }
+                        }
+                    } catch (error) {
+                        console.error("Failed to process Commander rental:", error);
+                    }
+
+                    // Slot Assignment Reward (50 Tokens)
+                    try {
+                        await addTokens(50);
+                        showAlert({ title: '배치 완료', message: '군단이 배치되었으며, 카드 생성 타이머가 시작되었습니다. (+50 토큰 보너스)', type: 'success' });
+                    } catch (err) {
+                        console.error("Token reward failed", err);
+                        showAlert({ title: '배치 완료', message: '군단이 배치되었으며, 카드 생성 타이머가 시작되었습니다.', type: 'success' });
                     }
                 }
-            } catch (error) {
-                console.error("Failed to process Commander acquisition:", error);
             }
-
-            // [NEW] Slot Assignment Reward (50 Tokens)
-            try {
-                // We use addTokens from context. Wait, we need to extract it from context or use firebase direct if context function not exposed perfectly?
-                // UserContext "addTokens" is exposed.
-                // But we are outside the hook scope if we just call it? No, we are inside component.
-                // We need to get addTokens from useUser().
-                // Let's check imports. useUser is imported.
-                // handleAssignFaction is inside component.
-                // We need to destructure addTokens from useUser().
-
-                // Oops, I need to check if addTokens is available in the component scope.
-                // useUser call is: const { showAlert, showConfirm } = useAlert(); const { trackMissionEvent } = useUser();
-                // I need to add addTokens to useUser destructuring at the top of component.
-                // I will do that in a separate edit or finding a way.
-                // Let's look at line 34.
-
-                // IMPORTANT: I must modify line 34 first or simultaneously (using multi_replace).
-                // Let's assume I will modify line 34 in this same call.
-
-                // For now, let's just use the direct firebase call if I can't easily change line 34 in this chunk... 
-                // actually I can change line 34 in a different chunk.
-
-                // Wait, useUser is at line 34: const { trackMissionEvent } = useUser();
-                // I will add addTokens there.
-
-                // Here is the logic chunk:
-                await addTokens(50);
-                showAlert({ title: '배치 완료', message: '군단이 배치되었으며, 카드 생성 타이머가 시작되었습니다. (+50 토큰)', type: 'success' });
-            } catch (err) {
-                console.error("Token reward failed", err);
-                // Fallback alert if token fails? No, just keep going.
-                showAlert({ title: '배치 완료', message: '군단이 배치되었으며, 카드 생성 타이머가 시작되었습니다.', type: 'success' });
-            }
-        }
+        });
     };
 
     const handleRemoveFaction = useCallback((slotIndex: number) => {
@@ -156,7 +144,7 @@ export default function GenerationPage() {
 
         showConfirm({
             title: '군단 배치 해제',
-            message: '군단을 슬롯에서 제거하면 보유 중인 해당 군단의 "군단장 카드"도 함께 회수됩니다. 계속하시겠습니까?',
+            message: '군단을 슬롯에서 제거하면 대여 중인 해당 군단의 "군단장 카드"도 함께 회수됩니다. 계속하시겠습니까?',
             onConfirm: async () => {
                 // 1. 군단장 카드 회수 로직
                 try {
@@ -165,10 +153,10 @@ export default function GenerationPage() {
                     const commanderTemplate = COMMANDERS.find(c => c.aiFactionId === slot.factionId);
 
                     if (commanderTemplate) {
-                        const commanderCards = inventory.filter(c => c.templateId === commanderTemplate.id);
-                        for (const card of commanderCards) {
+                        const rentedCommanderCards = inventory.filter(c => c.templateId === commanderTemplate.id && c.isRented);
+                        for (const card of rentedCommanderCards) {
                             await removeCardFromInventory(card.instanceId, userId);
-                            console.log(`[Generation] Reclaimed commander card: ${card.name}`);
+                            console.log(`[Generation] Reclaimed rented commander card: ${card.name}`);
                         }
                     }
                 } catch (error) {
@@ -514,7 +502,7 @@ export default function GenerationPage() {
                     title={rewardModalTitle}
                 />
             </div>
-        </CyberPageLayout>
+        </CyberPageLayout >
     );
 }
 

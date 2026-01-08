@@ -143,6 +143,7 @@ export async function applyBattleResult(
 
     try {
         const state = getGameState();
+        const userId = state.userId; // [FIX] Get userId from state for Firebase sync
         const currentPvpStats = state.pvpStats || {
             wins: 0,
             losses: 0,
@@ -156,13 +157,17 @@ export async function applyBattleResult(
         };
 
         const currentRating = currentPvpStats.rating || 1000;
-        let ratingChange = isRanked ? result.rewards.ratingChange : 0;
 
+        // [FIX] AI/Practice mode now gets 50% rating instead of 0
+        // Previously: isRanked=false meant ratingChange=0, now it means 50%
+        let ratingChange = result.rewards.ratingChange;
         let rewardMultiplier = 1.0;
+
         if (isGhost || !isRanked) {
             rewardMultiplier = 0.5;
-            ratingChange = Math.floor(ratingChange * 0.5);
-            console.log(`📉 50% rewards applied (Ghost/Practice Mode)`);
+            // [FIX] Rating is already balanced in the reward config (e.g., +25 for AI vs +50 for PvP)
+            // So we award 100% of the ratingChange specified in the result.
+            console.log(`📉 50% coin/xp rewards applied (Ghost/Practice Mode). Rating change remains: ${ratingChange}`);
         }
 
         const newRating = Math.max(0, currentRating + ratingChange);
@@ -211,7 +216,17 @@ export async function applyBattleResult(
         if (coinsEarned > 0) await gameStorage.addCoins(coinsEarned);
         if (expEarned > 0) await gameStorage.addExperience(expEarned);
 
-        console.log(`✅ Battle result processed. Rating: ${currentRating} -> ${newRating}`);
+        // [Jung-Gong-Beop] Persist PVP Stats to Firebase for Leaderboard
+        // We must explicitly save the profile updates to trigger the root-doc sync we just added
+        const { saveUserProfile } = await import('./firebase-db');
+        await saveUserProfile({
+            rating: newRating,
+            wins: newPvpStats.wins,
+            losses: newPvpStats.losses,
+            // We can also sync nickname/avatar if needed, but they are usually static
+        }, userId);
+
+        console.log(`✅ Battle result processed & saved to DB. Rating: ${currentRating} -> ${newRating}`);
     } catch (error) {
         console.error("❌ Failed to apply battle result:", error);
     }

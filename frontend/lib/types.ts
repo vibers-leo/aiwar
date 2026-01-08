@@ -89,6 +89,7 @@ export interface Card {
     aiFactionId?: string; // 소속 군단 ID
     specialty?: Specialty; // 전문 분야
     plusStats?: Stats;
+    isRented?: boolean; // [NEW] 대여 카드 여부 (군단 슬롯 배치 시 제공)
 }
 
 export type EquipmentRarity = 'standard' | 'advanced' | 'elite' | 'quantum';

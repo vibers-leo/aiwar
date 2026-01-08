@@ -14,7 +14,10 @@ import { motion } from 'framer-motion';
 import { useSound } from '@/hooks/useSound';
 import { useAlert } from '@/context/AlertContext';
 
+import { useUser } from '@/context/UserContext';
+
 import BattleResult from '@/components/BattleResult';
+import Leaderboard from '@/components/Leaderboard';
 
 const deriveAIType = (specialty: Specialty): 'EFFICIENCY' | 'CREATIVITY' | 'FUNCTION' => {
     switch (specialty) {
@@ -57,6 +60,7 @@ const createBattleCard = (temp: CardTemplate, ownerId: string): Card => {
 export default function BattlePage() {
     const { play } = useSound();
     const { showAlert } = useAlert();
+    const { user, loading: userLoading } = useUser();
     const [gameState, setGameState] = useState<'LOBBY' | 'PREPARATION' | 'BATTLE' | 'RESULT'>('LOBBY');
     const [currentStage, setCurrentStage] = useState<StageConfig | null>(null);
 
@@ -80,9 +84,12 @@ export default function BattlePage() {
     const [clearedStages, setClearedStages] = useState<string[]>([]);
 
     useEffect(() => {
+        // [FIX] Skip loadGameState if user is not logged in to prevent CRITICAL_DB_SYNC_FAILURE
+        if (!user || userLoading) return;
+
         const loadData = async () => {
             try {
-                const state = await gameStorage.loadGameState();
+                const state = await gameStorage.loadGameState(user.uid);
                 setInventory(state.inventory || []);
                 setClearedStages(state.stageProgress?.clearedStages || []);
             } catch (e) {
@@ -91,7 +98,8 @@ export default function BattlePage() {
             }
         };
         loadData();
-    }, [gameState, showAlert]);
+    }, [gameState, showAlert, user, userLoading]);
+
 
     const selectStage = (stage: StageConfig) => {
         // Check Unlock Condition
@@ -235,63 +243,89 @@ export default function BattlePage() {
         <CyberPageLayout title="작전 지역" englishTitle="BATTLEFIELD">
             <div className="w-full h-full flex flex-col items-center justify-start p-4 overflow-y-auto">
 
-                {gameState === 'LOBBY' && (
-                    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 w-full max-w-6xl pb-20">
-                        {STAGE_DATABASE.map((stage) => {
-                            const isLocked = stage.unlockCondition?.stageId && !clearedStages.includes(stage.unlockCondition.stageId);
-                            const isCleared = clearedStages.includes(stage.id);
+                {/* [FIX] Auth Guard - Show login message for unauthenticated users */}
+                {!userLoading && !user && gameState === 'LOBBY' && (
+                    <div className="flex flex-col items-center justify-center py-20 text-center">
+                        <div className="text-6xl mb-6">⚔️</div>
+                        <h2 className="text-2xl font-bold text-white mb-4">로그인이 필요합니다</h2>
+                        <p className="text-gray-400 mb-8">전투에 참여하려면 먼저 로그인해 주세요.</p>
+                        <button
+                            onClick={() => window.location.href = '/login'}
+                            className="px-8 py-3 bg-cyan-600 hover:bg-cyan-500 text-white font-bold rounded-xl transition-colors"
+                        >
+                            로그인하러 가기
+                        </button>
+                    </div>
+                )}
 
-                            return (
-                                <motion.button
-                                    key={stage.id}
-                                    onClick={() => selectStage(stage)}
-                                    disabled={isLocked as boolean}
-                                    whileHover={!isLocked ? { scale: 1.02 } : {}}
-                                    className={`relative group p-6 rounded-2xl border transition-all text-left flex flex-col gap-2 overflow-hidden min-h-[160px]
+                {gameState === 'LOBBY' && user && (
+                    <div className="flex flex-col lg:flex-row gap-8 w-full max-w-7xl pb-20 px-4">
+                        {/* Stage Selection - Left Side */}
+                        <div className="flex-1 grid grid-cols-1 md:grid-cols-2 lg:grid-cols-2 gap-6 place-content-start">
+                            {STAGE_DATABASE.map((stage) => {
+
+                                const isLocked = stage.unlockCondition?.stageId && !clearedStages.includes(stage.unlockCondition.stageId);
+                                const isCleared = clearedStages.includes(stage.id);
+
+                                return (
+                                    <motion.button
+                                        key={stage.id}
+                                        onClick={() => selectStage(stage)}
+                                        disabled={isLocked as boolean}
+                                        whileHover={!isLocked ? { scale: 1.02 } : {}}
+                                        className={`relative group p-6 rounded-2xl border transition-all text-left flex flex-col gap-2 overflow-hidden min-h-[160px]
                                         ${isLocked
-                                            ? 'bg-gray-900 border-white/5 opacity-40 cursor-not-allowed grayscale'
-                                            : 'bg-black/60 border-white/10 hover:bg-white/5 hover:border-cyan-500/50'
-                                        }
+                                                ? 'bg-gray-900 border-white/5 opacity-40 cursor-not-allowed grayscale'
+                                                : 'bg-black/60 border-white/10 hover:bg-white/5 hover:border-cyan-500/50'
+                                            }
                                     `}
-                                >
-                                    {/* Background Decor */}
-                                    <div className="absolute right-0 top-0 p-4 opacity-10">
-                                        <Map size={100} />
-                                    </div>
-
-                                    <div className="flex justify-between items-start relative z-10">
-                                        <div className={`text-xs font-bold px-2 py-0.5 rounded-md font-mono ${isCleared ? 'bg-green-500/20 text-green-400 border border-green-500/30' : 'bg-white/10 text-white/60'}`}>
-                                            STAGE {stage.id}
+                                    >
+                                        {/* Background Decor */}
+                                        <div className="absolute right-0 top-0 p-4 opacity-10">
+                                            <Map size={100} />
                                         </div>
-                                        <div className="flex gap-1">
-                                            {Array.from({ length: 3 }).map((_, i) => (
-                                                <Star
-                                                    key={i}
-                                                    size={12}
-                                                    className={`${i < stage.difficulty ? 'text-yellow-500 fill-yellow-500' : 'text-gray-700'}`}
-                                                />
-                                            ))}
+
+                                        <div className="flex justify-between items-start relative z-10">
+                                            <div className={`text-xs font-bold px-2 py-0.5 rounded-md font-mono ${isCleared ? 'bg-green-500/20 text-green-400 border border-green-500/30' : 'bg-white/10 text-white/60'}`}>
+                                                STAGE {stage.id}
+                                            </div>
+                                            <div className="flex gap-1">
+                                                {Array.from({ length: 3 }).map((_, i) => (
+                                                    <Star
+                                                        key={i}
+                                                        size={12}
+                                                        className={`${i < stage.difficulty ? 'text-yellow-500 fill-yellow-500' : 'text-gray-700'}`}
+                                                    />
+                                                ))}
+                                            </div>
                                         </div>
-                                    </div>
 
-                                    <h3 className="text-xl font-bold text-white font-orbitron mt-2 relative z-10">{stage.title}</h3>
+                                        <h3 className="text-xl font-bold text-white font-orbitron mt-2 relative z-10">{stage.title}</h3>
 
-                                    <div className="flex items-center gap-2 mt-1 relative z-10">
-                                        <div className={`w-2 h-2 rounded-full ${stage.mode === 'ambush' ? 'bg-purple-500' : 'bg-cyan-500'}`} />
-                                        <div className="text-sm text-gray-400 font-mono uppercase tracking-wider">{stage.mode.replace('-', ' ')}</div>
-                                    </div>
-
-                                    <div className="mt-auto pt-4 border-t border-white/5 flex justify-between items-center text-xs text-gray-500 relative z-10 font-mono">
-                                        <div className="flex flex-col">
-                                            <span className="text-white/30 text-[9px] uppercase">Enemy</span>
-                                            <span className="text-white/70">{stage.enemy.name}</span>
+                                        <div className="flex items-center gap-2 mt-1 relative z-10">
+                                            <div className={`w-2 h-2 rounded-full ${stage.mode === 'ambush' ? 'bg-purple-500' : 'bg-cyan-500'}`} />
+                                            <div className="text-sm text-gray-400 font-mono uppercase tracking-wider">{stage.mode.replace('-', ' ')}</div>
                                         </div>
-                                        {isLocked && <div className="text-red-500 flex items-center gap-1"><Lock size={12} /> LOCKED</div>}
-                                        {isCleared && <div className="text-green-500 font-bold flex items-center gap-1">✓ CLEARED</div>}
-                                    </div>
-                                </motion.button>
-                            );
-                        })}
+
+                                        <div className="mt-auto pt-4 border-t border-white/5 flex justify-between items-center text-xs text-gray-500 relative z-10 font-mono">
+                                            <div className="flex flex-col">
+                                                <span className="text-white/30 text-[9px] uppercase">Enemy</span>
+                                                <span className="text-white/70">{stage.enemy.name}</span>
+                                            </div>
+                                            {isLocked && <div className="text-red-500 flex items-center gap-1"><Lock size={12} /> LOCKED</div>}
+                                            {isCleared && <div className="text-green-500 font-bold flex items-center gap-1">✓ CLEARED</div>}
+                                        </div>
+                                    </motion.button>
+                                );
+                            })}
+                        </div>
+
+                        {/* Leaderboard - Right Side (Desktop) */}
+                        <div className="w-full lg:w-80 flex-shrink-0 mt-6 lg:mt-0">
+                            <div className="sticky top-24">
+                                <Leaderboard />
+                            </div>
+                        </div>
                     </div>
                 )}
 
@@ -334,6 +368,6 @@ export default function BattlePage() {
                 )}
 
             </div>
-        </CyberPageLayout>
+        </CyberPageLayout >
     );
 }

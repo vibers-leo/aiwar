@@ -96,7 +96,7 @@ export function UserProvider({ children }: { children: React.ReactNode }) {
     const [isLoggingOut, setIsLoggingOut] = useState(false); // [NEW] Logout UX Overlay
     const isRefreshing = useRef(false);
 
-    const isAdmin = user?.email === 'admin@example.com';
+    const isAdmin = user?.email === 'juuuno@naver.com';
 
     const resetState = useCallback(() => {
         console.log("🧹 [UserContext] Resetting State to Defaults and clearing local storage.");
@@ -329,16 +329,19 @@ export function UserProvider({ children }: { children: React.ReactNode }) {
                     setInventory(finalInventory);
                     setSubscriptions(subs);
 
-                    // DETERMINISTIC STARTER PACK CHECK
-                    // Logic: Level 1 + Empty Inventory + Has NOT received flag = Available
-                    // We remove the "Rescue" logic (auto-claiming) as it's unpredictable.
-                    if (profile.level === 1 && finalInventory.length === 0 && !profile.hasReceivedStarterPack) {
-                        console.log(`[StarterPack] ✅ User ELIGIBLE for initial supply.`);
+                    // DETERMINISTIC STARTER PACK CHECK [Jung-Gong-Beop]
+                    // We verify against the SERVER directly to avoid cache discrepancies across devices.
+                    const { checkStarterPackStatus } = await import('@/lib/firebase-db');
+                    const hasReceivedOnServer = await checkStarterPackStatus(user.uid);
+
+                    // Logic: Level 1 + Empty Inventory + Has NOT received (Server Truth) = Available
+                    if (profile.level === 1 && finalInventory.length === 0 && !hasReceivedOnServer) {
+                        console.log(`[StarterPack] ✅ User ELIGIBLE for initial supply (Server Verified).`);
                         setStarterPackAvailable(true);
                     } else {
                         setStarterPackAvailable(false);
-                        if (profile.level === 1 && finalInventory.length === 0) {
-                            console.warn(`[Sync] ⚠️ User has 0 cards but flag says already claimed. Manual sync recommended.`);
+                        if (profile.level === 1 && finalInventory.length === 0 && hasReceivedOnServer) {
+                            console.warn(`[Sync] ⚠️ User has 0 cards but Server flag says claimed. Manual sync recommended.`);
                         }
                     }
 
@@ -494,9 +497,13 @@ export function UserProvider({ children }: { children: React.ReactNode }) {
             // If user has NO cards and hasn't received pack, show modal
             const isTutorialCompleted = localStorage.getItem(`tutorial_completed_${user.uid}`) === 'true' || freshProfile?.tutorialCompleted === true;
 
+            // [Jung-Gong-Beop] Server Verification for Refresh
+            const { checkStarterPackStatus } = await import('@/lib/firebase-db');
+            const hasReceivedOnServer = await checkStarterPackStatus(user.uid);
+
             if (!isClaimingInSession &&
                 formattedInv.length === 0 &&
-                !freshProfile?.hasReceivedStarterPack &&
+                !hasReceivedOnServer &&
                 isTutorialCompleted) {
                 setStarterPackAvailable(true);
             } else {
@@ -624,6 +631,12 @@ export function UserProvider({ children }: { children: React.ReactNode }) {
             starterCards[4].description = "전장에 새롭게 합류한 지휘관의 전용 유닉입니다.";
 
             await claimStarterPackTransaction(uid, nickname, starterCards);
+
+            // [FIX] Optimistic UI update to prevent "0 coins" flicker
+            // The transaction gives 1000 coins, so update immediately before async profile reload
+            setCoins(1000);
+            setTokens(prev => Math.max(prev, 1000)); // Ensure tokens also stay at initial value
+
             await new Promise(resolve => setTimeout(resolve, 500));
             await reloadProfile();
             await refreshData();

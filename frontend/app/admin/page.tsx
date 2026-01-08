@@ -1,13 +1,17 @@
 'use client';
 
 import React, { useState, useEffect } from 'react';
+import { useRouter } from 'next/navigation';
 import CyberPageLayout from '@/components/CyberPageLayout';
 import { loadSupportTickets, updateTicketStatus, loadUniqueRequests, updateUniqueRequestStatus, SupportTicket, UniqueRequest } from '@/lib/firebase-db';
 import { cn } from '@/lib/utils';
-import { Loader2, CheckCircle, XCircle, MessageSquare, ExternalLink } from 'lucide-react';
+import { Loader2, CheckCircle, XCircle, MessageSquare, ExternalLink, ShieldAlert } from 'lucide-react';
 import { motion } from 'framer-motion';
+import { useUser } from '@/context/UserContext';
 
 export default function AdminPage() {
+    const router = useRouter();
+    const { user, isAdmin, loading: userLoading } = useUser();
     const [activeTab, setActiveTab] = useState<'tickets' | 'unique'>('tickets');
     const [tickets, setTickets] = useState<SupportTicket[]>([]);
     const [requests, setRequests] = useState<UniqueRequest[]>([]);
@@ -48,6 +52,33 @@ export default function AdminPage() {
         alert(action === 'approved' ? "승인 처리되었습니다." : "거절 처리되었습니다.");
         fetchData();
     };
+
+    // [FIX] Auth guard - Only allow juuuno@naver.com to access admin panel
+    if (userLoading) {
+        return (
+            <div className="min-h-screen bg-black flex items-center justify-center">
+                <Loader2 className="animate-spin text-white" size={48} />
+            </div>
+        );
+    }
+
+    if (!user || !isAdmin) {
+        return (
+            <div className="min-h-screen bg-black flex flex-col items-center justify-center text-white p-8">
+                <ShieldAlert className="w-20 h-20 text-red-500 mb-6" />
+                <h1 className="text-3xl font-bold mb-4">접근 권한이 없습니다</h1>
+                <p className="text-gray-400 mb-8 text-center">
+                    관리자 계정으로 로그인해야 이 페이지에 접근할 수 있습니다.
+                </p>
+                <button
+                    onClick={() => router.push('/')}
+                    className="px-6 py-3 bg-cyan-600 hover:bg-cyan-500 rounded-xl font-bold transition-colors"
+                >
+                    메인으로 돌아가기
+                </button>
+            </div>
+        );
+    }
 
     return (
         <CyberPageLayout

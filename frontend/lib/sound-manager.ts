@@ -7,6 +7,8 @@ class SoundManager {
     private isMuted: boolean = false;
     private volume: number = 0.5;
 
+    private missingFiles = new Set<string>();
+
     private constructor() {
         if (typeof window !== 'undefined') {
             this.audioContext = new (window.AudioContext || (window as any).webkitAudioContext)();
@@ -35,15 +37,22 @@ class SoundManager {
     }
 
     public async playBGM(url: string) {
+        if (this.missingFiles.has(url)) {
+            console.debug(`[SoundManager] Skipping missing BGM: ${url}`);
+            return;
+        }
+
         // [FIX] Check if BGM file exists before attempting to play
         try {
             const response = await fetch(url, { method: 'HEAD' });
             if (!response.ok) {
                 console.warn(`[SoundManager] BGM file not found: ${url}`);
+                this.missingFiles.add(url);
                 return;
             }
         } catch {
             console.warn(`[SoundManager] Could not check BGM file: ${url}`);
+            this.missingFiles.add(url);
             return;
         }
 
@@ -72,12 +81,19 @@ class SoundManager {
 
     public playSFX(url: string, fallbackType?: 'click' | 'attack' | 'success' | 'error') {
         if (this.isMuted) return;
+        if (this.missingFiles.has(url)) {
+            if (fallbackType) this.playSynthSound(fallbackType);
+            return;
+        }
 
         const audio = new Audio(url);
         audio.volume = this.volume;
 
         audio.play().catch(() => {
             // File not found or playback error -> Fallback to synth
+            // Mark as missing to assume 404 (or format issue) and skip next time to save network
+            this.missingFiles.add(url);
+
             if (fallbackType) {
                 this.playSynthSound(fallbackType);
             }

@@ -6,6 +6,7 @@ import {
     updateDoc,
     collection,
     getDocs,
+    getDocFromServer, // [NEW] Explicit server fetch
     query,
     where,
     serverTimestamp,
@@ -22,6 +23,31 @@ import {
 import { createUniqueCardFromApplication } from './unique-card-factory';
 import { db, isFirebaseConfigured } from './firebase';
 import { getUserId } from './firebase-auth';
+// ... imports ...
+
+
+// ... UserProfile interface ...
+
+/**
+ * [Jung-Gong-Beop] 스타터팩 수령 여부 서버 직접 확인
+ * 캐시를 우회하여 확실한 상태를 가져옵니다.
+ */
+export async function checkStarterPackStatus(uid: string): Promise<boolean> {
+    if (!isFirebaseConfigured || !db) return false;
+    try {
+        const userRef = doc(db, 'users', uid, 'profile', 'data');
+        const docSnap = await getDocFromServer(userRef); // Force server fetch
+        if (docSnap.exists()) {
+            const data = docSnap.data() as UserProfile;
+            return !!data.hasReceivedStarterPack;
+        }
+        return false;
+    } catch (error) {
+        console.warn("[DB] Failed to check starter pack status from server, falling back to cache logic:", error);
+        // Fallback to cache if server reachability fails
+        return false;
+    }
+}
 import { CATEGORY_TOKEN_BONUS, FACTION_CATEGORY_MAP, TIER_MULTIPLIER } from './token-constants';
 import {
     TierConfig,
@@ -427,17 +453,63 @@ export async function saveUserProfile(profile: Partial<UserProfile>, uid?: strin
     try {
         const userId = uid || await getUserId();
         const userRef = doc(db, 'users', userId, 'profile', 'data');
+        // [Jung-Gong-Beop] Root document for efficient sorting/filtering (Leaderboard)
+        const rootUserRef = doc(db, 'users', userId);
 
         const cleanedProfile = cleanDataForFirestore(profile);
-        await setDoc(userRef, {
+
+        const updates = {
             ...cleanedProfile,
             lastLogin: serverTimestamp()
-        }, { merge: true });
+        };
 
-        console.log('✅ Firebase 프로필 저장 성공:', profile);
+        // 1. Update Profile Subcollection (Detailed Data)
+        await setDoc(userRef, updates, { merge: true });
+
+        // 2. Sync Key Stats to Root Document (For Leaderboard Query)
+        // We only update if these specific fields are present to avoid overwriting with nulls if partial update
+        const rootUpdates: any = { lastLogin: serverTimestamp() };
+        if (profile.nickname) rootUpdates.nickname = profile.nickname;
+        if (profile.avatarUrl) rootUpdates.avatarUrl = profile.avatarUrl;
+        if (profile.rating !== undefined) rootUpdates.rating = profile.rating;
+        if (profile.wins !== undefined) rootUpdates.wins = profile.wins;
+        if (profile.losses !== undefined) rootUpdates.losses = profile.losses;
+        if (profile.rank !== undefined) rootUpdates.rank = profile.rank;
+
+        // Ensure we don't wipe out existing root data
+        await setDoc(rootUserRef, rootUpdates, { merge: true });
+
+        console.log('✅ Firebase 프로필 저장 성공 (Synced to Root):', profile);
     } catch (error) {
         console.error('❌ 프로필 저장 실패:', error);
         throw error;
+    }
+}
+
+/**
+ * 리더보드 가져오기 (Top N)
+ */
+export async function fetchLeaderboard(limitCount: number = 10): Promise<UserProfile[]> {
+    if (!isFirebaseConfigured || !db) return [];
+    try {
+        // Query root 'users' collection where we synced the stats
+        const usersRef = collection(db, 'users');
+        // Filter out users with no rating (optional, but good practice)
+        // Note: 'rating' field must exist. 
+        const q = query(
+            usersRef,
+            orderBy('rating', 'desc'),
+            limit(limitCount)
+        );
+
+        const snapshot = await getDocs(q);
+        return snapshot.docs.map(doc => ({
+            uid: doc.id,
+            ...doc.data()
+        })) as UserProfile[];
+    } catch (error) {
+        console.error("❌ Failed to fetch leaderboard:", error);
+        return [];
     }
 }
 
@@ -1010,8 +1082,8 @@ export async function createSupportTicket(data: { title: string, description: st
             if (userProfile?.nickname) nickname = userProfile.nickname;
         }
 
-        // [Fix] Redirect to user-owned subcollection to bypass top-level permission issues
-        const ticketsRef = collection(db, 'users', userId, 'support');
+        // [Jung-Gong-Beop] Use root collection 'support_tickets' for easier admin querying without Collection Group Index
+        const ticketsRef = collection(db, 'support_tickets');
 
         const docRef = await addDoc(ticketsRef, cleanDataForFirestore({
             ...data,
@@ -1021,7 +1093,7 @@ export async function createSupportTicket(data: { title: string, description: st
             createdAt: serverTimestamp()
         }));
 
-        console.log('✅ 티켓 생성 성공:', data.title);
+        console.log('✅ 티켓 생성 성공 (Root Collection):', data.title);
         return docRef.id;
     } catch (error) {
         console.error('❌ 티켓 생성 실패:', error);
@@ -1038,10 +1110,12 @@ export async function loadSupportTickets(status?: string): Promise<SupportTicket
     }
 
     try {
-        // [Fix] Use collectionGroup to fetch support tickets from all users
-        const ticketsRef = collectionGroup(db, 'support');
-        // Simple query, ideally indexed.
-        // For now, load all or filter by status if provided
+        // [Jung-Gong-Beop] Fetch from root 'support_tickets' collection
+        const ticketsRef = collection(db, 'support_tickets');
+
+        // Simple query, no index needed for basic sort if collection is small, 
+        // but 'orderBy' still might need composite index if filtered.
+        // For 'support_tickets', a simple index on createdAt matches standard usage.
         let q = query(ticketsRef, orderBy('createdAt', 'desc'));
 
         if (status) {
@@ -1508,8 +1582,9 @@ export async function getUserSupportTickets(uid?: string): Promise<SupportTicket
 
     try {
         const userId = uid || await getUserId();
-        const ticketsRef = collection(db, 'users', userId, 'support');
-        const q = query(ticketsRef, orderBy('createdAt', 'desc'));
+        // [Jung-Gong-Beop] Query root collection filtering by userId
+        const ticketsRef = collection(db, 'support_tickets');
+        const q = query(ticketsRef, where('userId', '==', userId), orderBy('createdAt', 'desc'));
         const querySnapshot = await getDocs(q);
 
         const tickets: SupportTicket[] = querySnapshot.docs.map(doc => ({
@@ -1517,7 +1592,7 @@ export async function getUserSupportTickets(uid?: string): Promise<SupportTicket
             ...doc.data()
         } as SupportTicket));
 
-        console.log(`✅ Loaded ${tickets.length} support tickets`);
+        console.log(`✅ Loaded ${tickets.length} support tickets (Root)`);
         return tickets;
     } catch (error) {
         console.error('❌ Failed to load support tickets:', error);

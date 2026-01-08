@@ -37,23 +37,13 @@ export default function TutorialManager() {
     const onboardingTriggeredRef = useRef(false);
 
     useEffect(() => {
-        console.log("[TutorialManager] 📍 useEffect triggered", {
-            pathname,
-            hasUser: !!user,
-            profileLoading,
-            contextLoading,
-            onboardingTriggered: onboardingTriggeredRef.current
-        });
-
         // Only trigger on Main Lobby - other pages control their own footer
         if (pathname !== '/main') {
-            console.log("[TutorialManager] ⏭️ Skipping - Not on /main page");
             return;
         }
 
         if (!user) {
             // Reset trigger flag when user logs out
-            console.log("[TutorialManager] ⏭️ Skipping - No user logged in");
             onboardingTriggeredRef.current = false;
             return;
         }
@@ -77,37 +67,12 @@ export default function TutorialManager() {
                 if (!consumed) return; // Still blocked
                 // If consumed, we continue to checkOnboarding()
             } else {
-                console.log("[TutorialManager] Onboarding check suppressed - Pending logout.");
                 return;
             }
         }
 
         const checkOnboarding = async () => {
             // [DB-FIRST POLICY] Check tutorial completion from DB first
-            console.log("[TutorialManager] 🔍 Checking onboarding status (DB-First)...");
-            console.log("[TutorialManager] Profile Data:", {
-                uid: user.uid,
-                nickname: profile?.nickname || 'NONE',
-                level: profile?.level,
-                tutorialCompleted: profile?.tutorialCompleted,
-                hasReceivedStarterPack: profile?.hasReceivedStarterPack
-            });
-            console.log("[TutorialManager] Context State:", {
-                inventoryCount: inventory?.length || 0,
-                profileLoading,
-                contextLoading
-            });
-
-            // [NEW] Explicit Verification Log for User
-            const authProvider = user.providerData?.[0]?.providerId || 'password';
-            console.log(`[TutorialManager] 🛡️ Unified Auth Verification:`, {
-                uid: user.uid,
-                authType: authProvider === 'google.com' ? 'GOOGLE' : 'EMAIL/ID',
-                sourceOfTruth: 'Firebase Firestore',
-                nicknameInDB: profile?.nickname || 'MISSING',
-                tutorialInDB: profile?.tutorialCompleted ? 'DONE' : 'PENDING',
-                starterPackInDB: profile?.hasReceivedStarterPack ? 'CLAIMED' : 'AVAILABLE'
-            });
 
             // [NEW] Gating existing users more aggressively
             const isTutorialCompleted = profile?.tutorialCompleted === true;
@@ -115,10 +80,8 @@ export default function TutorialManager() {
             const hasInventory = inventory && inventory.length > 0;
 
             if (isTutorialCompleted || hasClaimedStarter || hasInventory) {
-                console.log("[TutorialManager] ✅ Onboarding bypassed. User is existing or already in sync.");
                 // Auto-sync if flags are missing but state is mature
                 if (!isTutorialCompleted && (hasClaimedStarter || hasInventory)) {
-                    console.log("[TutorialManager] 🛠️ Self-Healing: Syncing tutorialCompleted flag.");
                     completeTutorial();
                 }
                 return;
@@ -128,14 +91,12 @@ export default function TutorialManager() {
             const hasNickname = profile?.nickname && profile.nickname !== '';
 
             if (!hasNickname) {
-                console.log("[TutorialManager] 🚩 Nickname missing. Triggering NicknameModal.");
                 onboardingTriggeredRef.current = true; // Mark as triggered
                 setShowNicknameModal(true);
                 hideFooter();
                 return;
             }
 
-            console.log("[TutorialManager] 🚩 Tutorial not completed. Triggering WelcomeTutorialModal.");
             onboardingTriggeredRef.current = true; // Mark as triggered
             setShowTutorialModal(true);
             hideFooter();
