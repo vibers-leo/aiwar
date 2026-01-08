@@ -367,7 +367,7 @@ export default function StageBattlePage() {
                     coins: storyStage.rewards.coins,
                     experience: storyStage.rewards.experience
                 };
-                await applyBattleResult(battleResult, activeBattleDeck, enemies, false, false, manualRewards);
+                await applyBattleResult(battleResult, activeBattleDeck, enemies, false, false, false, manualRewards);
                 await completeStage(storyStage.id.split('-')[1] === '1' ? 'chapter-1' : storyStage.id.split('-')[1] === '2' ? 'chapter-2' : 'chapter-3', storyStage.id, user?.uid);
 
                 // [NEW] Track Mission Event

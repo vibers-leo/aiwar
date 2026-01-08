@@ -298,7 +298,8 @@ export default function RealtimeBattleRoomPage() {
                 myPlayer.selectedCards,
                 opponent.selectedCards,
                 true,
-                isGhost
+                isGhost,
+                false
             );
         }
 

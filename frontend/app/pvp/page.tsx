@@ -523,7 +523,7 @@ export default function PVPArenaPage() {
             showAlert({ title: '퍼펙트 승리!', message: '3라운드 전승으로 100 코인 보너스를 획득했습니다!', type: 'success' });
         }
 
-        applyBattleResult(result, playerDeck, opponentDeck);
+        applyBattleResult(result, playerDeck, opponentDeck, false, false, false);
         setBattleResult(result);
         setPhase('result');
     };
@@ -552,7 +552,7 @@ export default function PVPArenaPage() {
         }
 
         // 전투 종료 - 결과 화면으로
-        await applyBattleResult(result, playerDeck, opponentDeck);
+        await applyBattleResult(result, playerDeck, opponentDeck, false, false, false);
 
         // [NEW] Track Mission Event
         if (result.winner === 'player') {
