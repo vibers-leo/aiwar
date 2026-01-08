@@ -4,8 +4,9 @@ import Link from 'next/link';
 import { usePathname } from 'next/navigation';
 import { useTranslation } from '@/context/LanguageContext';
 import { useState, useEffect } from 'react';
-import { Settings, ChevronLeft, ChevronRight } from 'lucide-react';
+import { Settings, ChevronLeft, ChevronRight, Users } from 'lucide-react';
 import CommanderProfileModal from '@/components/CommanderProfileModal';
+import FriendsModal from '@/components/FriendsModal'; // [NEW] Import
 import { useUserProfile } from '@/hooks/useUserProfile';
 import { useUser } from '@/context/UserContext';
 import { getGenerationSlots } from '@/lib/generation-utils';
@@ -21,6 +22,7 @@ export default function GameSidebar({ isCollapsed, onToggle }: GameSidebarProps)
     const { profile } = useUserProfile();
     const [nickname, setNickname] = useState('COMMANDER');
     const [showProfileModal, setShowProfileModal] = useState(false);
+    const [showFriendsModal, setShowFriendsModal] = useState(false); // [NEW]
 
     const { user } = useUser();
     const [hasReadyGenerations, setHasReadyGenerations] = useState(false);
@@ -48,13 +50,22 @@ export default function GameSidebar({ isCollapsed, onToggle }: GameSidebarProps)
         }
     }, [profile]);
 
-    const menuItems = [
+    type MenuItem = {
+        name: string;
+        path?: string;
+        onClick?: () => void;
+        icon: string;
+        color: string;
+    };
+
+    const menuItems: MenuItem[] = [
         { name: t('menu.myCards'), path: '/my-cards', icon: '📦', color: 'purple' },
         { name: t('menu.generation'), path: '/generation', icon: '🎲', color: 'green' },
         { name: t('menu.uniqueGeneration'), path: '/unique-create', icon: '✨', color: 'pink' },
         { name: t('menu.enhance'), path: '/enhance', icon: '🆙', color: 'amber' },
         { name: t('menu.fusion'), path: '/fusion', icon: '🔮', color: 'blue' },
         { name: t('menu.encyclopedia'), path: '/encyclopedia', icon: '📖', color: 'cyan' },
+        { name: '친구 목록', onClick: () => setShowFriendsModal(true), icon: '👥', color: 'pink' }, // [NEW] Friends Item
         { name: '지원센터', path: '/support', icon: '🛠️', color: 'blue' },
     ];
 
@@ -131,17 +142,8 @@ export default function GameSidebar({ isCollapsed, onToggle }: GameSidebarProps)
                 {menuItems.map((item) => {
                     const isActive = pathname === item.path;
                     const colors = getColorClasses(item.color);
-
-                    return (
-                        <Link
-                            key={item.path}
-                            href={item.path}
-                            className={`flex items-center gap-4 px-3 py-3 rounded-lg transition-all duration-200 group relative ${isActive
-                                ? `${colors.bg} border border-${item.color}-500/20`
-                                : 'hover:bg-white/5 border border-transparent'
-                                }`}
-                            title={item.name}
-                        >
+                    const content = (
+                        <>
                             {/* Active Glow */}
                             {isActive && (
                                 <div className={`absolute left-0 top-1/2 -translate-y-1/2 w-1 h-8 bg-${item.color}-500/50 rounded-r-full shadow-[0_0_10px_currentColor]`} />
@@ -161,6 +163,37 @@ export default function GameSidebar({ isCollapsed, onToggle }: GameSidebarProps)
                             {item.path === '/generation' && hasReadyGenerations && (
                                 <div className="absolute right-3 w-2.5 h-2.5 bg-green-500 rounded-full shadow-[0_0_8px_#22c55e] animate-pulse" />
                             )}
+                        </>
+                    );
+
+                    const commonClasses = `flex items-center gap-4 px-3 py-3 rounded-lg transition-all duration-200 group relative ${isActive
+                        ? `${colors.bg} border border-${item.color}-500/20`
+                        : 'hover:bg-white/5 border border-transparent'
+                        }`;
+
+                    // Render as Button if onClick exists
+                    if (item.onClick) {
+                        return (
+                            <button
+                                key={item.name}
+                                onClick={item.onClick}
+                                className={`${commonClasses} w-full text-left`}
+                                title={item.name}
+                            >
+                                {content}
+                            </button>
+                        );
+                    }
+
+                    // Render as Link
+                    return (
+                        <Link
+                            key={item.path}
+                            href={item.path || '#'}
+                            className={commonClasses}
+                            title={item.name}
+                        >
+                            {content}
                         </Link>
                     );
                 })}
@@ -173,6 +206,12 @@ export default function GameSidebar({ isCollapsed, onToggle }: GameSidebarProps)
             <CommanderProfileModal
                 isOpen={showProfileModal}
                 onClose={() => setShowProfileModal(false)}
+            />
+
+            {/* Friends Modal */}
+            <FriendsModal
+                isOpen={showFriendsModal}
+                onClose={() => setShowFriendsModal(false)}
             />
         </aside>
     );
