@@ -21,7 +21,8 @@ import {
     documentId
 } from 'firebase/firestore';
 import { createUniqueCardFromApplication } from './unique-card-factory';
-import { db, isFirebaseConfigured } from './firebase';
+import app, { db, isFirebaseConfigured } from './firebase';
+import { getAuth } from 'firebase/auth'; // [FIX] Added import
 import { getUserId } from './firebase-auth';
 // ... imports ...
 
