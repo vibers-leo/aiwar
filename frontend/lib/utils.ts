@@ -100,6 +100,25 @@ export function generateCard(): Card {
     };
 }
 
+/**
+ * [FIX] Firestore Timestamp 또는 객체 형태의 날짜를 JS Date 객체로 변환
+ */
+export function ensureDate(dateVal: any): Date {
+    if (!dateVal) return new Date();
+    if (dateVal instanceof Date) return dateVal;
+
+    // Firestore Timestamp { seconds, nanoseconds }
+    if (typeof dateVal === 'object' && 'seconds' in dateVal) {
+        return new Date(dateVal.seconds * 1000);
+    }
+
+    // Generic string or number
+    const date = new Date(dateVal);
+    // [SAFETY] Invalid Date인 경우 현재 시간 반환하여 에러 방지
+    return isNaN(date.getTime()) ? new Date() : date;
+}
+
+
 // 로컬 스토리지 헬퍼
 export const storage = {
     get<T>(key: string, defaultValue: T): T {

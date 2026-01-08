@@ -3,7 +3,7 @@ import aiFactionsData from '@/data/ai-factions.json';
 // 카드 생성 슬롯 시스템 (티어 기반)
 // Free/Pro/Ultra 티어에 따라 생성 시간과 일일 제한이 다름
 
-import { storage } from './utils';
+import { storage, ensureDate } from './utils';
 import { gameStorage } from './game-storage';
 import { getGameState } from './game-state';
 import { Card } from './types';
@@ -57,7 +57,7 @@ export function getGenerationSlots(userId?: string): GenerationSlot[] {
     return slots.map(slot => {
         const updated = {
             ...slot,
-            nextGenerationAt: slot.nextGenerationAt ? new Date(slot.nextGenerationAt) : null
+            nextGenerationAt: slot.nextGenerationAt ? ensureDate(slot.nextGenerationAt) : null
         };
 
         // 상태 업데이트

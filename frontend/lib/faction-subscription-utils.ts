@@ -1,7 +1,7 @@
 // AI 군단 구독 티어 시스템
 // Free/Pro/Ultra 3가지 티어로 구독 관리
 
-import { storage } from './utils';
+import { storage, ensureDate } from './utils';
 import { getGameState, updateGameState } from './game-state';
 
 export type SubscriptionTier = 'free' | 'pro' | 'ultra';
@@ -17,23 +17,6 @@ export interface FactionSubscription {
     generationsToday: number;
     lastResetDate: string; // YYYY-MM-DD format
     affinity: number; // 0-100 군단 친밀도 (확률 보정)
-}
-
-/**
- * [FIX] Firestore Timestamp 또는 객체 형태의 날짜를 JS Date 객체로 변환
- */
-function ensureDate(dateVal: any): Date {
-    if (!dateVal) return new Date();
-    if (dateVal instanceof Date) return dateVal;
-
-    // Firestore Timestamp { seconds, nanoseconds }
-    if (typeof dateVal === 'object' && 'seconds' in dateVal) {
-        return new Date(dateVal.seconds * 1000);
-    }
-
-    // Generic string or number
-    const date = new Date(dateVal);
-    return isNaN(date.getTime()) ? new Date() : date;
 }
 
 /**
@@ -90,7 +73,7 @@ export function getSubscribedFactions(userId?: string): FactionSubscription[] {
         const subscription = {
             ...sub,
             subscribedAt: ensureDate(sub.subscribedAt),
-            lastBilledAt: sub.lastBilledAt || new Date().toISOString()
+            lastBilledAt: sub.lastBilledAt ? ensureDate(sub.lastBilledAt).toISOString() : new Date().toISOString()
         };
 
         // 티어 설정에서 최신 값 가져와서 동기화
@@ -140,7 +123,7 @@ function processRecurringBilling(subscriptions: FactionSubscription[], userId?: 
     let changed = false;
 
     const billedSubs = subscriptions.map(sub => {
-        const lastBilled = new Date(sub.lastBilledAt);
+        const lastBilled = ensureDate(sub.lastBilledAt);
         const hoursDiff = (now.getTime() - lastBilled.getTime()) / (1000 * 60 * 60);
 
         // 24시간 이상 지났을 경우 정산

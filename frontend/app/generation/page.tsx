@@ -49,9 +49,13 @@ export default function GenerationPage() {
     const [isProcessingAll, setIsProcessingAll] = useState(false);
 
     const loadData = useCallback(() => {
-        const updatedSlots = updateAllSlotStatuses(userId);
-        setSlots(updatedSlots);
-        setSubscriptions(getSubscribedFactions(userId));
+        try {
+            const updatedSlots = updateAllSlotStatuses(userId);
+            setSlots(updatedSlots);
+            setSubscriptions(getSubscribedFactions(userId));
+        } catch (error) {
+            console.error("[Generation] Failed to load data:", error);
+        }
     }, [userId]);
 
     useEffect(() => {
