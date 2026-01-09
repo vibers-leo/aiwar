@@ -357,9 +357,9 @@ export default function RealtimeBattleRoomPage() {
             battleResult,
             myPlayerData.selectedCards,
             opponentData.selectedCards,
-            true,
-            isGhost,
-            false
+            true,    // isRanked: true (실시간 PVP는 랭크전)
+            isGhost, // isGhost
+            true     // isRealtime: true (실시간 PVP)
         );
 
         setLocalPhase('result');
