@@ -207,10 +207,13 @@ export async function findMatch(
             // generateRandomCard expects Rarity
             const ghostRarity: Rarity = ghostUser.level > 10 ? 'epic' : ghostUser.level > 5 ? 'rare' : 'common';
 
+            const requiredCards = (battleMode === 'ambush' || battleMode === 'double') ? 6 : 5;
+            const config = getBattleConfig(battleMode);
+
             const ghostRoomData: BattleRoom & { isGhost: boolean } = {
                 roomId,
                 battleMode,
-                phase: 'deck-select', // deck-select로 시작해서 플레이어도 덱 선택 가능
+                phase: 'deck-select',
                 player1: {
                     playerId: myPlayerId,
                     playerName: myQueueData?.playerName || 'Player',
@@ -227,8 +230,8 @@ export async function findMatch(
                     playerId: ghostUser.uid,
                     playerName: ghostUser.nickname,
                     playerLevel: ghostUser.level,
-                    selectedCards: Array(6).fill(null).map(() => generateRandomCard(ghostRarity)),
-                    cardOrder: [0, 1, 2, 3, 4, 5],
+                    selectedCards: Array(requiredCards).fill(null).map(() => generateRandomCard(ghostRarity)),
+                    cardOrder: Array.from({ length: requiredCards }, (_, i) => i),
                     ready: true,
                     wins: 0,
                     roundResults: [],
@@ -236,8 +239,8 @@ export async function findMatch(
                     lastHeartbeat: now
                 },
                 currentRound: 0,
-                maxRounds: battleMode === 'sudden-death' ? 5 : (battleMode === 'tactics' ? 5 : (battleMode === 'ambush' ? 5 : 6)),
-                winsNeeded: battleMode === 'sudden-death' ? 1 : (battleMode === 'tactics' ? 3 : (battleMode === 'ambush' ? 3 : 2)),
+                maxRounds: config.maxRounds,
+                winsNeeded: config.winsNeeded,
                 phaseStartedAt: now,
                 phaseTimeout: 60,
                 finished: false,
@@ -473,10 +476,12 @@ function createEmptyPlayerState(
 function getBattleConfig(mode: RealtimeBattleMode) {
     switch (mode) {
         case 'sudden-death':
-            return { maxRounds: 1, winsNeeded: 1 };
+            return { maxRounds: 5, winsNeeded: 1 };
         case 'tactics':
         case 'ambush':
             return { maxRounds: 5, winsNeeded: 3 };
+        case 'double':
+            return { maxRounds: 3, winsNeeded: 2 };
         default:
             return { maxRounds: 5, winsNeeded: 3 };
     }

@@ -27,6 +27,7 @@ import { Loader2, Swords, Clock, Trophy, XCircle, CheckCircle, Shuffle, Users, A
 import { BattleArena } from '@/components/BattleArena';
 import { BackgroundBeams } from '@/components/ui/aceternity/background-beams';
 import { Button } from '@/components/ui/custom/Button';
+import { useTranslation } from '@/context/LanguageContext';
 
 // Extended local phase for UI control
 type LocalPhase = 'loading' | 'waiting' | 'vs-matchup' | 'deck-select' | 'ordering' | 'battle' | 'result' | 'error';
@@ -36,6 +37,7 @@ export default function RealtimeBattleRoomPage() {
     const params = useParams();
     const roomId = params?.roomId as string;
     const { showAlert } = useAlert();
+    const { language } = useTranslation();
 
     const [room, setRoom] = useState<BattleRoom | null>(null);
     const [localPhase, setLocalPhase] = useState<LocalPhase>('loading');
@@ -216,21 +218,30 @@ export default function RealtimeBattleRoomPage() {
         return () => clearInterval(timer);
     }, [localPhase]);
 
+    // 헬퍼: 모드별 필요한 카드 수
+    const getRequiredCardCount = () => {
+        if (!room) return 5;
+        return (room.battleMode === 'ambush' || room.battleMode === 'double') ? 6 : 5;
+    };
+
     // 카드 선택
     const handleCardClick = (card: InventoryCard) => {
         const isSelected = selectedCards.find(c => c.id === card.id);
+        const requiredCount = getRequiredCardCount();
+
         if (isSelected) {
             setSelectedCards(prev => prev.filter(c => c.id !== card.id));
-        } else if (selectedCards.length < 6) {
+        } else if (selectedCards.length < requiredCount) {
             setSelectedCards(prev => [...prev, card as Card]);
         }
     };
 
     // 자동 선택
     const handleAutoSelect = async () => {
+        const requiredCount = getRequiredCardCount();
         const topCards = [...myCards]
             .sort((a, b) => (b.stats?.totalPower || 0) - (a.stats?.totalPower || 0))
-            .slice(0, 6) as Card[];
+            .slice(0, requiredCount) as Card[];
         setSelectedCards(topCards);
         await handleConfirmDeck(topCards);
     };
@@ -238,14 +249,20 @@ export default function RealtimeBattleRoomPage() {
     // 덱 확정
     const handleConfirmDeck = async (deckOverride?: Card[]) => {
         const deck = deckOverride || selectedCards;
-        if (deck.length !== 6) {
-            showAlert({ title: '오류', message: '카드 6장을 선택해주세요.', type: 'warning' });
+        const requiredCount = getRequiredCardCount();
+
+        if (deck.length !== requiredCount) {
+            showAlert({
+                title: '오류',
+                message: language === 'ko' ? `카드 ${requiredCount}장을 선택해주세요.` : `Please select ${requiredCount} cards.`,
+                type: 'warning'
+            });
             return;
         }
 
         await updatePlayerState(roomId, playerId, {
             selectedCards: deck,
-            cardOrder: [0, 1, 2, 3, 4, 5],
+            cardOrder: Array.from({ length: requiredCount }, (_, i) => i),
             ready: true
         });
 
@@ -554,8 +571,8 @@ export default function RealtimeBattleRoomPage() {
                         <div className="max-w-5xl mx-auto mb-6">
                             <div className="flex flex-col md:flex-row items-center gap-4 p-4 bg-black/50 backdrop-blur-sm rounded-2xl border border-white/10">
                                 <div className="flex items-center gap-3 flex-1">
-                                    <span className="text-white/60 font-bold mr-2">{selectedCards.length}/{room?.battleMode === 'ambush' || room?.battleMode === 'double' ? 6 : 5}</span>
-                                    <div className={cn("grid gap-3 flex-1 max-w-sm", room?.battleMode === 'ambush' || room?.battleMode === 'double' ? "grid-cols-6" : "grid-cols-5")}>
+                                    <span className="text-white/60 font-bold mr-2">{selectedCards.length}/{getRequiredCardCount()}</span>
+                                    <div className={cn("grid gap-3 flex-1 max-w-sm", getRequiredCardCount() === 6 ? "grid-cols-6" : "grid-cols-5")}>
                                         {selectedCards.map((card, i) => (
                                             <motion.div
                                                 key={i}
@@ -567,7 +584,7 @@ export default function RealtimeBattleRoomPage() {
                                                 <GameCard card={card} />
                                             </motion.div>
                                         ))}
-                                        {Array((room?.battleMode === 'ambush' || room?.battleMode === 'double' ? 6 : 5) - selectedCards.length).fill(null).map((_, i) => (
+                                        {Array(Math.max(0, getRequiredCardCount() - selectedCards.length)).fill(null).map((_, i) => (
                                             <div key={`empty-${i}`} className="w-12 h-16 border-2 border-dashed border-white/20 rounded-lg flex items-center justify-center text-white/10">
                                                 <span className="text-xs">{i + selectedCards.length + 1}</span>
                                             </div>
@@ -585,10 +602,10 @@ export default function RealtimeBattleRoomPage() {
                                     </button>
                                     <button
                                         onClick={() => handleConfirmDeck()}
-                                        disabled={selectedCards.length !== (room?.battleMode === 'ambush' || room?.battleMode === 'double' ? 6 : 5)}
+                                        disabled={selectedCards.length !== getRequiredCardCount()}
                                         className={cn(
                                             "px-6 py-2 font-bold rounded-lg flex items-center gap-2 transition",
-                                            selectedCards.length === (room?.battleMode === 'ambush' || room?.battleMode === 'double' ? 6 : 5)
+                                            selectedCards.length === getRequiredCardCount()
                                                 ? "bg-gradient-to-r from-green-600 to-emerald-600 text-white hover:from-green-500 hover:to-emerald-500"
                                                 : "bg-gray-700 text-gray-400 cursor-not-allowed"
                                         )}

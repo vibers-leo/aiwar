@@ -281,7 +281,7 @@ export default function RealtimeMatchingModal({
                     lastHeartbeat: Date.now()
                 },
                 currentRound: 0,
-                maxRounds: waitingRoom.battleMode === 'sudden-death' ? 5 : (waitingRoom.battleMode === 'tactics' ? 5 : (waitingRoom.battleMode === 'ambush' ? 5 : 6)),
+                maxRounds: waitingRoom.battleMode === 'sudden-death' ? 5 : (waitingRoom.battleMode === 'tactics' ? 5 : (waitingRoom.battleMode === 'ambush' ? 5 : 3)),
                 winsNeeded: waitingRoom.battleMode === 'sudden-death' ? 1 : (waitingRoom.battleMode === 'tactics' ? 3 : (waitingRoom.battleMode === 'ambush' ? 3 : 2)),
                 finished: false,
                 createdAt: Date.now(),
