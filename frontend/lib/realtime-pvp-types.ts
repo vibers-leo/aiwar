@@ -3,7 +3,7 @@
 import { Card } from './types';
 import { BattleMode } from './battle-modes';
 
-export type RealtimeBattleMode = 'sudden-death' | 'tactics' | 'ambush';
+export type RealtimeBattleMode = 'sudden-death' | 'tactics' | 'ambush' | 'double';
 
 export type BattlePhase =
     | 'waiting'      // 상대 대기 중

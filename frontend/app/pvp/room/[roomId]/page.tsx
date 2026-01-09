@@ -554,8 +554,8 @@ export default function RealtimeBattleRoomPage() {
                         <div className="max-w-5xl mx-auto mb-6">
                             <div className="flex flex-col md:flex-row items-center gap-4 p-4 bg-black/50 backdrop-blur-sm rounded-2xl border border-white/10">
                                 <div className="flex items-center gap-3 flex-1">
-                                    <span className="text-white/60 font-bold mr-2">{selectedCards.length}/6</span>
-                                    <div className="grid grid-cols-6 gap-3 flex-1 max-w-sm">
+                                    <span className="text-white/60 font-bold mr-2">{selectedCards.length}/{room?.battleMode === 'ambush' || room?.battleMode === 'double' ? 6 : 5}</span>
+                                    <div className={cn("grid gap-3 flex-1 max-w-sm", room?.battleMode === 'ambush' || room?.battleMode === 'double' ? "grid-cols-6" : "grid-cols-5")}>
                                         {selectedCards.map((card, i) => (
                                             <motion.div
                                                 key={i}
@@ -567,7 +567,7 @@ export default function RealtimeBattleRoomPage() {
                                                 <GameCard card={card} />
                                             </motion.div>
                                         ))}
-                                        {Array(6 - selectedCards.length).fill(null).map((_, i) => (
+                                        {Array((room?.battleMode === 'ambush' || room?.battleMode === 'double' ? 6 : 5) - selectedCards.length).fill(null).map((_, i) => (
                                             <div key={`empty-${i}`} className="w-12 h-16 border-2 border-dashed border-white/20 rounded-lg flex items-center justify-center text-white/10">
                                                 <span className="text-xs">{i + selectedCards.length + 1}</span>
                                             </div>
@@ -585,10 +585,10 @@ export default function RealtimeBattleRoomPage() {
                                     </button>
                                     <button
                                         onClick={() => handleConfirmDeck()}
-                                        disabled={selectedCards.length !== 6}
+                                        disabled={selectedCards.length !== (room?.battleMode === 'ambush' || room?.battleMode === 'double' ? 6 : 5)}
                                         className={cn(
                                             "px-6 py-2 font-bold rounded-lg flex items-center gap-2 transition",
-                                            selectedCards.length === 6
+                                            selectedCards.length === (room?.battleMode === 'ambush' || room?.battleMode === 'double' ? 6 : 5)
                                                 ? "bg-gradient-to-r from-green-600 to-emerald-600 text-white hover:from-green-500 hover:to-emerald-500"
                                                 : "bg-gray-700 text-gray-400 cursor-not-allowed"
                                         )}
@@ -664,7 +664,8 @@ export default function RealtimeBattleRoomPage() {
                         }}
                         onFinish={handleBattleFinish}
                         title="REALTIME BATTLE"
-                        maxRounds={room?.maxRounds || 6}
+                        maxRounds={room?.maxRounds || 5}
+                        battleMode={room?.battleMode as any}
                         enemySelectionMode="ordered"
                     />
                 )}

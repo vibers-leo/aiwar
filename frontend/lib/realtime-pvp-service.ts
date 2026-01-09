@@ -236,8 +236,8 @@ export async function findMatch(
                     lastHeartbeat: now
                 },
                 currentRound: 0,
-                maxRounds: 6,
-                winsNeeded: 4,
+                maxRounds: battleMode === 'sudden-death' ? 5 : (battleMode === 'tactics' ? 5 : (battleMode === 'ambush' ? 5 : 6)),
+                winsNeeded: battleMode === 'sudden-death' ? 1 : (battleMode === 'tactics' ? 3 : (battleMode === 'ambush' ? 3 : 2)),
                 phaseStartedAt: now,
                 phaseTimeout: 60,
                 finished: false,

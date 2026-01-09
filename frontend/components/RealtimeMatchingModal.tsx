@@ -13,7 +13,7 @@ interface RealtimeMatchingModalProps {
     isOpen: boolean;
     onClose: () => void;
     onMatchFound: (roomId: string, opponentName: string) => void;
-    battleMode: 'sudden-death' | 'tactics' | 'ambush';
+    battleMode: 'sudden-death' | 'tactics' | 'ambush' | 'double';
     playerName: string;
     playerLevel: number;
 }
@@ -281,8 +281,8 @@ export default function RealtimeMatchingModal({
                     lastHeartbeat: Date.now()
                 },
                 currentRound: 0,
-                maxRounds: 6,
-                winsNeeded: 4,
+                maxRounds: waitingRoom.battleMode === 'sudden-death' ? 5 : (waitingRoom.battleMode === 'tactics' ? 5 : (waitingRoom.battleMode === 'ambush' ? 5 : 6)),
+                winsNeeded: waitingRoom.battleMode === 'sudden-death' ? 1 : (waitingRoom.battleMode === 'tactics' ? 3 : (waitingRoom.battleMode === 'ambush' ? 3 : 2)),
                 finished: false,
                 createdAt: Date.now(),
                 updatedAt: Date.now()
@@ -369,7 +369,8 @@ export default function RealtimeMatchingModal({
     const modeNames = {
         'sudden-death': '단판 승부',
         'tactics': '전술 승부',
-        'ambush': '전략 승부'
+        'ambush': '전략 승부',
+        'double': '두장 승부'
     };
 
     if (!isOpen) return null;

@@ -43,6 +43,7 @@ interface BattleArenaProps {
     strategyTime?: number;
     maxRounds?: number;
     enemySelectionMode?: 'ordered' | 'random';
+    battleMode?: 'sudden-death' | 'tactics' | 'ambush' | 'double';
 }
 
 export function BattleArena({
@@ -52,9 +53,12 @@ export function BattleArena({
     onFinish,
     title,
     strategyTime = 20,
-    maxRounds = 6,
-    enemySelectionMode = 'ordered'
+    maxRounds: maxRoundsProp = 5,
+    enemySelectionMode = 'ordered',
+    battleMode = 'tactics'
 }: BattleArenaProps) {
+    const maxRounds = (battleMode === 'ambush' || battleMode === 'tactics' || battleMode === 'sudden-death') ? 5 : (battleMode === 'double' ? 3 : maxRoundsProp);
+    const winsNeeded = battleMode === 'sudden-death' ? 1 : (battleMode === 'tactics' ? 3 : (battleMode === 'ambush' ? 3 : 2));
     const { t, language } = useTranslation();
     const lang = (language as 'ko' | 'en') || 'ko';
 
@@ -70,6 +74,8 @@ export function BattleArena({
     const [rounds, setRounds] = useState<BattleRound[]>([]);
     const [playerWins, setPlayerWins] = useState(0);
     const [enemyWins, setEnemyWins] = useState(0);
+    const [playerPoints, setPlayerPoints] = useState(0);
+    const [enemyPoints, setEnemyPoints] = useState(0);
     const [showingBattle, setShowingBattle] = useState(false);
     const [battleLogs, setBattleLogs] = useState<BattleLog[]>([]);
 
@@ -151,13 +157,34 @@ export function BattleArena({
     const startBattle = async () => {
         setStatus('battling');
 
-        const orderedPlayerDeck = selectedOrder.map(i => playerDeck[i]);
-        // AI 선택 모드에 따라 적 덱 결정
-        const actualEnemyDeck = enemySelectionMode === 'random'
+        let orderedPlayerDeck = selectedOrder.map(i => playerDeck[i]);
+        let actualEnemyDeck = enemySelectionMode === 'random'
             ? [...enemyDeck].sort(() => Math.random() - 0.5)
             : [...enemyDeck];
 
+        // [NEW] 전략 전투(ambush) 특수 로직: 6번째 카드를 3라운드 히든으로 배치
+        if (battleMode === 'ambush' && orderedPlayerDeck.length >= 6) {
+            const hiddenCard = orderedPlayerDeck[5]; // 6번째 카드
+            const otherCards = orderedPlayerDeck.slice(0, 5);
+            orderedPlayerDeck = [otherCards[0], otherCards[1], hiddenCard, otherCards[2], otherCards[3]];
+        } else if (battleMode === 'double' && orderedPlayerDeck.length >= 6) {
+            // [NEW] 복식 전투: 2장씩 합산 승부인데, 여기서는 일단 대표로 1/3/5번째 카드만 3회 대결 (간소화)
+            orderedPlayerDeck = [orderedPlayerDeck[0], orderedPlayerDeck[2], orderedPlayerDeck[4]];
+        }
+
+        if (battleMode === 'ambush' && actualEnemyDeck.length >= 6) {
+            const hiddenCard = actualEnemyDeck[5]; // 6번째 카드
+            const otherCards = actualEnemyDeck.slice(0, 5);
+            actualEnemyDeck = [otherCards[0], otherCards[1], hiddenCard, otherCards[2], otherCards[3]];
+        } else if (battleMode === 'double' && actualEnemyDeck.length >= 6) {
+            actualEnemyDeck = [actualEnemyDeck[0], actualEnemyDeck[2], actualEnemyDeck[4]];
+        }
+
         const battleRounds: BattleRound[] = [];
+        let pPts = 0;
+        let ePts = 0;
+        let pW = 0;
+        let eW = 0;
 
         for (let i = 0; i < maxRounds; i++) {
             const playerCard = orderedPlayerDeck[i];
@@ -165,21 +192,46 @@ export function BattleArena({
             if (!playerCard || !enemyCard) break;
 
             const { winner, reason, pFinal, eFinal } = determineWinner(playerCard, enemyCard);
-            battleRounds.push({ playerCard, enemyCard, winner, reason, playerPower: pFinal, enemyPower: eFinal });
+            const roundData: BattleRound = { playerCard, enemyCard, winner, reason, playerPower: pFinal, enemyPower: eFinal };
+            battleRounds.push(roundData);
+
+            // 점수 계산
+            const roundPoints = (battleMode === 'ambush' && i === 2) ? 2 : 1;
+            if (winner === 'player') {
+                pPts += roundPoints;
+                pW++;
+            } else if (winner === 'enemy') {
+                ePts += roundPoints;
+                eW++;
+            }
+
+            // 실시간 애니메이션을 위해 먼저 할당 (애니메이션 루프에서 상태 업데이트)
+            // 승리 조건 체크 (조기 종료)
+            if (pPts >= winsNeeded || ePts >= winsNeeded) break;
         }
 
         setRounds(battleRounds);
 
         for (let i = 0; i < battleRounds.length; i++) {
-            await playRoundAnimation(i, battleRounds[i]);
+            const round = battleRounds[i];
+            await playRoundAnimation(i, round);
+
+            const roundPoints = (battleMode === 'ambush' && i === 2) ? 2 : 1;
+            if (round.winner === 'player') {
+                setPlayerWins(prev => prev + 1);
+                setPlayerPoints(prev => prev + roundPoints);
+            } else if (round.winner === 'enemy') {
+                setEnemyWins(prev => prev + 1);
+                setEnemyPoints(prev => prev + roundPoints);
+            }
         }
 
-        const pWins = battleRounds.filter(r => r.winner === 'player').length;
-        const eWins = battleRounds.filter(r => r.winner === 'enemy').length;
-        const isWin = pWins > eWins;
+        const finalPPts = pPts;
+        const finalEPts = ePts;
+        const isWin = finalPPts > finalEPts;
 
         setStatus('finished');
-        onFinish({ isWin, playerWins: pWins, enemyWins: eWins, rounds: battleRounds });
+        onFinish({ isWin, playerWins: pW, enemyWins: eW, rounds: battleRounds });
     };
 
     const playRoundAnimation = async (roundIndex: number, round: BattleRound) => {
@@ -377,13 +429,21 @@ export function BattleArena({
                                 </div>
                                 <div className="flex items-center gap-6">
                                     <div className="text-right">
-                                        <p className="text-[8px] text-blue-400 font-bold orbitron uppercase tracking-widest">{t('pvp.battle.playerScore')}</p>
-                                        <p className="text-3xl font-black text-white orbitron">{playerWins}</p>
+                                        <p className="text-[8px] text-blue-400 font-bold orbitron uppercase tracking-widest">
+                                            {battleMode === 'ambush' || battleMode === 'tactics' ? 'POINTS' : t('pvp.battle.playerScore')}
+                                        </p>
+                                        <p className="text-3xl font-black text-white orbitron">
+                                            {battleMode === 'ambush' || battleMode === 'tactics' ? playerPoints : playerWins}
+                                        </p>
                                     </div>
                                     <div className="text-lg font-black text-gray-700 font-mono">VS</div>
                                     <div className="text-left">
-                                        <p className="text-[8px] text-red-500 font-bold orbitron uppercase tracking-widest">{t('pvp.battle.enemyScore')}</p>
-                                        <p className="text-3xl font-black text-white orbitron">{enemyWins}</p>
+                                        <p className="text-[8px] text-red-500 font-bold orbitron uppercase tracking-widest">
+                                            {battleMode === 'ambush' || battleMode === 'tactics' ? 'POINTS' : t('pvp.battle.enemyScore')}
+                                        </p>
+                                        <p className="text-3xl font-black text-white orbitron">
+                                            {battleMode === 'ambush' || battleMode === 'tactics' ? enemyPoints : enemyWins}
+                                        </p>
                                     </div>
                                 </div>
                             </motion.div>
