@@ -19,6 +19,7 @@ import {
 import { BattleRoom, PlayerState, BattlePhase } from '@/lib/realtime-pvp-types';
 import { applyBattleResult, BattleResult, PVP_REWARDS } from '@/lib/pvp-battle-system';
 import { useAlert } from '@/context/AlertContext';
+import { useUser } from '@/context/UserContext';
 import { cn } from '@/lib/utils';
 import { getDatabase, ref, onDisconnect } from 'firebase/database';
 import app from '@/lib/firebase';
@@ -49,8 +50,9 @@ export default function RealtimeBattleRoomPage() {
     const heartbeatRef = useRef<NodeJS.Timeout | null>(null);
     const listenerRef = useRef<(() => void) | null>(null);
 
-    const state = getGameState();
-    const playerId = state.userId || 'guest';
+    const { profile, user, loading: userLoading } = useUser();
+    const state = getGameState(user?.uid);
+    const playerId = user?.uid || state.userId || 'guest';
 
     // 내 플레이어 정보
     const getMyPlayer = useCallback(() => {

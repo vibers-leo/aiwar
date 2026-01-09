@@ -222,7 +222,13 @@ export function getGameState(userId?: string): GameState {
         return createDefaultGameState(userId || 'guest', '게스트');
     }
 
-    const key = getGameStateKey(userId);
+    // [NEW] Use last_known_uid as a fallback if userId is not provided
+    let effectiveUserId = userId;
+    if (!effectiveUserId) {
+        effectiveUserId = localStorage.getItem('last_known_uid') || 'guest';
+    }
+
+    const key = getGameStateKey(effectiveUserId);
     const data = localStorage.getItem(key);
 
     if (!data) {

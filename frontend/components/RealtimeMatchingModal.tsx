@@ -7,6 +7,7 @@ import { cn } from '@/lib/utils';
 import { Button } from '@/components/ui/custom/Button';
 import { useEscapeKey } from '@/hooks/useEscapeKey';
 import app from '@/lib/firebase';
+import { useUser } from '@/context/UserContext';
 
 interface RealtimeMatchingModalProps {
     isOpen: boolean;
@@ -25,6 +26,7 @@ export default function RealtimeMatchingModal({
     playerName,
     playerLevel
 }: RealtimeMatchingModalProps) {
+    const { user } = useUser();
     useEscapeKey(isOpen, onClose);
 
     const [mode, setMode] = useState<'select' | 'random' | 'friend-create' | 'friend-join'>('select');
@@ -152,7 +154,7 @@ export default function RealtimeMatchingModal({
             const { getGameState } = await import('@/lib/game-state');
             const { getDatabase, ref, set, push, onValue, off } = await import('firebase/database');
 
-            const state = getGameState();
+            const state = getGameState(user?.uid);
             const db = getDatabase(app || undefined);
 
             // 6자리 랜덤 코드 생성
@@ -227,7 +229,7 @@ export default function RealtimeMatchingModal({
             const { getDatabase, ref, get, update, remove } = await import('firebase/database');
             const { updateBattleRoom } = await import('@/lib/realtime-pvp-service');
 
-            const state = getGameState();
+            const state = getGameState(user?.uid);
             const db = getDatabase(app || undefined);
 
             // 대기실 찾기
