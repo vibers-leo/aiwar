@@ -27,8 +27,7 @@ import { Card, Rarity } from './types';
 import { getGameState } from './game-state';
 import { getLeaderboardData } from './firebase-db';
 import { generateRandomCard } from './card-generation-system';
-
-const db = getDatabase();
+import app from './firebase';
 
 // ==================== 매칭 시스템 ====================
 
@@ -67,6 +66,7 @@ export async function joinMatchmaking(
         };
 
         // 큐에 추가
+        const db = getDatabase(app || undefined);
         const queueRef = ref(db, `matchmaking/${battleMode}/${playerId}`);
         await set(queueRef, queueEntry);
 
@@ -88,6 +88,7 @@ export async function leaveMatchmaking(
     battleMode: RealtimeBattleMode,
     playerId: string
 ): Promise<void> {
+    const db = getDatabase(app || undefined);
     const queueRef = ref(db, `matchmaking/${battleMode}/${playerId}`);
     await remove(queueRef);
 }
@@ -101,6 +102,7 @@ export async function findMatch(
     myLevel: number
 ): Promise<MatchResult> {
     try {
+        const db = getDatabase(app || undefined);
         const queueRef = ref(db, `matchmaking/${battleMode}`);
         const snapshot = await get(queueRef);
 
@@ -245,6 +247,7 @@ export function listenForMatch(
     playerId: string,
     onMatch: (result: MatchResult) => void
 ): () => void {
+    const db = getDatabase(app || undefined);
     const queueRef = ref(db, `matchmaking/${battleMode}/${playerId}`);
 
     const unsubscribe = onValue(queueRef, (snapshot) => {
@@ -272,6 +275,7 @@ async function createBattleRoom(
     player1Data?: MatchmakingQueue,
     player2Data?: MatchmakingQueue
 ): Promise<string> {
+    const db = getDatabase(app || undefined);
     const roomsRef = ref(db, 'battles');
     const newRoomRef = push(roomsRef);
     const roomId = newRoomRef.key!;
@@ -284,7 +288,7 @@ async function createBattleRoom(
     const room: BattleRoom = {
         roomId,
         battleMode,
-        phase: 'ordering',
+        phase: 'deck-select',
         player1: createEmptyPlayerState(
             player1Id,
             player1Data?.playerName || state.nickname || 'Player 1',
@@ -319,6 +323,7 @@ async function createBattleRoom(
  * 플레이어의 전투 방 찾기
  */
 async function findBattleRoomForPlayer(playerId: string): Promise<string | null> {
+    const db = getDatabase(app || undefined);
     const roomsRef = ref(db, 'battles');
     const snapshot = await get(roomsRef);
 
@@ -338,6 +343,7 @@ async function findBattleRoomForPlayer(playerId: string): Promise<string | null>
  * 전투 방 정보 가져오기
  */
 export async function getBattleRoom(roomId: string): Promise<BattleRoom | null> {
+    const db = getDatabase(app || undefined);
     const roomRef = ref(db, `battles/${roomId}`);
     const snapshot = await get(roomRef);
 
@@ -352,6 +358,7 @@ export async function updateBattleRoom(
     roomId: string,
     updates: Partial<BattleRoom>
 ): Promise<void> {
+    const db = getDatabase(app || undefined);
     const roomRef = ref(db, `battles/${roomId}`);
     await update(roomRef, {
         ...updates,
@@ -372,6 +379,7 @@ export async function updatePlayerState(
 
     const isPlayer1 = room.player1.playerId === playerId;
     const playerKey = isPlayer1 ? 'player1' : 'player2';
+    const db = getDatabase(app || undefined);
 
     const roomRef = ref(db, `battles/${roomId}/${playerKey}`);
     await update(roomRef, updates);
@@ -384,6 +392,7 @@ export function listenToBattleRoom(
     roomId: string,
     onUpdate: (room: BattleRoom) => void
 ): () => void {
+    const db = getDatabase(app || undefined);
     const roomRef = ref(db, `battles/${roomId}`);
 
     const unsubscribe = onValue(roomRef, (snapshot) => {
@@ -399,6 +408,7 @@ export function listenToBattleRoom(
  * 전투 방 정리
  */
 export async function cleanupBattleRoom(roomId: string): Promise<void> {
+    const db = getDatabase(app || undefined);
     const roomRef = ref(db, `battles/${roomId}`);
     const room = await getBattleRoom(roomId);
 

@@ -6,6 +6,7 @@ import { X, Users, Loader2, Copy, Check, RefreshCw, Award } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { Button } from '@/components/ui/custom/Button';
 import { useEscapeKey } from '@/hooks/useEscapeKey';
+import app from '@/lib/firebase';
 
 interface RealtimeMatchingModalProps {
     isOpen: boolean;
@@ -144,7 +145,7 @@ export default function RealtimeMatchingModal({
             const { getDatabase, ref, set, push, onValue, off } = await import('firebase/database');
 
             const state = getGameState();
-            const db = getDatabase();
+            const db = getDatabase(app || undefined);
 
             // 6자리 랜덤 코드 생성
             const code = Math.random().toString(36).substring(2, 8).toUpperCase();
@@ -219,7 +220,7 @@ export default function RealtimeMatchingModal({
             const { updateBattleRoom } = await import('@/lib/realtime-pvp-service');
 
             const state = getGameState();
-            const db = getDatabase();
+            const db = getDatabase(app || undefined);
 
             // 대기실 찾기
             const waitingRoomRef = ref(db, `waitingRooms/${inputCode}`);
