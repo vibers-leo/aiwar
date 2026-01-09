@@ -127,10 +127,18 @@ export default function RealtimeBattleRoomPage() {
                     // 상대방 연결 끊김 감지
                     const isPlayer1 = updatedRoom.player1.playerId === playerId;
                     const opponentData = isPlayer1 ? updatedRoom.player2 : updatedRoom.player1;
+                    const myData = isPlayer1 ? updatedRoom.player1 : updatedRoom.player2;
 
                     if (!opponentData.connected && localPhase !== 'loading' && localPhase !== 'waiting' && !updatedRoom.finished) {
                         console.warn('Opponent disconnected');
                         // Optional: Show a warning or handle as forfeit
+                    }
+
+                    // [FIX] Auto-transition to battle when both players are ready
+                    if (updatedRoom.phase === 'deck-select' && myData.ready && opponentData.ready) {
+                        console.log('[Flow] Both players ready detected in listener, transitioning to battle...');
+                        await updateBattleRoom(roomId, { phase: 'battle' });
+                        return; // Early return to prevent duplicate phase updates
                     }
 
                     // [FIX] Phase synchronization logic
@@ -260,21 +268,33 @@ export default function RealtimeBattleRoomPage() {
             return;
         }
 
+        // [FIX] Update player state first
         await updatePlayerState(roomId, playerId, {
             selectedCards: deck,
             cardOrder: Array.from({ length: requiredCount }, (_, i) => i),
             ready: true
         });
 
-        // [FIX] Phase transition is now handled ONLY by the real-time listener
-        // to prevent race conditions where both players update the phase simultaneously.
-        const opponentPlayer = getOpponent();
-        if (opponentPlayer?.ready) {
+        // [FIX] Fetch latest room state to check opponent's ready status
+        const latestRoom = await getBattleRoom(roomId);
+        if (!latestRoom) {
+            console.error('[Flow] Failed to fetch latest room state');
+            return;
+        }
+
+        const isPlayer1 = latestRoom.player1.playerId === playerId;
+        const opponentPlayer = isPlayer1 ? latestRoom.player2 : latestRoom.player1;
+        const myPlayer = isPlayer1 ? latestRoom.player1 : latestRoom.player2;
+
+        console.log('[Flow] Deck confirmed. My ready:', myPlayer.ready, 'Opponent ready:', opponentPlayer.ready);
+
+        // [FIX] Only transition to battle if BOTH players are ready
+        if (myPlayer.ready && opponentPlayer.ready) {
             console.log('[Flow] Both players ready, triggering battle phase...');
             await updateBattleRoom(roomId, { phase: 'battle' });
         } else {
             console.log('[Flow] Waiting for opponent...');
-            await updateBattleRoom(roomId, { phase: 'ordering' });
+            // Don't update phase here - let the listener handle it when opponent becomes ready
         }
     };
 
