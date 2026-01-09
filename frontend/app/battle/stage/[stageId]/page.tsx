@@ -7,9 +7,8 @@ import { Card, BattleMode } from '@/lib/types';
 import { InventoryCard } from '@/lib/inventory-system';
 import { StoryStage, getStoryStage, completeStage } from '@/lib/story-system';
 import { generateEnemies, StageConfig } from '@/lib/stage-system';
-import { applyBattleResult, BattleResult, BattleParticipant } from '@/lib/pvp-battle-system';
 import { Button } from '@/components/ui/custom/Button';
-import CardPlacementBoard, { RoundPlacement as BoardPlacement } from '@/components/battle/CardPlacementBoard';
+import { applyBattleResult, BattleResult, BattleParticipant } from '@/lib/pvp-battle-system';
 import { useTranslation } from '@/context/LanguageContext';
 import BattleDeckSelection from '@/components/battle/BattleDeckSelection';
 import { useUser } from '@/context/UserContext';
@@ -23,7 +22,6 @@ import { BattleArena } from '@/components/BattleArena';
 type Phase =
     | 'intro'
     | 'deck-select'
-    | 'card-placement'
     | 'battle'
     | 'result';
 
@@ -188,59 +186,8 @@ export default function StageBattlePage() {
 
     const handleStartBattle = (preparedDeck: Card[]) => {
         if (!storyStage) return;
-        setActiveBattleDeck(preparedDeck); // SAVE DECK for View/Interaction
-
-        const player: BattleParticipant = {
-            name: `Player_${level}`,
-            level: level,
-            deck: preparedDeck,
-            cardOrder: [0, 1, 2, 3, 4, 5], // Simple index order
-        };
-
-        const opponent: BattleParticipant = {
-            name: language === 'ko' ? storyStage.enemy.name_ko : storyStage.enemy.name,
-            level: storyStage.step,
-            deck: enemies,
-            cardOrder: [0, 1, 2, 3, 4, 5],
-        };
-
+        setActiveBattleDeck(preparedDeck);
         setPhase('battle');
-    };
-
-    const handlePlacementComplete = (placement: BoardPlacement) => {
-        if (!storyStage) return;
-        // setCardPlacement(placement); // Removed
-
-        // Flatten BoardPlacement to Card List for Battle Logic
-        let playerBattleDeck: Card[] = [];
-        if (storyStage.battleMode === 'sudden-death') {
-            playerBattleDeck = [placement.round1.main, placement.round2.main, placement.round3.main, placement.round4.main, placement.round5.main].filter((c): c is Card => !!c);
-        } else if (storyStage.battleMode === 'double' || storyStage.battleMode === 'ambush') {
-            // Re-constructing deck for Double Battle / Ambush logic
-            if (storyStage.battleMode === 'double') {
-                // Double Battle needs 6 cards in sequence: R1(2), R2(2), R3(2)
-                playerBattleDeck = [
-                    placement.round1.main, placement.round1.hidden,
-                    placement.round2.main, placement.round2.hidden,
-                    placement.round3.main, placement.round3.hidden
-                ].filter((c): c is Card => !!c);
-            } else {
-                // Ambush: R1, R2, R3, R4, R5, R3(Hidden Ambush)
-                playerBattleDeck = [
-                    placement.round1.main,
-                    placement.round2.main,
-                    placement.round3.main,
-                    placement.round4.main,
-                    placement.round5.main,
-                    placement.round3.hidden // The Ambush Card
-                ].filter((c): c is Card => !!c);
-            }
-        } else {
-            // Tactics & Standard
-            playerBattleDeck = [placement.round1.main, placement.round2.main, placement.round3.main, placement.round4.main, placement.round5.main].filter((c): c is Card => !!c);
-        }
-
-        handleStartBattle(playerBattleDeck);
     };
 
     const startDeckSelection = () => {
@@ -249,7 +196,7 @@ export default function StageBattlePage() {
 
     const confirmDeck = (selected: Card[]) => {
         setSelectedHand(selected);
-        setPhase('card-placement');
+        handleStartBattle(selected);
     };
 
 
@@ -346,17 +293,6 @@ export default function StageBattlePage() {
                     />
                 )}
 
-                {/* 3. Card Placement Board */}
-                {phase === 'card-placement' && (
-                    <CardPlacementBoard
-                        selectedCards={selectedHand}
-                        battleMode={storyStage.battleMode as any} // Map to supported modes
-                        onPlacementComplete={handlePlacementComplete}
-                        onCancel={() => setPhase('deck-select')}
-                        opponentDeck={storyStage.battleMode === 'ambush' || storyStage.battleMode === 'double' ? [] : enemies} // Hide for fairness or show? Logic varies.
-                    />
-                )}
-
                 {/* 4. Battle Animation (Unified BattleArena) */}
                 {phase === 'battle' && (
                     <BattleArena
@@ -368,7 +304,7 @@ export default function StageBattlePage() {
                         }}
                         onFinish={handleBattleFinish}
                         title={language === 'ko' ? storyStage.title_ko : storyStage.title}
-                        maxRounds={storyStage.battleMode === 'sudden-death' ? 1 : storyStage.battleMode === 'double' ? 6 : 5}
+                        battleMode={storyStage.battleMode as any}
                         enemySelectionMode={storyStage.battleMode === 'ambush' ? 'random' : 'ordered'}
                     />
                 )}
