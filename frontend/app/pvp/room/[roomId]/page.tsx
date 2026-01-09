@@ -261,6 +261,13 @@ export default function RealtimeBattleRoomPage() {
         }
     };
 
+    // VS 건너뛰기
+    const handleSkipVS = async () => {
+        if (!room) return;
+        console.log('[Flow] Skipping VS matchup timer...');
+        await updateBattleRoom(roomId, { phase: 'deck-select' });
+    };
+
     // 전투 종료 콜백
     const handleBattleFinish = async (result: {
         isWin: boolean;
@@ -493,6 +500,23 @@ export default function RealtimeBattleRoomPage() {
                             >
                                 곧 덱 선택 화면으로 이동합니다...
                             </motion.p>
+
+                            {/* [NEW] 건너뛰기 버튼 */}
+                            <motion.div
+                                initial={{ opacity: 0, y: 20 }}
+                                animate={{ opacity: 1, y: 0 }}
+                                transition={{ delay: 1 }}
+                                className="flex justify-center mt-6"
+                            >
+                                <Button
+                                    onPress={handleSkipVS}
+                                    className="bg-white/10 hover:bg-white/20 text-white orbitron font-bold px-8"
+                                    variant="flat"
+                                    size="sm"
+                                >
+                                    SKIPPING WAIT »
+                                </Button>
+                            </motion.div>
                         </div>
                     </motion.div>
                 )}
