@@ -2,6 +2,7 @@
 
 import { useState, useEffect } from 'react';
 import Link from 'next/link';
+import { useRouter } from 'next/navigation';
 import { motion } from 'framer-motion';
 import CyberPageLayout from '@/components/CyberPageLayout';
 import { getLeaderboardData } from '@/lib/firebase-db';
@@ -13,6 +14,7 @@ import { cn } from '@/lib/utils';
 import { useUser } from '@/context/UserContext'; // [NEW]
 
 export default function RankingPage() {
+    const router = useRouter();
     const { user } = useUser(); // [NEW]
     const [rankings, setRankings] = useState<RankingEntry[]>([]);
     const [myRank, setMyRank] = useState<RankingEntry | null>(null);
@@ -143,9 +145,7 @@ export default function RankingPage() {
                                 <tr
                                     key={entry.playerId}
                                     onClick={() => {
-                                        // [TODO] Navigate to profile page when implemented
-                                        // router.push(`/profile/${entry.playerId}`);
-                                        console.log('Profile click:', entry.playerId, entry.playerName);
+                                        router.push(`/profile/${entry.playerId}`);
                                     }}
                                     className={cn(
                                         "border-t border-white/5 transition-all cursor-pointer",

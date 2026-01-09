@@ -1457,6 +1457,30 @@ export async function getLeaderboardData(limitCount = 100): Promise<UserProfile[
     }
 }
 
+/**
+ * 개별 유저 프로필 가져오기
+ */
+export async function getUserProfile(userId: string): Promise<UserProfile | null> {
+    if (!isFirebaseConfigured || !db) return null;
+
+    try {
+        const userRef = doc(db, 'users', userId);
+        const userSnap = await getDoc(userRef);
+
+        if (!userSnap.exists()) {
+            return null;
+        }
+
+        return {
+            uid: userSnap.id,
+            ...userSnap.data()
+        } as UserProfile;
+    } catch (error) {
+        console.error('❌ 유저 프로필 로드 실패:', error);
+        return null;
+    }
+}
+
 // ==================== 스토리 진행도 (Story Progress) ====================
 
 export interface StoryProgressData {
