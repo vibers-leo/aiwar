@@ -242,14 +242,14 @@ export default function RealtimeMatchingModal({
 
             const waitingRoom = snapshot.val();
 
-            // 전투방 생성
-            const { push } = await import('firebase/database');
+            // 전투방 데이터 설정
+            const { set, push } = await import('firebase/database');
             const battlesRef = ref(db, 'battles');
             const newRoomRef = push(battlesRef);
             const roomId = newRoomRef.key!;
 
-            // 전투방 데이터 설정
-            const { set } = await import('firebase/database');
+            console.log(`📡 [FriendJoin] Creating room: ${roomId} for code: ${inputCode}`);
+
             await set(newRoomRef, {
                 roomId,
                 battleMode: waitingRoom.battleMode,
@@ -294,6 +294,7 @@ export default function RealtimeMatchingModal({
                 guestName: playerName
             });
 
+            console.log(`✅ [FriendJoin] Successfully matched with ${waitingRoom.hostName}. Entering...`);
             setSearching(false);
             onMatchFound(roomId, waitingRoom.hostName);
 
@@ -477,7 +478,9 @@ export default function RealtimeMatchingModal({
                                 >
                                     <Loader2 className="w-full h-full text-cyan-400" />
                                 </motion.div>
-                                <h3 className="text-xl font-bold text-white mb-2">상대를 찾는 중...</h3>
+                                <h3 className="text-xl font-bold text-white mb-2">
+                                    {waitTime > 10 ? '정밀 탐색 중...' : '상대를 찾는 중...'}
+                                </h3>
                                 <p className="text-3xl font-black text-cyan-400 orbitron mb-4">{formatTime(waitTime)}</p>
                                 <p className="text-sm text-white/60 mb-6">비슷한 레벨의 상대를 찾고 있습니다</p>
 
@@ -516,7 +519,10 @@ export default function RealtimeMatchingModal({
                                     {copied ? '복사됨!' : '코드 복사'}
                                 </button>
 
-                                <p className="text-sm text-white/60 mb-6">상대가 입장하면 자동으로 시작됩니다</p>
+                                <p className="text-sm text-white/60 mb-6 font-medium">
+                                    상대가 입장하면 자동으로 시작됩니다<br />
+                                    <span className="text-[10px] text-purple-400/80 mt-1 block">연결을 유지해 주세요...</span>
+                                </p>
 
                                 <Button onClick={handleCancel} color="secondary" className="w-full">
                                     취소

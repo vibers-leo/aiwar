@@ -130,9 +130,10 @@ export async function findMatch(
 
             const levelDiff = Math.abs(opponent.playerLevel - myLevel);
             if (levelDiff <= tolerance) {
+                console.log(`🎯 [PVP] Found candidate! Opponent: ${opponent.playerName}, Level: ${opponent.playerLevel}`);
                 const opponentStatusRef = ref(db, `matchmaking/${battleMode}/${opponentId}/status`);
 
-                // 트랜잭션으로 'waiting'일 때만 'matched'로 변경 시도
+                // [CRITICAL] 트랜잭션으로 'waiting'일 때만 'matched'로 변경 시도
                 const transactionResult = await runTransaction(opponentStatusRef, (currentStatus) => {
                     if (currentStatus === 'waiting' || currentStatus === null) {
                         return 'matched';
@@ -155,13 +156,15 @@ export async function findMatch(
                         roomId
                     });
 
-                    console.log(`✨ [PVP] Real Player Matched! Room: ${roomId}, Opponent: ${opponent.playerName}`);
+                    console.log(`✨ [PVP] SUCCESS! Real Player Matched! Room: ${roomId}`);
                     return {
                         success: true,
                         roomId,
                         opponentId,
                         opponentName: opponent.playerName
                     };
+                } else {
+                    console.warn(`⚠️ [PVP] Failed to commit matching transaction for ${opponent.playerName} (already taken?)`);
                 }
             }
         }
