@@ -52,7 +52,7 @@ export function BattleArena({
     onFinish,
     title,
     strategyTime = 20,
-    maxRounds = 5,
+    maxRounds = 6,
     enemySelectionMode = 'ordered'
 }: BattleArenaProps) {
     const { t, language } = useTranslation();
@@ -62,7 +62,7 @@ export function BattleArena({
     const [status, setStatus] = useState<'strategy' | 'battling' | 'finished'>('strategy');
     const [timer, setTimer] = useState(strategyTime);
     const [selectedOrder, setSelectedOrder] = useState<number[]>(() =>
-        Array.from({ length: Math.min(playerDeck.length, maxRounds) }, (_, i) => i)
+        Array.from({ length: Math.min(playerDeck.length, Math.max(maxRounds, playerDeck.length)) }, (_, i) => i)
     );
 
     // Battle Animation State
@@ -111,7 +111,7 @@ export function BattleArena({
     };
 
     const moveCardDown = (index: number) => {
-        if (index === 4) return;
+        if (index >= selectedOrder.length - 1) return;
         const newOrder = [...selectedOrder];
         [newOrder[index], newOrder[index + 1]] = [newOrder[index + 1], newOrder[index]];
         setSelectedOrder(newOrder);
@@ -305,7 +305,7 @@ export function BattleArena({
                                 <div className="w-1 h-3 bg-red-500"></div>
                                 <h2 className="text-[10px] font-black text-white orbitron tracking-tighter uppercase">{t('pvp.battle.enemyArchitecture')}</h2>
                             </div>
-                            <div className="grid grid-cols-5 gap-2">
+                            <div className="grid grid-cols-6 gap-3">
                                 {enemyDeck.map((card, index) => (
                                     <motion.div
                                         key={card.id || index}
@@ -332,7 +332,7 @@ export function BattleArena({
                                     {t('pvp.battle.randomize')}
                                 </Button>
                             </div>
-                            <div className="grid grid-cols-5 gap-2">
+                            <div className="grid grid-cols-6 gap-3">
                                 {selectedOrder.map((cardIndex, position) => {
                                     const card = playerDeck[cardIndex];
                                     return (
@@ -343,7 +343,7 @@ export function BattleArena({
                                         >
                                             <div className="absolute top-1 left-1 flex flex-col gap-0.5 z-20 opacity-0 group-hover:opacity-100 transition-opacity">
                                                 <button onClick={() => moveCardUp(position)} disabled={position === 0} className="w-5 h-5 bg-white/10 rounded text-white text-[9px] flex items-center justify-center disabled:opacity-20"><ChevronUp size={12} /></button>
-                                                <button onClick={() => moveCardDown(position)} disabled={position === 4} className="w-5 h-5 bg-white/10 rounded text-white text-[9px] flex items-center justify-center disabled:opacity-20"><ChevronDown size={12} /></button>
+                                                <button onClick={() => moveCardDown(position)} disabled={position >= selectedOrder.length - 1} className="w-5 h-5 bg-white/10 rounded text-white text-[9px] flex items-center justify-center disabled:opacity-20"><ChevronDown size={12} /></button>
                                             </div>
                                             <div className="text-lg mb-0.5">{getTypeIcon(card.type)}</div>
                                             <div className="text-[8px] font-bold text-gray-400 truncate mb-0.5">{getCardName(card.templateId || card.id || '', card.name || '', lang)}</div>
@@ -366,7 +366,7 @@ export function BattleArena({
                             <motion.div initial={{ opacity: 0, scale: 0.9 }} animate={{ opacity: 1, scale: 1 }} className="bg-black/60 backdrop-blur-xl border border-white/10 px-6 py-3 rounded-2xl inline-flex items-center gap-8 shadow-2xl mx-auto">
                                 <div className="text-center min-w-[60px]">
                                     <p className="text-[8px] text-gray-500 font-bold orbitron uppercase tracking-[0.2em] mb-0.5">{t('pvp.battle.round')}</p>
-                                    <p className="text-2xl font-black text-white orbitron italic">{currentRound}/5</p>
+                                    <p className="text-2xl font-black text-white orbitron italic">{currentRound}/{maxRounds}</p>
                                 </div>
                                 <div className="flex items-center gap-6">
                                     <div className="text-right">
@@ -382,7 +382,7 @@ export function BattleArena({
                             </motion.div>
                         </div>
 
-                        <div className="grid grid-cols-5 gap-2 h-16">
+                        <div className="grid grid-cols-6 gap-3 h-16">
                             {enemyDeck.map((card, index) => (
                                 <AnimatePresence key={card.id || index}>
                                     {aliveEnemyCards[index] && (
@@ -432,7 +432,7 @@ export function BattleArena({
                             </AnimatePresence>
                         </div>
 
-                        <div className="grid grid-cols-5 gap-2 h-16 mb-4">
+                        <div className="grid grid-cols-6 gap-3 h-16 mb-4">
                             {selectedOrder.map(i => playerDeck[i]).map((card, index) => (
                                 <AnimatePresence key={card.id || index}>
                                     {alivePlayerCards[index] && (

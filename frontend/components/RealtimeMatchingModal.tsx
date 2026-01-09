@@ -281,8 +281,8 @@ export default function RealtimeMatchingModal({
                     lastHeartbeat: Date.now()
                 },
                 currentRound: 0,
-                maxRounds: 5,
-                winsNeeded: 3,
+                maxRounds: 6,
+                winsNeeded: 4,
                 finished: false,
                 createdAt: Date.now(),
                 updatedAt: Date.now()
