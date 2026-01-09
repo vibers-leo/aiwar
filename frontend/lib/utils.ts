@@ -108,14 +108,33 @@ export function ensureDate(dateVal: any): Date {
     if (dateVal instanceof Date) return dateVal;
 
     // Firestore Timestamp { seconds, nanoseconds }
-    if (typeof dateVal === 'object' && 'seconds' in dateVal) {
-        return new Date(dateVal.seconds * 1000);
+    if (typeof dateVal === 'object' && ('seconds' in dateVal || '_seconds' in dateVal)) {
+        const seconds = dateVal.seconds || dateVal._seconds;
+        return new Date(seconds * 1000);
     }
 
     // Generic string or number
     const date = new Date(dateVal);
     // [SAFETY] Invalid Date인 경우 현재 시간 반환하여 에러 방지
     return isNaN(date.getTime()) ? new Date() : date;
+}
+
+/**
+ * [NEW] 6:00 AM 기준 초기화 날짜 문자열 가져오기
+ * 현재 서버/로컬 시간 기준으로 오전 6시 이전이면 어제의 날짜를 반환
+ */
+export function getResetDateString(): string {
+    const now = new Date();
+    const hours = now.getHours();
+
+    // 오전 6시 이전이면 어제 날짜로 취급
+    if (hours < 6) {
+        const yesterday = new Date(now);
+        yesterday.setDate(now.getDate() - 1);
+        return yesterday.toISOString().split('T')[0];
+    }
+
+    return now.toISOString().split('T')[0];
 }
 
 

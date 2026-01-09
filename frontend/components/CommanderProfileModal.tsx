@@ -1,6 +1,8 @@
 'use client';
 
 import { useState, useEffect, useCallback } from 'react';
+import Link from 'next/link';
+import { useTranslation } from '@/context/LanguageContext';
 import {
     Modal,
     ModalContent,
@@ -49,6 +51,7 @@ export default function CommanderProfileModal({ isOpen, onClose }: CommanderProf
     const { state: footerState } = useFooter();
     const { profile } = useUserProfile();
     const { user } = useFirebase();
+    const { language } = useTranslation();
     const [research, setResearch] = useState<CommanderResearch | null>(null);
     const [loading, setLoading] = useState(true);
     const [hoveredStat, setHoveredStat] = useState<string | null>(null);
@@ -328,9 +331,19 @@ export default function CommanderProfileModal({ isOpen, onClose }: CommanderProf
                                             </button>
                                         </div>
                                         {user?.email && (
-                                            <div className="flex items-center gap-2 mt-1 px-1">
-                                                <Mail size={12} className="text-white/40" />
-                                                <span className="text-[10px] text-white/40 font-mono tracking-wider">{user.email}</span>
+                                            <div className="flex items-center gap-4 mt-1 px-1">
+                                                <div className="flex items-center gap-2">
+                                                    <Mail size={12} className="text-white/40" />
+                                                    <span className="text-[10px] text-white/40 font-mono tracking-wider">{user.email}</span>
+                                                </div>
+                                                <Link
+                                                    href={`/profile/${user?.uid || 'guest'}`}
+                                                    onClick={onClose}
+                                                    className="flex items-center gap-1.5 px-2 py-0.5 bg-cyan-500/10 hover:bg-cyan-500/20 border border-cyan-500/30 rounded text-[10px] text-cyan-400 font-bold transition-all group/link"
+                                                >
+                                                    <ExternalLink size={10} className="group-hover/link:translate-x-0.5 group-hover/link:-translate-y-0.5 transition-transform" />
+                                                    {language === 'ko' ? '상세 프로필 보기' : 'VIEW FULL PROFILE'}
+                                                </Link>
                                             </div>
                                         )}
                                     </div>

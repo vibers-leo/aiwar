@@ -2,6 +2,8 @@
  * 유저 프로필 관련 유틸리티 함수
  */
 
+import { doc, getDoc, updateDoc, collection, addDoc, query, orderBy, limit as firestoreLimit, getDocs } from 'firebase/firestore';
+import { db } from './firebase';
 import { UserProfile } from './firebase-db';
 import { InventoryCard } from './inventory-system';
 
@@ -9,17 +11,38 @@ import { InventoryCard } from './inventory-system';
  * 유저의 주력 덱 가져오기
  */
 export async function getUserMainDeck(userId: string): Promise<InventoryCard[]> {
-    // TODO: Firebase에서 저장된 주력 덱 가져오기
-    // 현재는 빈 배열 반환
-    return [];
+    if (!db) return [];
+
+    try {
+        const userRef = doc(db, 'users', userId);
+        const userDoc = await getDoc(userRef);
+
+        if (!userDoc.exists()) return [];
+
+        const data = userDoc.data();
+        return data.mainDeck || [];
+    } catch (error) {
+        console.error('Failed to get user main deck:', error);
+        return [];
+    }
 }
 
 /**
  * 유저의 주력 덱 저장하기
  */
 export async function saveUserMainDeck(userId: string, cards: InventoryCard[]): Promise<void> {
-    // TODO: Firebase에 주력 덱 저장
-    console.log('Saving main deck for user:', userId, cards);
+    if (!db) return;
+
+    try {
+        const userRef = doc(db, 'users', userId);
+        await updateDoc(userRef, {
+            mainDeck: cards,
+            mainDeckUpdatedAt: Date.now()
+        });
+        console.log('✅ Main deck saved for user:', userId);
+    } catch (error) {
+        console.error('❌ Failed to save user main deck:', error);
+    }
 }
 
 /**
@@ -36,10 +59,40 @@ export interface BattleHistory {
     timestamp: number;
 }
 
-export async function getUserBattleHistory(userId: string, limit = 10): Promise<BattleHistory[]> {
-    // TODO: Firebase에서 전투 기록 가져오기
-    // 현재는 빈 배열 반환
-    return [];
+export async function saveBattleHistory(
+    userId: string,
+    battleData: Omit<BattleHistory, 'battleId' | 'timestamp'>
+): Promise<void> {
+    if (!db) return;
+
+    try {
+        const historyRef = collection(db, 'users', userId, 'battleHistory');
+        await addDoc(historyRef, {
+            ...battleData,
+            timestamp: Date.now()
+        });
+        console.log('✅ Battle history saved for user:', userId);
+    } catch (error) {
+        console.error('❌ Failed to save battle history:', error);
+    }
+}
+
+export async function getUserBattleHistory(userId: string, limitCount = 10): Promise<BattleHistory[]> {
+    if (!db) return [];
+
+    try {
+        const historyRef = collection(db, 'users', userId, 'battleHistory');
+        const q = query(historyRef, orderBy('timestamp', 'desc'), firestoreLimit(limitCount));
+        const snapshot = await getDocs(q);
+
+        return snapshot.docs.map(doc => ({
+            battleId: doc.id,
+            ...doc.data()
+        } as BattleHistory));
+    } catch (error) {
+        console.error('❌ Failed to get user battle history:', error);
+        return [];
+    }
 }
 
 /**

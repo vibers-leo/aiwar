@@ -3,9 +3,11 @@
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
 import { motion } from 'framer-motion';
+import { useUser } from '@/context/UserContext';
 
 export default function Header() {
     const pathname = usePathname();
+    const { user } = useUser();
 
     const menuItems = [
         { name: 'Story', href: '/story' },
@@ -70,15 +72,17 @@ export default function Header() {
 
                     {/* Profile & Settings */}
                     <div className="flex items-center gap-4">
-                        <motion.button
-                            whileHover={{ scale: 1.05 }}
-                            whileTap={{ scale: 0.95 }}
-                            className="w-10 h-10 rounded-full bg-slate-800 border border-purple-500/20 flex items-center justify-center hover:border-purple-400/40 transition-colors"
-                        >
-                            <svg className="w-5 h-5 text-purple-300" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" />
-                            </svg>
-                        </motion.button>
+                        <Link href={`/profile/${user?.uid || 'guest'}`}>
+                            <motion.button
+                                whileHover={{ scale: 1.05 }}
+                                whileTap={{ scale: 0.95 }}
+                                className="w-10 h-10 rounded-full bg-slate-800 border border-purple-500/20 flex items-center justify-center hover:border-purple-400/40 transition-colors"
+                            >
+                                <svg className="w-5 h-5 text-purple-300" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" />
+                                </svg>
+                            </motion.button>
+                        </Link>
 
                         <motion.button
                             whileHover={{ scale: 1.05 }}

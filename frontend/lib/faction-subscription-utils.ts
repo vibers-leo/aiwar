@@ -65,8 +65,9 @@ export function getSubscribedFactions(userId?: string): FactionSubscription[] {
     const key = getSubscriptionKey(userId);
     const subscriptions = storage.get<FactionSubscription[]>(key, []);
 
-    // 날짜 변환 및 일일 카운터 리셋
-    const today = new Date().toISOString().split('T')[0];
+    // 날짜 변환 및 일일 카운터 리셋 (오전 6시 기준)
+    const { getResetDateString } = require('./utils');
+    const today = getResetDateString();
 
     let billingOccurred = false;
     const currentSubs = subscriptions.map(sub => {

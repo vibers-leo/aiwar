@@ -95,7 +95,7 @@ export default function Sidebar({ isOpen, onToggle }: SidebarProps) {
 
                 <CardBody className="p-0 flex flex-col h-full overflow-hidden">
                     {/* 프로필 섹션 */}
-                    <div className="pt-14 pb-6 flex flex-col items-center px-6">
+                    <div className="pt-10 pb-4 flex flex-col items-center px-6 flex-shrink-0">
                         <motion.div
                             animate={{
                                 scale: isOpen ? 1 : 0.9,
@@ -106,7 +106,7 @@ export default function Sidebar({ isOpen, onToggle }: SidebarProps) {
                         >
                             <div className="absolute -inset-2 bg-gradient-to-tr from-purple-600 to-blue-600 rounded-full blur-lg opacity-30 group-hover:opacity-60 transition-opacity" />
                             <Avatar
-                                src={profile?.avatarUrl || (typeof window !== 'undefined' ? localStorage.getItem('user_avatar') || avatarPlaceholder.src : avatarPlaceholder.src)}
+                                src={profile?.avatarUrl || avatarPlaceholder.src}
                                 className={`transition-all duration-300 text-large border-2 border-purple-500/50 ${isOpen ? 'w-16 h-16' : 'w-10 h-10'}`}
                                 isBordered
                                 color="secondary"
@@ -149,8 +149,8 @@ export default function Sidebar({ isOpen, onToggle }: SidebarProps) {
                                 <Divider className="bg-white/5" />
 
                                 {/* EXP 바 */}
-                                <div className="px-6 py-4">
-                                    <div className="flex justify-between items-center mb-2 px-1">
+                                <div className="px-6 py-3">
+                                    <div className="flex justify-between items-center mb-1 px-1">
                                         <span className="text-[9px] text-gray-500 font-bold uppercase tracking-widest">{language === 'ko' ? '경험치' : 'Experience'}</span>
                                         <span className="text-[9px] text-purple-400 font-mono">{experience} / {level * 100} PX</span>
                                     </div>
@@ -182,7 +182,7 @@ export default function Sidebar({ isOpen, onToggle }: SidebarProps) {
                                     color="default"
                                     onPress={() => router.push(item.path)}
                                     className={`
-                                        h-12 !justify-start px-4 transition-all relative overflow-hidden
+                                        h-10 !justify-start px-4 transition-all relative overflow-hidden
                                         ${pathname.startsWith(item.path) ? "font-bold text-white bg-white/5" : "text-gray-400 hover:text-white hover:bg-white/5"}
                                         ${!isOpen ? "min-w-0 px-0 justify-center" : ""}
                                     `}
@@ -214,18 +214,18 @@ export default function Sidebar({ isOpen, onToggle }: SidebarProps) {
 
                     <Divider className="bg-white/5" />
 
-                    <div className="p-4 space-y-2 pb-8">
-                        {/* Friends Button - 새로 추가된 부분 */}
+                    <div className="p-3 space-y-1 pb-6 flex-shrink-0">
+                        {/* Friends Button - Navigates to Social Page */}
                         <div className="flex gap-2">
                             <Button
                                 fullWidth
                                 variant="light"
                                 color="default"
-                                onPress={() => setIsFriendsModalOpen(true)}
+                                onPress={() => router.push('/social')}
                                 className={`h-10 text-gray-400 hover:text-cyan-400 hover:bg-white/5 ${!isOpen ? "min-w-0 px-0 justify-center" : "!justify-start"}`}
                                 startContent={<Users size={18} />}
                             >
-                                {isOpen && <span className="ml-2 font-bold text-xs orbitron">FRIENDS LIST</span>}
+                                {isOpen && <span className="ml-2 font-bold text-xs orbitron">SOCIAL DASHBOARD</span>}
                             </Button>
                         </div>
 

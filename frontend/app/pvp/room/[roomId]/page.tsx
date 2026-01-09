@@ -28,6 +28,7 @@ import { BattleArena } from '@/components/BattleArena';
 import { BackgroundBeams } from '@/components/ui/aceternity/background-beams';
 import { Button } from '@/components/ui/custom/Button';
 import { useTranslation } from '@/context/LanguageContext';
+import { saveBattleHistory } from '@/lib/user-profile-utils';
 
 // Extended local phase for UI control
 type LocalPhase = 'loading' | 'waiting' | 'vs-matchup' | 'deck-select' | 'ordering' | 'battle' | 'result' | 'error';
@@ -48,6 +49,7 @@ export default function RealtimeBattleRoomPage() {
     const [isReady, setIsReady] = useState(false);
     const [error, setError] = useState<string | null>(null);
     const [vsCountdown, setVsCountdown] = useState(20); // [FIX] 5 -> 20
+    const [localWinner, setLocalWinner] = useState<string | null>(null);
 
     const heartbeatRef = useRef<NodeJS.Timeout | null>(null);
     const listenerRef = useRef<(() => void) | null>(null);
@@ -322,6 +324,13 @@ export default function RealtimeBattleRoomPage() {
         const isGhost = (room as any).isGhost || false;
         const winnerId = isWin ? playerId : opponentData.playerId;
 
+        // [FIX] 승패에 따른 정확한 보상 계산
+        const rewards = {
+            coins: isWin ? 200 : 0,           // 승리: 200, 패배: 0
+            experience: isWin ? 100 : 20,     // 승리: 100, 패배: 20
+            ratingChange: isWin ? 25 : -15    // 승리: +25, 패배: -15
+        };
+
         const battleResult: BattleResult = {
             winner: isWin ? 'player' : 'opponent',
             rounds: result.rounds.map(r => ({
@@ -337,12 +346,11 @@ export default function RealtimeBattleRoomPage() {
             })),
             playerWins: pWins,
             opponentWins: eWins,
-            rewards: {
-                coins: isWin ? 200 : 0,
-                experience: isWin ? 100 : 20,
-                ratingChange: isWin ? 25 : -15
-            }
+            rewards: rewards  // [FIX] 승패에 따른 차등 보상
         };
+
+        // 로컬 위너 설정 (결과 화면용)
+        setLocalWinner(winnerId);
 
         // [FIX] Only the winner updates the room to prevent both players from being winners
         if (isWin) {
@@ -353,14 +361,26 @@ export default function RealtimeBattleRoomPage() {
             });
         }
 
+        // [FIX] 각 플레이어는 자신의 보상만 적용 (승자/패자 구분됨)
         await applyBattleResult(
             battleResult,
             myPlayerData.selectedCards,
             opponentData.selectedCards,
-            true,    // isRanked: true (실시간 PVP는 랭크전)
-            isGhost, // isGhost
-            true     // isRealtime: true (실시간 PVP)
+            true,   // isRanked: true (실시간 PVP)
+            isGhost,
+            true    // isRealtime: true
         );
+
+        // [NEW] 전투 기록 저장
+        if (user?.uid) {
+            await saveBattleHistory(user.uid, {
+                opponentId: opponentData.playerId,
+                opponentName: opponentData.playerName,
+                result: isWin ? 'win' : 'loss',
+                ratingChange: rewards.ratingChange,
+                battleMode: (room as any).battleMode || 'Ranked'
+            });
+        }
 
         setLocalPhase('result');
     };
@@ -376,7 +396,7 @@ export default function RealtimeBattleRoomPage() {
         router.push('/pvp');
     };
 
-    const isWinner = room?.winner === playerId;
+    const isWinner = localWinner ? (localWinner === playerId) : (room?.winner === playerId);
 
     return (
         <div className="min-h-screen bg-black text-white overflow-hidden">

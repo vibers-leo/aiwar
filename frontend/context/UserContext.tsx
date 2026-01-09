@@ -68,6 +68,9 @@ interface UserContextType {
     // [NEW] Research & Stage Progress
     research: any | null;
     stageProgress: any | null;
+    // [NEW] Main Deck
+    mainDeck: InventoryCard[];
+    updateMainDeck: (deck: InventoryCard[]) => Promise<void>;
 }
 
 const UserContext = createContext<UserContextType | undefined>(undefined);
@@ -90,6 +93,7 @@ export function UserProvider({ children }: { children: React.ReactNode }) {
     const [quests, setQuests] = useState<Quest[]>([]); // [NEW] Quest State
     const [research, setResearch] = useState<any | null>(null); // [NEW] Research State
     const [stageProgress, setStageProgress] = useState<any | null>(null); // [NEW] Stage Progress
+    const [mainDeck, setMainDeckState] = useState<InventoryCard[]>([]); // [NEW] Main Deck State
     const [isClaimingInSession, setIsClaimingInSession] = useState(false);
     const [mounted, setMounted] = useState(false);
     const [showSafeMode, setShowSafeMode] = useState(false); // [NEW] Safe Mode Recovery
@@ -112,6 +116,7 @@ export function UserProvider({ children }: { children: React.ReactNode }) {
         setQuests([]); // [NEW] Reset Quests
         setResearch(null); // [NEW] Reset Research
         setStageProgress(null); // [NEW] Reset Stage Progress
+        setMainDeckState([]); // [NEW] Reset Main Deck
         setError(null);
         gameStorage.clearAllSessionData();
     }, []);
@@ -153,19 +158,20 @@ export function UserProvider({ children }: { children: React.ReactNode }) {
     }, [user?.uid, quests, research, stageProgress]);
 
 
+    const initialSyncDone = useRef(false);
+
     useEffect(() => {
         setMounted(true);
-        console.log('✅ UserProvider Mounted - Version: 2026-01-04-STARTER-PACK-DEBUG-V3');
+        console.log('✅ UserProvider Mounted - Version: 2026-01-10-AVATAR-SYNC-FIX');
     }, []);
 
     useEffect(() => {
         if (!mounted) return;
-        if (authLoading) return; // [Fix] Wait for Firebase Auth to initialize before making decisions
+        if (authLoading) return;
 
         // --- LOGOUT GUARD ---
         const isPendingLogout = typeof window !== 'undefined' && localStorage.getItem('pending_logout') === 'true';
         if (isPendingLogout) {
-            console.log("[Auth] Pending logout detected. Suppressing all auth effects.");
             setLoading(false);
             return;
         }
@@ -173,124 +179,66 @@ export function UserProvider({ children }: { children: React.ReactNode }) {
         // --- SESSION ID MISMATCH DETECTION ---
         const lastKnownUid = localStorage.getItem('last_known_uid');
 
-        // Case 1: User is logged out (null).
-        // [CRITICAL FIX] We MUST release loading immediately here, regardless of profileLoading.
         if (!user) {
-            // Only finalize "Logged Out" state if Auth is truly done loading
-            console.log("[Auth] No user detected. Releasing loading state immediately.");
             setLoading(false);
-            // If there was a previous user, ensure their data is nuked.
             if (lastKnownUid) {
-                console.log(`[Auth] Cleanup required for previous UID (${lastKnownUid}).`);
                 resetState();
                 localStorage.removeItem('last_known_uid');
             }
+            initialSyncDone.current = false;
             return;
         }
 
-        // Case 2: User is logged in, but their UID does not match the last known UID.
         if (user && lastKnownUid && user.uid !== lastKnownUid) {
-            console.warn(`[Auth] 🚨 CRITICAL: UID mismatch detected! Firebase user (${user.uid}) does not match last session (${lastKnownUid}). Nuking local state NOW.`);
-            resetState(); // This is the critical cleanup step.
-
-            // CRITICAL FIX: Update the last_known_uid BEFORE reload to break the loop!
+            resetState();
             localStorage.setItem('last_known_uid', user.uid);
-
-            // We force a reload to be absolutely certain the application re-initializes cleanly.
             window.location.reload();
             return;
         }
 
-        // Case 3: User is logged in, profile is still loading.
-        // [NEW] Added failsafe timeout - if profile takes too long, release loading anyway
-        if (user && profileLoading) {
-            console.log(`[Auth] User ${user.uid} session is valid. Waiting for profile...`);
+        // --- PROFILE LOADING ---
+        if (user && profileLoading && !initialSyncDone.current) {
             setLoading(true);
-
-            // [SAFETY] Force release loading after 4 seconds if profile never loads
-            const profileWaitTimeout = setTimeout(() => {
-                console.warn(`[Auth] ⚠️ Profile loading timed out (4s). Force releasing loading state.`);
-                setLoading(false);
-            }, 4000);
-
-            // Cleanup on effect re-run or when profileLoading changes
-            return () => clearTimeout(profileWaitTimeout);
+            return;
         }
 
-        // Case 4: User and profile are fully loaded and session is consistent.
+        // --- DATA SYNC & STAT UPDATES ---
         if (user && profile) {
-            console.log(`[Auth] User ${user.uid} and profile loaded. Syncing data...`);
-            setLoading(true);
+            // Update stats whenever profile changes (reactive)
+            if (profile.coins < 0) {
+                setCoins(0);
+            } else {
+                setCoins(profile.coins);
+            }
+            setTokens(profile.tokens);
+            setLevel(profile.level);
+            setExperience(profile.exp);
 
-            // [NEW] 중복 닉네임 정리 플래그 체크
-            if ((profile as any).needsNicknameChange) {
-                console.warn(`[Auth] 🚨 Nickname conflict detected for ${user.uid}. Force change required.`);
+            // ONLY do full sync once per user session
+            if (initialSyncDone.current) {
+                return;
             }
 
-            // [Safety] Force release loading state after 12 seconds if sync hangs
+            setLoading(true);
             const forceReleaseTimer = setTimeout(() => {
-                setLoading(prev => {
-                    if (prev) {
-                        console.warn("⚠️ [Auth] Sync took too long (>12s). Force releasing loading state to prevent lock.");
-                        return false;
-                    }
-                    return prev;
-                });
+                setLoading(false);
             }, 12000);
 
-            // [NEW] Load inventory and subscriptions with commander logic
             const syncUserData = async () => {
                 try {
-                    // [NEW] Load quests, research, and stage progress
                     const { loadQuestsFromFirebase, getFreshQuestState, saveQuestsToFirebase } = await import('@/lib/quest-system');
                     const { loadResearchFromFirestore, loadStageProgressFromFirestore } = await import('@/lib/firebase-db');
 
-                    console.log(`[Sync] 📥 Phase 1: Loading Quests for ${user.uid}...`);
-                    let loadedQuests = await loadQuestsFromFirebase(user.uid);
+                    console.log(`[Sync] 📥 Initial Full Sync for ${user.uid}...`);
 
-                    if (!loadedQuests) {
-                        console.log("[QuestSystem] No remote quests found. Initialization with FRESH state (Strict Safe Mode).");
-                        loadedQuests = getFreshQuestState();
-                        await saveQuestsToFirebase(user.uid, loadedQuests);
-                    }
-                    setQuests(loadedQuests);
-
-                    // Load research data
-                    console.log(`[Sync] 📥 Phase 2: Loading Research & Progress...`);
-                    const loadedResearch = await loadResearchFromFirestore(user.uid);
-                    if (loadedResearch) {
-                        setResearch(loadedResearch);
-                    } else {
-                        console.log("[Research] No remote research found. Will initialize on first research page visit.");
-                    }
-
-                    // Load stage progress
-                    const loadedProgress = await loadStageProgressFromFirestore(user.uid);
-                    if (loadedProgress) {
-                        setStageProgress(loadedProgress);
-                    } else {
-                        console.log("[StageProgress] No remote progress found. Will initialize on first battle.");
-                    }
-
-                    // Sync was successful, so we can now set the last known UID to this user.
-                    localStorage.setItem('last_known_uid', user.uid);
-
-                    if (profile.coins < 0) {
-                        console.warn(`[Auto-Heal] Negative balance of ${profile.coins} detected. Resetting to 0.`);
-                        await firebaseUpdateCoins(Math.abs(profile.coins), user.uid);
-                        setCoins(0);
-                    } else {
-                        setCoins(profile.coins);
-                    }
-
-                    setTokens(profile.tokens);
-                    setLevel(profile.level);
-                    setExperience(profile.exp);
-
-                    const [cards, subs] = await Promise.all([
+                    // Parallel load for performance
+                    const [loadedQuests, loadedResearch, loadedProgress, cards, subs] = await Promise.all([
+                        loadQuestsFromFirebase(user.uid),
+                        loadResearchFromFirestore(user.uid),
+                        loadStageProgressFromFirestore(user.uid),
                         loadInventory(user.uid),
                         fetchUserSubscriptions(user.uid),
-                        syncSubscriptionsWithFirebase(user.uid)
+                        syncSubscriptionsWithFirebase(user.uid) // This also returns a promise, but its result isn't directly used here
                     ]);
 
                     const formattedCards = cards.map(c => ({
@@ -368,6 +316,11 @@ export function UserProvider({ children }: { children: React.ReactNode }) {
                             console.warn("[SelfHealing] Failed to save avatar:", e)
                         );
                     }
+
+                    // [NEW] Load Main Deck
+                    const { getUserMainDeck } = await import('@/lib/user-profile-utils');
+                    const deck = await getUserMainDeck(user.uid);
+                    setMainDeckState(deck);
                 } catch (error) {
                     console.error("[Auth] Failed to sync user data:", error);
                 } finally {
@@ -448,6 +401,11 @@ export function UserProvider({ children }: { children: React.ReactNode }) {
                 const subKey = `factionSubscriptions_${user.uid}`;
                 localStorage.setItem(subKey, JSON.stringify(fetchedSubscriptions));
             }
+
+            // [NEW] Refresh Main Deck
+            const { getUserMainDeck } = await import('@/lib/user-profile-utils');
+            const deck = await getUserMainDeck(user.uid);
+            setMainDeckState(deck);
 
             // [QUEST] Sync Quests
             const { loadQuestsFromFirebase, getFreshQuestState, saveQuestsToFirebase } = await import('@/lib/quest-system');
@@ -803,6 +761,17 @@ export function UserProvider({ children }: { children: React.ReactNode }) {
         );
     }
 
+    const updateMainDeck = useCallback(async (deck: InventoryCard[]) => {
+        if (!user?.uid) return;
+        try {
+            const { saveUserMainDeck } = await import('@/lib/user-profile-utils');
+            await saveUserMainDeck(user.uid, deck);
+            setMainDeckState(deck);
+        } catch (error) {
+            console.error('Failed to update main deck:', error);
+        }
+    }, [user?.uid]);
+
     return (
         <UserContext.Provider
             value={{
@@ -821,6 +790,8 @@ export function UserProvider({ children }: { children: React.ReactNode }) {
                 handleSignOut,
                 research,          // [NEW]
                 stageProgress,     // [NEW]
+                mainDeck,          // [NEW]
+                updateMainDeck     // [NEW]
             }}
         >
             {isLoggingOut && (

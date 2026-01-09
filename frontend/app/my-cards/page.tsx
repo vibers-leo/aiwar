@@ -38,7 +38,7 @@ export default function MyCardsPage() {
     const router = useRouter();
     const { t, language } = useTranslation();
     const footer = useFooter();
-    const { inventory: globalInventory, loading: globalLoading, refreshData } = useUser();
+    const { inventory: globalInventory, loading: globalLoading, refreshData, mainDeck, updateMainDeck } = useUser();
     const { showAlert } = useAlert();
     const { openCardModal } = useCardModal();
 
@@ -47,6 +47,9 @@ export default function MyCardsPage() {
     const [sortBy, setSortBy] = useState<SortOption>('rarity'); // Default by rarity
     const [sortAsc, setSortAsc] = useState(true); // Low to High (Common to Commander)
     const [filterRarity, setFilterRarity] = useState<FilterOption>('all');
+    const [isManageMode, setIsManageMode] = useState(false);
+    const [tempMainDeck, setTempMainDeck] = useState<InventoryCard[]>([]);
+    const [isSaving, setIsSaving] = useState(false);
 
     useEffect(() => {
         setMounted(true);
@@ -112,43 +115,131 @@ export default function MyCardsPage() {
             {/* Dev Buttons Removed */}
 
             {/* Main Cards Section - 주력카드 */}
-            {!loading && cards.length > 0 && (
+            {!loading && (
                 <div className="mb-8">
-                    <h3 className="text-lg font-bold text-white mb-4 flex items-center gap-2">
-                        <span className="text-amber-400">⭐</span>
-                        {language === 'ko' ? '주력 카드' : 'Main Cards'}
-                        <span className="text-xs text-white/40 font-normal">
-                            ({language === 'ko' ? '등급별 최고 레벨' : 'Highest level per rarity'})
-                        </span>
-                    </h3>
-                    <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-6 gap-4 bg-gradient-to-br from-amber-900/10 to-purple-900/10 p-4 rounded-xl border border-amber-500/20">
-                        {(() => {
-                            const mainCards = getMainCards(cards);
+                    <div className="flex items-center justify-between mb-4">
+                        <h3 className="text-lg font-bold text-white flex items-center gap-2">
+                            <span className="text-amber-400">⭐</span>
+                            {language === 'ko' ? '나의 대표 덱' : 'My Main Deck'}
+                            <span className="text-xs text-white/40 font-normal">
+                                ({mainDeck.length > 0 ? (language === 'ko' ? '설정됨' : 'Set') : (language === 'ko' ? '미설정 - 자동 추천 중' : 'Not set - Auto 추천')})
+                            </span>
+                        </h3>
+                        <button
+                            onClick={() => {
+                                if (isManageMode) {
+                                    setIsManageMode(false);
+                                    setTempMainDeck([]);
+                                } else {
+                                    setIsManageMode(true);
+                                    setTempMainDeck([...mainDeck]);
+                                }
+                            }}
+                            className={cn(
+                                "px-4 py-1.5 rounded-full text-xs font-bold transition-all border shadow-lg",
+                                isManageMode
+                                    ? "bg-red-500/20 text-red-400 border-red-500/50 hover:bg-red-500/30"
+                                    : "bg-cyan-500/20 text-cyan-400 border-cyan-500/50 hover:bg-cyan-500/30"
+                            )}
+                        >
+                            {isManageMode ? (language === 'ko' ? '취소' : 'CANCEL') : (language === 'ko' ? '덱 관리' : 'MANAGE DECK')}
+                        </button>
+                    </div>
 
-                            return mainCards.map(card => {
+                    <div className={cn(
+                        "grid grid-cols-2 sm:grid-cols-3 md:grid-cols-6 gap-4 p-4 rounded-xl border transition-all",
+                        isManageMode ? "bg-cyan-500/5 border-cyan-500/40 ring-1 ring-cyan-500/20" : "bg-gradient-to-br from-amber-900/10 to-purple-900/10 border-amber-500/20"
+                    )}>
+                        {(() => {
+                            const displayDeck = isManageMode ? tempMainDeck : (mainDeck.length > 0 ? mainDeck : getMainCards(cards));
+
+                            if (displayDeck.length === 0) {
+                                return (
+                                    <div className="col-span-full py-8 text-center text-white/20 text-sm font-mono">
+                                        {language === 'ko' ? '선택된 카드가 없습니다' : 'NO_CARDS_SELECTED'}
+                                    </div>
+                                );
+                            }
+
+                            return displayDeck.map((card, idx) => {
                                 const rarity = card.rarity || 'common';
                                 return (
                                     <motion.div
-                                        key={rarity}
+                                        key={`${card.instanceId}-${idx}`}
                                         initial={{ opacity: 0, scale: 0.9 }}
                                         animate={{ opacity: 1, scale: 1 }}
                                         className="cursor-pointer relative"
-                                        onClick={() => openCardModal(card)}
+                                        onClick={() => {
+                                            if (isManageMode) {
+                                                setTempMainDeck(prev => prev.filter(c => c.instanceId !== card.instanceId));
+                                            } else {
+                                                openCardModal(card);
+                                            }
+                                        }}
                                     >
                                         <GameCard card={card} isSelected={false} />
-                                        {/* Rarity Label */}
-                                        <div className="absolute -bottom-2 left-1/2 -translate-x-1/2 px-2 py-0.5 bg-black/80 border border-white/20 rounded text-[8px] font-bold text-white/60 whitespace-nowrap">
-                                            {rarity === 'commander' ? '군단장' :
-                                                rarity === 'unique' ? '유니크' :
-                                                    rarity === 'legendary' ? '전설' :
-                                                        rarity === 'epic' ? '영웅' :
-                                                            rarity === 'rare' ? '희귀' : '일반'}
-                                        </div>
+                                        {isManageMode && (
+                                            <div className="absolute top-1 right-1 w-5 h-5 bg-red-500 rounded-full flex items-center justify-center shadow-lg border border-white/20">
+                                                <span className="text-white text-[10px] font-bold">×</span>
+                                            </div>
+                                        )}
+                                        {!isManageMode && (
+                                            <div className="absolute -bottom-2 left-1/2 -translate-x-1/2 px-2 py-0.5 bg-black/80 border border-white/20 rounded text-[8px] font-bold text-white/60 whitespace-nowrap">
+                                                {rarity === 'commander' ? '군단장' :
+                                                    rarity === 'unique' ? '유니크' :
+                                                        rarity === 'legendary' ? '전설' :
+                                                            rarity === 'epic' ? '영웅' :
+                                                                rarity === 'rare' ? '희귀' : '일반'}
+                                            </div>
+                                        )}
                                     </motion.div>
                                 );
                             });
                         })()}
                     </div>
+
+                    {isManageMode && (
+                        <div className="mt-4 flex items-center justify-between bg-cyan-900/20 p-4 rounded-xl border border-cyan-500/30">
+                            <div className="text-sm">
+                                <span className="text-cyan-400 font-bold">{tempMainDeck.length}</span>
+                                <span className="text-white/60"> / 5-6 {language === 'ko' ? '장 선택됨' : 'cards selected'}</span>
+                                <p className="text-[10px] text-white/40 mt-1">
+                                    {language === 'ko' ? '* 아래 목록에서 카드를 클릭하여 추가하세요.' : '* Click cards below to add.'}
+                                </p>
+                            </div>
+                            <button
+                                disabled={tempMainDeck.length < 5 || isSaving}
+                                onClick={async () => {
+                                    setIsSaving(true);
+                                    try {
+                                        await updateMainDeck(tempMainDeck);
+                                        setIsManageMode(false);
+                                        showAlert({
+                                            title: language === 'ko' ? '성공' : 'SUCCESS',
+                                            message: language === 'ko' ? '주력 덱이 저장되었습니다!' : 'Main deck saved successfully!',
+                                            type: 'success'
+                                        });
+                                    } catch (err) {
+                                        showAlert({
+                                            title: language === 'ko' ? '오류' : 'ERROR',
+                                            message: language === 'ko' ? '저장에 실패했습니다.' : 'Failed to save deck.',
+                                            type: 'error'
+                                        });
+                                    } finally {
+                                        setIsSaving(false);
+                                    }
+                                }}
+                                className={cn(
+                                    "px-8 py-2 rounded-lg font-black orbitron italic transition-all shadow-[0_0_20px_rgba(6,182,212,0.3)]",
+                                    tempMainDeck.length >= 5 && !isSaving
+                                        ? "bg-cyan-500 text-black hover:bg-cyan-400 scale-105"
+                                        : "bg-white/5 text-white/20 cursor-not-allowed border border-white/10"
+                                )}
+                            >
+                                {isSaving ? 'SAVING...' : (language === 'ko' ? '저장하기' : 'SAVE DECK')}
+                            </button>
+                        </div>
+                    )}
                 </div>
             )}
 
@@ -228,9 +319,29 @@ export default function MyCardsPage() {
                             animate={{ opacity: 1, y: 0 }}
                             transition={{ delay: i * 0.02 }}
                             className="cursor-pointer"
-                            onClick={() => openCardModal(card)}
+                            onClick={() => {
+                                if (isManageMode) {
+                                    const isSelected = tempMainDeck.find(c => c.instanceId === card.instanceId);
+                                    if (isSelected) {
+                                        setTempMainDeck(prev => prev.filter(c => c.instanceId !== card.instanceId));
+                                    } else if (tempMainDeck.length < 6) {
+                                        setTempMainDeck(prev => [...prev, card]);
+                                    } else {
+                                        showAlert({
+                                            title: language === 'ko' ? '알림' : 'NOTICE',
+                                            message: language === 'ko' ? '최대 6장까지 선택 가능합니다.' : 'Maximum 6 cards allowed.',
+                                            type: 'warning'
+                                        });
+                                    }
+                                } else {
+                                    openCardModal(card);
+                                }
+                            }}
                         >
-                            <GameCard card={card} isSelected={false} />
+                            <GameCard
+                                card={card}
+                                isSelected={isManageMode && !!tempMainDeck.find(c => c.instanceId === card.instanceId)}
+                            />
                             {card.isLocked && (
                                 <div className="absolute top-2 left-2 w-6 h-6 bg-amber-500/80 rounded-full flex items-center justify-center pointer-events-none">
                                     <Lock size={12} className="text-black" />

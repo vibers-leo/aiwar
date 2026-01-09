@@ -15,6 +15,7 @@ import { useAlert } from '@/context/AlertContext';
 import { cn } from '@/lib/utils';
 import { User, Trophy, Target, Clock, UserPlus, Swords, Share2, ArrowLeft } from 'lucide-react';
 import { InventoryCard } from '@/lib/inventory-system';
+import { sendBattleInvitation } from '@/lib/battle-invitation-system';
 
 export default function UserProfilePage() {
     const params = useParams();
@@ -213,7 +214,30 @@ export default function UserProfilePage() {
                                         )}
                                     </button>
                                     <button
-                                        onClick={() => console.log('Battle invite:', userId)}
+                                        onClick={async () => {
+                                            if (!user?.uid || !myProfile || !profile) return;
+                                            try {
+                                                const result = await sendBattleInvitation(
+                                                    user.uid,
+                                                    myProfile.nickname || user.displayName || 'Player',
+                                                    myProfile.avatarUrl || user.photoURL || '',
+                                                    userId,
+                                                    profile.nickname || `Player_${userId.slice(0, 4)}`,
+                                                    'sudden-death',
+                                                    myProfile.level || 1
+                                                );
+
+                                                if (result.success) {
+                                                    showAlert({
+                                                        title: '초대 전송',
+                                                        message: '대전 초대를 보냈습니다. 상대방의 수락을 기다립니다.',
+                                                        type: 'success'
+                                                    });
+                                                }
+                                            } catch (error) {
+                                                console.error('Invite error:', error);
+                                            }
+                                        }}
                                         className="px-4 py-2 bg-red-500/20 hover:bg-red-500/30 border border-red-500/50 text-red-400 rounded-lg transition-all flex items-center gap-2"
                                     >
                                         <Swords size={18} />
