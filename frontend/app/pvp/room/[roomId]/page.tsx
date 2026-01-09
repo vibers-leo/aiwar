@@ -344,11 +344,14 @@ export default function RealtimeBattleRoomPage() {
             }
         };
 
-        await updateBattleRoom(roomId, {
-            phase: 'finished',
-            winner: winnerId ?? undefined,
-            finished: true
-        });
+        // [FIX] Only the winner updates the room to prevent both players from being winners
+        if (isWin) {
+            await updateBattleRoom(roomId, {
+                phase: 'finished',
+                winner: winnerId,
+                finished: true
+            });
+        }
 
         await applyBattleResult(
             battleResult,

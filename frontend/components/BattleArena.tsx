@@ -255,6 +255,7 @@ export function BattleArena({
                 'system'
             );
 
+            // [FIX] Increased delay to 3 seconds for better visibility
             setTimeout(() => {
                 if (round.winner === 'player') {
                     setPlayerWins(prev => prev + 1);
@@ -283,8 +284,9 @@ export function BattleArena({
                     addBattleLog(t('pvp.log.roundDraw'), 'draw');
                 }
 
-                setTimeout(resolve, 500);
-            }, 1500);
+                // [FIX] Increased delay to 1.5 seconds between rounds
+                setTimeout(resolve, 1500);
+            }, 3000);
         });
     };
 
