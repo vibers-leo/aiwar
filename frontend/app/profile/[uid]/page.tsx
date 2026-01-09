@@ -7,9 +7,11 @@ import CyberPageLayout from '@/components/CyberPageLayout';
 import GameCard from '@/components/GameCard';
 import { getUserProfile } from '@/lib/firebase-db';
 import { UserProfile } from '@/lib/firebase-db';
+import { sendFriendRequest } from '@/lib/friend-system';
 import { getRankTier } from '@/lib/ranking-utils';
 import { getTierColor, getWinRateColor, formatRelativeTime, getUserMainDeck, getUserBattleHistory, BattleHistory } from '@/lib/user-profile-utils';
 import { useUser } from '@/context/UserContext';
+import { useAlert } from '@/context/AlertContext';
 import { cn } from '@/lib/utils';
 import { User, Trophy, Target, Clock, UserPlus, Swords, Share2, ArrowLeft } from 'lucide-react';
 import { InventoryCard } from '@/lib/inventory-system';
@@ -18,15 +20,55 @@ export default function UserProfilePage() {
     const params = useParams();
     const router = useRouter();
     const userId = params?.uid as string;
-    const { user } = useUser();
+    const { user, profile: myProfile } = useUser();
+    const { showAlert } = useAlert();
 
     const [profile, setProfile] = useState<UserProfile | null>(null);
     const [mainDeck, setMainDeck] = useState<InventoryCard[]>([]);
     const [battleHistory, setBattleHistory] = useState<BattleHistory[]>([]);
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState<string | null>(null);
+    const [sendingRequest, setSendingRequest] = useState(false);
 
     const isMyProfile = user?.uid === userId;
+
+    // 친구 추가 핸들러
+    const handleAddFriend = async () => {
+        if (!user?.uid || !myProfile || !profile) return;
+
+        setSendingRequest(true);
+        try {
+            const result = await sendFriendRequest(
+                user.uid,
+                myProfile,
+                userId,
+                profile
+            );
+
+            if (result.success) {
+                showAlert({
+                    title: '성공',
+                    message: '친구 요청을 보냈습니다!',
+                    type: 'success'
+                });
+            } else {
+                showAlert({
+                    title: '오류',
+                    message: result.message || '친구 요청에 실패했습니다.',
+                    type: 'error'
+                });
+            }
+        } catch (error) {
+            console.error('Friend request error:', error);
+            showAlert({
+                title: '오류',
+                message: '친구 요청 중 오류가 발생했습니다.',
+                type: 'error'
+            });
+        } finally {
+            setSendingRequest(false);
+        }
+    };
 
     useEffect(() => {
         async function loadProfile() {
@@ -154,11 +196,21 @@ export default function UserProfilePage() {
                             {!isMyProfile && (
                                 <div className="flex gap-3 justify-center md:justify-start">
                                     <button
-                                        onClick={() => console.log('Add friend:', userId)}
-                                        className="px-4 py-2 bg-cyan-500/20 hover:bg-cyan-500/30 border border-cyan-500/50 text-cyan-400 rounded-lg transition-all flex items-center gap-2"
+                                        onClick={handleAddFriend}
+                                        disabled={sendingRequest}
+                                        className="px-4 py-2 bg-cyan-500/20 hover:bg-cyan-500/30 border border-cyan-500/50 text-cyan-400 rounded-lg transition-all flex items-center gap-2 disabled:opacity-50 disabled:cursor-not-allowed"
                                     >
-                                        <UserPlus size={18} />
-                                        친구 추가
+                                        {sendingRequest ? (
+                                            <>
+                                                <div className="w-4 h-4 border-2 border-cyan-400 border-t-transparent rounded-full animate-spin" />
+                                                전송 중...
+                                            </>
+                                        ) : (
+                                            <>
+                                                <UserPlus size={18} />
+                                                친구 추가
+                                            </>
+                                        )}
                                     </button>
                                     <button
                                         onClick={() => console.log('Battle invite:', userId)}
@@ -168,7 +220,14 @@ export default function UserProfilePage() {
                                         대전 신청
                                     </button>
                                     <button
-                                        onClick={() => console.log('Share profile:', userId)}
+                                        onClick={() => {
+                                            navigator.clipboard.writeText(window.location.href);
+                                            showAlert({
+                                                title: '복사 완료',
+                                                message: '프로필 링크가 클립보드에 복사되었습니다.',
+                                                type: 'success'
+                                            });
+                                        }}
                                         className="px-4 py-2 bg-white/10 hover:bg-white/20 border border-white/20 text-white rounded-lg transition-all"
                                     >
                                         <Share2 size={18} />
