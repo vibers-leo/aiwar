@@ -46,12 +46,12 @@ class SoundManager {
         try {
             const response = await fetch(url, { method: 'HEAD' });
             if (!response.ok) {
-                console.warn(`[SoundManager] BGM file not found: ${url}`);
+                console.debug(`[SoundManager] BGM file not found: ${url}`);
                 this.missingFiles.add(url);
                 return;
             }
         } catch {
-            console.warn(`[SoundManager] Could not check BGM file: ${url}`);
+            console.debug(`[SoundManager] Could not check BGM file: ${url}`);
             this.missingFiles.add(url);
             return;
         }

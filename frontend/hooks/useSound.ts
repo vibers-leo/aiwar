@@ -25,8 +25,8 @@ export const useSound = () => {
                     // console.warn(`Audio play failed for ${type} (Auto-play policy?):`, error);
                 });
             }
-        } catch (error) {
-            console.warn(`Failed to play sound: ${type}`, error);
+        } catch {
+            // Sound file missing - silent fail
         }
     }, []);
 
