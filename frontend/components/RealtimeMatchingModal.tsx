@@ -38,6 +38,7 @@ export default function RealtimeMatchingModal({
     // [FIX] Store unsubscribe functions in refs for cleanup
     const matchListenerRef = useRef<(() => void) | null>(null);
     const waitingRoomListenerRef = useRef<(() => void) | null>(null);
+    const pollIntervalRef = useRef<NodeJS.Timeout | null>(null);
     const timeoutRef = useRef<NodeJS.Timeout | null>(null);
 
     // 대기 시간 카운터
@@ -95,7 +96,10 @@ export default function RealtimeMatchingModal({
                 try {
                     const matchFound = await findMatch(battleMode, state.userId, playerLevel);
                     if (matchFound.success && matchFound.roomId) {
-                        clearInterval(pollInterval);
+                        if (pollIntervalRef.current) {
+                            clearInterval(pollIntervalRef.current);
+                            pollIntervalRef.current = null;
+                        }
                         // 리스너 정리
                         if (matchListenerRef.current) {
                             matchListenerRef.current();
@@ -113,10 +117,14 @@ export default function RealtimeMatchingModal({
                     console.warn('Polling error:', pollErr);
                 }
             }, 3000);
+            pollIntervalRef.current = pollInterval;
 
             // [FIX] 60초 후 타임아웃 (ref에 저장)
             timeoutRef.current = setTimeout(async () => {
-                clearInterval(pollInterval);
+                if (pollIntervalRef.current) {
+                    clearInterval(pollIntervalRef.current);
+                    pollIntervalRef.current = null;
+                }
                 // 리스너 정리
                 if (matchListenerRef.current) {
                     matchListenerRef.current();
@@ -315,6 +323,12 @@ export default function RealtimeMatchingModal({
         if (waitingRoomListenerRef.current) {
             waitingRoomListenerRef.current();
             waitingRoomListenerRef.current = null;
+        }
+
+        // 폴링 타이머 정리
+        if (pollIntervalRef.current) {
+            clearInterval(pollIntervalRef.current);
+            pollIntervalRef.current = null;
         }
 
         // 타임아웃 정리

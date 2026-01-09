@@ -121,6 +121,8 @@ export async function findMatch(
         if (waitTimeSec > 15) tolerance = 999;
         else if (waitTimeSec > 5) tolerance = 7;
 
+        console.log(`🔍 [PVP] Matching... Wait: ${Math.floor(waitTimeSec)}s, Tolerance: ±${tolerance}, Modal: ${battleMode}`);
+
         // 원자적 매칭을 위해 트랜잭션 사용
         for (const [opponentId, opponent] of Object.entries(players) as [string, MatchmakingQueue][]) {
             if (opponentId === myPlayerId) continue;
@@ -153,6 +155,7 @@ export async function findMatch(
                         roomId
                     });
 
+                    console.log(`✨ [PVP] Real Player Matched! Room: ${roomId}, Opponent: ${opponent.playerName}`);
                     return {
                         success: true,
                         roomId,
@@ -165,6 +168,7 @@ export async function findMatch(
 
         // [FIX] 10초 이상 대기 시 고스트 AI 매칭 시도 (더 빠른 매칭)
         if (waitTimeSec > 10) {
+            console.log(`🤖 [PVP] No real players found. Triggering Ghost AI fallback...`);
             let ghostUser: { uid: string; nickname: string; level: number };
 
             try {
