@@ -552,22 +552,28 @@ export default function RealtimeBattleRoomPage() {
 
                         {/* 선택된 카드 */}
                         <div className="max-w-5xl mx-auto mb-6">
-                            <div className="flex items-center gap-3 p-4 bg-black/50 backdrop-blur-sm rounded-2xl border border-white/10">
-                                <span className="text-white/60 font-bold mr-2">{selectedCards.length}/6</span>
-                                {selectedCards.map((card, i) => (
-                                    <motion.div
-                                        key={i}
-                                        initial={{ scale: 0 }}
-                                        animate={{ scale: 1 }}
-                                        className="w-14 h-20 cursor-pointer"
-                                        onClick={() => setSelectedCards(prev => prev.filter(c => c.id !== card.id))}
-                                    >
-                                        <GameCard card={card} />
-                                    </motion.div>
-                                ))}
-                                {Array(6 - selectedCards.length).fill(null).map((_, i) => (
-                                    <div key={`empty-${i}`} className="w-14 h-20 border-2 border-dashed border-white/20 rounded-lg" />
-                                ))}
+                            <div className="flex flex-col md:flex-row items-center gap-4 p-4 bg-black/50 backdrop-blur-sm rounded-2xl border border-white/10">
+                                <div className="flex items-center gap-3 flex-1">
+                                    <span className="text-white/60 font-bold mr-2">{selectedCards.length}/6</span>
+                                    <div className="grid grid-cols-6 gap-3 flex-1 max-w-sm">
+                                        {selectedCards.map((card, i) => (
+                                            <motion.div
+                                                key={i}
+                                                initial={{ scale: 0 }}
+                                                animate={{ scale: 1 }}
+                                                className="w-12 h-16 cursor-pointer"
+                                                onClick={() => setSelectedCards(prev => prev.filter(c => c.id !== card.id))}
+                                            >
+                                                <GameCard card={card} />
+                                            </motion.div>
+                                        ))}
+                                        {Array(6 - selectedCards.length).fill(null).map((_, i) => (
+                                            <div key={`empty-${i}`} className="w-12 h-16 border-2 border-dashed border-white/20 rounded-lg flex items-center justify-center text-white/10">
+                                                <span className="text-xs">{i + selectedCards.length + 1}</span>
+                                            </div>
+                                        ))}
+                                    </div>
+                                </div>
 
                                 <div className="ml-auto flex gap-2">
                                     <button
@@ -658,7 +664,7 @@ export default function RealtimeBattleRoomPage() {
                         }}
                         onFinish={handleBattleFinish}
                         title="REALTIME BATTLE"
-                        maxRounds={room?.maxRounds || 5}
+                        maxRounds={room?.maxRounds || 6}
                         enemySelectionMode="ordered"
                     />
                 )}

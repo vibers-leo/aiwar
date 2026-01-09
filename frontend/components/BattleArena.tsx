@@ -246,12 +246,19 @@ export function BattleArena({
     };
 
     const getTypeIcon = (type: string | undefined) => {
-        switch (type) {
-            case 'EFFICIENCY': return '✊';
-            case 'COST': return '✌️';
-            case 'CREATIVITY': return '✋';
-            default: return '❓';
-        }
+        const icon = (() => {
+            switch (type) {
+                case 'EFFICIENCY': return '✊';
+                case 'COST': return '✌️';
+                case 'CREATIVITY': return '✋';
+                default: return '❓';
+            }
+        })();
+        return (
+            <div className="w-8 h-8 rounded-full bg-black/40 backdrop-blur-sm border border-white/10 flex items-center justify-center text-sm shadow-inner group-hover:scale-110 transition-transform">
+                {icon}
+            </div>
+        );
     };
 
     return (
@@ -305,7 +312,7 @@ export function BattleArena({
                                 <div className="w-1 h-3 bg-red-500"></div>
                                 <h2 className="text-[10px] font-black text-white orbitron tracking-tighter uppercase">{t('pvp.battle.enemyArchitecture')}</h2>
                             </div>
-                            <div className="grid grid-cols-6 gap-3">
+                            <div className="grid grid-cols-6 gap-4">
                                 {enemyDeck.map((card, index) => (
                                     <motion.div
                                         key={card.id || index}
@@ -313,7 +320,7 @@ export function BattleArena({
                                         animate={{ opacity: 1, scale: 1 }}
                                         className={cn("bg-black/40 border rounded-xl p-2 text-center transition-all duration-300", getTypeGlow(card.type))}
                                     >
-                                        <div className="text-lg mb-0.5 filter drop-shadow-md">{getTypeIcon(card.type)}</div>
+                                        <div className="flex justify-center mb-1 drop-shadow-md">{getTypeIcon(card.type)}</div>
                                         <div className="text-[8px] font-bold text-gray-400 truncate mb-0.5">{getCardName(card.templateId || card.id || '', card.name || '', lang)}</div>
                                         <div className="text-base font-black text-red-500 orbitron leading-none">{(card.stats?.totalPower || 0)}</div>
                                     </motion.div>
@@ -332,7 +339,7 @@ export function BattleArena({
                                     {t('pvp.battle.randomize')}
                                 </Button>
                             </div>
-                            <div className="grid grid-cols-6 gap-3">
+                            <div className="grid grid-cols-6 gap-4">
                                 {selectedOrder.map((cardIndex, position) => {
                                     const card = playerDeck[cardIndex];
                                     return (
@@ -345,7 +352,7 @@ export function BattleArena({
                                                 <button onClick={() => moveCardUp(position)} disabled={position === 0} className="w-5 h-5 bg-white/10 rounded text-white text-[9px] flex items-center justify-center disabled:opacity-20"><ChevronUp size={12} /></button>
                                                 <button onClick={() => moveCardDown(position)} disabled={position >= selectedOrder.length - 1} className="w-5 h-5 bg-white/10 rounded text-white text-[9px] flex items-center justify-center disabled:opacity-20"><ChevronDown size={12} /></button>
                                             </div>
-                                            <div className="text-lg mb-0.5">{getTypeIcon(card.type)}</div>
+                                            <div className="flex justify-center mb-1">{getTypeIcon(card.type)}</div>
                                             <div className="text-[8px] font-bold text-gray-400 truncate mb-0.5">{getCardName(card.templateId || card.id || '', card.name || '', lang)}</div>
                                             <div className="text-base font-black text-blue-500 orbitron leading-none">{(card.stats?.totalPower || 0)}</div>
                                         </motion.div>
@@ -382,7 +389,7 @@ export function BattleArena({
                             </motion.div>
                         </div>
 
-                        <div className="grid grid-cols-6 gap-3 h-16">
+                        <div className="grid grid-cols-6 gap-4 h-16">
                             {enemyDeck.map((card, index) => (
                                 <AnimatePresence key={card.id || index}>
                                     {aliveEnemyCards[index] && (
@@ -432,7 +439,7 @@ export function BattleArena({
                             </AnimatePresence>
                         </div>
 
-                        <div className="grid grid-cols-6 gap-3 h-16 mb-4">
+                        <div className="grid grid-cols-6 gap-4 h-16 mb-4">
                             {selectedOrder.map(i => playerDeck[i]).map((card, index) => (
                                 <AnimatePresence key={card.id || index}>
                                     {alivePlayerCards[index] && (
