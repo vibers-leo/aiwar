@@ -1399,34 +1399,58 @@ export async function updateUniqueRequestStatus(requestId: string, status: 'pend
     }
 }
 /**
- * 리더보드 데이터 로드
- */
-/**
  * 리더보드 데이터 로드 (실제 DB 연동)
+ * [FIX] 모든 유저 표시 (기본 레이팅 1000 포함)
+ * [FIX] Firestore 인덱스 에러 처리 개선
  */
-export async function getLeaderboardData(limitCount = 50): Promise<UserProfile[]> {
+export async function getLeaderboardData(limitCount = 100): Promise<UserProfile[]> {
     if (!isFirebaseConfigured || !db) return [];
 
     try {
         const usersRef = collection(db, 'users');
-        // 레벨 내림차순 -> 경험치 내림차순 정렬
-        // 주의: Firestore 복합 색인(Composite Index)이 필요할 수 있음.
-        // 에러 발생 시 콘솔의 링크를 클릭하여 색인 생성 필요.
-        const q = query(
-            usersRef,
-            orderBy('rating', 'desc'),
-            orderBy('level', 'desc'),
-            limit(limitCount)
-        );
 
-        const snapshot = await getDocs(q);
-        return snapshot.docs.map(doc => {
-            const data = doc.data();
-            return {
-                uid: doc.id,
-                ...data
-            } as UserProfile;
-        });
+        // 먼저 복합 인덱스를 사용한 쿼리 시도
+        try {
+            const q = query(
+                usersRef,
+                orderBy('rating', 'desc'),
+                orderBy('level', 'desc'),
+                orderBy('createdAt', 'desc'), // 동점자 처리
+                limit(limitCount)
+            );
+
+            const snapshot = await getDocs(q);
+            return snapshot.docs.map(doc => {
+                const data = doc.data();
+                return {
+                    uid: doc.id,
+                    ...data
+                } as UserProfile;
+            });
+        } catch (indexError: any) {
+            // 복합 인덱스가 없는 경우 단순 정렬로 폴백
+            if (indexError.code === 'failed-precondition') {
+                console.warn('⚠️ Firestore 복합 인덱스 필요. 단순 정렬로 폴백합니다.');
+                console.warn('인덱스 생성 링크:', indexError.message);
+
+                // rating만으로 정렬
+                const fallbackQuery = query(
+                    usersRef,
+                    orderBy('rating', 'desc'),
+                    limit(limitCount)
+                );
+
+                const snapshot = await getDocs(fallbackQuery);
+                return snapshot.docs.map(doc => {
+                    const data = doc.data();
+                    return {
+                        uid: doc.id,
+                        ...data
+                    } as UserProfile;
+                });
+            }
+            throw indexError; // 다른 에러는 외부로 전파
+        }
     } catch (error) {
         console.error('❌ 리더보드 로드 실패:', error);
         return [];

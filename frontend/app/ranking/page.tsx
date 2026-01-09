@@ -48,16 +48,18 @@ export default function RankingPage() {
 
                 setRankings(rankingData);
 
-                // Find "My Rank" properly
-                // Note: pvpStats is from local storage, we might want to check against the fetched list
-                // For now, let's try to match by current user ID if available (needs user context)
+                // [FIX] Find current user's rank
+                if (user?.uid) {
+                    const myRankEntry = rankingData.find(r => r.playerId === user.uid);
+                    setMyRank(myRankEntry || null);
+                }
             } catch (error) {
                 console.error("Failed to fetch rankings:", error);
             }
         }
 
         fetchRanking();
-    }, []);
+    }, [user]);
 
     const filteredRankings = rankings.filter(r => {
         if (filter === 'top10') return r.rank <= 10;
@@ -135,10 +137,22 @@ export default function RankingPage() {
                     </thead>
                     <tbody>
                         {filteredRankings.map((entry, i) => {
-                            const isMe = entry.playerId === 'player';
+                            const isMe = entry.playerId === user?.uid; // [FIX] Use actual user ID
                             const tier = getRankTier(entry.rating);
                             return (
-                                <tr key={entry.playerId} className={cn("border-t border-white/5 transition-colors hover:bg-white/5", isMe && "bg-pink-500/10")}>
+                                <tr
+                                    key={entry.playerId}
+                                    onClick={() => {
+                                        // [TODO] Navigate to profile page when implemented
+                                        // router.push(`/profile/${entry.playerId}`);
+                                        console.log('Profile click:', entry.playerId, entry.playerName);
+                                    }}
+                                    className={cn(
+                                        "border-t border-white/5 transition-all cursor-pointer",
+                                        "hover:bg-white/10 hover:scale-[1.01]",
+                                        isMe && "bg-pink-500/10 hover:bg-pink-500/20"
+                                    )}
+                                >
                                     <td className="px-4 py-3"><span className={cn("font-bold", entry.rank <= 3 ? "text-amber-400" : "text-white")}>{entry.rank === 1 ? '🥇' : entry.rank === 2 ? '🥈' : entry.rank === 3 ? '🥉' : `#${entry.rank}`}</span></td>
                                     <td className="px-4 py-3 text-white font-medium">{entry.playerName} {isMe && <span className="text-pink-400 ml-1">👤</span>}</td>
                                     <td className="px-4 py-3 text-amber-400">LV.{entry.level}</td>
