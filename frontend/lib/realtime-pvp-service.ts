@@ -141,69 +141,93 @@ export async function findMatch(
             }
         }
 
-        // [NEW] 20초 이상 대기 시 고스트 AI 매칭 시도
-        if (waitTimeSec > 20) {
-            const leaderboard = await getLeaderboardData(20);
+        // [FIX] 10초 이상 대기 시 고스트 AI 매칭 시도 (더 빠른 매칭)
+        if (waitTimeSec > 10) {
+            let ghostUser: { uid: string; nickname: string; level: number };
 
-            if (leaderboard && leaderboard.length > 0) {
-                const ghostUser = leaderboard[Math.floor(Math.random() * leaderboard.length)];
-
-                // 고스트용 가상 방 생성
-                const roomId = `ghost-${myPlayerId}-${Date.now()}`;
-                const roomRef = ref(db, `battles/${roomId}`);
-
-                // generateRandomCard expects Rarity
-                const ghostRarity: Rarity = (ghostUser.level || 1) > 10 ? 'epic' : (ghostUser.level || 1) > 5 ? 'rare' : 'common';
-
-                const ghostRoomData: BattleRoom & { isGhost: boolean } = {
-                    roomId,
-                    battleMode,
-                    phase: 'ordering',
-                    player1: {
-                        playerId: myPlayerId,
-                        playerName: myQueueData?.playerName || 'Player',
-                        playerLevel: myLevel,
-                        selectedCards: [],
-                        cardOrder: [],
-                        ready: false,
-                        wins: 0,
-                        roundResults: [],
-                        connected: true,
-                        lastHeartbeat: now
-                    },
-                    player2: {
-                        playerId: (ghostUser.uid as string),
-                        playerName: (ghostUser.nickname as string) || 'Ghost Commander',
-                        playerLevel: ghostUser.level || 1,
-                        selectedCards: Array(6).fill(null).map(() => generateRandomCard(ghostRarity)),
-                        cardOrder: [0, 1, 2, 3, 4, 5],
-                        ready: true,
-                        wins: 0,
-                        roundResults: [],
-                        connected: true,
-                        lastHeartbeat: now
-                    },
-                    currentRound: 0,
-                    maxRounds: battleMode === 'sudden-death' ? 1 : 3,
-                    winsNeeded: battleMode === 'sudden-death' ? 1 : 2,
-                    phaseStartedAt: now,
-                    phaseTimeout: 30,
-                    finished: false,
-                    isGhost: true,
-                    createdAt: now,
-                    updatedAt: now
-                };
-
-                await set(roomRef, ghostRoomData);
-                await update(ref(db, `matchmaking/${battleMode}/${myPlayerId}`), { status: 'matched' });
-
-                return {
-                    success: true,
-                    roomId,
-                    opponentId: ghostUser.uid,
-                    opponentName: ghostUser.nickname || 'Ghost Commander'
+            try {
+                const leaderboard = await getLeaderboardData(20);
+                if (leaderboard && leaderboard.length > 0) {
+                    const randomUser = leaderboard[Math.floor(Math.random() * leaderboard.length)];
+                    ghostUser = {
+                        uid: randomUser.uid as string,
+                        nickname: (randomUser.nickname as string) || 'Ghost Commander',
+                        level: randomUser.level || 1
+                    };
+                } else {
+                    // Fallback: 리더보드가 비어있으면 랜덤 고스트 생성
+                    ghostUser = {
+                        uid: `ghost-${Date.now()}`,
+                        nickname: ['Alpha AI', 'Beta AI', 'Gamma AI', 'Delta AI', 'Omega AI'][Math.floor(Math.random() * 5)],
+                        level: Math.max(1, myLevel + Math.floor(Math.random() * 5) - 2)
+                    };
+                }
+            } catch {
+                // 리더보드 조회 실패 시 기본 고스트
+                ghostUser = {
+                    uid: `ghost-${Date.now()}`,
+                    nickname: 'Shadow AI',
+                    level: myLevel
                 };
             }
+
+            // 고스트용 가상 방 생성
+            const roomId = `ghost-${myPlayerId}-${Date.now()}`;
+            const roomRef = ref(db, `battles/${roomId}`);
+
+            // generateRandomCard expects Rarity
+            const ghostRarity: Rarity = ghostUser.level > 10 ? 'epic' : ghostUser.level > 5 ? 'rare' : 'common';
+
+            const ghostRoomData: BattleRoom & { isGhost: boolean } = {
+                roomId,
+                battleMode,
+                phase: 'deck-select', // deck-select로 시작해서 플레이어도 덱 선택 가능
+                player1: {
+                    playerId: myPlayerId,
+                    playerName: myQueueData?.playerName || 'Player',
+                    playerLevel: myLevel,
+                    selectedCards: [],
+                    cardOrder: [],
+                    ready: false,
+                    wins: 0,
+                    roundResults: [],
+                    connected: true,
+                    lastHeartbeat: now
+                },
+                player2: {
+                    playerId: ghostUser.uid,
+                    playerName: ghostUser.nickname,
+                    playerLevel: ghostUser.level,
+                    selectedCards: Array(6).fill(null).map(() => generateRandomCard(ghostRarity)),
+                    cardOrder: [0, 1, 2, 3, 4, 5],
+                    ready: true,
+                    wins: 0,
+                    roundResults: [],
+                    connected: true,
+                    lastHeartbeat: now
+                },
+                currentRound: 0,
+                maxRounds: battleMode === 'sudden-death' ? 5 : 5,
+                winsNeeded: battleMode === 'sudden-death' ? 3 : 3,
+                phaseStartedAt: now,
+                phaseTimeout: 60,
+                finished: false,
+                isGhost: true,
+                createdAt: now,
+                updatedAt: now
+            };
+
+            await set(roomRef, ghostRoomData);
+            await update(ref(db, `matchmaking/${battleMode}/${myPlayerId}`), { status: 'matched', roomId });
+
+            console.log(`🤖 Ghost AI matched: ${ghostUser.nickname} (Lv.${ghostUser.level})`);
+
+            return {
+                success: true,
+                roomId,
+                opponentId: ghostUser.uid,
+                opponentName: ghostUser.nickname
+            };
         }
 
         return { success: false, message: '적합한 상대를 찾지 못했습니다.' };
