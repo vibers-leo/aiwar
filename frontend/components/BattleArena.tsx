@@ -258,23 +258,24 @@ export function BattleArena({
         <div className="h-full w-full bg-[#050505] relative overflow-hidden flex flex-col">
             <BackgroundBeams className="opacity-35" />
 
-            {/* Combat Log */}
-            <div className="fixed bottom-32 left-8 z-50 flex flex-col gap-2 max-w-sm pointer-events-none">
+            {/* Combat Log - Enhanced styling */}
+            <div className="fixed bottom-32 left-8 z-50 flex flex-col gap-2.5 max-w-md pointer-events-none">
                 <AnimatePresence mode="popLayout">
                     {battleLogs.map((log) => (
                         <motion.div
                             key={log.id}
-                            initial={{ opacity: 0, x: -20, scale: 0.9 }}
+                            initial={{ opacity: 0, x: -30, scale: 0.85 }}
                             animate={{ opacity: 1, x: 0, scale: 1 }}
-                            exit={{ opacity: 0, x: 20, scale: 0.8, filter: 'blur(10px)' }}
+                            exit={{ opacity: 0, x: 30, scale: 0.8, filter: 'blur(12px)' }}
+                            transition={{ type: "spring", stiffness: 200, damping: 20 }}
                             className={cn(
-                                "px-4 py-2 rounded-xl backdrop-blur-md border shadow-lg text-[11px] font-bold orbitron tracking-tight",
-                                log.type === 'system' ? "bg-black/60 border-white/10 text-gray-300" :
-                                    log.type === 'advantage' ? "bg-yellow-500/20 border-yellow-500/40 text-yellow-400" :
-                                        log.type === 'player' ? "bg-blue-500/20 border-blue-500/40 text-blue-400" :
-                                            log.type === 'enemy' ? "bg-red-500/20 border-red-500/40 text-red-400" :
-                                                log.type === 'winner' ? "bg-green-500/20 border-green-500/40 text-green-400" :
-                                                    "bg-gray-500/20 border-gray-500/40 text-gray-400"
+                                "px-5 py-2.5 rounded-xl backdrop-blur-lg border-2 shadow-xl text-xs font-bold orbitron tracking-tight",
+                                log.type === 'system' ? "bg-black/70 border-white/20 text-gray-200" :
+                                    log.type === 'advantage' ? "bg-yellow-500/20 border-yellow-400/50 text-yellow-300 shadow-yellow-500/20" :
+                                        log.type === 'player' ? "bg-blue-500/20 border-blue-400/50 text-blue-300 shadow-blue-500/20" :
+                                            log.type === 'enemy' ? "bg-red-500/20 border-red-400/50 text-red-300 shadow-red-500/20" :
+                                                log.type === 'winner' ? "bg-green-500/25 border-green-400/60 text-green-300 shadow-green-500/30" :
+                                                    "bg-gray-500/20 border-gray-400/40 text-gray-300"
                             )}
                         >
                             {log.message}

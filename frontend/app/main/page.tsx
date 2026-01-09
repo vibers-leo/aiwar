@@ -46,19 +46,20 @@ export default function MainPage() {
         <BackgroundBeams />
       </div>
 
-      {/* Season 1 Banner - Added above grid */}
-      <div id="season-banner" className="relative z-10 w-full max-w-7xl mx-auto mt-6 mb-8 overflow-hidden rounded-2xl border border-cyan-500/30 bg-black/60 backdrop-blur-md group cursor-pointer hover:border-cyan-500/80 transition-colors">
-        <div className="absolute inset-0 bg-gradient-to-r from-cyan-900/10 via-blue-900/10 to-transparent opacity-50 group-hover:opacity-100 transition-opacity" />
+      {/* Season 1 Banner - Enhanced with premium glow */}
+      <div id="season-banner" className="relative z-10 w-full max-w-7xl mx-auto mt-6 mb-8 overflow-hidden rounded-2xl border border-cyan-500/30 bg-black/60 backdrop-blur-md group cursor-pointer hover:border-cyan-400/80 transition-all duration-300 hover:shadow-[0_0_40px_rgba(6,182,212,0.3)]">
+        <div className="absolute inset-0 bg-gradient-to-r from-cyan-900/20 via-blue-900/10 to-transparent opacity-50 group-hover:opacity-100 transition-opacity duration-500" />
+        <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_left,rgba(6,182,212,0.15),transparent_70%)]" />
         <div className="relative p-6 flex flex-col md:flex-row items-center justify-between gap-6">
           <div className="flex items-center gap-6">
-            <div className="w-16 h-16 rounded-xl bg-cyan-950/50 border border-cyan-500/30 flex items-center justify-center text-3xl shadow-[0_0_20px_rgba(6,182,212,0.2)]">
+            <div className="w-16 h-16 rounded-xl bg-cyan-950/50 border border-cyan-500/40 flex items-center justify-center text-3xl shadow-[0_0_30px_rgba(6,182,212,0.3)] group-hover:shadow-[0_0_40px_rgba(6,182,212,0.5)] transition-shadow duration-300">
               🌍
             </div>
             <div>
               <div className="flex items-center gap-3 mb-1">
-                <span className="px-2 py-0.5 bg-cyan-500/20 text-cyan-300 text-[10px] font-bold tracking-wider rounded border border-cyan-500/30 animate-pulse">ACTIVE SEASON</span>
+                <span className="px-2.5 py-0.5 bg-cyan-500/20 text-cyan-300 text-[10px] font-bold tracking-wider rounded-full border border-cyan-500/40 animate-pulse shadow-[0_0_10px_rgba(6,182,212,0.3)]">ACTIVE SEASON</span>
               </div>
-              <h3 className="text-xl md:text-2xl font-black text-white italic orbitron">
+              <h3 className="text-xl md:text-2xl font-black text-white italic orbitron drop-shadow-[0_0_10px_rgba(255,255,255,0.2)]">
                 SEASON 1: GENESIS
               </h3>
               <p className="text-cyan-400/70 text-sm font-mono mt-1">
@@ -67,7 +68,7 @@ export default function MainPage() {
             </div>
           </div>
           <Link href="/story">
-            <button className="px-6 py-2 bg-cyan-500 text-black font-bold rounded hover:bg-cyan-400 transition-colors tracking-widest text-xs">
+            <button className="px-7 py-2.5 bg-gradient-to-r from-cyan-500 to-cyan-400 text-black font-bold rounded-lg hover:from-cyan-400 hover:to-cyan-300 transition-all tracking-widest text-xs shadow-[0_0_20px_rgba(6,182,212,0.4)] hover:shadow-[0_0_30px_rgba(6,182,212,0.6)] hover:scale-105 duration-200">
               CAMPAIGN START
             </button>
           </Link>

@@ -206,16 +206,24 @@ function GameCard({
                 </div>
             )}
 
-            {/* 고급 등급 글로우 이펙트 */}
+            {/* 고급 등급 글로우 이펙트 - Enhanced with breathing animation */}
             {!isFlipped && isHighRarity && (
                 <motion.div
                     className="absolute inset-0 z-0 pointer-events-none rounded-xl"
                     animate={{
                         boxShadow: isHovered
-                            ? `0 0 40px ${config.glowColor}, 0 0 60px ${config.glowColor}, inset 0 0 20px ${config.glowColor}`
-                            : `0 0 20px ${config.glowColor}`
+                            ? [
+                                `0 0 30px ${config.glowColor}, 0 0 60px ${config.glowColor}, inset 0 0 25px ${config.glowColor}`,
+                                `0 0 50px ${config.glowColor}, 0 0 80px ${config.glowColor}, inset 0 0 35px ${config.glowColor}`,
+                                `0 0 30px ${config.glowColor}, 0 0 60px ${config.glowColor}, inset 0 0 25px ${config.glowColor}`
+                            ]
+                            : [
+                                `0 0 15px ${config.glowColor}`,
+                                `0 0 25px ${config.glowColor}`,
+                                `0 0 15px ${config.glowColor}`
+                            ]
                     }}
-                    transition={{ duration: 0.3 }}
+                    transition={{ duration: 2, repeat: Infinity, ease: "easeInOut" }}
                 />
             )}
 
@@ -419,9 +427,9 @@ function StatBar({ label, value, color }: { label: string; value: number; color:
     const percentage = Math.min((value / maxValue) * 100, 100);
 
     const colorClasses = {
-        cyan: 'from-cyan-500 to-cyan-400',
-        purple: 'from-purple-500 to-purple-400',
-        green: 'from-green-500 to-green-400'
+        cyan: 'from-cyan-500 via-cyan-400 to-cyan-300',
+        purple: 'from-purple-500 via-purple-400 to-pink-400',
+        green: 'from-green-500 via-emerald-400 to-teal-300'
     };
 
     return (
@@ -429,10 +437,10 @@ function StatBar({ label, value, color }: { label: string; value: number; color:
             <span className="text-white/50 w-6 font-mono">{label}</span>
             <div className="flex-1 h-1.5 bg-white/10 rounded-full overflow-hidden">
                 <motion.div
-                    className={cn("h-full bg-gradient-to-r rounded-full", colorClasses[color])}
+                    className={cn("h-full bg-gradient-to-r rounded-full shadow-sm", colorClasses[color])}
                     initial={{ width: 0 }}
                     animate={{ width: `${percentage}%` }}
-                    transition={{ duration: 0.5, ease: "easeOut" }}
+                    transition={{ duration: 0.8, ease: "easeOut", type: "spring", stiffness: 60 }}
                 />
             </div>
             <span className="text-white/70 w-5 text-right font-mono">{value}</span>
