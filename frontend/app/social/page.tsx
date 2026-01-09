@@ -14,7 +14,8 @@ import {
     Bell,
     Settings,
     ShieldAlert,
-    ExternalLink
+    ExternalLink,
+    Trophy
 } from 'lucide-react';
 import { useUser } from '@/context/UserContext';
 import { useUserProfile } from '@/hooks/useUserProfile';
@@ -164,7 +165,7 @@ export default function SocialPage() {
                                 </div>
                                 <div className="w-full flex gap-2">
                                     <Link href={`/profile/${user?.uid}`} className="flex-1">
-                                        <Button variant="outline" size="sm" fullWidth className="text-[10px] orbitron h-8 border-purple-500/30 hover:bg-purple-500/10">
+                                        <Button variant="ghost" size="sm" fullWidth className="text-[10px] orbitron h-8 border-purple-500/30 hover:bg-purple-500/10">
                                             MY PROFILE
                                         </Button>
                                     </Link>
@@ -184,8 +185,8 @@ export default function SocialPage() {
                                 key={tab.id}
                                 onClick={() => setActiveTab(tab.id as any)}
                                 className={`w-full flex items-center justify-between p-4 rounded-xl border transition-all orbitron text-xs font-bold ${activeTab === tab.id
-                                        ? 'bg-purple-600/20 border-purple-500 text-white shadow-[0_0_15px_rgba(168,85,247,0.2)]'
-                                        : 'bg-black/40 border-white/5 text-gray-400 hover:border-white/10 hover:text-white'
+                                    ? 'bg-purple-600/20 border-purple-500 text-white shadow-[0_0_15px_rgba(168,85,247,0.2)]'
+                                    : 'bg-black/40 border-white/5 text-gray-400 hover:border-white/10 hover:text-white'
                                     }`}
                             >
                                 <div className="flex items-center gap-3">
@@ -339,7 +340,7 @@ export default function SocialPage() {
                                                         <Button
                                                             onClick={() => removeFriend(user?.uid || '', req.uid)}
                                                             size="sm"
-                                                            variant="outline"
+                                                            variant="ghost"
                                                             className="orbitron font-bold text-[10px] border-red-500/30 text-red-400 hover:bg-red-500/10"
                                                         >
                                                             DECLINE
@@ -388,7 +389,7 @@ export default function SocialPage() {
                                                         </div>
                                                         <div className="w-full pt-2 flex gap-2">
                                                             <Link href={`/profile/${result.uid}`} className="flex-1">
-                                                                <Button variant="outline" size="sm" fullWidth className="text-[10px] orbitron border-white/10">
+                                                                <Button variant="ghost" size="sm" fullWidth className="text-[10px] orbitron border-white/10">
                                                                     VIEW PROFILE
                                                                 </Button>
                                                             </Link>
@@ -457,7 +458,7 @@ export default function SocialPage() {
                                     <p className="text-[10px] text-white/50 font-mono mt-1">COMPETE WITH COMMANDERS WORLDWIDE.</p>
                                 </div>
                                 <Link href="/ranking">
-                                    <Button fullWidth size="sm" variant="outline" className="text-[10px] orbitron border-white/20 hover:bg-white/10 mt-2">
+                                    <Button fullWidth size="sm" variant="ghost" className="text-[10px] orbitron border-white/20 hover:bg-white/10 mt-2">
                                         VIEW LEADERBOARD
                                     </Button>
                                 </Link>
