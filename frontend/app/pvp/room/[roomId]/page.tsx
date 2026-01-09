@@ -20,6 +20,8 @@ import { BattleRoom, PlayerState, BattlePhase } from '@/lib/realtime-pvp-types';
 import { applyBattleResult, BattleResult, PVP_REWARDS } from '@/lib/pvp-battle-system';
 import { useAlert } from '@/context/AlertContext';
 import { cn } from '@/lib/utils';
+import { getDatabase, ref, onDisconnect } from 'firebase/database';
+import app from '@/lib/firebase';
 import { Loader2, Swords, Clock, Trophy, XCircle, CheckCircle, Shuffle, Users, ArrowRight, Zap, Shield } from 'lucide-react';
 import { BattleArena } from '@/components/BattleArena';
 import { BackgroundBeams } from '@/components/ui/aceternity/background-beams';
@@ -118,6 +120,15 @@ export default function RealtimeBattleRoomPage() {
                 const unsubscribe = listenToBattleRoom(roomId, async (updatedRoom) => {
                     setRoom(updatedRoom);
 
+                    // 상대방 연결 끊김 감지
+                    const isPlayer1 = updatedRoom.player1.playerId === playerId;
+                    const opponentData = isPlayer1 ? updatedRoom.player2 : updatedRoom.player1;
+
+                    if (!opponentData.connected && localPhase !== 'loading' && localPhase !== 'waiting' && !updatedRoom.finished) {
+                        console.warn('Opponent disconnected');
+                        // Optional: Show a warning or handle as forfeit
+                    }
+
                     // 양쪽 연결 확인 → VS 화면
                     if (updatedRoom.player1.connected && updatedRoom.player2.connected) {
                         setLocalPhase(prev => {
@@ -139,6 +150,12 @@ export default function RealtimeBattleRoomPage() {
                     }
                 });
                 listenerRef.current = unsubscribe;
+
+                // [NEW] 연결 끊김 자동 감지 설정 (OnDisconnect)
+                const db = getDatabase(app || undefined);
+                const myPlayerKey = roomData.player1.playerId === playerId ? 'player1' : 'player2';
+                const myConnectionRef = ref(db, `battles/${roomId}/${myPlayerKey}/connected`);
+                onDisconnect(myConnectionRef).set(false);
 
                 // 하트비트 시작
                 heartbeatRef.current = setInterval(() => {

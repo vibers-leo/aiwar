@@ -3,21 +3,42 @@
         "waitingRooms": {
             ".read": "auth != null",
             "$code": {
-                ".write": "auth != null",
-                ".validate": "newData.hasChildren(['hostId', 'status'])"
+                ".write": "auth != null && (!data.exists() || data.child('hostId').val() == auth.uid || newData.child('status').val() == 'matched')",
+                ".validate": "newData.hasChildren(['hostId', 'status'])",
+                "status": {
+                    ".validate": "newData.val() == 'waiting' || newData.val() == 'matched'"
+                }
             }
         },
         "battles": {
             ".read": "auth != null",
             "$roomId": {
-                ".write": "auth != null && (data.exists() ? (data.child('player1/playerId').val() == auth.uid || data.child('player2/playerId').val() == auth.uid) : true)"
+                ".write": "auth != null && (data.exists() ? (data.child('player1/playerId').val() == auth.uid || data.child('player2/playerId').val() == auth.uid) : true)",
+                ".validate": "!data.exists() || data.child('finished').val() == false",
+                "player1": {
+                    "ready": {
+                        ".validate": "newData.isBoolean()"
+                    },
+                    "selectedCards": {
+                        ".validate": "newData.exists()"
+                    }
+                },
+                "player2": {
+                    "ready": {
+                        ".validate": "newData.isBoolean()"
+                    },
+                    "selectedCards": {
+                        ".validate": "newData.exists()"
+                    }
+                }
             }
         },
         "matchmaking": {
             ".read": "auth != null",
             "$mode": {
                 "$uid": {
-                    ".write": "auth != null && (auth.uid == $uid || !data.exists())"
+                    ".write": "auth != null && (auth.uid == $uid)",
+                    ".validate": "newData.hasChildren(['playerId', 'status'])"
                 }
             }
         }

@@ -15,7 +15,8 @@ import {
     equalTo,
     limitToFirst,
     serverTimestamp,
-    onDisconnect
+    onDisconnect,
+    runTransaction
 } from 'firebase/database';
 import { RealtimeBattleMode, MatchmakingQueue, BattleRoom } from './realtime-pvp-types';
 import {
@@ -115,31 +116,50 @@ export async function findMatch(
         const myQueueData = players[myPlayerId] as MatchmakingQueue;
         const waitTimeSec = myQueueData ? (now - myQueueData.joinedAt) / 1000 : 0;
 
-        // 대기 시간에 따른 매칭 허용 범위 차별화 (±3, ±7, 무제한)
+        // 대기 시간에 따른 매칭 허용 범위 차별화
         let tolerance = 3;
         if (waitTimeSec > 15) tolerance = 999;
         else if (waitTimeSec > 5) tolerance = 7;
 
-        // 자신을 제외하고 레벨이 비슷한 플레이어 찾기
-        for (const [playerId, player] of Object.entries(players) as [string, MatchmakingQueue][]) {
-            if (playerId === myPlayerId) continue;
-            if (player.status === 'matched') continue;
+        // 원자적 매칭을 위해 트랜잭션 사용
+        for (const [opponentId, opponent] of Object.entries(players) as [string, MatchmakingQueue][]) {
+            if (opponentId === myPlayerId) continue;
+            if (opponent.status === 'matched') continue;
 
-            const levelDiff = Math.abs(player.playerLevel - myLevel);
+            const levelDiff = Math.abs(opponent.playerLevel - myLevel);
             if (levelDiff <= tolerance) {
-                // 매칭 성공! 전투 방 생성
-                const roomId = await createBattleRoom(battleMode, myPlayerId, playerId, myQueueData, player);
+                const opponentStatusRef = ref(db, `matchmaking/${battleMode}/${opponentId}/status`);
 
-                // 두 플레이어 모두 매칭 상태로 변경 (roomId 포함)
-                await update(ref(db, `matchmaking/${battleMode}/${myPlayerId}`), { status: 'matched', roomId });
-                await update(ref(db, `matchmaking/${battleMode}/${playerId}`), { status: 'matched', roomId });
+                // 트랜잭션으로 'waiting'일 때만 'matched'로 변경 시도
+                const transactionResult = await runTransaction(opponentStatusRef, (currentStatus) => {
+                    if (currentStatus === 'waiting' || currentStatus === null) {
+                        return 'matched';
+                    }
+                    return; // Abort if already matched
+                });
 
-                return {
-                    success: true,
-                    roomId,
-                    opponentId: playerId,
-                    opponentName: player.playerName
-                };
+                if (transactionResult.committed) {
+                    // 매칭 성공! 전투 방 생성
+                    const roomId = await createBattleRoom(battleMode, myPlayerId, opponentId, myQueueData, opponent);
+
+                    // 내 상태 업데이트 (roomId 포함)
+                    await update(ref(db, `matchmaking/${battleMode}/${myPlayerId}`), {
+                        status: 'matched',
+                        roomId
+                    });
+
+                    // 상대방 상태 업데이트 (roomId 포함)
+                    await update(ref(db, `matchmaking/${battleMode}/${opponentId}`), {
+                        roomId
+                    });
+
+                    return {
+                        success: true,
+                        roomId,
+                        opponentId,
+                        opponentName: opponent.playerName
+                    };
+                }
             }
         }
 
