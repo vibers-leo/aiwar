@@ -68,26 +68,30 @@ export function useUserProfile() {
         const userRef = doc(db, 'users', user.uid, 'profile', 'data');
 
         const unsubscribe = onSnapshot(userRef, async (docSnap) => {
-            clearTimeout(snapshotTimeout); // Clear timeout on successful response
+            clearTimeout(snapshotTimeout);
             if (docSnap.exists()) {
-                setProfile(docSnap.data() as UserProfile);
+                const data = docSnap.data() as UserProfile;
+                console.log(`[useUserProfile] Profile updated for ${user.uid}:`, data.nickname);
+                setProfile(data);
                 setLoading(false);
             } else {
-                // 프로필이 존재하지 않는 경우 초기화 (기본값 생성)
                 try {
-                    console.log('[useUserProfile] Profile not found, creating default...');
-                    await loadUserProfile(user.uid);
-                    // 생성 후에는 스냅샷이 다시 트리거되어 데이터가 로드됩니다.
-                    // Keep loading: true here, snapshot will fire again.
+                    console.log('[useUserProfile] Profile not found, attempting to create default or wait for starter pack...');
+                    // 레벨 1이거나 신규 유저인 경우에만 기본 프로필 생성 시도
+                    const p = await loadUserProfile(user.uid);
+                    if (p) {
+                        setProfile(p);
+                        setLoading(false);
+                    }
                 } catch (err) {
-                    console.error("[useUserProfile] Failed to create initial profile:", err);
+                    console.error("[useUserProfile] Profile sync error:", err);
                     setError(err as Error);
                     setLoading(false);
                 }
             }
         }, (err) => {
             clearTimeout(snapshotTimeout);
-            console.error("[useUserProfile] Profile snapshot error:", err);
+            console.error("[useUserProfile] Profile snapshot failed:", err);
             setError(err);
             setLoading(false);
         });

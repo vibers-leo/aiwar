@@ -200,50 +200,61 @@ export async function claimStarterPackTransaction(
 
     try {
         await runTransaction(db, async (transaction) => {
+            // 0. [CRITICAL] 닉네임 중복 체크 (Atomic)
+            const nicknameRef = doc(db!, 'nicknames', nickname.toLowerCase());
+            const nicknameDoc = await transaction.get(nicknameRef);
+
+            if (nicknameDoc.exists()) {
+                const ownerUid = nicknameDoc.data()?.uid;
+                if (ownerUid !== userId) {
+                    console.error(`[Transaction] Nickname ${nickname} is already taken by ${ownerUid}`);
+                    throw new Error('ALREADY_CLAIMED_NICKNAME');
+                }
+            }
+
             const userDoc = await transaction.get(userRef);
             const exists = userDoc.exists();
             const userData = exists ? userDoc.data() as UserProfile : null;
 
             if (userData?.hasReceivedStarterPack) {
-                // [Rescue Mode] 만약 코인이 0이고 레벨이 1이라면, 수령 플래그가 있어도 
-                // 실제로 지급이 누락된 것으로 간주하고 재수령을 허용합니다.
                 const isBrokenState = (userData.coins || 0) === 0 && (userData.level || 1) <= 1;
-
                 if (!isBrokenState) {
                     console.warn(`[Transaction] User ${userId} already claimed starter pack.`);
                     throw new Error('ALREADY_CLAIMED');
                 }
-                console.log(`[Rescue] User ${userId} is in broken state. Allowing starter pack re-claim.`);
             }
 
-            // 1. 프로필 업데이트 (코인 증액 + 닉네임 + 플래그)
-            // [Fix] Use a more explicit update/set logic
-            // Commander Card is at index 4 (Unique)
+            // 1. 프로필 업데이트
             const commanderCard = cards.length > 4 ? cards[4] : null;
             const initialAvatarUrl = commanderCard?.imageUrl || '/assets/cards/commander_default.png';
 
             const profileUpdate: any = {
-                userId, // [Fix] Add userId for security rule validation
+                userId,
                 nickname,
                 hasReceivedStarterPack: true,
                 lastLogin: serverTimestamp(),
-                tutorialCompleted: true, // Set this here too for atomic consistency
-                avatarUrl: initialAvatarUrl // [Fix] Auto-set avatar to commander card image
+                tutorialCompleted: true,
+                avatarUrl: initialAvatarUrl
             };
+
+            // 닉네임 선점 문서 생성/업데이트
+            transaction.set(nicknameRef, {
+                uid: userId,
+                name: nickname,
+                updatedAt: serverTimestamp()
+            });
 
             if (exists) {
                 profileUpdate.coins = increment(coinReward);
-                // [Fix] Ensure tokens/level/exp are set if missing (merge logic)
                 if (userData?.tokens === undefined) profileUpdate.tokens = 1000;
                 if (userData?.level === undefined) profileUpdate.level = 1;
                 if (userData?.exp === undefined) profileUpdate.exp = 0;
 
                 transaction.set(userRef, profileUpdate, { merge: true });
             } else {
-                // 신규 유저인 경우 기본값과 함께 생성
                 transaction.set(userRef, {
                     ...profileUpdate,
-                    coins: coinReward, // Direct value for new doc
+                    coins: coinReward,
                     tokens: 1000,
                     level: 1,
                     exp: 0,
@@ -252,7 +263,6 @@ export async function claimStarterPackTransaction(
             }
 
             // 2. 카드 지급
-            console.log(`[Transaction] Distributing ${cards.length} cards...`);
             for (const card of cards) {
                 const instanceId = `${card.id}-${Date.now()}-${Math.random().toString(36).substr(2, 9)}`;
                 const cardRef = doc(db!, 'users', userId, 'inventory', instanceId);
@@ -261,15 +271,16 @@ export async function claimStarterPackTransaction(
                     instanceId,
                     acquiredAt: serverTimestamp()
                 });
-
-                // [LOG] Verify no undefined values in cleaned data
-                console.log(`[Transaction] Setting card: ${instanceId} (${card.id})`);
                 transaction.set(cardRef, cleanedCard);
             }
         });
         console.log(`✅ 스타터팩 트랜잭션 성공: ${nickname}, ${cards.length}매 지급`);
-    } catch (error) {
+    } catch (error: any) {
         console.error('❌ 스타터팩 트랜잭션 실패:', error);
+        // [Rescue] 닉네임만 중복인 경우 명확한 에러 전달
+        if (error.message === 'ALREADY_CLAIMED_NICKNAME') {
+            throw new Error('NICKNAME_DUPLICATED');
+        }
         throw error;
     }
 }
@@ -587,69 +598,68 @@ export async function loadUserProfile(uid?: string): Promise<UserProfile | null>
 /**
  * 닉네임 중복 체크
  */
+/**
+ * 닉네임 중복 체크 (엄격 모드: nicknames 컬렉션 조회)
+ */
 export async function checkNicknameUnique(nickname: string, currentUid?: string): Promise<boolean> {
-    if (!isFirebaseConfigured || !db) {
-        console.warn('Firebase가 설정되지 않았습니다.');
-        return true; // Firebase 미설정 시 로컬 체크로 넘어감
-    }
+    if (!isFirebaseConfigured || !db) return true;
 
     try {
-        const usersRef = collection(db, 'users');
-        // [Optimization] Query only for the specific nickname instead of all users
-        const q = query(usersRef, where('nickname', '==', nickname), limit(1));
-        const snapshot = await getDocs(q);
+        const nicknameRef = doc(db, 'nicknames', nickname.toLowerCase());
+        const docSnap = await getDoc(nicknameRef);
 
-        if (!snapshot.empty) {
-            // Check if the found user is NOT the current user
-            const foundDoc = snapshot.docs[0];
-            if (foundDoc.id !== currentUid) {
-                return false; // Duplicate found
-            }
+        if (docSnap.exists()) {
+            const data = docSnap.data();
+            // 본인이 이미 선점한 경우라면 중복이 아님
+            if (data.uid === currentUid) return true;
+            return false;
         }
 
-        return true; // Unique
+        return true;
     } catch (error) {
         console.error('❌ 닉네임 중복 체크 실패:', error);
-        // [Safety] If permission denied or other error, allow it but log strict warning.
-        // Returning true here allows the user to proceed even if check fails, 
-        // preventing them from being blocked by technical errors.
-        return true;
+        return false; // 에러 발생 시 보수적으로 "중복임"을 반환하여 덮어쓰기 방지
     }
 }
 
 /**
- * 닉네임 업데이트
+ * 닉네임 업데이트 (원자적 업데이트)
  */
 export async function updateNickname(nickname: string, uid?: string): Promise<void> {
-    if (!isFirebaseConfigured || !db) {
-        console.warn('Firebase가 설정되지 않았습니다.');
-        return;
-    }
+    if (!isFirebaseConfigured || !db) return;
 
     try {
         const userId = uid || await getUserId();
-
-        // 중복 체크
-        const isUnique = await checkNicknameUnique(nickname, userId);
-        if (!isUnique) {
-            throw new Error('이미 사용 중인 닉네임입니다.');
-        }
-
+        const nicknameRef = doc(db, 'nicknames', nickname.toLowerCase());
         const userRef = doc(db, 'users', userId, 'profile', 'data');
 
-        // setDoc with merge: 프로필이 없으면 생성, 있으면 업데이트
-        await setDoc(userRef, {
-            userId, // [Fix] Security rules require userId field
-            nickname,
-            lastLogin: serverTimestamp()
-        }, { merge: true });
+        await runTransaction(db, async (transaction) => {
+            const nickDoc = await transaction.get(nicknameRef);
+            if (nickDoc.exists() && nickDoc.data().uid !== userId) {
+                throw new Error('DUPLICATE_NICKNAME');
+            }
 
-        // localStorage에도 저장 (백업 및 빠른 접근)
+            // 1. 닉네임 인덱스 업데이트
+            transaction.set(nicknameRef, {
+                uid: userId,
+                name: nickname,
+                updatedAt: serverTimestamp()
+            });
+
+            // 2. 유저 프로필 업데이트
+            transaction.update(userRef, {
+                nickname,
+                lastLogin: serverTimestamp()
+            });
+        });
+
         localStorage.setItem('nickname', nickname);
-
         console.log('✅ 닉네임 업데이트 성공:', nickname);
-    } catch (error) {
+    } catch (error: any) {
         console.error('❌ 닉네임 업데이트 실패:', error);
+        if (error.message === 'DUPLICATE_NICKNAME') {
+            throw new Error('이미 사용 중인 닉네임입니다.');
+        }
         throw error;
     }
 }

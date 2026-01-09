@@ -55,6 +55,21 @@ export default function PVPArenaPage() {
     const { coins, tokens, level, trackMissionEvent } = useUser(); // [NEW] Use generic coins/level/trackMission from context
 
     const [phase, setPhase] = useState<Phase>('stats');
+    const { profile, loading: userLoading } = useUser();
+
+    // [Safety] 프로필 로딩 중일 때 표시할 상태
+    if (userLoading || !profile) {
+        return (
+            <CyberPageLayout title="PVP 아레나" englishTitle="PVP ARENA" color="red">
+                <div className="flex flex-col items-center justify-center min-h-[60vh]">
+                    <div className="w-16 h-16 border-4 border-red-500 border-t-transparent rounded-full animate-spin mb-4" />
+                    <p className="text-red-500 orbitron animate-pulse">SYNCHRONIZING PROFILE...</p>
+                </div>
+            </CyberPageLayout>
+        );
+    }
+
+    const nickname = profile.nickname || '지휘관';
     const [selectedMode, setSelectedMode] = useState<BattleMode>('double');
     const [selectedMatchType, setSelectedMatchType] = useState<MatchType>('ai-training');
     const [playerDeck, setPlayerDeck] = useState<Card[]>([]);

@@ -158,17 +158,33 @@ export function onAuthChange(callback: (user: User | null) => void): () => void 
 }
 
 /**
- * 사용자 ID 가져오기 (없으면 익명 로그인)
+ * 사용자 ID 가져오기 (인증 상태가 확정될 때까지 대기)
  */
 export async function getUserId(): Promise<string> {
     if (!isFirebaseConfigured) {
-        return 'local-user'; // Firebase 미설정 시 로컬 사용자 ID 반환
+        return 'local-user';
     }
 
-    const user = getCurrentUser();
+    // [Fix] Auth가 초기화될 때까지 최대 3초간 대기
+    let user = auth?.currentUser;
+
+    if (!user && auth) {
+        console.log('[Auth] currentUser is null, waiting for auth state to stabilize...');
+        // onAuthStateChanged를 사용하여 상태를 기다림
+        user = await new Promise((resolve) => {
+            const unsubscribe = onAuthStateChanged(auth!, (u) => {
+                unsubscribe();
+                resolve(u);
+            });
+            // 3초 타임아웃
+            setTimeout(() => {
+                unsubscribe();
+                resolve(null);
+            }, 3000);
+        });
+    }
 
     if (!user) {
-        // [Safety] Do NOT auto-login as guest.
         throw new Error('NO_AUTHENTICATED_USER');
     }
 
