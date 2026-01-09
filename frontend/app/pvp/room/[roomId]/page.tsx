@@ -131,24 +131,19 @@ export default function RealtimeBattleRoomPage() {
                         // Optional: Show a warning or handle as forfeit
                     }
 
-                    // 양쪽 연결 확인 → VS 화면
-                    if (updatedRoom.player1.connected && updatedRoom.player2.connected) {
-                        setLocalPhase(prev => {
-                            if (prev === 'loading' || prev === 'waiting') return 'vs-matchup';
-                            return prev;
-                        });
-                    }
+                    // [FIX] Phase synchronization logic
+                    // We map the server room.phase to our localPhase.
+                    // Priority: If the room.phase is set, we follow it.
+                    const roomPhase = updatedRoom.phase as LocalPhase;
 
-                    // 서버 phase 동기화
-                    if (updatedRoom.phase === 'deck-select') {
-                        setLocalPhase(prev => prev === 'vs-matchup' || prev === 'waiting' || prev === 'loading' ? prev : 'deck-select');
-                    } else if (updatedRoom.phase === 'ordering') {
-                        // 상대가 덱 확정했으면 ordering으로
-                        setLocalPhase(prev => prev === 'deck-select' ? 'ordering' : prev);
-                    } else if (updatedRoom.phase === 'battle' || updatedRoom.phase === 'combat') {
-                        setLocalPhase('battle');
-                    } else if (updatedRoom.phase === 'result' || updatedRoom.phase === 'finished') {
-                        setLocalPhase('result');
+                    if (roomPhase && roomPhase !== localPhase) {
+                        console.log(`[Flow] Phase synchronized: ${localPhase} -> ${roomPhase}`);
+                        setLocalPhase(roomPhase);
+
+                        // Special triggers based on phase
+                        if (roomPhase === 'vs-matchup' && vsCountdown === 5) {
+                            // The vsCountdown timer is already handled by a useEffect dependent on localPhase
+                        }
                     }
                 });
                 listenerRef.current = unsubscribe;
@@ -164,8 +159,11 @@ export default function RealtimeBattleRoomPage() {
                     sendHeartbeat(roomId, playerId);
                 }, 5000);
 
-            } catch (err) {
-                console.error('Room init error:', err);
+            } catch (error: any) {
+                // [FIX] Firestore index required error handling - This part of the instruction seems to be for a different function (e.g., fetchLeaderboard)
+                // and is not directly applicable here as initRoom does not return an array.
+                // The original error handling for initRoom is kept.
+                console.error('Room init error:', error);
                 setError('방 연결에 실패했습니다.');
                 setLocalPhase('error');
             }
@@ -249,14 +247,15 @@ export default function RealtimeBattleRoomPage() {
             ready: true
         });
 
-        // 상대방도 준비되었는지 확인
+        // [FIX] Phase transition is now handled ONLY by the real-time listener
+        // to prevent race conditions where both players update the phase simultaneously.
         const opponentPlayer = getOpponent();
         if (opponentPlayer?.ready) {
+            console.log('[Flow] Both players ready, triggering battle phase...');
             await updateBattleRoom(roomId, { phase: 'battle' });
-            setLocalPhase('battle');
         } else {
+            console.log('[Flow] Waiting for opponent...');
             await updateBattleRoom(roomId, { phase: 'ordering' });
-            setLocalPhase('ordering');
         }
     };
 

@@ -522,7 +522,11 @@ export async function fetchLeaderboard(limitCount: number = 10): Promise<UserPro
             uid: doc.id,
             ...doc.data()
         })) as UserProfile[];
-    } catch (error) {
+    } catch (error: any) {
+        if (error?.message?.includes('FAILED_PRECONDITION') || error?.message?.includes('index required')) {
+            console.warn("⚠️ Leaderboard index is not yet built. Please create it in the Firebase Console.");
+            return [];
+        }
         console.error("❌ Failed to fetch leaderboard:", error);
         return [];
     }
