@@ -52,14 +52,21 @@ export function selectBalancedDeck(
     // 등급 우선순위 (높은 등급부터)
     const rarityOrder: Rarity[] = ['commander', 'unique', 'legendary', 'epic', 'rare', 'common'];
 
-    // 각 등급별로 최고 전투력 카드 1장씩 선택
+    // 각 등급별로 세부 스텟(효율, 창의, 기능) 중 하나가 가장 높은 카드 1장씩 선택
     for (const rarity of rarityOrder) {
         if (selected.length >= deckSize) break;
 
         const rarityCards = byRarity[rarity] || [];
         if (rarityCards.length > 0) {
-            // 레벨 우선, 그 다음 전투력 기준 정렬 후 최고 카드 선택
+            // 최고 단일 스텟 기준 정렬
             const sortedByPriority = [...rarityCards].sort((a, b) => {
+                const statsA = a.stats || { efficiency: 0, creativity: 0, function: 0 };
+                const statsB = b.stats || { efficiency: 0, creativity: 0, function: 0 };
+                const maxA = Math.max(statsA.efficiency || 0, statsA.creativity || 0, statsA.function || 0);
+                const maxB = Math.max(statsB.efficiency || 0, statsB.creativity || 0, statsB.function || 0);
+
+                if (maxA !== maxB) return maxB - maxA;
+
                 const levelA = a.level || 1;
                 const levelB = b.level || 1;
                 if (levelA !== levelB) return levelB - levelA;
@@ -132,17 +139,32 @@ export function getMainCards(cards: (Card | InventoryCard)[]): (Card | Inventory
     cards.forEach(card => {
         const rarity = card.rarity || 'common';
         const currentMain = mainCardsMap[rarity];
-        const cardLevel = card.level || 1;
-        const currentMainLevel = currentMain?.level || 1;
 
-        if (!currentMain || cardLevel > currentMainLevel) {
+        const stats = card.stats || { efficiency: 0, creativity: 0, function: 0 };
+        const highestStat = Math.max(stats.efficiency || 0, stats.creativity || 0, stats.function || 0);
+
+        if (!currentMain) {
             mainCardsMap[rarity] = card;
-        } else if (cardLevel === currentMainLevel) {
-            // 레벨이 같으면 전투력 높은 쪽
-            const currentPower = currentMain.stats?.totalPower || 0;
-            const cardPower = card.stats?.totalPower || 0;
-            if (cardPower > currentPower) {
+        } else {
+            const currentStats = currentMain.stats || { efficiency: 0, creativity: 0, function: 0 };
+            const currentHighestStat = Math.max(currentStats.efficiency || 0, currentStats.creativity || 0, currentStats.function || 0);
+
+            if (highestStat > currentHighestStat) {
                 mainCardsMap[rarity] = card;
+            } else if (highestStat === currentHighestStat) {
+                // 스텟이 같으면 레벨 우선
+                const cardLevel = card.level || 1;
+                const currentMainLevel = currentMain.level || 1;
+                if (cardLevel > currentMainLevel) {
+                    mainCardsMap[rarity] = card;
+                } else if (cardLevel === currentMainLevel) {
+                    // 레벨도 같으면 전투력 우선
+                    const cardPower = card.stats?.totalPower || 0;
+                    const currentPower = currentMain.stats?.totalPower || 0;
+                    if (cardPower > currentPower) {
+                        mainCardsMap[rarity] = card;
+                    }
+                }
             }
         }
     });

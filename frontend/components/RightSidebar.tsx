@@ -36,7 +36,7 @@ export default function RightSidebar() {
             className="fixed right-0 top-20 bottom-0 z-40 bg-slate-900/80 backdrop-blur-xl border-l border-purple-500/10"
             transition={{ type: "spring", stiffness: 300, damping: 30 }}
         >
-            <div className="flex flex-col gap-2 p-4 h-full">
+            <div className="flex flex-col gap-1 p-3 h-full overflow-hidden">
                 {/* Commander Profile Section */}
                 <div className="mb-4">
                     <motion.div
@@ -45,9 +45,13 @@ export default function RightSidebar() {
                         whileTap={{ scale: 0.95 }}
                         className="relative cursor-pointer group"
                     >
-                        <div className="w-full aspect-square rounded-xl overflow-hidden border-2 border-cyan-500/30 group-hover:border-cyan-500/60 transition-all bg-gradient-to-br from-cyan-900/20 to-purple-900/20">
+                        <div className="w-full aspect-square rounded-xl overflow-hidden border-2 border-cyan-500/30 group-hover:border-cyan-500/60 transition-all bg-gradient-to-br from-cyan-900/40 to-purple-900/40 shadow-[0_0_15px_rgba(6,182,212,0.2)]">
                             <div className="w-full h-full flex items-center justify-center">
-                                <User size={isExpanded ? 32 : 24} className="text-cyan-400" />
+                                {profile?.avatarUrl ? (
+                                    <img src={profile.avatarUrl} alt="Commander" className="w-full h-full object-cover" />
+                                ) : (
+                                    <User size={isExpanded ? 32 : 24} className="text-cyan-400" />
+                                )}
                             </div>
                         </div>
                         <AnimatePresence>
@@ -82,7 +86,7 @@ export default function RightSidebar() {
                             <motion.div
                                 whileHover={{ scale: 1.05, x: -5 }}
                                 whileTap={{ scale: 0.95 }}
-                                className={`relative flex items-center gap-3 px-4 py-3 rounded-xl transition-all ${isActive
+                                className={`relative flex items-center gap-3 px-4 py-2 rounded-xl transition-all ${isActive
                                     ? 'bg-purple-500/20 text-purple-300'
                                     : 'text-slate-400 hover:bg-slate-800 hover:text-white'
                                     }`}

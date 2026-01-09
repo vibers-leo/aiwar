@@ -12,7 +12,7 @@ import CardRewardModal from '@/components/CardRewardModal';
 import { useAlert } from '@/context/AlertContext';
 import { cn } from '@/lib/utils';
 import { getResearchBonus } from '@/lib/research-system';
-import { loadInventory } from '@/lib/inventory-system';
+import { loadInventory, sortCards } from '@/lib/inventory-system';
 import { getGameState } from '@/lib/game-state';
 import { gameStorage } from '@/lib/game-storage';
 import { FACTION_CATEGORY_MAP } from '@/lib/token-constants'; // [NEW]
@@ -236,11 +236,16 @@ export default function EnhancePage() {
         cost: getEnhanceCost(targetCard.level || 1, targetCard.rarity || 'common', discount)
     } : undefined;
 
-    // 모든 카드 표시
-    const displayCards = allCards.filter(c =>
-        c.instanceId !== targetCard?.instanceId &&
-        !materialSlots.some(s => s?.instanceId === c.instanceId) &&
-        (selectedRarity === 'all' || (c.rarity || 'common') === selectedRarity)
+    // 모든 카드 표시 (주력 카드 우선 정렬)
+    const displayCards = sortCards(
+        allCards.filter(c =>
+            c.instanceId !== targetCard?.instanceId &&
+            !materialSlots.some(s => s?.instanceId === c.instanceId) &&
+            (selectedRarity === 'all' || (c.rarity || 'common') === selectedRarity)
+        ),
+        'power',
+        false,
+        true // prioritizeMain
     );
 
     return (

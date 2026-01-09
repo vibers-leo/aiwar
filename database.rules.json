@@ -13,9 +13,10 @@
         "battles": {
             ".read": "auth != null",
             "$roomId": {
-                ".write": "auth != null && (data.exists() ? (data.child('player1/playerId').val() == auth.uid || data.child('player2/playerId').val() == auth.uid) : true)",
+                ".write": "auth != null && (!data.exists() || data.child('player1/playerId').val() == auth.uid || data.child('player2/playerId').val() == auth.uid)",
                 ".validate": "!data.exists() || data.child('finished').val() == false",
                 "player1": {
+                    ".write": "auth != null && (newData.child('playerId').val() == auth.uid || data.child('playerId').val() == auth.uid)",
                     "ready": {
                         ".validate": "newData.isBoolean()"
                     },
@@ -24,6 +25,7 @@
                     }
                 },
                 "player2": {
+                    ".write": "auth != null && (newData.child('playerId').val() == auth.uid || data.child('playerId').val() == auth.uid)",
                     "ready": {
                         ".validate": "newData.isBoolean()"
                     },

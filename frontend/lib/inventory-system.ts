@@ -326,9 +326,81 @@ export function filterCards(cards: InventoryCard[], filters: CardFilter): Invent
 }
 
 /**
- * 카드 정렬
+ * 주력 카드 선택 규칙:
+ * 등급별로 1장씩 선택하며, 전체 전투력이 높은 것보다도
+ * 세부 스텟(효율, 창의, 기능 중) 1개가 가장 높은 것을 주력카드로 선정.
  */
-export function sortCards(cards: InventoryCard[], sortBy: CardSortBy, ascending: boolean = true): InventoryCard[] {
+export function getMainCards(cards: InventoryCard[]): InventoryCard[] {
+    const mainCards: Record<string, InventoryCard> = {};
+    const rarities = ['commander', 'unique', 'legendary', 'epic', 'rare', 'common'];
+
+    cards.forEach(card => {
+        const rarity = card.rarity || 'common';
+        const stats = card.stats || { efficiency: 0, creativity: 0, function: 0 };
+        // Determine the highest single stat
+        const highestStat = Math.max(stats.efficiency || 0, stats.creativity || 0, stats.function || 0);
+
+        if (!mainCards[rarity]) {
+            mainCards[rarity] = card;
+        } else {
+            const currentStats = mainCards[rarity].stats || { efficiency: 0, creativity: 0, function: 0 };
+            const currentHighestStat = Math.max(currentStats.efficiency || 0, currentStats.creativity || 0, currentStats.function || 0);
+
+            if (highestStat > currentHighestStat) {
+                mainCards[rarity] = card;
+            } else if (highestStat === currentHighestStat) {
+                // If highest single stats are equal, prefer higher level
+                if ((card.level || 1) > (mainCards[rarity].level || 1)) {
+                    mainCards[rarity] = card;
+                } else if ((card.level || 1) === (mainCards[rarity].level || 1)) {
+                    // If levels are also equal, prefer higher total power
+                    if ((card.stats?.totalPower || 0) > (mainCards[rarity].stats?.totalPower || 0)) {
+                        mainCards[rarity] = card;
+                    }
+                }
+            }
+        }
+    });
+
+    // Return in the specific order: Commander -> Unique -> Legendary -> Epic -> Rare -> Common
+    return rarities.map(r => mainCards[r]).filter(Boolean);
+}
+
+/**
+ * 카드 정렬 (주력 카드 우선 정렬 옵션 추가)
+ */
+export function sortCards(
+    cards: InventoryCard[],
+    sortBy: CardSortBy,
+    ascending: boolean = true,
+    prioritizeMain: boolean = false
+): InventoryCard[] {
+    let result = [...cards];
+
+    if (prioritizeMain) {
+        const mainCards = getMainCards(cards);
+        const mainInstanceIds = new Set(mainCards.map(c => c.instanceId));
+
+        const mains = result.filter(c => mainInstanceIds.has(c.instanceId));
+        const others = result.filter(c => !mainInstanceIds.has(c.instanceId));
+
+        // Sort mains by rarity descending (Commander first)
+        const sortedMains = [...mains].sort((a, b) => {
+            const rarityOrder = { 'common': 1, 'rare': 2, 'epic': 3, 'legendary': 4, 'unique': 5, 'commander': 6 };
+            return (rarityOrder[b.rarity as keyof typeof rarityOrder] || 0) -
+                (rarityOrder[a.rarity as keyof typeof rarityOrder] || 0);
+        });
+
+        // Sort others by requested criteria
+        const sortedOthers = sortInner(others, sortBy, ascending);
+
+        return [...sortedMains, ...sortedOthers];
+    }
+
+    return sortInner(result, sortBy, ascending);
+}
+
+function sortInner(cards: InventoryCard[], sortBy: CardSortBy, ascending: boolean = true): InventoryCard[] {
     const sorted = [...cards];
 
     sorted.sort((a, b) => {
@@ -344,8 +416,10 @@ export function sortCards(cards: InventoryCard[], sortBy: CardSortBy, ascending:
                 comparison = powerA - powerB;
                 break;
             case 'acquiredAt':
-                const dateA = a.acquiredAt instanceof Date ? a.acquiredAt : new Date(a.acquiredAt.seconds * 1000);
-                const dateB = b.acquiredAt instanceof Date ? b.acquiredAt : new Date(b.acquiredAt.seconds * 1000);
+                const dateA = a.acquiredAt instanceof Date ? a.acquiredAt :
+                    (a.acquiredAt && 'seconds' in a.acquiredAt ? new Date(a.acquiredAt.seconds * 1000) : new Date());
+                const dateB = b.acquiredAt instanceof Date ? b.acquiredAt :
+                    (b.acquiredAt && 'seconds' in b.acquiredAt ? new Date(b.acquiredAt.seconds * 1000) : new Date());
                 comparison = dateA.getTime() - dateB.getTime();
                 break;
             case 'rarity':

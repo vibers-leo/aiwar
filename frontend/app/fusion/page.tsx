@@ -3,7 +3,7 @@
 import { useState, useEffect, useCallback } from 'react';
 import { Card as CardType } from '@/lib/types';
 import { useUserProfile } from '@/hooks/useUserProfile';
-import { InventoryCard, addCardToInventory, removeCardFromInventory, loadInventory as loadInventorySystem } from '@/lib/inventory-system';
+import { InventoryCard, addCardToInventory, removeCardFromInventory, loadInventory as loadInventorySystem, getMainCards, sortCards } from '@/lib/inventory-system';
 import CyberPageLayout from '@/components/CyberPageLayout';
 import FusionFooter from '@/components/Footer/FusionFooter';
 import GameCard from '@/components/GameCard';
@@ -175,9 +175,14 @@ export default function FusionPage() {
     const canFuseNow = filledCount === 3;
 
     // Filter cards: Match rarity AND must be Level 1 (unenhanced)
-    const displayCards = allCards.filter(c =>
-        (selectedRarity === 'all' || (c.rarity || 'common') === selectedRarity) &&
-        (c.level === 1 || c.level === undefined) // Only Level 1
+    const displayCards = sortCards(
+        allCards.filter(c =>
+            (selectedRarity === 'all' || (c.rarity || 'common') === selectedRarity) &&
+            (c.level === 1 || c.level === undefined) // Only Level 1
+        ),
+        'power',
+        false,
+        true // prioritizeMain
     );
 
     return (
@@ -198,20 +203,10 @@ export default function FusionPage() {
                         </h3>
                         <div className="grid grid-cols-3 sm:grid-cols-6 gap-3 bg-gradient-to-br from-purple-900/10 to-pink-900/10 p-3 rounded-xl border border-purple-500/20">
                             {(() => {
-                                const mainCards: Record<string, InventoryCard> = {};
-                                const rarities = ['commander', 'unique', 'legendary', 'epic', 'rare', 'common'];
+                                const mainCards = getMainCards(allCards);
 
-                                allCards.forEach(card => {
+                                return mainCards.map(card => {
                                     const rarity = card.rarity || 'common';
-                                    if (!mainCards[rarity] || (card.level || 1) > (mainCards[rarity].level || 1)) {
-                                        mainCards[rarity] = card;
-                                    }
-                                });
-
-                                return rarities.map(rarity => {
-                                    const card = mainCards[rarity];
-                                    if (!card) return null;
-
                                     if (selectedRarity !== 'all' && (card.rarity || 'common') !== selectedRarity) return null;
 
                                     const isSelected = materialSlots.some(s => s?.instanceId === card.instanceId);

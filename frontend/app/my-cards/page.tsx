@@ -8,7 +8,7 @@ import GameCard from '@/components/GameCard';
 import { useFooter } from '@/context/FooterContext';
 import { useUser } from '@/context/UserContext';
 import { useAlert } from '@/context/AlertContext';
-import { loadInventory, InventoryCard, filterCards, sortCards, getInventoryStats, updateInventoryCard } from '@/lib/inventory-system';
+import { loadInventory, InventoryCard, filterCards, sortCards, getInventoryStats, updateInventoryCard, getMainCards } from '@/lib/inventory-system';
 import { SortAsc, SortDesc, Grid3X3, LayoutList, Lock } from 'lucide-react';
 import { cn, storage } from '@/lib/utils';
 import { useTranslation } from '@/context/LanguageContext';
@@ -66,8 +66,8 @@ export default function MyCardsPage() {
             result = filterCards(result, { rarity: [filterRarity] });
         }
 
-        // Sort
-        result = sortCards(result, sortBy, sortAsc);
+        // Sort with Main Cards prioritized at the top
+        result = sortCards(result, sortBy, sortAsc, true);
 
         return result;
     }, [cards, filterRarity, sortBy, sortAsc]);
@@ -123,21 +123,10 @@ export default function MyCardsPage() {
                     </h3>
                     <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-6 gap-4 bg-gradient-to-br from-amber-900/10 to-purple-900/10 p-4 rounded-xl border border-amber-500/20">
                         {(() => {
-                            // Get highest level card per rarity
-                            const mainCards: Record<string, InventoryCard> = {};
-                            const rarities = ['commander', 'unique', 'legendary', 'epic', 'rare', 'common'];
+                            const mainCards = getMainCards(cards);
 
-                            cards.forEach(card => {
+                            return mainCards.map(card => {
                                 const rarity = card.rarity || 'common';
-                                if (!mainCards[rarity] || (card.level || 1) > (mainCards[rarity].level || 1)) {
-                                    mainCards[rarity] = card;
-                                }
-                            });
-
-                            return rarities.map(rarity => {
-                                const card = mainCards[rarity];
-                                if (!card) return null;
-
                                 return (
                                     <motion.div
                                         key={rarity}
@@ -157,7 +146,7 @@ export default function MyCardsPage() {
                                         </div>
                                     </motion.div>
                                 );
-                            }).filter(Boolean);
+                            });
                         })()}
                     </div>
                 </div>
