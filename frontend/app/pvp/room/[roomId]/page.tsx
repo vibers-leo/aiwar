@@ -41,11 +41,11 @@ export default function RealtimeBattleRoomPage() {
     const [localPhase, setLocalPhase] = useState<LocalPhase>('loading');
     const [myCards, setMyCards] = useState<InventoryCard[]>([]);
     const [selectedCards, setSelectedCards] = useState<Card[]>([]);
-    const [countdown, setCountdown] = useState(30);
+    const [countdown, setCountdown] = useState(20); // [FIX] 30 -> 20
     const [isConnected, setIsConnected] = useState(false);
     const [isReady, setIsReady] = useState(false);
     const [error, setError] = useState<string | null>(null);
-    const [vsCountdown, setVsCountdown] = useState(5);
+    const [vsCountdown, setVsCountdown] = useState(20); // [FIX] 5 -> 20
 
     const heartbeatRef = useRef<NodeJS.Timeout | null>(null);
     const listenerRef = useRef<(() => void) | null>(null);
@@ -185,8 +185,10 @@ export default function RealtimeBattleRoomPage() {
             setVsCountdown(prev => {
                 if (prev <= 1) {
                     clearInterval(timer);
-                    setLocalPhase('deck-select');
-                    setCountdown(60);
+                    // [FIX] VS 카운트다운 종료 시 방 전체 페이즈를 deck-select로 동기화 업뎃
+                    if (room && (room.player1.playerId === playerId)) {
+                        updateBattleRoom(roomId, { phase: 'deck-select' });
+                    }
                     return 0;
                 }
                 return prev - 1;
