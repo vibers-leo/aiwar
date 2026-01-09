@@ -222,6 +222,11 @@ export function UserProvider({ children }: { children: React.ReactNode }) {
             console.log(`[Auth] User ${user.uid} and profile loaded. Syncing data...`);
             setLoading(true);
 
+            // [NEW] 중복 닉네임 정리 플래그 체크
+            if ((profile as any).needsNicknameChange) {
+                console.warn(`[Auth] 🚨 Nickname conflict detected for ${user.uid}. Force change required.`);
+            }
+
             // [Safety] Force release loading state after 12 seconds if sync hangs
             const forceReleaseTimer = setTimeout(() => {
                 setLoading(prev => {

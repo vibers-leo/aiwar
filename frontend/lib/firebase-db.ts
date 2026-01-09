@@ -665,6 +665,85 @@ export async function updateNickname(nickname: string, uid?: string): Promise<vo
 }
 
 /**
+ * 레거시 닉네임 마이그레이션 (중복 정리)
+ * @description 모든 유저를 스캔하여 nicknames 컬렉션을 채우고, 중복된 경우 가입일이 늦은 유저에게 변경 유도 플래그를 설정합니다.
+ */
+export async function migrateExistingNicknames(): Promise<{ fixed: number; duplicates: number }> {
+    if (!isFirebaseConfigured || !db) return { fixed: 0, duplicates: 0 };
+
+    console.log('🚀 [Migration] Starting nickname cleanup...');
+    let fixed = 0;
+    let duplicates = 0;
+
+    try {
+        // 1. 모든 유저 정보 가져오기
+        const usersRef = collection(db, 'users');
+        const snapshot = await getDocs(usersRef);
+        const allUsers: any[] = [];
+
+        for (const userDoc of snapshot.docs) {
+            const profileRef = doc(db, 'users', userDoc.id, 'profile', 'data');
+            const profileSnap = await getDoc(profileRef);
+            if (profileSnap.exists()) {
+                const data = profileSnap.data();
+                if (data.nickname) {
+                    allUsers.push({
+                        uid: userDoc.id,
+                        nickname: data.nickname,
+                        createdAt: data.createdAt?.toDate?.() || new Date(0)
+                    });
+                }
+            }
+        }
+
+        // 2. 닉네임별로 그룹화 및 정렬 (가입일 순)
+        const nicknameGroups: Record<string, any[]> = {};
+        allUsers.forEach(u => {
+            const key = u.nickname.toLowerCase();
+            if (!nicknameGroups[key]) nicknameGroups[key] = [];
+            nicknameGroups[key].push(u);
+        });
+
+        const batch = writeBatch(db);
+
+        for (const [key, users] of Object.entries(nicknameGroups)) {
+            // 가입일 기준 오름차순 (가장 먼저 가입한 유저가 0번 인덱스)
+            users.sort((a, b) => a.createdAt.getTime() - b.createdAt.getTime());
+
+            const winner = users[0];
+            const losers = users.slice(1);
+
+            // Winner: nicknames 컬렉션에 정식 등록
+            const nickRef = doc(db, 'nicknames', key);
+            batch.set(nickRef, {
+                uid: winner.uid,
+                name: winner.nickname,
+                updatedAt: serverTimestamp()
+            });
+            fixed++;
+
+            // Losers: 닉네임 변경 필요 플래그 설정
+            for (const loser of losers) {
+                const loserProfileRef = doc(db, 'users', loser.uid, 'profile', 'data');
+                batch.update(loserProfileRef, {
+                    needsNicknameChange: true,
+                    oldNickname: loser.nickname,
+                    nickname: `${loser.nickname}#${loser.uid.slice(0, 4)}` // 임시 변경
+                });
+                duplicates++;
+                console.warn(`[Migration] Duplicate found: ${loser.nickname} (User: ${loser.uid}). Priority given to ${winner.uid}`);
+            }
+        }
+
+        await batch.commit();
+        console.log(`✅ [Migration] Completed. Fixed: ${fixed}, Duplicates: ${duplicates}`);
+        return { fixed, duplicates };
+    } catch (error) {
+        console.error('❌ [Migration] Failed:', error);
+        throw error;
+    }
+}
+/**
  * 코인 업데이트 (증감)
  * @description Uses a transaction to safely update coins, preventing negative balances.
  */

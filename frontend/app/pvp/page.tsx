@@ -70,6 +70,30 @@ export default function PVPArenaPage() {
     }
 
     const nickname = profile.nickname || '지휘관';
+
+    // [NEW] 중복 닉네임 정리 가드
+    if ((profile as any).needsNicknameChange) {
+        return (
+            <CyberPageLayout title="닉네임 변경 필요" englishTitle="RENAME REQUIRED" color="yellow">
+                <div className="flex flex-col items-center justify-center min-h-[60vh] text-center px-4">
+                    <div className="w-20 h-20 bg-yellow-500/20 rounded-full flex items-center justify-center mb-6">
+                        <Swords className="text-yellow-500 w-10 h-10" />
+                    </div>
+                    <h2 className="text-2xl font-black text-white mb-4 orbitron">COMMANDER NAME CONFLICT</h2>
+                    <p className="text-white/60 mb-8 max-w-md">
+                        현재 사용 중인 닉네임({(profile as any).oldNickname})이 다른 지휘관과 중복되어 임시 닉네임으로 변경되었습니다.<br />
+                        아레나 참가를 위해 새로운 고유 닉네임을 설정해주세요.
+                    </p>
+                    <button
+                        onClick={() => router.push('/settings')}
+                        className="px-8 py-3 bg-yellow-500 hover:bg-yellow-400 text-black font-bold rounded-lg transition-all"
+                    >
+                        닉네임 재설정하러 가기
+                    </button>
+                </div>
+            </CyberPageLayout>
+        );
+    }
     const [selectedMode, setSelectedMode] = useState<BattleMode>('double');
     const [selectedMatchType, setSelectedMatchType] = useState<MatchType>('ai-training');
     const [playerDeck, setPlayerDeck] = useState<Card[]>([]);
