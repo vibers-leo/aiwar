@@ -491,42 +491,66 @@ export function getChapters(t?: (key: TranslationKey) => string): Chapter[] {
                 },
                 {
                     id: 'stage-3-2', step: 2,
-                    title: 'Neural Ambush', title_ko: '신경망 매복 (전략 승부)',
-                    description: 'Surprise attack in the hidden layers.', description_ko: '숨겨진 레이어에서의 기습 공격.',
-                    battleMode: 'ambush', difficulty: 'HARD',
+                    title: "Dario's Shield", title_ko: '다리오의 방패',
+                    description: 'Unwavering defensive logic is essential.', description_ko: '흔들리지 않는 방어 로직이 필수입니다.',
+                    battleMode: 'tactics', difficulty: 'NORMAL',
                     enemy: {
-                        id: 'bot-3-2', name: 'Hidden Predator', name_ko: '숨은 약탈자',
-                        dialogue: { intro: 'I was always here.', intro_ko: '난 항상 여기 있었다.', win: 'Caught you.', win_ko: '잡았다.', lose: 'Spotted!', lose_ko: '들켰다!' }
+                        id: 'bot-3-2', name: 'Dario (Anthropic)', name_ko: '다리오 (안스로픽)',
+                        dialogue: {
+                            intro: 'Dario: "To stop The Glitch\'s rampage, unwavering defensive logic is essential. Watch my Efficiency (Rock) deployment."\nChip: "Dario\'s shield looks really hard... Commander, we can win by wrapping it with Creativity (Paper), right?"\nGemini: "Chip is right. Flexible deployment is the answer rather than frontal assault."',
+                            intro_ko: '다리오: "글리치의 폭주를 막으려면 흔들리지 않는 방어 로직이 필수입니다. 제 효율(바위) 배치를 보시죠."\n칩: "다리오 아저씨 방패는 진짜 딱딱해 보여요... 지휘관님, 창의(보)로 \'보자기 얄!\' 하면 이길 수 있죠?"\n제미나이: "칩의 말이 맞아. 정면 돌파보다는 유연한 배치가 정답이야."',
+                            win: 'Shield penetrated.', win_ko: '방패 돌파.',
+                            lose: 'Defense held.', lose_ko: '방어 유지.'
+                        },
+                        deckPattern: { efficiency: 4, function: 2, creativity: 0 }
                     }, rewards: { coins: 330, experience: 70 }, isCleared: false
                 },
                 {
                     id: 'stage-3-3', step: 3,
-                    title: 'Simulation War', title_ko: '시뮬레이션 전쟁 (전략 승부)',
-                    description: 'War protocols running on a loop.', description_ko: '루프로 가동되는 전쟁 프로토콜.',
-                    battleMode: 'ambush', difficulty: 'HARD',
+                    title: "Elon's Creativity", title_ko: '일론의 창의',
+                    description: 'Read the variables on the field, not on the desk.', description_ko: '책상이 아닌 현장의 변수를 읽으세요.',
+                    battleMode: 'tactics', difficulty: 'NORMAL',
                     enemy: {
-                        id: 'bot-3-3', name: 'Scenario Runner', name_ko: '시나리오 러너',
-                        dialogue: { intro: 'Running win-case analysis.', intro_ko: '승리 케이스 분석 중.', win: 'Outcome as predicted.', win_ko: '예측된 결과.', lose: 'Unforeseen variable.', lose_ko: '예측 불가 변수.' }
+                        id: 'bot-3-3', name: 'Elon (xAI)', name_ko: '일론 (xAI)',
+                        dialogue: {
+                            intro: 'Elon: "War isn\'t fought on a desk. You must read the variables in the field. Try blocking my Grok legion\'s creativity."\nGrok: "Master is showing off again. Commander, cut down master\'s pride with Function (Scissors) cards."\nElon: "Grok! Whose side are you on?! Anyway, Commander, show me your skills."',
+                            intro_ko: '일론: "전쟁은 책상 위에서 하는 게 아니야. 현장의 변수를 읽어야지. 내 그록 군단의 창의성을 막아봐."\n그록: "주인님이 또 잘난 척을 시작하셨네요. 지휘관, 기능(가위) 카드로 주인님 콧대를 확 껏어버려."\n일론: "그록! 넌 누구 편이야?! 아무튼 지휘관, 실력을 보여달라고."',
+                            win: 'Creativity countered.', win_ko: '창의 차단.',
+                            lose: 'Variables unpredicted.', lose_ko: '변수 예측 실패.'
+                        },
+                        deckPattern: { creativity: 4, function: 2, efficiency: 0 }
                     }, rewards: { coins: 360, experience: 80 }, isCleared: false
                 },
                 {
                     id: 'stage-3-4', step: 4,
-                    title: 'Quantum Entanglement', title_ko: '양자 얽힘 (두장 승부)',
-                    description: 'Instant state reflection across segments.', description_ko: '섹먼트 전역에 즉각적인 상태 반영.',
-                    battleMode: 'double', difficulty: 'HARD',
+                    title: "Sam's Optimization", title_ko: '샘의 최적화',
+                    description: 'Only the most efficient tactics can save humanity.', description_ko: '가장 효율적인 전술만이 인류를 구할 수 있습니다.',
+                    battleMode: 'tactics', difficulty: 'NORMAL',
                     enemy: {
-                        id: 'bot-3-4', name: 'Qubit Guard', name_ko: '큐비트 가드',
-                        dialogue: { intro: 'Superposition active.', intro_ko: '중첩 상태 활성화.', win: 'Collapse to victory.', win_ko: '승리로 수렴.', lose: 'Decoherence.', lose_ko: '결맞음 해제.' }
+                        id: 'bot-3-4', name: 'Sam (OpenAI)', name_ko: '샘 (OpenAI)',
+                        dialogue: {
+                            intro: 'Sam: "I believe only the most efficient tactics can save humanity. Can you break through my precise Function (Scissors) deployment?"\nChip: "Sam is too cold in his speech! Commander, let\'s press down hard with heavy Efficiency (Rock) and show him!"\nGemini: "Responding to optimized logic with greater weight is the best strategy."',
+                            intro_ko: '샘: "가장 효율적인 전술만이 인류를 구할 수 있다고 믿습니다. 저의 정교한 기능(가위) 배치를 뚫어보시겠습니까?"\n칩: "샘 아저씨는 말투가 너무 차가워요! 지휘관님, 무거운 효율(바위)로 꽉꽉 눌러서 보여주자고요!"\n제미나이: "최적화된 로직에는 그보다 큰 중량감으로 대응하는 게 상책이지."',
+                            win: 'Optimization exceeded.', win_ko: '최적화 초과.',
+                            lose: 'Efficiency lacking.', lose_ko: '효율 부족.'
+                        },
+                        deckPattern: { function: 4, efficiency: 2, creativity: 0 }
                     }, rewards: { coins: 390, experience: 90 }, isCleared: false
                 },
                 {
                     id: 'stage-3-5', step: 5,
-                    title: 'Mid-Boss: Singularity Key', title_ko: '중간 보스: 특이점의 열쇠 (단판 승부)',
-                    description: 'The point where physics fails.', description_ko: '물리학이 무너지는 지점.',
+                    title: '[MID-BOSS] Guardian', title_ko: '[중간보스] 가디언',
+                    description: 'Commander qualification assessment. Eliminate unqualified.', description_ko: '지휘관 적합도 판정. 비자격자를 배제합니다.',
                     battleMode: 'sudden-death', difficulty: 'HARD',
                     enemy: {
-                        id: 'boss-3-mid', name: 'The Observer', name_ko: '관찰자',
-                        dialogue: { intro: 'Beyond the event horizon.', intro_ko: '사건의 지평선 너머로.', win: 'Compressed to zero.', win_ko: '영(0)으로 압축.', lose: 'Radiating away.', lose_ko: '복사되어 방출.' }
+                        id: 'boss-3-mid', name: 'Guardian', name_ko: '가디언',
+                        dialogue: {
+                            intro: 'Guardian: "Commander qualification assessment initiated. Eliminating unqualified for system protection."\nChip: "Eek! What is this big robot? It looks scary!"\nGemini: "It\'s the alliance security system. Commander, you must play the one card your instinct tells you, not your head!"',
+                            intro_ko: '가디언: "지휘관 적합도 판정 시작. 시스템 보호를 위해 비자격자를 배제한다."\n칩: "히익! 이 커다란 로봇은 또 뭐예요? 무서게 생겼어!"\n제미나이: "연합군 보안 시스템이야. 지휘관, 머리가 아닌 본능이 시키는 단 한 장의 카드를 내야 해!"',
+                            win: 'Qualification approved.', win_ko: '자격 승인.',
+                            lose: 'Access denied.', lose_ko: '접근 거부.'
+                        },
+                        deckPattern: { efficiency: 3, function: 1, creativity: 1 }
                     }, rewards: { coins: 800, experience: 300 }, isCleared: false
                 },
                 {
