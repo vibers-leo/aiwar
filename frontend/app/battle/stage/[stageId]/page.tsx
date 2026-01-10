@@ -16,6 +16,7 @@ import { Shield, ArrowLeft } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { BackgroundBeams } from '@/components/ui/aceternity/background-beams';
 import { BattleArena } from '@/components/BattleArena';
+import DialogueOverlay from '@/components/story/DialogueOverlay';
 
 
 // Shared Phase Type
@@ -232,34 +233,18 @@ export default function StageBattlePage() {
 
                 {/* 1. Intro (Dialogue) */}
                 {phase === 'intro' && (
-                    <div className="flex-1 flex flex-col items-center justify-center p-8 max-w-4xl mx-auto w-full">
-                        <motion.div
-                            initial={{ y: 20, opacity: 0 }} animate={{ y: 0, opacity: 1 }}
-                            className="w-full bg-zinc-900/80 border border-red-500/30 rounded-2xl p-8 mb-8 relative overflow-hidden"
-                        >
-                            <div className="absolute top-0 left-0 w-1 h-full bg-red-500" />
-                            <h3 className="text-red-400 font-bold mb-2 text-sm tracking-widest flex items-center gap-2">
-                                <Shield className="w-4 h-4" />
-                                {t('battle.common.enemyEncounter')}
-                            </h3>
-                            <div className="flex gap-6 items-center">
-                                <div className="w-24 h-24 bg-red-900/20 rounded-full border-2 border-red-500 flex items-center justify-center text-4xl shrink-0">
-                                    👿
-                                </div>
-                                <div>
-                                    <div className="text-2xl font-black text-white italic mb-2">
-                                        {language === 'ko' ? storyStage.enemy.name_ko : storyStage.enemy.name}
-                                    </div>
-                                    <p className="text-xl text-gray-300">
-                                        &quot;{language === 'ko' ? (storyStage.enemy.dialogue.start_ko || storyStage.enemy.dialogue.intro_ko) : (storyStage.enemy.dialogue.start || storyStage.enemy.dialogue.intro)}&quot;
-                                    </p>
-                                </div>
-                            </div>
-                        </motion.div>
-                        <Button size="lg" className="w-full text-xl py-8 font-black bg-cyan-600 hover:bg-cyan-500 rounded-2xl" onPress={startDeckSelection}>
-                            {t('battle.common.prepareBattle')}
-                        </Button>
-                    </div>
+                    <DialogueOverlay
+                        isOpen={phase === 'intro'}
+                        onClose={startDeckSelection}
+                        dialogue={language === 'ko' ? (storyStage.enemy.dialogue.start_ko || storyStage.enemy.dialogue.intro_ko) : (storyStage.enemy.dialogue.start || storyStage.enemy.dialogue.intro)}
+                        speakerName={
+                            (language === 'ko' ? (storyStage.enemy.dialogue.start_ko || storyStage.enemy.dialogue.intro_ko) : (storyStage.enemy.dialogue.start || storyStage.enemy.dialogue.intro)).includes('제미나이') ||
+                                (language === 'ko' ? (storyStage.enemy.dialogue.start_ko || storyStage.enemy.dialogue.intro_ko) : (storyStage.enemy.dialogue.start || storyStage.enemy.dialogue.intro)).includes('Gemini')
+                                ? 'Gemini'
+                                : (language === 'ko' ? storyStage.enemy.name_ko : storyStage.enemy.name)
+                        }
+                        characterImage={storyStage.enemy.image}
+                    />
                 )}
 
                 {/* 2. Deck Selection */}

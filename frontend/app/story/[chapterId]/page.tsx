@@ -20,6 +20,7 @@ import { addNotification } from '@/components/NotificationCenter';
 import PageHeader from '@/components/PageHeader';
 import { useTranslation } from '@/context/LanguageContext';
 import { useUser } from '@/context/UserContext';
+import DialogueOverlay from '@/components/story/DialogueOverlay';
 
 export default function ChapterDetailPage() {
     const router = useRouter();
@@ -38,6 +39,8 @@ export default function ChapterDetailPage() {
         type?: 'success' | 'intro';
         onConfirm?: () => void;
     }>({ isOpen: false, title: '', message: '' });
+
+    const [isDialogueOpen, setIsDialogueOpen] = useState(false);
 
     const { consumeTokens, user } = useUser();
 
@@ -85,22 +88,19 @@ export default function ChapterDetailPage() {
 
     const handleBattleStart = async () => {
         if (!selectedStage) return;
+        setIsDialogueOpen(true);
+    };
 
+    const handleDialogueComplete = async () => {
+        if (!selectedStage) return;
         const cost = selectedStage.tokenCost || (selectedStage.difficulty === 'BOSS' ? 100 : 50);
 
-        setModalConfig({
-            isOpen: true,
-            title: `VS ${selectedStage.enemy.name_ko || selectedStage.enemy.name}`,
-            message: selectedStage.enemy.dialogue.appearance_ko || selectedStage.enemy.dialogue.appearance || selectedStage.enemy.dialogue.intro_ko || selectedStage.enemy.dialogue.intro,
-            type: 'intro',
-            onConfirm: async () => {
-                // [Check Token Balance]
-                const success = await consumeTokens(cost, 'STORY_MISSION');
-                if (success) {
-                    router.push(`/battle/stage/${selectedStage.id}`);
-                }
-            }
-        });
+        // [Check Token Balance]
+        const success = await consumeTokens(cost, 'STORY_MISSION');
+        if (success) {
+            router.push(`/battle/stage/${selectedStage.id}`);
+        }
+        setIsDialogueOpen(false);
     };
 
     if (!chapter) return null;
@@ -278,34 +278,43 @@ export default function ChapterDetailPage() {
                 </div>
             </div>
 
-            {/* 대화 모달 */}
-            <Modal isOpen={modalConfig.isOpen} onClose={() => setModalConfig({ ...modalConfig, isOpen: false })}>
+            {/* 대화 오버레이 */}
+            {selectedStage && (
+                <DialogueOverlay
+                    isOpen={isDialogueOpen}
+                    onClose={handleDialogueComplete}
+                    dialogue={selectedStage.enemy.dialogue.appearance_ko || selectedStage.enemy.dialogue.appearance || selectedStage.enemy.dialogue.intro_ko || selectedStage.enemy.dialogue.intro}
+                    speakerName={
+                        (selectedStage.enemy.dialogue.appearance_ko || selectedStage.enemy.dialogue.appearance || selectedStage.enemy.dialogue.intro_ko || selectedStage.enemy.dialogue.intro).includes('제미나이') ||
+                            (selectedStage.enemy.dialogue.appearance_ko || selectedStage.enemy.dialogue.appearance || selectedStage.enemy.dialogue.intro_ko || selectedStage.enemy.dialogue.intro).includes('Gemini')
+                            ? 'Gemini'
+                            : (language === 'ko' ? selectedStage.enemy.name_ko : selectedStage.enemy.name)
+                    }
+                    characterImage={selectedStage.enemy.image}
+                    type={selectedStage.difficulty === 'BOSS' ? 'boss' : 'intro'}
+                />
+            )}
+
+            {/* 일반 모달 (성공 메시지 등) */}
+            <Modal isOpen={modalConfig.isOpen && modalConfig.type !== 'intro'} onClose={() => setModalConfig({ ...modalConfig, isOpen: false })}>
                 <ModalContent>
-                    <ModalHeader className="text-red-500 italic font-black text-2xl">
+                    <ModalHeader className="text-cyan-500 font-black text-2xl">
                         {modalConfig.title}
                     </ModalHeader>
                     <ModalBody className="text-center py-8">
-                        <div className="text-4xl mb-6">💬</div>
-                        <p className="text-xl text-white font-serif italic leading-relaxed">
-                            &quot;{modalConfig.message}&quot;
+                        <p className="text-xl text-white">
+                            {modalConfig.message}
                         </p>
                     </ModalBody>
                     <ModalFooter>
                         <Button
-                            className="w-full bg-red-600 hover:bg-red-500 py-6 text-lg"
+                            className="w-full bg-cyan-600 hover:bg-cyan-500 py-6 text-lg"
                             onClick={() => {
-                                // Close modal is handled inside onConfirm if needed, 
-                                // but actually we need to close it first or handle loading? 
-                                // The previous code closed it then called onConfirm.
-                                // Let's keep that behavior but we need accurate token check.
-                                // If token check fails, modal closes and notification appears. Ideally modal stays if fail?
-                                // "consumeTokens" usually handles its own notification if inside hook? Or it returns false.
-                                // Let's assume onConfirm handles logic.
                                 setModalConfig({ ...modalConfig, isOpen: false });
                                 modalConfig.onConfirm?.();
                             }}
                         >
-                            FIGHT! (-{selectedStage?.tokenCost || (selectedStage?.difficulty === 'BOSS' ? 100 : 50)} 🪙)
+                            CONFIRM
                         </Button>
                     </ModalFooter>
                 </ModalContent>
