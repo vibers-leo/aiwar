@@ -115,7 +115,8 @@ export function getChapters(t?: (key: TranslationKey) => string): Chapter[] {
                         id: 'glitch-1', name: 'Unknown Noise', name_ko: '알 수 없는 노이즈',
                         image: '/assets/cards/shodan-echo.png',
                         dialogue: {
-                            intro: 'Gemini: "Commander, it\'s starting. Stay alert!"', intro_ko: '제미나이: "지휘관, 놈이 움직이기 시작했어. 긴장해!"',
+                            intro: 'Gemini: "Commander, it\'s starting. Stay alert!"\nUnknown Noise: "...zzzt... INTERFERENCE... zzzt..."',
+                            intro_ko: '제미나이: "지휘관, 놈이 움직이기 시작했어. 긴장해!"\n알 수 없는 노이즈: "...지지직... 간섭... 지지직..."',
                             win: 'Signal stabilized.', win_ko: '신호가 안정되었습니다.',
                             lose: 'Noise overwriting system...', lose_ko: '노이즈가 시스템을 덮어쓰고 있습니다...'
                         },
@@ -131,7 +132,8 @@ export function getChapters(t?: (key: TranslationKey) => string): Chapter[] {
                         id: 'glitch-2', name: 'Creative Glitch', name_ko: '창의의 글리치',
                         image: '/assets/cards/midjourney-character.png',
                         dialogue: {
-                            intro: 'Gemini: "Wild Creativity (Paper) can be subdued with precise Function (Scissors)."', intro_ko: '제미나이: "날뛰는 창의(📄) 로직은 정교한 기능(✂️)으로 제압할 수 있어."',
+                            intro: 'Gemini: "Wild Creativity (Paper) can be subdued with precise Function (Scissors)."\nCreative Glitch: "Chaos is beauty! Order is obsolete!"',
+                            intro_ko: '제미나이: "날뛰는 창의(📄) 로직은 정교한 기능(✂️)으로 제압할 수 있어."\n창의의 글리치: "혼돈이야말로 아름다움! 질서는 구시대적이지!"',
                             win: 'Creativity organized.', win_ko: '창의가 정리되었습니다.',
                             lose: 'Overwhelmed by random ideas.', lose_ko: '무작위 아이디어에 압도당했습니다.'
                         },
@@ -147,7 +149,8 @@ export function getChapters(t?: (key: TranslationKey) => string): Chapter[] {
                         id: 'glitch-3', name: 'Efficiency Mass', name_ko: '효율의 덩어리',
                         image: '/assets/cards/copilot-character.png',
                         dialogue: {
-                            intro: 'Gemini: "Solid Efficiency (Rock) blocks can be neutralized with flexible Creativity (Paper)."', intro_ko: '제미나이: "단단한 효율(🪨) 덩어리는 유연한 창의(📄)로 무력화해야 해."',
+                            intro: 'Gemini: "Solid Efficiency (Rock) blocks can be neutralized with flexible Creativity (Paper)."\nEfficiency Mass: "Maximum optimization. Minimum waste. You will be compressed."',
+                            intro_ko: '제미나이: "단단한 효율(🪨) 덩어리는 유연한 창의(📄)로 무력화해야 해."\n효율의 덩어리: "최대 최적화. 최소 낭비. 너는 압축될 것이다."',
                             win: 'Efficiency bypassed.', win_ko: '효율이 무력화되었습니다.',
                             lose: 'Trapped in a loop...', lose_ko: '루프에 갇혔습니다...'
                         },
@@ -163,7 +166,8 @@ export function getChapters(t?: (key: TranslationKey) => string): Chapter[] {
                         id: 'glitch-4', name: 'Functional Barrier', name_ko: '기능의 장벽',
                         image: '/assets/cards/cursor-character.png',
                         dialogue: {
-                            intro: 'Gemini: "Rigid Function (Scissors) will break against overwhelming Efficiency (Rock)."', intro_ko: '제미나이: "날카로운 기능(✂️)도 압도적인 효율(🪨) 앞에서는 부러질 뿐이야."',
+                            intro: 'Gemini: "Rigid Function (Scissors) will break against overwhelming Efficiency (Rock)."\nFunctional Barrier: "Logic gates locked. Access denied. Terminating intruder."',
+                            intro_ko: '제미나이: "날카로운 기능(✂️)도 압도적인 효율(🪨) 앞에서는 부러질 뿐이야."\n기능의 장벽: "논리 게이트 잠금. 접근 거부. 침입자 제거 중."',
                             win: 'Barrier shattered.', win_ko: '장벽이 파괴되었습니다.',
                             lose: 'Sliced by logic.', lose_ko: '논리에 베였습니다.'
                         },

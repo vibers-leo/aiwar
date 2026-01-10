@@ -211,7 +211,7 @@ export default function DialogueOverlay({
                             </div>
 
                             {/* Dialogue Text */}
-                            <div className="text-xl md:text-2xl font-medium leading-relaxed text-gray-100 pr-12">
+                            <div className="text-xl md:text-2xl font-medium leading-relaxed text-gray-100 pr-12 whitespace-pre-wrap">
                                 {displayText}
                                 {!isTypewriterFinished && (
                                     <motion.span
