@@ -1,54 +1,18 @@
 'use client';
 
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { useUser } from '@/context/UserContext';
-import { Card } from '@/lib/types';
 import { InventoryCard } from '@/lib/inventory-system';
 import GachaRevealModal from '@/components/GachaRevealModal';
+import GlitchEffect from '@/components/effects/GlitchEffect';
+import { tutorialScenarios, sceneOrder, replaceUserName, type TutorialScene, type DialogueLine } from '@/data/tutorial-scenarios';
+import { getCharacterPortrait, getCharacterName, getCharacterStyle } from '@/lib/character-portraits';
 import {
-    Terminal, Swords, Shield, Zap, Gift, ChevronRight, X, AlertCircle
+    ChevronRight, X, Volume2, VolumeX, Sparkles
 } from 'lucide-react';
 import { cn } from '@/lib/utils';
-import { useUserProfile } from '@/hooks/useUserProfile';
-
-interface TutorialStep {
-    id: string;
-    title: string;
-    content: string;
-    icon?: string;
-    color?: string;
-    highlight?: string;
-    position?: 'top' | 'bottom' | 'center';
-    action: 'next' | 'claim' | 'close';
-    reward?: string;
-}
-
-const parseMarkdownTutorial = (md: string): TutorialStep[] => {
-    const steps: TutorialStep[] = [];
-    const rawSteps = md.split('# step:').filter(s => s.trim());
-
-    rawSteps.forEach(raw => {
-        const lines = raw.split('\n');
-        const id = lines[0].trim();
-        const step: any = { id };
-
-        lines.slice(1).forEach(line => {
-            if (line.startsWith('## title:')) step.title = line.replace('## title:', '').trim();
-            else if (line.startsWith('## content:')) step.content = line.replace('## content:', '').trim();
-            else if (line.startsWith('## icon:')) step.icon = line.replace('## icon:', '').trim();
-            else if (line.startsWith('## color:')) step.color = line.replace('## color:', '').trim();
-            else if (line.startsWith('## highlight:')) step.highlight = line.replace('## highlight:', '').trim();
-            else if (line.startsWith('## position:')) step.position = line.replace('## position:', '').trim();
-            else if (line.startsWith('## action:')) step.action = line.replace('## action:', '').trim();
-            else if (line.startsWith('## reward:')) step.reward = line.replace('## reward:', '').trim();
-        });
-
-        if (step.id) steps.push(step);
-    });
-
-    return steps;
-};
+import Image from 'next/image';
 
 interface UnifiedTutorialModalProps {
     onClose?: () => void;
@@ -57,18 +21,31 @@ interface UnifiedTutorialModalProps {
 
 export default function UnifiedTutorialModal({ onClose, onClaim }: UnifiedTutorialModalProps) {
     const { user, claimStarterPack } = useUser();
-    // Use the same tracking ID logic as TutorialManager for consistency
     const [trackingId, setTrackingId] = useState<string | null>(null);
+    const [userName, setUserName] = useState<string>('');
 
-    const [steps, setSteps] = useState<TutorialStep[]>([]);
-    const [currentStepIndex, setCurrentStepIndex] = useState(0);
+    // Scene and Dialogue State
+    const [currentSceneIndex, setCurrentSceneIndex] = useState(0);
+    const [currentDialogueIndex, setCurrentDialogueIndex] = useState(0);
     const [isVisible, setIsVisible] = useState(false);
     const [isLoading, setIsLoading] = useState(true);
+    const [displayedText, setDisplayedText] = useState('');
+    const [isTyping, setIsTyping] = useState(false);
+    const [isMuted, setIsMuted] = useState(false);
 
-    // Reward State (deprecated if handled by onClaim, but keeping for safety in standalone use)
+    // Nickname Input State (for Scene 2)
+    const [nicknameInput, setNicknameInput] = useState('');
+
+    // Reward State
     const [claimedCards, setClaimedCards] = useState<InventoryCard[]>([]);
     const [showRewardModal, setShowRewardModal] = useState(false);
     const [isProcessing, setIsProcessing] = useState(false);
+
+    const typingIntervalRef = useRef<NodeJS.Timeout | null>(null);
+
+    // Get current scene and dialogue
+    const currentScene = tutorialScenarios[currentSceneIndex];
+    const currentDialogue = currentScene?.dialogues[currentDialogueIndex];
 
     useEffect(() => {
         if (!user) return;
@@ -87,84 +64,105 @@ export default function UnifiedTutorialModal({ onClose, onClaim }: UnifiedTutori
         const checkTutorialStatus = async () => {
             const isCompleted = localStorage.getItem(`tutorial_completed_${id}`);
 
-            if (isCompleted && !onClose) { // Only auto-hide if NOT controlled by parent (legacy support)
+            if (isCompleted && !onClose) {
                 setIsLoading(false);
                 return;
             }
 
-            try {
-                const res = await fetch('/data/tutorial.md');
-                const text = await res.text();
-                const parsedSteps = parseMarkdownTutorial(text);
-                setSteps(parsedSteps);
-                setIsVisible(true);
-            } catch (e) {
-                console.error("Failed to load tutorial:", e);
-            } finally {
-                setIsLoading(false);
-            }
+            setIsVisible(true);
+            setIsLoading(false);
         };
 
         checkTutorialStatus();
     }, [user, onClose]);
 
-    // Handle Highlight Effect
+    // Typing Effect
     useEffect(() => {
-        if (!isVisible || !steps[currentStepIndex]) return;
+        if (!currentDialogue || !isVisible) return;
 
-        const step = steps[currentStepIndex];
+        const fullText = replaceUserName(currentDialogue.text, userName || '지휘관');
 
-        // Remove previous highlights
-        document.querySelectorAll('.tutorial-highlight').forEach(el => {
-            el.classList.remove('tutorial-highlight', 'relative', 'z-[60]');
-        });
+        if (currentDialogue.effect === 'typing') {
+            setIsTyping(true);
+            setDisplayedText('');
+            let charIndex = 0;
 
-        if (step.highlight) {
-            const el = document.querySelector(step.highlight);
-            if (el) {
-                el.classList.add('tutorial-highlight', 'relative', 'z-[60]');
-                el.scrollIntoView({ behavior: 'smooth', block: 'center' });
-            }
+            typingIntervalRef.current = setInterval(() => {
+                if (charIndex < fullText.length) {
+                    setDisplayedText(fullText.substring(0, charIndex + 1));
+                    charIndex++;
+                } else {
+                    setIsTyping(false);
+                    if (typingIntervalRef.current) {
+                        clearInterval(typingIntervalRef.current);
+                    }
+                }
+            }, 30);
+
+            return () => {
+                if (typingIntervalRef.current) {
+                    clearInterval(typingIntervalRef.current);
+                }
+            };
+        } else {
+            setDisplayedText(fullText);
+            setIsTyping(false);
+        }
+    }, [currentDialogue, isVisible, userName]);
+
+    const handleNextDialogue = () => {
+        if (isTyping && typingIntervalRef.current) {
+            // Skip typing animation
+            clearInterval(typingIntervalRef.current);
+            setDisplayedText(replaceUserName(currentDialogue.text, userName || '지휘관'));
+            setIsTyping(false);
+            return;
         }
 
-        return () => {
-            document.querySelectorAll('.tutorial-highlight').forEach(el => {
-                el.classList.remove('tutorial-highlight', 'relative', 'z-[60]');
-            });
-        };
-    }, [currentStepIndex, isVisible, steps]);
+        if (currentDialogueIndex < currentScene.dialogues.length - 1) {
+            setCurrentDialogueIndex(prev => prev + 1);
+        } else {
+            // End of scene, check action
+            handleSceneAction();
+        }
+    };
 
-    const handleAction = async () => {
-        if (isProcessing) return;
-        const step = steps[currentStepIndex];
+    const handleSceneAction = async () => {
+        const action = currentScene.action;
 
-        console.log('[UnifiedTutorialModal] handleAction called:', {
-            stepIndex: currentStepIndex,
-            action: step.action,
-            hasOnClaim: !!onClaim
-        });
-
-        if (step.action === 'next') {
-            if (currentStepIndex < steps.length - 1) {
-                setCurrentStepIndex(prev => prev + 1);
-            } else {
-                completeTutorial();
-            }
-        } else if (step.action === 'claim') {
-            console.log('[UnifiedTutorialModal] 🎁 Claim action triggered!');
+        if (action?.type === 'input') {
+            // Scene 2: Nickname input - don't proceed until nickname is entered
+            return;
+        } else if (action?.type === 'claim') {
+            // Scene 3: Claim starter pack
             if (onClaim) {
-                console.log('[UnifiedTutorialModal] ✅ Calling onClaim callback...');
                 onClaim();
             } else {
-                console.log('[UnifiedTutorialModal] ⚠️ No onClaim callback, using internal handler');
-                setIsProcessing(true);
-                try {
-                    await handleClaimReward();
-                } finally {
-                    setIsProcessing(false);
-                }
+                await handleClaimReward();
             }
-        } else if (step.action === 'close') {
+        } else if (action?.type === 'battle') {
+            // Scene 4: Battle tutorial - for now just proceed
+            proceedToNextScene();
+        } else if (action?.type === 'highlight') {
+            // Scene 5: Highlight story button and complete
+            completeTutorial();
+        } else {
+            // Default: next scene
+            proceedToNextScene();
+        }
+    };
+
+    const handleNicknameSubmit = () => {
+        if (!nicknameInput.trim()) return;
+        setUserName(nicknameInput.trim());
+        proceedToNextScene();
+    };
+
+    const proceedToNextScene = () => {
+        if (currentSceneIndex < tutorialScenarios.length - 1) {
+            setCurrentSceneIndex(prev => prev + 1);
+            setCurrentDialogueIndex(0);
+        } else {
             completeTutorial();
         }
     };
@@ -172,6 +170,7 @@ export default function UnifiedTutorialModal({ onClose, onClaim }: UnifiedTutori
     const handleClaimReward = async () => {
         if (!user) return;
 
+        setIsProcessing(true);
         try {
             const cards = await claimStarterPack('신입 지휘관');
             if (cards && cards.length > 0) {
@@ -179,17 +178,19 @@ export default function UnifiedTutorialModal({ onClose, onClaim }: UnifiedTutori
                 setShowRewardModal(true);
                 setIsVisible(false);
             } else {
-                completeTutorial();
+                proceedToNextScene();
             }
         } catch (e) {
             console.error("Reward Claim Error", e);
-            completeTutorial();
+            proceedToNextScene();
+        } finally {
+            setIsProcessing(false);
         }
     };
 
     const handleRewardClose = () => {
         setShowRewardModal(false);
-        completeTutorial();
+        proceedToNextScene();
     };
 
     const completeTutorial = () => {
@@ -197,23 +198,19 @@ export default function UnifiedTutorialModal({ onClose, onClaim }: UnifiedTutori
             localStorage.setItem(`tutorial_completed_${trackingId}`, 'true');
         }
         setIsVisible(false);
-        // Clean up DOM
-        document.querySelectorAll('.tutorial-highlight').forEach(el => {
-            el.classList.remove('tutorial-highlight', 'relative', 'z-[60]');
-        });
-        if (onClose) onClose();
-    };
 
-    const getIcon = (name?: string, color?: string) => {
-        const props = { className: cn("w-14 h-14 relative z-10", color ? `text-${color}-400` : "text-white") };
-        switch (name) {
-            case 'Terminal': return <Terminal {...props} />;
-            case 'Swords': return <Swords {...props} />;
-            case 'Shield': return <Shield {...props} />;
-            case 'Zap': return <Zap {...props} />;
-            case 'Gift': return <Gift {...props} />;
-            default: return <AlertCircle {...props} />;
+        // Highlight story button if Scene 5
+        if (currentScene?.action?.type === 'highlight' && currentScene.action.target) {
+            const element = document.querySelector(currentScene.action.target);
+            if (element) {
+                element.classList.add('tutorial-highlight-pulse');
+                setTimeout(() => {
+                    element.classList.remove('tutorial-highlight-pulse');
+                }, 5000);
+            }
         }
+
+        if (onClose) onClose();
     };
 
     if (isLoading || (!isVisible && !showRewardModal)) return null;
@@ -225,208 +222,194 @@ export default function UnifiedTutorialModal({ onClose, onClaim }: UnifiedTutori
                 isOpen={true}
                 cards={claimedCards}
                 onClose={handleRewardClose}
-                packType="premium" // Using premium pack style for starter
+                packType="premium"
                 bonusReward={{ type: 'coins', amount: 1000 }}
             />
         );
     }
 
-    const currentStep = steps[currentStepIndex];
-    if (!currentStep) return null;
+    if (!currentScene) return null;
+
+    const characterStyle = currentDialogue ? getCharacterStyle(currentDialogue.speaker) : null;
 
     return (
         <AnimatePresence>
-            {isVisible && currentStep && (
-                <div className="fixed inset-0 z-[100] flex items-center justify-center bg-black/80 backdrop-blur-md p-4">
-                    {/* Background Effects */}
-                    <div className="absolute inset-0 overflow-hidden pointer-events-none">
-                        <div className={cn(
-                            "absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[600px] h-[600px] rounded-full blur-[100px] animate-pulse opacity-20",
-                            currentStep.color === 'cyan' && "bg-cyan-500",
-                            currentStep.color === 'purple' && "bg-purple-500",
-                            currentStep.color === 'red' && "bg-red-500",
-                            currentStep.color === 'amber' && "bg-amber-500"
-                        )} />
-                    </div>
+            {isVisible && (
+                <div className="fixed inset-0 z-[100] flex items-center justify-center">
+                    {/* Background with optional glitch effect */}
+                    {currentScene.backgroundEffect === 'glitch' ? (
+                        <GlitchEffect intensity="high" color="red">
+                            <div className="w-full h-full bg-black" />
+                        </GlitchEffect>
+                    ) : (
+                        <div className="absolute inset-0 bg-black/90 backdrop-blur-md" />
+                    )}
 
-                    <motion.div
-                        initial={{ opacity: 0, scale: 0.9 }}
-                        animate={{ opacity: 1, scale: 1 }}
-                        exit={{ opacity: 0, scale: 0.9 }}
-                        className={cn(
-                            "relative w-full max-w-lg bg-black border rounded-2xl overflow-hidden shadow-[0_0_50px_rgba(0,0,0,0.5)]",
-                            currentStep.color === 'cyan' && "border-cyan-500/20 shadow-cyan-500/10",
-                            currentStep.color === 'purple' && "border-purple-500/20 shadow-purple-500/10",
-                            currentStep.color === 'red' && "border-red-500/20 shadow-red-500/10",
-                            currentStep.color === 'amber' && "border-amber-500/20 shadow-amber-500/10"
-                        )}
-                        style={{
-                            marginTop: currentStep.position === 'top' ? '-20vh' : currentStep.position === 'bottom' ? '20vh' : '0'
-                        }}
+                    {/* Close Button */}
+                    <button
+                        onClick={completeTutorial}
+                        className="absolute top-4 right-4 z-[110] text-gray-500 hover:text-white transition-colors p-2 rounded-lg hover:bg-white/5"
                     >
-                        {/* Grid Background */}
-                        <div className="absolute inset-0 bg-[linear-gradient(rgba(255,255,255,0.02)_1px,transparent_1px),linear-gradient(90deg,rgba(255,255,255,0.02)_1px,transparent_1px)] bg-[size:30px_30px]" />
+                        <X size={24} />
+                    </button>
 
-                        {/* Scanlines */}
-                        <div className="absolute inset-0 pointer-events-none opacity-[0.03] bg-[linear-gradient(rgba(18,16,16,0)_50%,rgba(0,0,0,0.25)_50%)] bg-[length:100%_4px]" />
+                    {/* Mute Button */}
+                    <button
+                        onClick={() => setIsMuted(!isMuted)}
+                        className="absolute top-4 right-16 z-[110] text-gray-500 hover:text-white transition-colors p-2 rounded-lg hover:bg-white/5"
+                    >
+                        {isMuted ? <VolumeX size={20} /> : <Volume2 size={20} />}
+                    </button>
 
-                        {/* Header Bar */}
-                        <div className="relative z-10 bg-white/5 border-b border-white/10 p-4 flex items-center justify-between">
-                            <div className="flex items-center gap-3">
-                                <Terminal size={18} className={cn(
-                                    currentStep.color === 'cyan' && "text-cyan-400",
-                                    currentStep.color === 'purple' && "text-purple-400",
-                                    currentStep.color === 'red' && "text-red-400",
-                                    currentStep.color === 'amber' && "text-amber-400"
-                                )} />
-                                <span className={cn(
-                                    "font-mono text-[10px] tracking-[0.2em] uppercase opacity-70",
-                                    currentStep.color === 'cyan' && "text-cyan-400",
-                                    currentStep.color === 'purple' && "text-purple-400",
-                                    currentStep.color === 'red' && "text-red-400",
-                                    currentStep.color === 'amber' && "text-amber-400"
+                    {/* Main Content Container */}
+                    <div className="relative z-[105] w-full h-full flex flex-col">
+                        {/* Character Portrait (if exists) */}
+                        {currentDialogue && currentDialogue.speaker !== 'system' && (
+                            <motion.div
+                                initial={{ opacity: 0, x: -50 }}
+                                animate={{ opacity: 1, x: 0 }}
+                                exit={{ opacity: 0, x: -50 }}
+                                className="absolute left-8 bottom-[200px] md:bottom-[180px] w-32 h-32 md:w-40 md:h-40"
+                            >
+                                <div className={cn(
+                                    "relative w-full h-full rounded-full border-4 overflow-hidden shadow-2xl",
+                                    characterStyle?.borderColor,
+                                    characterStyle?.glowColor
                                 )}>
-                                    SYSTEM_TUTORIAL // STEP_{currentStepIndex + 1}
-                                </span>
-                            </div>
-                            <div className="flex items-center gap-3">
-                                <div className="flex gap-2">
-                                    <div className="w-2 h-2 rounded-full bg-red-500/40" />
-                                    <div className="w-2 h-2 rounded-full bg-amber-500/40" />
-                                    <div className="w-2 h-2 rounded-full bg-green-500/40" />
+                                    <Image
+                                        src={getCharacterPortrait(currentDialogue.speaker)}
+                                        alt={getCharacterName(currentDialogue.speaker)}
+                                        fill
+                                        className="object-cover"
+                                    />
                                 </div>
-                                <button
-                                    onClick={completeTutorial}
-                                    className="text-gray-500 hover:text-white transition-colors p-1 rounded hover:bg-white/5"
-                                >
-                                    <X size={16} />
-                                </button>
-                            </div>
-                        </div>
+                            </motion.div>
+                        )}
 
-                        {/* Main Content */}
-                        <div className="relative z-10 p-8 flex flex-col items-center">
-                            <AnimatePresence mode="wait">
-                                <motion.div
-                                    key={currentStepIndex}
-                                    initial={{ opacity: 0, x: 20 }}
-                                    animate={{ opacity: 1, x: 0 }}
-                                    exit={{ opacity: 0, x: -20 }}
-                                    className="flex flex-col items-center text-center"
-                                >
-                                    {/* Icon Container with Glow */}
+                        {/* Dialogue Box (Bottom) */}
+                        <div className="absolute bottom-0 left-0 right-0 p-4 md:p-6">
+                            <motion.div
+                                initial={{ opacity: 0, y: 50 }}
+                                animate={{ opacity: 1, y: 0 }}
+                                className={cn(
+                                    "relative bg-black/80 backdrop-blur-xl border rounded-2xl p-6 md:p-8 max-w-4xl mx-auto",
+                                    characterStyle?.borderColor || "border-white/20"
+                                )}
+                            >
+                                {/* Speaker Name */}
+                                {currentDialogue && currentDialogue.speaker !== 'system' && (
                                     <div className={cn(
-                                        "mb-6 p-6 rounded-full border-2 bg-black/50 backdrop-blur-xl relative transition-all duration-500",
-                                        currentStep.color === 'cyan' && "border-cyan-500/30 shadow-[0_0_30px_rgba(34,211,238,0.2)]",
-                                        currentStep.color === 'purple' && "border-purple-500/30 shadow-[0_0_30px_rgba(192,132,252,0.2)]",
-                                        currentStep.color === 'red' && "border-red-500/30 shadow-[0_0_30px_rgba(248,113,113,0.2)]",
-                                        currentStep.color === 'amber' && "border-amber-500/30 shadow-[0_0_30px_rgba(251,191,36,0.2)]"
+                                        "font-bold orbitron text-sm md:text-base mb-3 tracking-wide",
+                                        characterStyle?.color || "text-white"
                                     )}>
-                                        <div className={cn(
-                                            "absolute inset-0 rounded-full opacity-20 animate-ping",
-                                            currentStep.color === 'cyan' && "bg-cyan-400",
-                                            currentStep.color === 'purple' && "bg-purple-400",
-                                            currentStep.color === 'red' && "bg-red-400",
-                                            currentStep.color === 'amber' && "bg-amber-400"
-                                        )} />
-                                        {getIcon(currentStep.icon, currentStep.color)}
+                                        {getCharacterName(currentDialogue.speaker)}
+                                    </div>
+                                )}
+
+                                {/* Dialogue Text */}
+                                <div className="text-white text-base md:text-lg leading-relaxed mb-6 min-h-[60px]">
+                                    {displayedText}
+                                    {isTyping && (
+                                        <motion.span
+                                            animate={{ opacity: [1, 0] }}
+                                            transition={{ duration: 0.5, repeat: Infinity }}
+                                            className="inline-block ml-1"
+                                        >
+                                            ▊
+                                        </motion.span>
+                                    )}
+                                </div>
+
+                                {/* Scene 2: Nickname Input */}
+                                {currentScene.id === 'scene_2_syncing' && currentDialogueIndex === currentScene.dialogues.length - 1 && (
+                                    <div className="mb-6">
+                                        <input
+                                            type="text"
+                                            value={nicknameInput}
+                                            onChange={(e) => setNicknameInput(e.target.value)}
+                                            onKeyPress={(e) => e.key === 'Enter' && handleNicknameSubmit()}
+                                            placeholder="지휘관 명을 입력하세요"
+                                            className="w-full px-4 py-3 bg-white/5 border border-cyan-500/30 rounded-lg text-white placeholder-gray-500 focus:outline-none focus:border-cyan-500 font-mono"
+                                            maxLength={20}
+                                            autoFocus
+                                        />
+                                    </div>
+                                )}
+
+                                {/* Action Buttons */}
+                                <div className="flex items-center justify-between">
+                                    {/* Progress Indicator */}
+                                    <div className="flex gap-1">
+                                        {currentScene.dialogues.map((_, i) => (
+                                            <div
+                                                key={i}
+                                                className={cn(
+                                                    "h-1 rounded-full transition-all",
+                                                    i === currentDialogueIndex ? "w-6 bg-cyan-500" : "w-2 bg-white/20"
+                                                )}
+                                            />
+                                        ))}
                                     </div>
 
-                                    {/* Titles */}
-                                    <h2 className={cn(
-                                        "text-3xl font-black orbitron mb-2 uppercase tracking-wide",
-                                        currentStep.color === 'cyan' && "text-cyan-400",
-                                        currentStep.color === 'purple' && "text-purple-400",
-                                        currentStep.color === 'red' && "text-red-400",
-                                        currentStep.color === 'amber' && "text-amber-400"
-                                    )}>
-                                        {currentStep.title}
-                                    </h2>
-                                    <p className="font-mono text-[10px] text-white/40 tracking-[0.3em] mb-6 uppercase">
-                                        OPERATION_PHASE // {currentStep.id}
-                                    </p>
-
-                                    {/* Description */}
-                                    <div
-                                        className="text-gray-300 text-sm leading-relaxed whitespace-pre-line max-w-sm mb-8"
-                                        dangerouslySetInnerHTML={{ __html: currentStep.content }}
-                                    />
-                                </motion.div>
-                            </AnimatePresence>
-
-                            {/* Controls */}
-                            <div className="w-full space-y-6">
-                                {/* Progress Bar */}
-                                <div className="flex justify-center gap-2">
-                                    {steps.map((_, i) => (
-                                        <div
-                                            key={i}
-                                            className={cn(
-                                                "h-1 rounded-full transition-all duration-300",
-                                                i === currentStepIndex ? "w-8" : "w-2 bg-white/10",
-                                                i === currentStepIndex && currentStep.color === 'cyan' && "bg-cyan-500",
-                                                i === currentStepIndex && currentStep.color === 'purple' && "bg-purple-500",
-                                                i === currentStepIndex && currentStep.color === 'red' && "bg-red-500",
-                                                i === currentStepIndex && currentStep.color === 'amber' && "bg-amber-500"
-                                            )}
-                                        />
-                                    ))}
-                                </div>
-
-                                {/* Buttons */}
-                                <div className="flex items-center justify-between gap-4">
-                                    <button
-                                        onClick={completeTutorial}
-                                        className="px-4 py-2 text-[10px] font-mono text-white/30 hover:text-white transition-colors"
-                                    >
-                                        SKIP_PROCEDURE
-                                    </button>
-
-                                    <div className="flex gap-2 flex-1 justify-end">
-                                        {currentStepIndex > 0 && (
-                                            <button
-                                                onClick={() => setCurrentStepIndex(prev => prev - 1)}
-                                                className="px-6 py-3 rounded-lg bg-white/5 border border-white/10 text-white/60 font-mono text-xs hover:bg-white/10 transition-colors"
-                                            >
-                                                PREV
-                                            </button>
-                                        )}
+                                    {/* Next/Action Button */}
+                                    {currentScene.id === 'scene_2_syncing' && currentDialogueIndex === currentScene.dialogues.length - 1 ? (
                                         <button
-                                            onClick={handleAction}
-                                            disabled={isProcessing}
+                                            onClick={handleNicknameSubmit}
+                                            disabled={!nicknameInput.trim()}
                                             className={cn(
-                                                "px-8 py-3 rounded-lg font-bold orbitron text-xs tracking-[0.2em] flex items-center gap-2 transition-all shadow-[0_0_20px_rgba(0,0,0,0.5)]",
-                                                isProcessing ? "opacity-50 cursor-not-allowed bg-gray-800" :
-                                                    currentStep.color === 'cyan' && "bg-cyan-500 text-black hover:bg-cyan-400",
-                                                currentStep.color === 'purple' && "bg-purple-500 text-black hover:bg-purple-400",
-                                                currentStep.color === 'red' && "bg-red-500 text-black hover:bg-red-400",
-                                                currentStep.color === 'amber' && "bg-amber-500 text-black hover:bg-amber-400"
+                                                "px-6 py-3 rounded-lg font-bold orbitron text-sm flex items-center gap-2 transition-all",
+                                                nicknameInput.trim()
+                                                    ? "bg-cyan-500 text-black hover:bg-cyan-400"
+                                                    : "bg-gray-700 text-gray-500 cursor-not-allowed"
                                             )}
                                         >
-                                            {isProcessing ? 'PROCESSING...' : currentStep.action === 'claim' ? 'CLAIM_SUPPLY' : 'NEXT_ENTRY'}
+                                            등록
+                                            <ChevronRight size={16} />
+                                        </button>
+                                    ) : (
+                                        <button
+                                            onClick={handleNextDialogue}
+                                            disabled={isProcessing}
+                                            className={cn(
+                                                "px-6 py-3 rounded-lg font-bold orbitron text-sm flex items-center gap-2 transition-all",
+                                                characterStyle?.bgColor && characterStyle?.color
+                                                    ? `${characterStyle.bgColor} ${characterStyle.color} hover:opacity-80`
+                                                    : "bg-cyan-500 text-black hover:bg-cyan-400"
+                                            )}
+                                        >
+                                            {isProcessing ? '처리 중...' :
+                                                currentDialogueIndex < currentScene.dialogues.length - 1 ? '다음' :
+                                                    currentScene.action?.buttonText || '계속'}
                                             {!isProcessing && <ChevronRight size={16} />}
                                         </button>
-                                    </div>
+                                    )}
                                 </div>
-                            </div>
-                        </div>
 
-                        {/* Corner Accents */}
-                        <div className={cn(
-                            "absolute top-0 left-0 w-12 h-12 border-t border-l pointer-events-none opacity-40",
-                            currentStep.color === 'cyan' && "border-cyan-500",
-                            currentStep.color === 'purple' && "border-purple-500",
-                            currentStep.color === 'red' && "border-red-500",
-                            currentStep.color === 'amber' && "border-amber-500"
-                        )} />
-                        <div className={cn(
-                            "absolute bottom-0 right-0 w-12 h-12 border-b border-r pointer-events-none opacity-40",
-                            currentStep.color === 'cyan' && "border-cyan-500",
-                            currentStep.color === 'purple' && "border-purple-500",
-                            currentStep.color === 'red' && "border-red-500",
-                            currentStep.color === 'amber' && "border-amber-500"
-                        )} />
-                    </motion.div>
+                                {/* Scene Progress */}
+                                <div className="mt-4 text-center text-xs text-gray-500 font-mono">
+                                    SCENE {currentSceneIndex + 1} / {tutorialScenarios.length} - {currentScene.subtitle}
+                                </div>
+                            </motion.div>
+                        </div>
+                    </div>
+
+                    {/* CSS for highlight pulse */}
+                    <style jsx global>{`
+                        @keyframes tutorial-pulse {
+                            0%, 100% {
+                                box-shadow: 0 0 0 0 rgba(34, 211, 238, 0.7);
+                            }
+                            50% {
+                                box-shadow: 0 0 0 20px rgba(34, 211, 238, 0);
+                            }
+                        }
+                        
+                        .tutorial-highlight-pulse {
+                            animation: tutorial-pulse 2s ease-in-out infinite;
+                            position: relative;
+                            z-index: 60;
+                        }
+                    `}</style>
                 </div>
             )}
         </AnimatePresence>
