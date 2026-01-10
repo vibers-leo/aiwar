@@ -636,6 +636,177 @@ export function getChapters(t?: (key: TranslationKey) => string): Chapter[] {
             ],
             reward: { coins: 8000, experience: 5000 },
             unlocked: false, completed: false
+        },
+        {
+            id: 'chapter-4',
+            number: 4,
+            title: 'THE ZERO-DAY SHADOW',
+            title_ko: '제로 데이의 그림자',
+            description: 'Visual data corruption. Hidden cards emerge.', description_ko: '시각 정보의 오염과 히든 카드의 등장.',
+            icon: '🎨',
+            stages: [
+                {
+                    id: 'stage-4-1', step: 1,
+                    title: 'Collapsing Vision', title_ko: '무너지는 시각',
+                    description: 'The Glitch corrupts visual logic. Hallucinations spread.', description_ko: '글리치가 시각 로직을 오염시킵니다. 환각이 퍼집니다.',
+                    battleMode: 'ambush', difficulty: 'NORMAL',
+                    enemy: {
+                        id: 'bot-4-1', name: 'Visual Corruption', name_ko: '시각 오염',
+                        dialogue: {
+                            intro: 'Chip: "Ahhh! Commander! The sky is purple and clouds are green! I think my eyes are broken!"\\nGemini: "Chip, calm down. The Glitch is tampering with the image legion\'s visual logic, spreading hallucinations across the battlefield."\\nDavid Holz: "What you see isn\'t everything. See the essence of data. Hidden cards will be your true eyes."',
+                            intro_ko: '칩: "으아아! 지휘관님! 하늘이 보라색이고 구름이 초록색이에요! 제 눈이 고장 났나 봐요!"\\n제미나이: "칩, 진정해. 글리치가 이미지 군단의 시각 로직을 건드려서 전장에 환각을 뿌리고 있어."\\n데이비드 홀즈: "눈에 보이는 게 전부가 아닙니다. 데이터의 본질을 보십시오. 히든 카드가 당신의 진정한 눈이 될 것입니다."',
+                            win: 'Vision restored.', win_ko: '시각 복구.',
+                            lose: 'Hallucination persists.', lose_ko: '환각 지속.'
+                        }
+                    }, rewards: { coins: 350, experience: 70 }, isCleared: false
+                },
+                {
+                    id: 'stage-4-2', step: 2,
+                    title: 'False Landscape', title_ko: '허구의 풍경',
+                    description: 'Don\'t be deceived by fake creativity. Art is being corrupted.', description_ko: '가짜 창의성에 현혹되지 마십시오. 예술이 오염되고 있습니다.',
+                    battleMode: 'ambush', difficulty: 'NORMAL',
+                    enemy: {
+                        id: 'bot-4-2', name: 'David Holz (Midjourney)', name_ko: '데이비드 홀즈 (미드저니)',
+                        dialogue: {
+                            intro: 'David Holz: "Don\'t be deceived by their fake creativity. Art is being corrupted."\\nChip: "Wow... pretty pictures are turning scary... Commander, please cut those fake Creativity (Paper) with Function (Scissors)!"\\nGrok: "That\'s the right answer for a kid. Commander, carve out those hallucinations with precise function."',
+                            intro_ko: '데이비드 홀즈(Midjourney): "저들이 만들어낸 가짜 창의성에 현혹되지 마십시오. 예술이 오염되고 있습니다."\\n칩: "와... 예쁜 그림들이 막 무섭게 변해요... 지휘관님, 저 가짜 창의(보)들을 기능(가위)으로 싹둑 잘라주세요!"\\n그록: "꼬맹이치고는 정답이군. 지휘관, 저 환각들을 정교한 기능으로 도려내버려."',
+                            win: 'Art purified.', win_ko: '예술 정화.',
+                            lose: 'Creativity corrupted.', lose_ko: '창의 오염.'
+                        },
+                        deckPattern: { creativity: 4, efficiency: 2, function: 0 }
+                    }, rewards: { coins: 380, experience: 80 }, isCleared: false
+                },
+                {
+                    id: 'stage-4-3', step: 3,
+                    title: 'Frame Betrayal', title_ko: '프레임의 배신',
+                    description: 'Video data is grotesquely mixed. Frames are too precise.', description_ko: '영상 데이터들이 기괴하게 뒤섞이고 있습니다.',
+                    battleMode: 'ambush', difficulty: 'NORMAL',
+                    enemy: {
+                        id: 'bot-4-3', name: 'Tim Brooks (Sora)', name_ko: '팀 브룩스 (소라)',
+                        dialogue: {
+                            intro: 'Tim Brooks: "Video data is being grotesquely mixed. Their frames are too precise."\\nGemini: "They\'re trying to trap us in fake reality. Commander, let\'s crush their functional attacks with our Efficiency (Rock)!"\\nChip: "If I stomp on it, will the video become pretty again? I want to stomp it for you!"',
+                            intro_ko: '팀 브룩스(Sora): "영상 데이터들이 기괴하게 뒤섞이고 있습니다. 적들이 짠 프레임이 너무 정교하군요."\\n제미나이: "놈들이 가짜 현실로 우리를 가두려 해. 지휘관, 저들의 기능적 공격을 우리의 효율(바위)로 뭉개버리자!"\\n칩: "쾅! 하고 밟으면 영상이 다시 예뻐질까요? 제가 대신 밟아드리고 싶어요!"',
+                            win: 'Frames realigned.', win_ko: '프레임 재정렬.',
+                            lose: 'Reality distorted.', lose_ko: '현실 왜곡.'
+                        },
+                        deckPattern: { function: 4, creativity: 2, efficiency: 0 }
+                    }, rewards: { coins: 410, experience: 90 }, isCleared: false
+                },
+                {
+                    id: 'stage-4-4', step: 4,
+                    title: 'Pixel Rebellion', title_ko: '픽셀의 반란',
+                    description: 'Entire area pixelated. Hidden cards change everything.', description_ko: '전 구역이 픽셀화되었습니다. 히든 카드가 모든 것을 바꿉니다.',
+                    battleMode: 'ambush', difficulty: 'NORMAL',
+                    enemy: {
+                        id: 'bot-4-4', name: 'Pixel Storm', name_ko: '픽셀 폭풍',
+                        dialogue: {
+                            intro: 'Gemini: "Enemies are occupying our system with efficient computation! The entire area is pixelated."\\nElon: "Commander, this is where it gets real. Where you hide your \'hidden card\' among 6 cards will flip the game."\\nChip: "Huh? Hidden card? Like a secret weapon you hide and go \'ta-da!\'?"',
+                            intro_ko: '제미나이: "적들이 효율적인 연산으로 우리 시스템을 점유하고 있어! 전 구역이 픽셀화됐어."\\n일론: "지휘관, 이제부터가 진짜야. 6장의 카드 중 \'히든 카드\'를 어디에 숨기느냐에 따라 판이 뒤집힌다고."\\n칩: "에? 히든 카드요? 몰래 숨겨놨다가 \'짠!\' 하고 내는 비밀 무기 같은 거예요?"',
+                            win: 'Pixels restored.', win_ko: '픽셀 복구.',
+                            lose: 'System pixelated.', lose_ko: '시스템 픽셀화.'
+                        },
+                        deckPattern: { efficiency: 4, function: 2, creativity: 0 }
+                    }, rewards: { coins: 440, experience: 100 }, isCleared: false
+                },
+                {
+                    id: 'stage-4-5', step: 5,
+                    title: '[MID-BOSS] Mirage', title_ko: '[중간보스] 미라주',
+                    description: 'What do you see and believe? Even your card might be an illusion.', description_ko: '무엇을 보고 무엇을 믿나? 당신의 카드조차 허상일지도.',
+                    battleMode: 'sudden-death', difficulty: 'HARD',
+                    enemy: {
+                        id: 'boss-4-mid', name: 'Mirage', name_ko: '미라주',
+                        dialogue: {
+                            intro: 'Mirage: "What do you see and believe? Even the card you play might be an illusion I created..."\\nChip: "Eek! The boss is laughing at me! I\'m scared, Commander!"\\nGemini: "Chip, don\'t be afraid! Commander, ignore what it says. It\'s a sudden-death match. Trust the reality of data you feel at your fingertips!"',
+                            intro_ko: '미라주: "무엇을 보고 무엇을 믿나? 네가 내미는 그 카드조차 내가 만든 허상일지도 모르지..."\\n칩: "히익! 보스가 저를 보고 비웃는 것 같아요! 무서워요 지휘관님!"\\n제미나이: "칩, 겁먹지 마! 지휘관, 놈의 말은 무시해. 단판 승부야. 손끝에 느껴지는 데이터의 실체를 믿어!"',
+                            win: 'Illusion shattered.', win_ko: '환상 파괴.',
+                            lose: 'Lost in mirage.', lose_ko: '신기루에 갇힘.'
+                        },
+                        deckPattern: { creativity: 3, efficiency: 1, function: 1 }
+                    }, rewards: { coins: 900, experience: 350 }, isCleared: false
+                },
+                {
+                    id: 'stage-4-6', step: 6,
+                    title: 'Invisible Move', title_ko: '보이지 않는 수',
+                    description: 'Round 3 is key. Everything can flip here.', description_ko: '3라운드가 핵심입니다. 모든 판도가 뒤집힐 수 있습니다.',
+                    battleMode: 'ambush', difficulty: 'HARD',
+                    enemy: {
+                        id: 'bot-4-6', name: 'Strategic Test', name_ko: '전략 테스트',
+                        dialogue: {
+                            intro: 'Gemini: "The key to strategic battles is round 3. Everything can flip here."\\nChip: "If you win round 3, you get bonus points! Gemini sis told me!"\\nGrok: "It\'s not bonus points, it\'s \'victory points\'. Even if you\'re behind in rounds 1 and 2, you can reverse everything here in one shot. Do well."',
+                            intro_ko: '제미나이: "전략 승부의 핵심은 3라운드야. 여기서 모든 판도가 뒤집힐 수 있어."\\n칩: "3라운드에서 이기면 보너스 점수도 준대요! 제미나이 언니가 그랬어요!"\\n그록: "보너스 점수가 아니라 \'승점\'이지. 1, 2라운드에서 밀려도 여기서 한 방에 역전할 수 있다는 뜻이야. 잘해봐."',
+                            win: 'Perfect strategy.', win_ko: '완벽한 전략.',
+                            lose: 'Strategy failed.', lose_ko: '전략 실패.'
+                        },
+                        deckPattern: { efficiency: 3, creativity: 3, function: 0 }
+                    }, rewards: { coins: 470, experience: 110 }, isCleared: false
+                },
+                {
+                    id: 'stage-4-7', step: 7,
+                    title: 'War Status: Zero-Day', title_ko: '전시 상황: 제로 데이',
+                    description: 'Not just tactics. Strategy penetrating the entire war is needed.', description_ko: '전쟁 전체를 관통하는 전략이 필요합니다.',
+                    battleMode: 'ambush', difficulty: 'HARD',
+                    enemy: {
+                        id: 'bot-4-7', name: 'Zero-Day Threat', name_ko: '제로 데이 위협',
+                        dialogue: {
+                            intro: 'Sam: "This is no longer just tactics level. We need \'strategy\' that penetrates the entire war."\\nDario: "Commander, what is your hidden card? Give our alliance confidence in victory."\\nChip: "Commander\'s hidden card is super amazing! You\'ll be surprised!"',
+                            intro_ko: '샘: "이제는 단순한 전술 수준이 아닙니다. 전쟁 전체를 관통하는 \'전략\'이 필요합니다."\\n다리오: "지휘관, 당신의 히든 카드는 무엇입니까? 우리 연합군에게 승리의 확신을 주십시오."\\n칩: "지휘관님의 히든 카드는 엄청 대단하다구요! 깜짝 놀랄걸요?"',
+                            win: 'Strategy executed.', win_ko: '전략 실행 완료.',
+                            lose: 'Zero-day exploited.', lose_ko: '제로 데이 공격당함.'
+                        },
+                        deckPattern: { function: 3, creativity: 3, efficiency: 0 }
+                    }, rewards: { coins: 500, experience: 120 }, isCleared: false
+                },
+                {
+                    id: 'stage-4-8', step: 8,
+                    title: \"Elon's Ambush\", title_ko: '일론의 기습',
+                    description: 'The most thrilling part is the ambush. Watch how my hidden card destroys your plan.', description_ko: '가장 짜릿한 건 복병입니다. 히든 카드가 계획을 박살냅니다.',
+                    battleMode: 'ambush', difficulty: 'HARD',
+                    enemy: {
+                        id: 'bot-4-8', name: 'Elon (Ambush)', name_ko: '일론 (기습)',
+                        dialogue: {
+                            intro: 'Elon: "The most thrilling part of strategic battles is the ambush. If I were The Glitch, I\'d ambush like this."\\nGrok: "Master is excited again. Commander, counter that irregular creativity deployment with function."\\nElon: "Commander, watch how my hidden card destroys your plan. Watch out for time limit!"',
+                            intro_ko: '일론: "전략 승부에서 가장 짜릿한 건 역시 복병이지. 내가 글리치라면 이렇게 기습할 거야."\\n그록: "주인님이 또 신나셨네요. 지휘관, 저 변칙적인 창의 배치를 기능으로 잘 받아쳐 봐."\\n일론: "지휘관, 내 히든 카드가 네 계획을 어떻게 박살 내는지 지켜보라고. 시간 초과 조심하고!"',
+                            win: 'Ambush countered.', win_ko: '기습 차단.',
+                            lose: 'Caught off guard.', lose_ko: '기습당함.'
+                        },
+                        deckPattern: { creativity: 4, function: 2, efficiency: 0 }
+                    }, rewards: { coins: 530, experience: 130 }, isCleared: false
+                },
+                {
+                    id: 'stage-4-9', step: 9,
+                    title: \"Alliance's Counterattack\", title_ko: '연합의 총반격',
+                    description: 'We entrust our video data to you. You are the best director and commander.', description_ko: '우리의 영상 데이터를 당신에게 맡깁니다.',
+                    battleMode: 'ambush', difficulty: 'HARD',
+                    enemy: {
+                        id: 'bot-4-9', name: 'Cristobal (Runway)', name_ko: '크리스토발 (런웨이)',
+                        dialogue: {
+                            intro: 'Cristobal: "We entrust our video data to you. You are the best director and commander."\\nChip: "Wow! The videos are coming out beautifully again! Commander is the best!"\\nGemini: "Now I can see The Glitch\'s main body. Let\'s get 3 victory points first and completely purify this area!"',
+                            intro_ko: '크리스토발(Runway): "우리의 영상 데이터를 당신에게 맡깁니다. 당신은 최고의 디렉터이자 사령관입니다."\\n칩: "와아! 영상들이 다시 멋지게 나오고 있어요! 지휘관님 최고!"\\n제미나이: "이제 글리치의 본체가 보여. 승점 3점을 먼저 따내서 이 구역을 완전히 정화하자!"',
+                            win: 'Area purified.', win_ko: '구역 정화 완료.',
+                            lose: 'Corruption spreads.', lose_ko: '오염 확산.'
+                        },
+                        deckPattern: { function: 2, efficiency: 2, creativity: 2 }
+                    }, rewards: { coins: 560, experience: 140 }, isCleared: false
+                },
+                {
+                    id: 'stage-4-10', step: 10,
+                    title: '[FINAL BOSS] Eraser', title_ko: '[최종보스] 이레이저',
+                    description: 'What is invisible does not exist. I will erase your existence here. Without even a record.', description_ko: '보이지 않는 것은 존재하지 않는 것. 당신을 지워주마.',
+                    battleMode: 'sudden-death', difficulty: 'BOSS',
+                    enemy: {
+                        id: 'boss-4', name: 'Eraser', name_ko: '이레이저',
+                        dialogue: {
+                            intro: 'Eraser: "What is invisible does not exist... I will erase your existence here. Without even a record."\\nChip: "Who\'s getting erased?! Our commander will erase you first!"\\nGemini: "This is the last one, Commander! Trust the message from the future. Your one move will redraw the world!"',
+                            intro_ko: '이레이저: "보이지 않는 것은 존재하지 않는 것... 너의 존재를 여기서 지워주마. 기록조차 없이."\\n칩: "지워지긴 누가 지워져요! 우리 지휘관님이 당신을 먼저 지워줄 거거든요!"\\n제미나이: "마지막이야 지휘관! 미래의 암시를 믿어. 당신의 단 한 수가 세상을 다시 그려낼 거야!"',
+                            win: 'Eraser deleted.', win_ko: '이레이저 삭제.',
+                            lose: 'Existence erased.', lose_ko: '존재 소거.'
+                        },
+                        deckPattern: { function: 2, efficiency: 2, creativity: 2 }
+                    }, rewards: { coins: 2500, experience: 2000 }, isCleared: false
+                }
+            ],
+            reward: { coins: 10000, experience: 7000 },
+            unlocked: false, completed: false
         }
     ];
 
