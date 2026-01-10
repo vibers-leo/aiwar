@@ -1095,6 +1095,16 @@ export async function completeStage(chapterId: string, stageId: string, userId?:
     if (userId) {
         await saveStoryProgress(userId, chapterId, completed, unlocked);
     }
+
+    // 3. Check for Season 1 Completion (Omega Glitch defeated)
+    if (stageId === 'stage-5-10') {
+        // Mark Season 1 as completed
+        if (userId) {
+            const { markSeason1Completed } = await import('@/data/season1-ending');
+            markSeason1Completed(userId);
+            console.log('[Story System] Season 1 completed! Ending will trigger on main page.');
+        }
+    }
 }
 
 export function claimChapterReward(_chapterId: string): { success: boolean, message: string } {

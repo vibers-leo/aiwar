@@ -8,9 +8,13 @@ import { useGameSound } from '@/hooks/useGameSound';
 import { BackgroundBeams } from "@/components/ui/aceternity/background-beams";
 import { CardBody, Card3D as CardContainer, CardItem } from "@/components/ui/aceternity/3d-card";
 import { useUser } from '@/context/UserContext';
+import Season1EndingModal from '@/components/Season1EndingModal';
+import { hasCompletedSeason1, hasWatchedEnding, resetEndingWatched } from '@/data/season1-ending';
+import { BookOpen } from 'lucide-react';
 
 export default function MainPage() {
   const [showTutorial, setShowTutorial] = useState(false);
+  const [showEnding, setShowEnding] = useState(false);
 
   const { playSound } = useGameSound();
   const { user, profile, completeTutorial } = useUser();
@@ -21,6 +25,32 @@ export default function MainPage() {
   useEffect(() => {
     playSound('bgm_main', 'bgm');
   }, [playSound]);
+
+  // Check for Season 1 ending trigger
+  useEffect(() => {
+    if (!user) return;
+
+    const checkEnding = () => {
+      const completed = hasCompletedSeason1(user.uid);
+      const watched = hasWatchedEnding(user.uid);
+
+      if (completed && !watched) {
+        // Trigger ending
+        setTimeout(() => {
+          setShowEnding(true);
+        }, 1000);
+      }
+    };
+
+    checkEnding();
+  }, [user]);
+
+  const handleReplayEnding = () => {
+    if (user) {
+      resetEndingWatched(user.uid);
+      setShowEnding(true);
+    }
+  };
 
 
   const menuItems = [
@@ -45,6 +75,19 @@ export default function MainPage() {
       <div className="absolute inset-0 z-0 pointer-events-none opacity-40">
         <BackgroundBeams />
       </div>
+
+      {/* History Archive Button */}
+      {user && hasCompletedSeason1(user.uid) && (
+        <div className="relative z-10 w-full max-w-7xl mx-auto mt-6 mb-4">
+          <button
+            onClick={handleReplayEnding}
+            className="flex items-center gap-2 px-4 py-2 bg-purple-500/20 border border-purple-500/30 rounded-lg text-purple-300 hover:bg-purple-500/30 hover:border-purple-500/50 transition-all text-sm font-mono"
+          >
+            <BookOpen size={16} />
+            역사 기록 보관소 - 시즌 1 엔딩 다시보기
+          </button>
+        </div>
+      )}
 
       {/* Season 1 Banner - Enhanced with premium glow */}
       <div id="season-banner" className="relative z-10 w-full max-w-7xl mx-auto mt-6 mb-8 overflow-hidden rounded-2xl border border-cyan-500/30 bg-black/60 backdrop-blur-md group cursor-pointer hover:border-cyan-400/80 transition-all duration-300 hover:shadow-[0_0_40px_rgba(6,182,212,0.3)]">
@@ -156,6 +199,16 @@ export default function MainPage() {
         </div>
       </div>
       */}
+
+      {/* Season 1 Ending Modal */}
+      {showEnding && user && (
+        <Season1EndingModal
+          isOpen={showEnding}
+          onClose={() => setShowEnding(false)}
+          userName={profile?.nickname || '지휘관'}
+          userId={user.uid}
+        />
+      )}
 
     </CyberPageLayout>
   );
