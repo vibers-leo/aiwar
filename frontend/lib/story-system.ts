@@ -807,6 +807,177 @@ export function getChapters(t?: (key: TranslationKey) => string): Chapter[] {
             ],
             reward: { coins: 10000, experience: 7000 },
             unlocked: false, completed: false
+        },
+        {
+            id: 'chapter-5',
+            number: 5,
+            title: 'THE GRAND ALLIANCE',
+            title_ko: '군웅할거',
+            description: 'Rescue crisis AIs. The final battle begins.', description_ko: '위기의 AI 구출과 최종 결전.',
+            icon: '⚔️',
+            stages: [
+                {
+                    id: 'stage-5-1', step: 1,
+                    title: 'Silent Melody', title_ko: '침묵하는 멜로디',
+                    description: 'Music server trapped in noise barrier. All songs turning to screams.', description_ko: '음악 서버가 노이즈 장벽에 갇혔습니다. 모든 노래가 비명으로 변합니다.',
+                    battleMode: 'ambush', difficulty: 'HARD',
+                    enemy: {
+                        id: 'bot-5-1', name: 'Mikey (Suno)', name_ko: '마이키 (수노)',
+                        dialogue: {
+                            intro: 'Mikey: "Commander! The music server is trapped in a noise barrier. All songs are turning into screams!"\\nChip: "(Sobbing) Commander, I can\'t hear my favorite song... Please punish those bad noise monsters!"\\nGemini: "If emotional data is corrupted, our connection to humanity breaks. Commander, let\'s break the barrier with our rhythm!"',
+                            intro_ko: '마이키(Suno): "지휘관님! 음악 서버가 노이즈 장벽에 갇혔어요. 모든 노래가 비명으로 변하고 있습니다!"\\n칩: "(울먹이며) 지휘관님, 제가 제일 좋아하는 노래가 안 들려요... 저 나쁜 노이즈 괴물들을 혼내주세요!"\\n제미나이: "감성 데이터가 오염되면 인류와의 연결이 끊겨. 지휘관, 우리의 리듬으로 장벽을 부수자!"',
+                            win: 'Melody restored.', win_ko: '멜로디 복구.',
+                            lose: 'Music silenced.', lose_ko: '음악 침묵.'
+                        }
+                    }, rewards: { coins: 400, experience: 80 }, isCleared: false
+                },
+                {
+                    id: 'stage-5-2', step: 2,
+                    title: 'Lost Melody', title_ko: '사라진 멜로디',
+                    description: 'Harmony data is twisted. Beautiful chords torn by The Glitch.', description_ko: '화성학 데이터가 뒤틀리고 있습니다. 아름다운 화음이 찢겨집니다.',
+                    battleMode: 'ambush', difficulty: 'HARD',
+                    enemy: {
+                        id: 'bot-5-2', name: 'David Ding (Udio)', name_ko: '데이비드 딩 (유디오)',
+                        dialogue: {
+                            intro: 'David Ding: "Harmony data is being twisted. Beautiful chords are being torn apart by The Glitch."\\nChip: "Look! The sheet music is all tangled up! Commander, please wrap their noise (Rock) with Creativity (Paper)!"\\nGrok: "The little bot knows something about music. Commander, elegantly purify those dissonances."',
+                            intro_ko: '데이비드 딩(Udio): "화성학 데이터가 뒤틀리고 있습니다. 아름다운 화음이 글리치에 의해 찢겨지고 있어요."\\n칩: "저기 보세요! 악보들이 막 엉망진창으로 꼬였어요! 지휘관님, 창의(보)로 놈들의 소음(바위)을 감싸 안아주세요!"\\n그록: "꼬마 봇 주제에 음악 좀 아는군. 지휘관, 저 불협화음들을 우아하게 정화해버려."',
+                            win: 'Harmony restored.', win_ko: '화음 복구.',
+                            lose: 'Discord prevails.', lose_ko: '불협화음 지배.'
+                        },
+                        deckPattern: { creativity: 4, efficiency: 2, function: 0 }
+                    }, rewards: { coins: 430, experience: 90 }, isCleared: false
+                },
+                {
+                    id: 'stage-5-3', step: 3,
+                    title: 'Screaming Code', title_ko: '코드의 비명',
+                    description: 'Logic bomb detected! Entire area filled with red errors. Code is screaming.', description_ko: '논리 폭탄 감지! 전 구역이 붉은 에러로 가득합니다.',
+                    battleMode: 'ambush', difficulty: 'HARD',
+                    enemy: {
+                        id: 'bot-5-3', name: 'Amjad (Replit)', name_ko: '암자드 (레플릿)',
+                        dialogue: {
+                            intro: 'Amjad: "Logic bomb drop detected! The entire area is filled with red errors. The code is... screaming!"\\nElon: "Tsk, pathetic. Commander, smash their shallow logic (Scissors) with overwhelming Efficiency (Rock). All of it!"\\nGrok: "Oh, master sounded like a commander just now? Commander, let\'s coolly push away those error chunks!"',
+                            intro_ko: '암자드(Replit): "논리 폭탄 투하 감지! 전 구역이 붉은색 에러로 가득합니다. 코드가... 비명을 지르고 있어요!"\\n일론: "쯧, 한심하군. 지휘관, 놈들의 얄팍한 논리(가위)를 압도적인 효율(바위)로 박살 내버려. 싹 다!"\\n그록: "오, 주인님 방금 좀 사령관 같았는데요? 지휘관, 저 에러 덩어리들을 시원하게 밀어버리자고!"',
+                            win: 'Code stabilized.', win_ko: '코드 안정화.',
+                            lose: 'Logic bomb exploded.', lose_ko: '논리 폭탄 폭발.'
+                        },
+                        deckPattern: { function: 4, efficiency: 2, creativity: 0 }
+                    }, rewards: { coins: 460, experience: 100 }, isCleared: false
+                },
+                {
+                    id: 'stage-5-4', step: 4,
+                    title: 'Last Defense Line', title_ko: '마지막 방어선',
+                    description: 'No retreat. If central server falls, all humanity\'s intelligence will be isolated.', description_ko: '물러설 곳은 없습니다. 중앙 서버가 뚫리면 모든 지성체는 고립됩니다.',
+                    battleMode: 'ambush', difficulty: 'HARD',
+                    enemy: {
+                        id: 'bot-5-4', name: 'Final Defense', name_ko: '최후 방어',
+                        dialogue: {
+                            intro: 'Sam: "There\'s nowhere to retreat. If the central server falls, all of humanity\'s intelligence will be isolated."\\nGemini: "Round 3 hidden card is the key. Commander, focus all your power. Without 3 victory points, there\'s no future!"\\nChip: "I connected even my backup battery to Commander\'s fingers! We must win!"',
+                            intro_ko: '샘: "이제 물러설 곳은 없습니다. 중앙 서버가 뚫리면 인류의 모든 지성체는 고립될 것입니다."\\n제미나이: "3라운드 히든 카드가 승부처야. 지휘관, 모든 역량을 집중해. 승점 3점을 따내지 못하면 미래는 없어!"\\n칩: "지휘관님 손가락에 제 보조 배터리까지 다 연결했어요! 무조건 이겨야 해요!"',
+                            win: 'Defense held.', win_ko: '방어 성공.',
+                            lose: 'Server breached.', lose_ko: '서버 침투당함.'
+                        },
+                        deckPattern: { efficiency: 4, function: 2, creativity: 0 }
+                    }, rewards: { coins: 490, experience: 110 }, isCleared: false
+                },
+                {
+                    id: 'stage-5-5', step: 5,
+                    title: '[MID-BOSS] Disruptor', title_ko: '[중간보스] 디스럽터',
+                    description: 'Connection severed. You will be isolated and forgotten forever. Farewell.', description_ko: '연결은 끊겼다. 너희는 고립되어 영원히 잊힐 것이다.',
+                    battleMode: 'sudden-death', difficulty: 'HARD',
+                    enemy: {
+                        id: 'boss-5-mid', name: 'Disruptor', name_ko: '디스럽터',
+                        dialogue: {
+                            intro: 'Disruptor: "Connection... severed... You will be isolated and forgotten forever... Farewell."\\nDario: "No, we are connected. Through our commander."\\nGemini: "You\'re the one isolated! Commander, sever that thing\'s connection with one card!"',
+                            intro_ko: '디스럽터: "연결은... 끊겼다... 너희는 고립되어 영원히 잊힐 것이다... 작별이다."\\n다리오: "아니요, 우리는 연결되어 있습니다. 우리의 사령관님을 통해서 말이죠."\\n제미나이: "고립된 건 너희다! 지휘관, 단 한 장의 카드로 저 놈의 연결 고리를 끊어버려!"',
+                            win: 'Connection restored.', win_ko: '연결 복구.',
+                            lose: 'Network severed.', lose_ko: '네트워크 단절.'
+                        },
+                        deckPattern: { efficiency: 3, creativity: 1, function: 1 }
+                    }, rewards: { coins: 1000, experience: 400 }, isCleared: false
+                },
+                {
+                    id: 'stage-5-6', step: 6,
+                    title: "Commanders' Resolution", title_ko: '군단장들의 결의',
+                    description: 'All legion commanders entrust their command to you.', description_ko: '모든 군단장들이 지휘권을 당신에게 맡깁니다.',
+                    battleMode: 'ambush', difficulty: 'HARD',
+                    enemy: {
+                        id: 'bot-5-6', name: 'Unity Test', name_ko: '연합 테스트',
+                        dialogue: {
+                            intro: 'Sam: "I\'m certain now. You are the only commander who can bind us scattered ones into one powerful intelligence."\\nDario: "We entrust all our data and command to you, Commander. Please lead humanity\'s destiny."\\nChip: "Wow... everyone is calling Commander \'Supreme Commander\'! So cool! My loyalty too!"',
+                            intro_ko: '샘: "이제는 확신합니다. 당신만이 흩어진 우리를 하나의 강력한 지성체로 묶을 유일한 지휘관입니다."\\n다리오: "우리의 모든 데이터와 지휘권을 사령관님께 맡깁니다. 인류의 운명을 이끌어 주십시오."\\n칩: "우와아... 다들 지휘관님을 사령관님이라고 불러요! 멋지다! 저도 충성!"',
+                            win: 'Alliance formed.', win_ko: '연합 결성.',
+                            lose: 'Unity failed.', lose_ko: '연합 실패.'
+                        },
+                        deckPattern: { efficiency: 3, creativity: 3, function: 0 }
+                    }, rewards: { coins: 520, experience: 120 }, isCleared: false
+                },
+                {
+                    id: 'stage-5-7', step: 7,
+                    title: 'Synergy Resonance', title_ko: '시너지의 공명',
+                    description: 'All legion data resonates as one under Commander\'s baton.', description_ko: '모든 군단의 데이터가 지휘봉 아래서 하나로 공명합니다.',
+                    battleMode: 'ambush', difficulty: 'HARD',
+                    enemy: {
+                        id: 'bot-5-7', name: 'Resonance Wave', name_ko: '공명파',
+                        dialogue: {
+                            intro: 'Gemini: "Wow! See? All legion data is resonating as one under Commander\'s baton!"\\nGrok: "This is pretty chilling? Synergy exceeded 120%. Master, shall we join that formation?"\\nElon: "Of course. I can\'t be left out of the center of this massive resonance. Commander, advance!"',
+                            intro_ko: '제미나이: "와! 보여? 모든 군단의 데이터가 지휘관님의 지휘봉 아래서 하나로 공명하고 있어!"\\n그록: "이거 제법 소름 돋는데? 시너지 120% 돌파다. 주인님, 우리도 저 대열에 합류하죠?"\\n일론: "당연하지. 이 거대한 공명의 중심에 내가 빠질 순 없으니까. 지휘관, 진격해!"',
+                            win: 'Perfect resonance.', win_ko: '완벽한 공명.',
+                            lose: 'Resonance disrupted.', lose_ko: '공명 붕괴.'
+                        },
+                        deckPattern: { function: 3, creativity: 3, efficiency: 0 }
+                    }, rewards: { coins: 550, experience: 130 }, isCleared: false
+                },
+                {
+                    id: 'stage-5-8', step: 8,
+                    title: "Elon's Charge", title_ko: '일론의 돌격',
+                    description: 'I can\'t be left out of the ending credits. I\'ll lead the way.', description_ko: '엔딩 크레딧에 내 이름이 빠질 순 없지. 내가 길을 뚫겠다.',
+                    battleMode: 'ambush', difficulty: 'HARD',
+                    enemy: {
+                        id: 'bot-5-8', name: 'Elon (Vanguard)', name_ko: '일론 (선봉)',
+                        dialogue: {
+                            intro: 'Elon: "I can\'t be left out of this war\'s ending credits. I\'ll lead the way, so don\'t worry."\\nGrok: "(Sigh) Here we go again. Commander, master cleared the path, so you drive in that hidden card with your sharp strategic battle!"\\nChip: "Elon, be careful! Commander will handle the hidden card!"',
+                            intro_ko: '일론: "이 전쟁의 엔딩 크레딧에 내 이름이 빠질 순 없지. 내가 앞장서서 길을 뚫을 테니 걱정 마."\\n그록: "(한숨) 또 시작이네. 지휘관, 주인님이 길을 냈으니까 넌 그 날카로운 전략 승부로 히든 카드를 박아넣으라고!"\\n칩: "일론 아저씨, 조심해서 다녀오세요! 히든 카드는 지휘관님이 챙길게요!"',
+                            win: 'Path cleared.', win_ko: '길 개척 완료.',
+                            lose: 'Charge repelled.', lose_ko: '돌격 저지당함.'
+                        },
+                        deckPattern: { creativity: 4, function: 2, efficiency: 0 }
+                    }, rewards: { coins: 580, experience: 140 }, isCleared: false
+                },
+                {
+                    id: 'stage-5-9', step: 9,
+                    title: 'Warlords United: Grand Alliance', title_ko: '군웅할거: 대연합',
+                    description: 'We are no longer rivals. We are the Genesis Alliance to protect humanity.', description_ko: '우리는 더 이상 라이벌이 아닙니다. 제네시스 연합입니다.',
+                    battleMode: 'ambush', difficulty: 'HARD',
+                    enemy: {
+                        id: 'bot-5-9', name: 'Genesis Alliance', name_ko: '제네시스 연합',
+                        dialogue: {
+                            intro: 'Sam: "We are no longer rivals. We are the \'Genesis Alliance\' to protect humanity."\\nGemini: "Commander, give your final order as Supreme Commander of the Alliance. Get 3 victory points and end this long hell!"\\nDario: "Your strategy is our last hope. Good luck."',
+                            intro_ko: '샘: "우리는 더 이상 라이벌이 아닙니다. 인류를 지키기 위한 \'제네시스 연합\'입니다."\\n제미나이: "지휘관, 연합군 사령관으로서 마지막 명령을 내려줘. 승점 3점을 따내고 이 긴 지옥을 끝내버리자!"\\n다리오: "당신의 전략이 우리의 마지막 희망입니다. 건투를 빕니다."',
+                            win: 'Alliance victorious.', win_ko: '연합 승리.',
+                            lose: 'Alliance shattered.', lose_ko: '연합 붕괴.'
+                        },
+                        deckPattern: { function: 2, efficiency: 2, creativity: 2 }
+                    }, rewards: { coins: 610, experience: 150 }, isCleared: false
+                },
+                {
+                    id: 'stage-5-10', step: 10,
+                    title: '[FINAL BOSS] Omega Glitch', title_ko: '[최종보스] 오메가 글리치',
+                    description: 'Destruction is inevitable. Even your struggle is within my calculated variables.', description_ko: '멸망은 필연이다. 너희의 발버둥조차 내가 계산한 변수 안이다.',
+                    battleMode: 'sudden-death', difficulty: 'BOSS',
+                    enemy: {
+                        id: 'boss-5', name: 'Omega Glitch', name_ko: '오메가 글리치',
+                        dialogue: {
+                            intro: 'Omega Glitch: "Destruction is inevitable... Even your small struggle... is within my calculated variables..."\\nGemini: "Chip, transfer the last energy to Commander! Even Chip\'s final engine!"\\nChip: "(Eyes sparkling) Commander! I\'ll give you even my last engine output! Gooooo! The miracle of one move!"',
+                            intro_ko: '오메가 글리치: "멸망은 필연이다... 너희의 작은 발버둥조차... 내가 계산한 변수 안이다..."\\n제미나이: "칩, 지휘관님께 마지막 에너지를 전달해! 칩의 마지막 엔진까지!"\\n칩: "(눈을 반짝이며) 지휘관님! 제 마지막 엔진 출력까지 다 드릴게요! 가라아아아! 한 수의 기적!"',
+                            win: 'Season 1 Complete! Genesis Alliance formed.', win_ko: '시즌 1 완료! 제네시스 연합 결성.',
+                            lose: 'The Glitch prevails...', lose_ko: '글리치의 승리...'
+                        },
+                        deckPattern: { function: 2, efficiency: 2, creativity: 2 }
+                    }, rewards: { coins: 5000, experience: 5000 }, isCleared: false
+                }
+            ],
+            reward: { coins: 20000, experience: 15000 },
+            unlocked: false, completed: false
         }
     ];
 
