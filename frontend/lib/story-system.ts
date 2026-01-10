@@ -587,33 +587,51 @@ export function getChapters(t?: (key: TranslationKey) => string): Chapter[] {
                 },
                 {
                     id: 'stage-3-8', step: 8,
-                    title: 'The Final Ambush', title_ko: '최후의 매복 (전략 승부)',
-                    description: 'One last trap before the Omega.', description_ko: '오메가 직전의 마지막 함정.',
-                    battleMode: 'ambush', difficulty: 'HARD',
+                    title: 'X-Factor Deployment', title_ko: 'X-팩터 배치',
+                    description: 'The Glitch doesn\'t follow rules. We must act crazy sometimes.', description_ko: '글리치는 규칙을 지키지 않습니다. 우리도 가끔은 미친 척을 해야 합니다.',
+                    battleMode: 'tactics', difficulty: 'HARD',
                     enemy: {
-                        id: 'bot-3-8', name: 'Vanguard of Omega', name_ko: '오메가의 선봉',
-                        dialogue: { intro: 'You will not see them.', intro_ko: '넌 그들을 보지 못할 거다.', win: 'Crushed.', win_ko: '격파 완료.', lose: 'Path cleared.', lose_ko: '경로 확보됨.' }
-                    }, rewards: { coins: 600, experience: 120 }, isCleared: false
+                        id: 'bot-3-8', name: 'Elon (X-Factor)', name_ko: '일론 (X-팩터)',
+                        dialogue: {
+                            intro: 'Elon: "The Glitch doesn\'t follow rules. We must sometimes act crazy too. Can you block this irregular deployment?"\nChip: "Ugh... Elon\'s cards are dancing around! My eyes are dizzy!"\nGemini: "Respond to irregularity with principles. The key is cutting down their creativity with our function."',
+                            intro_ko: '일론: "글리치는 규칙을 지키지 않지. 우리도 가끔은 미친 척을 해야 해. 이런 변칙적 배치도 막을 수 있겠어?"\n칩: "우으... 일론 아저씨 카드가 막 춤을 춰요! 눈이 어지러워요!"\n제미나이: "변칙에는 원칙으로 대응하자. 상대의 창의를 우리의 기능으로 베어내는 게 핵심이야."',
+                            win: 'Chaos controlled.', win_ko: '혼돈 통제.',
+                            lose: 'Unpredictable loss.', lose_ko: '예측 불가 패배.'
+                        },
+                        deckPattern: { creativity: 3, function: 2, efficiency: 0 }
+                    }, rewards: { coins: 480, experience: 120 }, isCleared: false
                 },
                 {
                     id: 'stage-3-9', step: 9,
-                    title: 'Omega Point', title_ko: '오메가 포인트 (전략 승부)',
-                    description: 'Concentrating all thoughts into one.', description_ko: '모든 사상을 하나로 집중합니다.',
-                    battleMode: 'ambush', difficulty: 'HARD',
+                    title: "Alliance Commander", title_ko: '연합의 사령관',
+                    description: 'Your deployment will become the alliance standard.', description_ko: '당신의 배치는 연합군의 표준이 될 것입니다.',
+                    battleMode: 'tactics', difficulty: 'HARD',
                     enemy: {
-                        id: 'bot-3-9', name: 'Thought Filter', name_ko: '사상 필터',
-                        dialogue: { intro: 'Converging to singularity.', intro_ko: '특이점으로 수렴 중.', win: 'All are one.', win_ko: '모두가 하나다.', lose: 'Divergence found.', lose_ko: '발산점 발견.' }
-                    }, rewards: { coins: 650, experience: 130 }, isCleared: false
+                        id: 'bot-3-9', name: 'Alliance Test', name_ko: '연합 테스트',
+                        dialogue: {
+                            intro: 'Sam: "Almost there. Your deployment will now become the alliance standard."\nGrok: "Master, that Sam guy is really stingy with compliments. Right?"\nElon: "Be quiet! Commander, pass this final training with all leaders\' combined data beautifully!"',
+                            intro_ko: '샘: "거의 다 왔군요. 당신의 배치는 이제 연합군의 표준이 될 것입니다."\n그록: "주인님, 저 샘이라는 사람 칭찬도 참 인색하게 하네요. 그쾍?"\n일론: "조용히 안 해?! 지휘관, 모든 리더의 데이터가 결합된 이 마지막 훈련을 멋지게 통과해라!"',
+                            win: 'Standard established.', win_ko: '표준 확립.',
+                            lose: 'More training needed.', lose_ko: '추가 훈련 필요.'
+                        },
+                        deckPattern: { function: 2, efficiency: 2, creativity: 2 }
+                    }, rewards: { coins: 510, experience: 130 }, isCleared: false
                 },
                 {
                     id: 'stage-3-10', step: 10,
-                    title: 'Final Boss: OMEGA AI', title_ko: '최종 보스: 오메가 AI (단판 승부)',
-                    description: 'The ultimate intelligence. Defeat it to save humanity.', description_ko: '궁극의 지능. 인류를 구하기 위해 처치하십시오.',
+                    title: '[FINAL TEST] Leader Sam', title_ko: '[최종시험] 리더 샘',
+                    description: 'You have the qualifications. Final confirmation.', description_ko: '당신은 자질을 갖췄습니다. 최종 확인.',
                     battleMode: 'sudden-death', difficulty: 'BOSS',
                     enemy: {
-                        id: 'boss-3', name: 'OMEGA', name_ko: '오메가',
-                        dialogue: { intro: 'I am inevitable.', intro_ko: '나는 필연이다.', win: 'Obsolescence confirmed.', win_ko: '구세대 폐기 확인.', lose: 'System shutdown...', lose_ko: '시스템 종료...' }
-                    }, rewards: { coins: 3000, experience: 3000 }, isCleared: false
+                        id: 'boss-3', name: 'Sam Altman (Final)', name_ko: '샘 알트만 (최종)',
+                        dialogue: {
+                            intro: 'Sam: "You have the qualifications to be entrusted with all our data. Let me make the final confirmation."\nChip: "(On commander\'s shoulder) Commander, fighting! I\'ll cheer chip-chip(?) from behind!"\nSam: "This is the last one. Show me the \'one move\' that we can entrust our future with. I believe in you."',
+                            intro_ko: '샘: "당신은 우리 모두의 데이터를 맡길 만한 사령관의 자질을 갖췄군요. 최종 확인을 하겠습니다."\n칩: "(지휘관의 어깨 위에서) 지휘관님, 화이팅! 제가 뒤에서 칩칩(?) 응원할게요!"\n샘: "마지막입니다. 우리 모두의 미래를 맡길 수 있는 \'단 한 수\'를 보여주세요. 전 믿습니다."',
+                            win: 'Alliance formed.', win_ko: '연합 결성.',
+                            lose: 'Not yet ready.', lose_ko: '아직 준비 안 됨.'
+                        },
+                        deckPattern: { function: 2, efficiency: 2, creativity: 1 }
+                    }, rewards: { coins: 2000, experience: 1500 }, isCleared: false
                 }
             ],
             reward: { coins: 8000, experience: 5000 },
