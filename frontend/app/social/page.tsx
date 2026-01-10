@@ -27,7 +27,7 @@ import {
     FriendUser
 } from '@/lib/friend-system';
 import { sendBattleInvitation } from '@/lib/battle-invitation-system';
-import { collection, query, onSnapshot, orderBy } from 'firebase/firestore';
+import { collection, query, onSnapshot, orderBy, doc, getDoc } from 'firebase/firestore';
 import { db } from '@/lib/firebase';
 import { Avatar } from '@/components/ui/custom/Avatar';
 import { Button } from '@/components/ui/custom/Button';
@@ -36,6 +36,7 @@ import { Card, CardBody } from '@/components/ui/custom/Card';
 import { useAlert } from '@/context/AlertContext';
 import CyberPageLayout from '@/components/CyberPageLayout';
 import Link from 'next/link';
+import { ResetTimer } from '@/components/ResetTimer';
 
 export default function SocialPage() {
     const { user } = useUser();
@@ -55,22 +56,40 @@ export default function SocialPage() {
         if (!user || !db) return;
 
         const friendsRef = collection(db, 'users', user.uid, 'friends');
-        const unsubscribe = onSnapshot(friendsRef, (snapshot) => {
-            const allFriends: FriendUser[] = [];
+        const unsubscribe = onSnapshot(friendsRef, async (snapshot) => {
+            const tempFriends: FriendUser[] = [];
             const allRequests: FriendUser[] = [];
+
+            // We'll collect UIDs to fetch actual presence
+            const acceptedFriends: FriendUser[] = [];
 
             snapshot.docs.forEach(doc => {
                 const data = doc.data() as FriendUser;
                 const friendData = { ...data, uid: doc.id };
 
                 if (data.status === 'accepted') {
-                    allFriends.push(friendData);
+                    acceptedFriends.push(friendData);
                 } else if (data.status === 'pending_received') {
                     allRequests.push(friendData);
                 }
             });
 
-            setFriends(allFriends);
+            // Fetch real-time presence for accepted friends
+            const friendsWithPresence = await Promise.all(acceptedFriends.map(async (f) => {
+                if (!db) return f;
+                try {
+                    const userDoc = await getDoc(doc(db, 'users', f.uid));
+                    if (userDoc.exists()) {
+                        const userData = userDoc.data();
+                        return { ...f, updatedAt: userData.lastActive || f.updatedAt };
+                    }
+                } catch (e) {
+                    console.warn(`Failed to fetch presence for ${f.uid}`, e);
+                }
+                return f;
+            }));
+
+            setFriends(friendsWithPresence);
             setRequests(allRequests);
         });
 
@@ -136,6 +155,15 @@ export default function SocialPage() {
                 }
             }
         });
+    };
+
+    // Helper to determine online status
+    const isUserOnline = (lastActive: any) => {
+        if (!lastActive) return false;
+        const lastActiveDate = lastActive.toDate ? lastActive.toDate() : new Date(lastActive);
+        const now = new Date();
+        // Online if active in the last 10 minutes
+        return (now.getTime() - lastActiveDate.getTime()) < 10 * 60 * 1000;
     };
 
     return (
@@ -258,12 +286,20 @@ export default function SocialPage() {
                                                     <div className="flex items-center gap-4">
                                                         <div className="relative">
                                                             <Avatar src={friend.avatarUrl} className="w-12 h-12 border border-white/10" />
-                                                            <div className="absolute -bottom-1 -right-1 w-3 h-3 bg-green-500 rounded-full border-2 border-black animate-pulse" />
+                                                            {isUserOnline(friend.updatedAt) ? (
+                                                                <div className="absolute -bottom-1 -right-1 w-3 h-3 bg-green-500 rounded-full border-2 border-black animate-pulse" />
+                                                            ) : (
+                                                                <div className="absolute -bottom-1 -right-1 w-3 h-3 bg-gray-500 rounded-full border-2 border-black" />
+                                                            )}
                                                         </div>
                                                         <div>
                                                             <div className="flex items-center gap-2">
                                                                 <h4 className="font-bold text-white truncate max-w-[150px] italic">{friend.nickname}</h4>
-                                                                <span className="text-[10px] text-green-400 font-mono uppercase">ONLINE</span>
+                                                                {isUserOnline(friend.updatedAt) ? (
+                                                                    <span className="text-[10px] text-green-400 font-mono uppercase">ONLINE</span>
+                                                                ) : (
+                                                                    <span className="text-[10px] text-white/30 font-mono uppercase">OFFLINE</span>
+                                                                )}
                                                             </div>
                                                             <div className="text-[10px] text-white/30 font-mono mt-0.5">LV.{friend.level || 1} • ELITE COMMANDER</div>
                                                         </div>
@@ -427,6 +463,9 @@ export default function SocialPage() {
                             <div className="flex items-center gap-2 mb-6">
                                 <ShieldAlert size={18} className="text-cyan-400" />
                                 <h3 className="text-xs font-bold text-white orbitron tracking-widest uppercase">INTEL FEED</h3>
+                            </div>
+                            <div className="mb-6 p-4 bg-purple-500/5 border border-purple-500/10 rounded-2xl">
+                                <ResetTimer className="justify-center" />
                             </div>
                             <div className="space-y-4">
                                 <div className="p-3 bg-white/5 rounded-xl border-l-2 border-cyan-500">

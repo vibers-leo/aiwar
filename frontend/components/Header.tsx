@@ -2,12 +2,34 @@
 
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
-import { motion } from 'framer-motion';
+import { motion, AnimatePresence } from 'framer-motion';
+import { useState, useEffect } from 'react';
 import { useUser } from '@/context/UserContext';
+import { useUserProfile } from '@/hooks/useUserProfile';
+import { Avatar } from '@/components/ui/custom/Avatar';
+import { Bell, Users, Settings } from 'lucide-react';
+import { collection, query, onSnapshot, where } from 'firebase/firestore';
+import { db } from '@/lib/firebase';
 
 export default function Header() {
     const pathname = usePathname();
     const { user } = useUser();
+    const { profile } = useUserProfile();
+    const [pendingCount, setPendingCount] = useState(0);
+
+    // Friend Request Listener
+    useEffect(() => {
+        if (!user || !db) return;
+
+        const friendsRef = collection(db, 'users', user.uid, 'friends');
+        const q = query(friendsRef, where('status', '==', 'pending_received'));
+
+        const unsubscribe = onSnapshot(q, (snapshot) => {
+            setPendingCount(snapshot.size);
+        });
+
+        return () => unsubscribe();
+    }, [user]);
 
     const menuItems = [
         { name: 'Story', href: '/story' },
@@ -70,30 +92,57 @@ export default function Header() {
                         })}
                     </nav>
 
-                    {/* Profile & Settings */}
+                    {/* Profile & Notifications */}
                     <div className="flex items-center gap-4">
+                        {/* Social Dashboard & Notifications */}
+                        <Link href="/social">
+                            <motion.button
+                                whileHover={{ scale: 1.05 }}
+                                whileTap={{ scale: 0.95 }}
+                                className="relative w-10 h-10 rounded-full bg-slate-800/50 border border-purple-500/20 flex items-center justify-center hover:border-purple-400/40 transition-colors group"
+                            >
+                                <Users size={18} className="text-slate-400 group-hover:text-purple-300 transition-colors" />
+                                {pendingCount > 0 && (
+                                    <span className="absolute -top-1 -right-1 flex h-4 w-4">
+                                        <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-purple-400 opacity-75"></span>
+                                        <span className="relative inline-flex rounded-full h-4 w-4 bg-purple-500 text-[10px] items-center justify-center text-white font-bold">
+                                            {pendingCount}
+                                        </span>
+                                    </span>
+                                )}
+                            </motion.button>
+                        </Link>
+
+                        {/* Settings */}
+                        <motion.button
+                            whileHover={{ scale: 1.05 }}
+                            whileTap={{ scale: 0.95 }}
+                            className="w-10 h-10 rounded-full bg-slate-800/50 border border-purple-500/20 flex items-center justify-center hover:border-purple-400/40 transition-colors group"
+                        >
+                            <Settings size={18} className="text-slate-400 group-hover:text-purple-300 transition-colors" />
+                        </motion.button>
+
+                        <div className="h-6 w-[1px] bg-white/10 mx-1" />
+
+                        {/* User Profile */}
                         <Link href={`/profile/${user?.uid || 'guest'}`}>
                             <motion.button
                                 whileHover={{ scale: 1.05 }}
                                 whileTap={{ scale: 0.95 }}
-                                className="w-10 h-10 rounded-full bg-slate-800 border border-purple-500/20 flex items-center justify-center hover:border-purple-400/40 transition-colors"
+                                className="flex items-center gap-3 pl-1 pr-3 py-1 rounded-full bg-slate-800/30 border border-white/5 hover:border-purple-500/30 transition-all"
                             >
-                                <svg className="w-5 h-5 text-purple-300" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" />
-                                </svg>
+                                <Avatar
+                                    src={profile?.avatarUrl}
+                                    className="w-8 h-8 border border-purple-500/30"
+                                />
+                                <div className="hidden md:block text-left">
+                                    <p className="text-[10px] font-bold text-white orbitron leading-none">
+                                        {profile?.nickname || 'COMMANDER'}
+                                    </p>
+                                    <p className="text-[8px] text-purple-400 font-mono mt-0.5">LV.{profile?.level || 1}</p>
+                                </div>
                             </motion.button>
                         </Link>
-
-                        <motion.button
-                            whileHover={{ scale: 1.05 }}
-                            whileTap={{ scale: 0.95 }}
-                            className="w-10 h-10 rounded-full bg-slate-800 border border-purple-500/20 flex items-center justify-center hover:border-purple-400/40 transition-colors"
-                        >
-                            <svg className="w-5 h-5 text-purple-300" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z" />
-                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
-                            </svg>
-                        </motion.button>
                     </div>
                 </div>
             </div>

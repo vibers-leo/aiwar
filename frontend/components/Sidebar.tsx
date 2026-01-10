@@ -34,6 +34,7 @@ import SettingsModal from './SettingsModal';
 import CommanderProfileModal from './CommanderProfileModal';
 import FriendsModal from './FriendsModal';
 import { useTranslation } from '@/context/LanguageContext';
+import { ResetTimer } from './ResetTimer';
 
 interface SidebarProps {
     isOpen: boolean;
@@ -168,6 +169,24 @@ export default function Sidebar({ isOpen, onToggle }: SidebarProps) {
                             </motion.div>
                         )}
                     </AnimatePresence>
+
+                    <Divider className="bg-white/5" />
+
+                    {/* [NEW] Daily Reset Timer */}
+                    {isOpen && (
+                        <div className="px-6 py-4 flex-shrink-0">
+                            <ResetTimer className="bg-white/5 p-3 rounded-xl border border-white/5 shadow-inner" />
+                        </div>
+                    )}
+                    {!isOpen && (
+                        <div className="flex justify-center p-2">
+                            <Tooltip content="DAILY RESET COUNTDOWN" placement="left">
+                                <div className="p-2 rounded-full bg-white/5">
+                                    <ResetTimer showLabel={false} />
+                                </div>
+                            </Tooltip>
+                        </div>
+                    )}
 
                     <Divider className="bg-white/5" />
 

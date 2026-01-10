@@ -38,6 +38,7 @@ import { User } from 'firebase/auth';
 import { gameStorage } from '@/lib/game-storage';
 import { updateGameState } from '@/lib/game-state';
 import { isFirebaseConfigured, db } from '@/lib/firebase';
+import { serverTimestamp, doc, updateDoc } from 'firebase/firestore';
 
 interface UserContextType {
     coins: number;
@@ -334,6 +335,32 @@ export function UserProvider({ children }: { children: React.ReactNode }) {
         }
 
     }, [mounted, user, authLoading, profile, profileLoading, resetState]);
+
+    // [NEW] Presence System: Update lastActive every 5 minutes
+    useEffect(() => {
+        if (!user || !db) return;
+
+        const updatePresence = async () => {
+            if (!db) return; // redundant but safe for TS
+            try {
+                const userRef = doc(db, 'users', user.uid);
+                await updateDoc(userRef, {
+                    lastActive: serverTimestamp()
+                });
+                console.log(`[Presence] 📡 Last active updated for ${user.uid}`);
+            } catch (error) {
+                console.warn("[Presence] Failed to update presence:", error);
+            }
+        };
+
+        // Update immediately on mount/auth
+        updatePresence();
+
+        // Then every 5 minutes
+        const interval = setInterval(updatePresence, 5 * 60 * 1000);
+
+        return () => clearInterval(interval);
+    }, [user]);
 
     const checkFeatureUnlocks = (newLevel: number) => {
         if (newLevel === 3) {
