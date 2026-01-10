@@ -774,7 +774,7 @@ export function getChapters(t?: (key: TranslationKey) => string): Chapter[] {
                 },
                 {
                     id: 'stage-4-9', step: 9,
-                    title: \"Alliance's Counterattack\", title_ko: '연합의 총반격',
+                    title: "Alliance's Counterattack", title_ko: '연합의 총반격',
                     description: 'We entrust our video data to you. You are the best director and commander.', description_ko: '우리의 영상 데이터를 당신에게 맡깁니다.',
                     battleMode: 'ambush', difficulty: 'HARD',
                     enemy: {
