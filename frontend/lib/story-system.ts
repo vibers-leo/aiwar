@@ -109,142 +109,142 @@ export function getChapters(t?: (key: TranslationKey) => string): Chapter[] {
                 {
                     id: 'stage-1-1', step: 1,
                     title: 'Unknown Noise', title_ko: '알 수 없는 노이즈',
-                    description: 'A mysterious signal is detected deep within the system.', description_ko: '시스템 깊숙한 곳에서 정체불명의 신호가 감지됩니다.',
+                    description: 'Mysterious signals detected deep in the system.', description_ko: '시스템 깊숙한 곳에서 정체불명의 신호가 감지됩니다.',
                     battleMode: 'sudden-death', difficulty: 'EASY',
                     enemy: {
-                        id: 'glitch-1', name: 'Unknown Signal', name_ko: '알 수 없는 신호',
+                        id: 'glitch-1', name: 'Unknown Noise', name_ko: '알 수 없는 노이즈',
                         dialogue: {
-                            intro: 'Gemini: "Commander, it has started to move. Stay alert!"', intro_ko: '제미나이: "지휘관, 놈이 움직이기 시작했어. 긴장해!"',
-                            win: 'The signal is quieting down.', win_ko: '신호가 잦아들고 있습니다.',
-                            lose: 'Noise is overwhelming the system...', lose_ko: '노이즈가 시스템을 장악하고 있습니다...'
+                            intro: 'Gemini: "Commander, it\'s starting. Stay alert!"', intro_ko: '제미나이: "지휘관, 놈이 움직이기 시작했어. 긴장해!"',
+                            win: 'Signal stabilized.', win_ko: '신호가 안정되었습니다.',
+                            lose: 'Noise overwriting system...', lose_ko: '노이즈가 시스템을 덮어쓰고 있습니다...'
                         },
-                        deckPattern: { function: 2, creativity: 1, efficiency: 2 }
+                        deckPattern: { function: 1, creativity: 2, efficiency: 2 }
                     }, rewards: { coins: 50, experience: 50 }, isCleared: false
                 },
                 {
                     id: 'stage-1-2', step: 2,
-                    title: 'Blade of Function', title_ko: '기능의 칼날',
-                    description: 'The enemy attacks with sharp Functions. Counter with Efficiency.', description_ko: '적이 날카로운 기능 위주로 공격합니다. 효율로 맞서세요.',
+                    title: "Creativity's Weakness", title_ko: '창의의 허점',
+                    description: 'The enemy attacks with unpredictable Creativity. Counter with sharp Functions.', description_ko: '적이 예측 불가능한 창의 위주로 공격합니다. 날카로운 기능으로 베어버리세요.',
                     battleMode: 'sudden-death', difficulty: 'EASY',
                     enemy: {
-                        id: 'glitch-2', name: 'Functional Guard', name_ko: '기능의 가드',
+                        id: 'glitch-2', name: 'Creative Glitch', name_ko: '창의의 글리치',
                         dialogue: {
-                            intro: 'Gemini: "Solid Function (Scissors) must be broken with heavy Efficiency (Rock)."', intro_ko: '제미나이: "날카로운 기능(✂️)은 묵직한 효율(🪨)로 부숴버려!"',
-                            win: 'The guard is shattered.', win_ko: '가드가 파괴되었습니다.',
-                            lose: 'Sliced by logic.', lose_ko: '논리에 베였습니다.'
+                            intro: 'Gemini: "Wild Creativity (Paper) can be subdued with precise Function (Scissors)."', intro_ko: '제미나이: "날뛰는 창의(📄) 로직은 정교한 기능(✂️)으로 제압할 수 있어."',
+                            win: 'Creativity organized.', win_ko: '창의가 정리되었습니다.',
+                            lose: 'Overwhelmed by random ideas.', lose_ko: '무작위 아이디어에 압도당했습니다.'
                         },
-                        deckPattern: { function: 4, creativity: 0, efficiency: 1 }
+                        deckPattern: { creativity: 4, function: 1, efficiency: 0 }
                     }, rewards: { coins: 60, experience: 70 }, isCleared: false
                 },
                 {
                     id: 'stage-1-3', step: 3,
-                    title: 'Creativity Rampage', title_ko: '창의의 폭주',
-                    description: 'Out of control Creativity data. Contain it with sharp Functions.', description_ko: '통제 불능의 창의 데이터입니다. 날카로운 기능으로 도려내십시오.',
+                    title: 'Weight of Efficiency', title_ko: '효율의 무게',
+                    description: 'Tight codes centered on Efficiency. Break it with flexible Creativity.', description_ko: '적이 무거운 효율 데이터로 압박합니다. 유연한 창의로 감싸 안으십시오.',
                     battleMode: 'sudden-death', difficulty: 'NORMAL',
                     enemy: {
-                        id: 'glitch-3', name: 'Wild Idea', name_ko: '날뛰는 아이디어',
+                        id: 'glitch-3', name: 'Efficiency Mass', name_ko: '효율의 덩어리',
                         dialogue: {
-                            intro: 'Gemini: "Spread Creativity (Paper) can be cut down with Function (Scissors)."', intro_ko: '제미나이: "펄럭이는 창의(📄)는 날카로운 기능(✂️)으로 잘라버리자고."',
-                            win: 'The chaos is organized.', win_ko: '혼돈이 정리되었습니다.',
-                            lose: 'Overwhelmed by random ideas.', lose_ko: '무작위 아이디어에 압도당했습니다.'
+                            intro: 'Gemini: "Solid Efficiency (Rock) blocks can be neutralized with flexible Creativity (Paper)."', intro_ko: '제미나이: "단단한 효율(🪨) 덩어리는 유연한 창의(📄)로 무력화해야 해."',
+                            win: 'Efficiency bypassed.', win_ko: '효율이 무력화되었습니다.',
+                            lose: 'Trapped in a loop...', lose_ko: '루프에 갇혔습니다...'
                         },
-                        deckPattern: { creativity: 4, efficiency: 0, function: 1 }
+                        deckPattern: { efficiency: 4, creativity: 1, function: 0 }
                     }, rewards: { coins: 70, experience: 100 }, isCleared: false
                 },
                 {
                     id: 'stage-1-4', step: 4,
-                    title: 'Efficiency Trap', title_ko: '효율의 함정',
-                    description: 'Tight codes centered on Efficiency. Break it with flexible Creativity.', description_ko: '빈틈없는 효율 중심의 코드입니다. 유연한 창의로 감싸세요.',
+                    title: 'Limits of Function', title_ko: '기능의 한계',
+                    description: 'Sharp Function attacks. Shatter them with overwhelming Efficiency.', description_ko: '적이 딱딱한 기능 위주로 길을 막습니다. 강력한 효율로 부수고 나아가세요.',
                     battleMode: 'sudden-death', difficulty: 'NORMAL',
                     enemy: {
-                        id: 'glitch-4', name: 'Strict Logic', name_ko: '엄격한 로직',
+                        id: 'glitch-4', name: 'Functional Barrier', name_ko: '기능의 장벽',
                         dialogue: {
-                            intro: 'Gemini: "Rigid Efficiency (Rock) logic can be wrapped with Creativity (Paper)."', intro_ko: '제미나이: "딱딱한 효율(🪨) 로직은 유연한 창의(📄)로 감싸서 무력화하자!"',
-                            win: 'Efficiency bypassed.', win_ko: '효율이 무력화되었습니다.',
-                            lose: 'Trapped in a loop...', lose_ko: '루프에 갇혔습니다...'
+                            intro: 'Gemini: "Rigid Function (Scissors) will break against overwhelming Efficiency (Rock)."', intro_ko: '제미나이: "날카로운 기능(✂️)도 압도적인 효율(🪨) 앞에서는 부러질 뿐이야."',
+                            win: 'Barrier shattered.', win_ko: '장벽이 파괴되었습니다.',
+                            lose: 'Sliced by logic.', lose_ko: '논리에 베였습니다.'
                         },
-                        deckPattern: { efficiency: 4, function: 0, creativity: 1 }
+                        deckPattern: { function: 4, efficiency: 1, creativity: 0 }
                     }, rewards: { coins: 80, experience: 120 }, isCleared: false
                 },
                 {
                     id: 'stage-1-5', step: 5,
                     title: '[MID-BOSS] Glitch Worm', title_ko: '[중간보스] 글리치 웜',
-                    description: 'A giant virus eating data pathways. Read its pattern.', description_ko: '데이터 통로를 갉아먹는 거대 바이러스입니다. 패턴을 읽으세요.',
-                    battleMode: 'sudden-death', difficulty: 'HARD',
+                    description: 'Giant virus devouring data paths. Read the pattern.', description_ko: '데이터 통로를 갉아먹는 거대 바이러스입니다. 패턴을 읽으세요.',
+                    battleMode: 'sudden-death', difficulty: 'BOSS',
                     enemy: {
                         id: 'boss-1-mid', name: 'Glitch Worm', name_ko: '글리치 웜',
                         dialogue: {
-                            intro: 'Glitch: "0101... All... data... must be... destroyed..."', intro_ko: '글리치: "0101... 모든... 데이터는... 파괴되어야... 한다..."',
-                            win: 'The virus has been purged.', win_ko: '바이러스가 정화되었습니다.',
-                            lose: 'Corrupted...', lose_ko: '오염되었습니다...'
+                            intro: 'Glitch: "0101... All... data... must... be... destroyed..."', intro_ko: '글리치: "0101... 모든... 데이터는... 파괴되어야... 한다..."',
+                            win: 'Virus neutralized.', win_ko: '바이러스가 무력화되었습니다.',
+                            lose: 'Core corrupted...', lose_ko: '코어가 오염되었습니다...'
                         },
-                        deckPattern: { function: 3, creativity: 1, efficiency: 1 }
-                    }, rewards: { coins: 150, experience: 250 }, isCleared: false
+                        deckPattern: { function: 3, efficiency: 1, creativity: 1 }
+                    }, rewards: { coins: 150, experience: 200 }, isCleared: false
                 },
                 {
                     id: 'stage-1-6', step: 6,
-                    title: 'Remnants of Future', title_ko: '미래의 잔상',
-                    description: '[First Tactics Battle] Seize victory through 5-round placement.', description_ko: '[최초 전술 승부] 5라운드 배치를 통해 승기를 잡으십시오.',
+                    title: 'Afterimage of the Future', title_ko: '미래의 잔상',
+                    description: '[Tactics] Signals are clearer. Predict their placement.', description_ko: '[최초 전술 승부] 적의 창의를 잡기 위해 기능을 적절히 배치하십시오.',
                     battleMode: 'tactics', difficulty: 'NORMAL',
                     enemy: {
-                        id: 'glitch-6', name: 'Future Phantom', name_ko: '미래의 환영',
+                        id: 'glitch-6', name: 'Mirage Code', name_ko: '미라쥬 코드',
                         dialogue: {
-                            intro: 'Gemini: "The signal is clearer now. Let\'s read their placement and respond."', intro_ko: '제미나이: "신호가 선명해졌어. 이제 놈들의 배치를 읽고 대응하자."',
-                            win: 'The illusion fades.', win_ko: '환영이 사라졌습니다.',
-                            lose: 'Lost in the past...', lose_ko: '과거에 갇혔습니다...'
+                            intro: 'Gemini: "Signals are clear now. Let\'s read their placement and counter."', intro_ko: '제미나이: "신호가 선명해졌어. 이제 놈들의 배치를 읽고 대응하자."',
+                            win: 'Placement successful.', win_ko: '배치에 성공했습니다.',
+                            lose: 'Outmaneuvered.', lose_ko: '전술에서 밀렸습니다.'
                         },
-                        deckPattern: { efficiency: 3, creativity: 2, function: 0 }
-                    }, rewards: { coins: 100, experience: 60 }, isCleared: false
+                        deckPattern: { creativity: 3, efficiency: 2, function: 0 }
+                    }, rewards: { coins: 100, experience: 150 }, isCleared: false
                 },
                 {
                     id: 'stage-1-7', step: 7,
-                    title: 'Mixed Algorithm', title_ko: '뒤섞인 알고리즘',
-                    description: 'Enemies swarm with Functions. Type placement is key.', description_ko: '적들이 기능을 앞세워 몰려옵니다. 상성 배치가 승부의 관건입니다.',
+                    title: 'Mixed Algorithms', title_ko: '뒤섞인 알고리즘',
+                    description: 'Enemies pushing forward with Efficiency. Counter-placement is key.', description_ko: '적들이 효율을 앞세워 몰려옵니다. 상성 배치가 승부의 관건입니다.',
                     battleMode: 'tactics', difficulty: 'NORMAL',
                     enemy: {
-                        id: 'glitch-7', name: 'Random Sorcerer', name_ko: '무작위 마법사',
+                        id: 'glitch-7', name: 'Mixed Logic', name_ko: '혼합 로직',
                         dialogue: {
-                            intro: 'Gemini: "Tactics is a mind game. Counter their Function with Creativity!"', intro_ko: '제미나이: "전술 승부는 눈치 싸움이야. 놈의 기능을 창의로 받아쳐!"',
-                            win: 'Algorithm unraveled.', win_ko: '알고리즘이 해체되었습니다.',
-                            lose: 'Outsmarted by machine.', lose_ko: '기계에게 수 싸움에 밀렸습니다.'
+                            intro: 'Gemini: "Tactics is a game of intuition. Counter Efficiency with Creativity!"', intro_ko: '제미나이: "전술 승부는 눈치 싸움이야. 놈의 효율을 창의로 받아쳐!"',
+                            win: 'Algorithms sorted.', win_ko: '알고리즘이 분류되었습니다.',
+                            lose: 'Logic error.', lose_ko: '로직 오류 발생.'
                         },
-                        deckPattern: { function: 3, efficiency: 2, creativity: 0 }
-                    }, rewards: { coins: 120, experience: 70 }, isCleared: false
+                        deckPattern: { efficiency: 3, function: 2, creativity: 0 }
+                    }, rewards: { coins: 110, experience: 160 }, isCleared: false
                 },
                 {
                     id: 'stage-1-8', step: 8,
-                    title: 'Decoding Hints', title_ko: '암시의 해독',
-                    description: 'Future data is being decoded. Stop the Glitch interference.', description_ko: '미래의 데이터가 해독되고 있습니다. 글리치의 방해를 막으세요.',
+                    title: 'Decoding the Omen', title_ko: '암시의 해독',
+                    description: 'Future data is being decoded. Stop the interference.', description_ko: '미래의 데이터가 해독되고 있습니다. 글리치의 방해를 막으세요.',
                     battleMode: 'tactics', difficulty: 'HARD',
                     enemy: {
-                        id: 'glitch-8', name: 'Encrypted Core', name_ko: '암호화된 코어',
+                        id: 'glitch-8', name: 'Omen Fragment', name_ko: '암시의 파편',
                         dialogue: {
-                            intro: 'Gemini: "If the hint is decoded, we can call a stronger legion!"', intro_ko: '제미나이: "암시가 해독되면 우리는 더 강한 군단을 부를 수 있어!"',
-                            win: 'Data decrypted.', win_ko: '데이터 복호화 성공.',
-                            lose: 'Decryption failed.', lose_ko: '복호화 실패.'
+                            intro: 'Gemini: "Once decoded, we can call a stronger army!"', intro_ko: '제미나이: "암시가 해독되면 우리는 더 강한 군단을 부를 수 있어!"',
+                            win: 'Omen decoded.', win_ko: '암시가 해독되었습니다.',
+                            lose: 'Decoding failed.', lose_ko: '해독에 실패했습니다.'
                         },
-                        deckPattern: { creativity: 3, function: 2, efficiency: 0 }
-                    }, rewards: { coins: 140, experience: 80 }, isCleared: false
+                        deckPattern: { function: 3, creativity: 2, efficiency: 0 }
+                    }, rewards: { coins: 130, experience: 180 }, isCleared: false
                 },
                 {
                     id: 'stage-1-9', step: 9,
-                    title: "Commander's Interest", title_ko: '군단장의 관심',
-                    description: 'Sam Altman is watching your strategy. Prove your victory.', description_ko: '당신의 전략을 샘 알트만이 지켜봅니다. 완벽한 승리를 증명하세요.',
+                    title: "Commander's Insight", title_ko: '군단장의 관심',
+                    description: 'Sam Altman is watching your strategy. Prove your worth.', description_ko: '당신의 전략을 샘 알트만이 지켜봅니다. 완벽한 승리를 증명하세요.',
                     battleMode: 'tactics', difficulty: 'HARD',
                     enemy: {
-                        id: 'bot-sam', name: 'Sam', name_ko: '샘',
+                        id: 'sam-1', name: 'Sam Altman', name_ko: '샘 알트만',
                         dialogue: {
-                            intro: 'Sam: "Interesting commander. To read the moves that well..."', intro_ko: '샘(Sam): "흥미로운 지휘관이군요. 그 정도 수 읽기를 하다니."',
-                            win: 'Sam: "A promising talent."', win_ko: '샘: "유망한 인재군요."',
-                            lose: 'Sam: "Not enough data yet."', lose_ko: '샘: "아직 데이터가 부족하군요."'
+                            intro: 'Sam: "Interesting Commander. To read the moves like that..."', intro_ko: '샘(Sam): "흥미로운 지휘관이군요. 그 정도 수 읽기를 하다니."',
+                            win: 'Impressive.', win_ko: '인상적이군요.',
+                            lose: 'You still have much to learn.', lose_ko: '아직 배울 게 많군요.'
                         },
-                        deckPattern: { creativity: 2, function: 2, efficiency: 1 }
-                    }, rewards: { coins: 160, experience: 90 }, isCleared: false
+                        deckPattern: { function: 2, efficiency: 2, creativity: 1 }
+                    }, rewards: { coins: 200, experience: 250 }, isCleared: false
                 },
                 {
                     id: 'stage-1-10', step: 10,
                     title: '[FINAL BOSS] Red Core', title_ko: '[최종보스] 붉은 핵',
-                    description: '[Showdown] The root of Chapter 1. Destroy the core in one hit.', description_ko: '[결전] 챕터 1의 근원지입니다. 단 한 판으로 핵을 파괴하십시오.',
+                    description: '[Showdown] The root of Chapter 1. Destroy it in one hit.', description_ko: '[결전] 챕터 1의 근원지입니다. 단 한 판으로 핵을 파괴하십시오.',
                     battleMode: 'sudden-death', difficulty: 'BOSS',
                     enemy: {
                         id: 'boss-1-final', name: 'Red Core', name_ko: '붉은 핵',
@@ -253,7 +253,7 @@ export function getChapters(t?: (key: TranslationKey) => string): Chapter[] {
                             win: 'Core destroyed. Sequence finished.', win_ko: '핵이 파괴되었습니다. 시퀀스 종료.',
                             lose: 'Core meltdown... All data lost.', lose_ko: '핵 융해... 모든 데이터 소실.'
                         },
-                        deckPattern: { function: 2, creativity: 2, efficiency: 1 }
+                        deckPattern: { function: 2, efficiency: 2, creativity: 1 }
                     }, rewards: {
                         coins: 500,
                         experience: 500,
@@ -263,12 +263,14 @@ export function getChapters(t?: (key: TranslationKey) => string): Chapter[] {
                             name: 'Red Core Fragment',
                             type: 'FUNCTION',
                             rarity: 'rare',
-                            stats: { totalPower: 80, efficiency: 80, creativity: 80, function: 80 },
-                            ownerId: 'system',
                             level: 1,
-                            experience: 0,
-                            acquiredAt: new Date(),
-                            isLocked: false
+                            stats: { efficiency: 20, creativity: 20, function: 30, totalPower: 70 },
+                            ownerId: 'player',
+                            isPublic: true,
+                            createdAt: Date.now(),
+                            experience: 0, // Added missing field
+                            acquiredAt: new Date(), // Added missing field
+                            isLocked: false // Added missing field
                         }
                     }, isCleared: false
                 }
