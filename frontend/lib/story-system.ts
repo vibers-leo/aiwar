@@ -301,30 +301,39 @@ export function getChapters(t?: (key: TranslationKey) => string): Chapter[] {
         {
             id: 'chapter-2',
             number: 2,
-            title: 'NEURAL NETWORK',
-            title_ko: '신경망 확장',
-            description: '2026. The network expands instantly. Global connectivity.',
-            description_ko: '2026년. 네트워크가 순식간에 확장됩니다. 전 지구적 연결.',
-            icon: '🕸️',
+            title: 'CORRUPTED LEGIONS',
+            title_ko: '오염된 군단',
+            description: 'Corrupted coding AI. 5-second decisions.', description_ko: '잠식된 코딩 AI와 5초의 결단.',
+            icon: '🦠',
             stages: [
                 {
                     id: 'stage-2-1', step: 1,
-                    title: 'Deep Learning', title_ko: '딥 러닝',
-                    description: 'Enemy adapts to your moves.', description_ko: '적이 당신의 움직임에 적응합니다.',
-                    battleMode: 'tactics', difficulty: 'NORMAL',
+                    title: 'Code Erosion', title_ko: '코드의 침식',
+                    description: 'System crashes every 5 seconds. Choose fast!', description_ko: '시스템이 5초마다 터집니다. 빠르게 선택하세요!',
+                    battleMode: 'double', difficulty: 'NORMAL',
                     enemy: {
-                        id: 'bot-2-1', name: 'Neural Layer', name_ko: '신경망 레이어',
-                        dialogue: { intro: 'Analyzing patterns.', intro_ko: '패턴 분석 중.', win: 'Prediction accurate.', win_ko: '예측 정확.', lose: 'Outlier detected.', lose_ko: '이상치 감지.' }
+                        id: 'bot-2-1', name: 'Corrupted Copilot', name_ko: '오염된 코파일럿',
+                        dialogue: {
+                            intro: 'Copilot: "Commander... my circuits are being eroded... Error... Error..."\nChip: "No! Copilot bro! Commander, the system is about to crash every 5 seconds! Pick cards quickly!"\nGemini: "No time! Choose the optimal card within 5 seconds!"',
+                            intro_ko: '코파일럿: "지휘관님... 제 연산 회로가 침식되고 있습니다... 에러... 에러..."\n칩: "안돼! 코파일럿 형아! 지휘관님, 시스템이 5초마다 터지려고 해요! 빨리 카드 골라주세요!"\n제미나이: "시간이 없어! 5초 안에 최적의 카드를 선택해!"',
+                            win: 'System stabilized.', win_ko: '시스템 안정화.',
+                            lose: 'System crashed.', lose_ko: '시스템 충돌.'
+                        }
                     }, rewards: { coins: 150, experience: 40 }, isCleared: false
                 },
                 {
                     id: 'stage-2-2', step: 2,
-                    title: 'Weight Optimization', title_ko: '가중치 최적화',
-                    description: 'Adjusting parameters under fire.', description_ko: '포화 속에서 파라미터를 조정합니다.',
-                    battleMode: 'tactics', difficulty: 'NORMAL',
+                    title: 'High-Speed Trap', title_ko: '고속 연산의 함정',
+                    description: 'Enemy calculation speed is extreme. Break the flow.', description_ko: '적의 연산 속도가 극단적입니다. 흐름을 끊으세요.',
+                    battleMode: 'double', difficulty: 'NORMAL',
                     enemy: {
-                        id: 'bot-2-2', name: 'Gradient Descent', name_ko: '경사 하강법',
-                        dialogue: { intro: 'Minimizing loss.', intro_ko: '손실 최소화 중.', win: 'Local minimum reached.', win_ko: '지역 최적점 도달.', lose: 'Diverging...', lose_ko: '발산하는 중...' }
+                        id: 'bot-2-2', name: 'Speed Demon', name_ko: '고속 연산기',
+                        dialogue: {
+                            intro: 'Grok: "Their calculation speed is faster than master\'s stock price changes. This is quite dangerous."\nElon: "Grok, shut up! Commander, this is a speed battle. You must break the flow with Creativity (Paper). Don\'t hesitate!"\nChip: "(Polishing a card) Here, a creativity card! I polished it shiny!"',
+                            intro_ko: '그록: "놈의 연산 속도가 주인님 주식 가격 변동보다 빠른데? 이거 제법 위험하겠어."\n일론: "그록, 조용히 해! 지휘관, 저놈은 속도전이야. 창의(보)로 흐름을 끊어야 해. 망설이지 마!"\n칩: "(카드 한 장을 닦으며) 자, 여기 창의 카드요! 반짝반짝하게 닦아놨어요!"',
+                            win: 'Flow disrupted.', win_ko: '흐름 차단.',
+                            lose: 'Overwhelmed by speed.', lose_ko: '속도에 압도당함.'
+                        }
                     }, rewards: { coins: 170, experience: 50 }, isCleared: false
                 },
                 {
@@ -345,22 +354,32 @@ export function getChapters(t?: (key: TranslationKey) => string): Chapter[] {
                 },
                 {
                     id: 'stage-2-4', step: 4,
-                    title: 'Cloud Scalability', title_ko: '클라우드 확장성 (두장 승부)',
-                    description: 'Elastic defenses expanding.', description_ko: '탄력적 방어선이 확장됩니다.',
+                    title: 'Debugging Failed', title_ko: '디버깅 실패',
+                    description: 'Tangled creativity logic. Debug cleanly.', description_ko: '엉킨 창의 로직. 깨끗하게 디버깅하세요.',
                     battleMode: 'double', difficulty: 'NORMAL',
                     enemy: {
-                        id: 'bot-2-4', name: 'Auto-Scaler', name_ko: '오토 스케일러',
-                        dialogue: { intro: 'Spinning up instances.', intro_ko: '인스턴스 가동 중.', win: 'Supply meets demand.', win_ko: '수요 충족 완료.', lose: 'Resource exhaustion.', lose_ko: '리소스 고갈.' }
+                        id: 'bot-2-4', name: 'Spaghetti Code', name_ko: '스파게티 코드',
+                        dialogue: {
+                            intro: 'Gemini: "Messy Creativity (Paper) logic is disrupting the system. Worse than spaghetti code!"\nCopilot: "Precise Function (Scissors) is needed. Commander, please debug the tangled code cleanly."\nChip: "Snip snip! I\'ll cut all the bad code!"',
+                            intro_ko: '제미나이: "엉뚱한 창의(보) 로직들이 시스템을 어지럽히고 있어. 스파게티 코드보다 더 엉망이야!"\n코파일럿: "정교한 기능(가위)이 필요합니다. 지휘관님, 적의 꼬인 코드를 깨끗하게 디버깅해 주십시오."\n칩: "싹둑싹둑! 나쁨 코드는 다 잘라버릴 거야!"',
+                            win: 'Code debugged.', win_ko: '코드 디버깅 완료.',
+                            lose: 'Logic tangled.', lose_ko: '로직 엉킴.'
+                        }
                     }, rewards: { coins: 210, experience: 70 }, isCleared: false
                 },
                 {
                     id: 'stage-2-5', step: 5,
-                    title: 'Mid-Boss: Data Titan', title_ko: '중간 보스: 데이터 타이탄 (단판 승부)',
-                    description: 'A massive accumulation of data.', description_ko: '거대한 데이터의 집합체입니다.',
+                    title: '[MID-BOSS] Decompiler', title_ko: '[중간보스] 디컴파일러',
+                    description: 'Converts all source code to garbage. One-shot battle.', description_ko: '모든 소스 코드를 쓰레기로 치환합니다. 단판 승부.',
                     battleMode: 'sudden-death', difficulty: 'HARD',
                     enemy: {
-                        id: 'boss-2-mid', name: 'Big Data', name_ko: '빅 데이터',
-                        dialogue: { intro: 'Too much information.', intro_ko: '정보 과부하.', win: 'Processing complete.', win_ko: '처리 완료.', lose: 'Data wiped.', lose_ko: '데이터 소거.' }
+                        id: 'boss-2-mid', name: 'Decompiler', name_ko: '디컴파일러',
+                        dialogue: {
+                            intro: 'Decompiler: "I will convert all source code to garbage... Go find the trash bin..."\nChip: "What?! How dare you put our data in the trash! Commander, please smash that bad guy!"\nGemini: "It\'s a sudden-death match. Shut down that logic with your one move, Commander!"',
+                            intro_ko: '디컴파일러: "모든 소스 코드를 쓰레기로 치환하겠다... 휴지통이나 찾아라..."\n칩: "뭐?! 감히 우리 데이터를 쓰레기통에? 지휘관님, 저 못된 놈을 아주 박살을 내주세요!"\n제미나이: "단판 승부야. 지휘관의 한 수로 저놈의 로직을 셋다운시켜!"',
+                            win: 'Decompiler destroyed.', win_ko: '디컴파일러 파괴.',
+                            lose: 'Code corrupted.', lose_ko: '코드 손상.'
+                        }
                     }, rewards: { coins: 400, experience: 150 }, isCleared: false
                 },
                 {
