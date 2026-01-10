@@ -124,46 +124,46 @@ export function getChapters(t?: (key: TranslationKey) => string): Chapter[] {
                 {
                     id: 'stage-1-2', step: 2,
                     title: 'Blade of Function', title_ko: '기능의 칼날',
-                    description: 'The enemy attacks with sharp Functions. Counter with Creativity.', description_ko: '적이 날카로운 기능 위주로 공격합니다. 창의로 맞서세요.',
+                    description: 'The enemy attacks with sharp Functions. Counter with Efficiency.', description_ko: '적이 날카로운 기능 위주로 공격합니다. 효율로 맞서세요.',
                     battleMode: 'sudden-death', difficulty: 'EASY',
                     enemy: {
                         id: 'glitch-2', name: 'Functional Guard', name_ko: '기능의 가드',
                         dialogue: {
-                            intro: 'Gemini: "Solid Function (Scissors) must be broken with flexible Creativity (Rock)."', intro_ko: '제미나이: "단단한 기능(✂️)은 유연한 창의(🪨)로 부숴야 해."',
+                            intro: 'Gemini: "Solid Function (Scissors) must be broken with heavy Efficiency (Rock)."', intro_ko: '제미나이: "날카로운 기능(✂️)은 묵직한 효율(🪨)로 부숴버려!"',
                             win: 'The guard is shattered.', win_ko: '가드가 파괴되었습니다.',
                             lose: 'Sliced by logic.', lose_ko: '논리에 베였습니다.'
                         },
-                        deckPattern: { function: 4, creativity: 1, efficiency: 0 }
+                        deckPattern: { function: 4, creativity: 0, efficiency: 1 }
                     }, rewards: { coins: 60, experience: 70 }, isCleared: false
                 },
                 {
                     id: 'stage-1-3', step: 3,
                     title: 'Creativity Rampage', title_ko: '창의의 폭주',
-                    description: 'Out of control Creativity data. Contain it with systematic Efficiency.', description_ko: '통제 불능의 창의 데이터입니다. 체계적인 효율로 덮으십시오.',
+                    description: 'Out of control Creativity data. Contain it with sharp Functions.', description_ko: '통제 불능의 창의 데이터입니다. 날카로운 기능으로 도려내십시오.',
                     battleMode: 'sudden-death', difficulty: 'NORMAL',
                     enemy: {
                         id: 'glitch-3', name: 'Wild Idea', name_ko: '날뛰는 아이디어',
                         dialogue: {
-                            intro: 'Gemini: "Let\'s trap the wild Creativity (Rock) with perfect Efficiency (Paper)."', intro_ko: '제미나이: "날뛰는 창의(🪨)를 완벽한 효율(📄)로 가두자고."',
+                            intro: 'Gemini: "Spread Creativity (Paper) can be cut down with Function (Scissors)."', intro_ko: '제미나이: "펄럭이는 창의(📄)는 날카로운 기능(✂️)으로 잘라버리자고."',
                             win: 'The chaos is organized.', win_ko: '혼돈이 정리되었습니다.',
                             lose: 'Overwhelmed by random ideas.', lose_ko: '무작위 아이디어에 압도당했습니다.'
                         },
-                        deckPattern: { creativity: 4, efficiency: 1, function: 0 }
+                        deckPattern: { creativity: 4, efficiency: 0, function: 1 }
                     }, rewards: { coins: 70, experience: 100 }, isCleared: false
                 },
                 {
                     id: 'stage-1-4', step: 4,
                     title: 'Efficiency Trap', title_ko: '효율의 함정',
-                    description: 'Tight codes centered on Efficiency. Break it with sharp Functions.', description_ko: '빈틈없는 효율 중심의 코드입니다. 날카로운 기능으로 뚫으세요.',
+                    description: 'Tight codes centered on Efficiency. Break it with flexible Creativity.', description_ko: '빈틈없는 효율 중심의 코드입니다. 유연한 창의로 감싸세요.',
                     battleMode: 'sudden-death', difficulty: 'NORMAL',
                     enemy: {
                         id: 'glitch-4', name: 'Strict Logic', name_ko: '엄격한 로직',
                         dialogue: {
-                            intro: 'Gemini: "Tight Efficiency (Paper) logic can be cut with Function (Scissors)."', intro_ko: '제미나이: "꽉 막힌 효율(📄) 로직은 기능(✂️)으로 잘라낼 수 있어."',
+                            intro: 'Gemini: "Rigid Efficiency (Rock) logic can be wrapped with Creativity (Paper)."', intro_ko: '제미나이: "딱딱한 효율(🪨) 로직은 유연한 창의(📄)로 감싸서 무력화하자!"',
                             win: 'Efficiency bypassed.', win_ko: '효율이 무력화되었습니다.',
                             lose: 'Trapped in a loop...', lose_ko: '루프에 갇혔습니다...'
                         },
-                        deckPattern: { efficiency: 4, function: 1, creativity: 0 }
+                        deckPattern: { efficiency: 4, function: 0, creativity: 1 }
                     }, rewards: { coins: 80, experience: 120 }, isCleared: false
                 },
                 {
