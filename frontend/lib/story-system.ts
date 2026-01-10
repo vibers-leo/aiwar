@@ -758,7 +758,7 @@ export function getChapters(t?: (key: TranslationKey) => string): Chapter[] {
                 },
                 {
                     id: 'stage-4-8', step: 8,
-                    title: \"Elon's Ambush\", title_ko: '일론의 기습',
+                    title: "Elon's Ambush", title_ko: '일론의 기습',
                     description: 'The most thrilling part is the ambush. Watch how my hidden card destroys your plan.', description_ko: '가장 짜릿한 건 복병입니다. 히든 카드가 계획을 박살냅니다.',
                     battleMode: 'ambush', difficulty: 'HARD',
                     enemy: {
