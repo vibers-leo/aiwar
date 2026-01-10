@@ -8,7 +8,7 @@ import { InventoryCard } from '@/lib/inventory-system';
 import { StoryStage, getStoryStage, completeStage } from '@/lib/story-system';
 import { generateEnemies, StageConfig } from '@/lib/stage-system';
 import { Button } from '@/components/ui/custom/Button';
-import { applyBattleResult, BattleResult, BattleParticipant } from '@/lib/pvp-battle-system';
+import { applyBattleResult, BattleResult, BattleParticipant, generateOpponentDeck } from '@/lib/pvp-battle-system';
 import { useTranslation } from '@/context/LanguageContext';
 import BattleDeckSelection from '@/components/battle/BattleDeckSelection';
 import { useUser } from '@/context/UserContext';
@@ -45,6 +45,7 @@ export default function StageBattlePage() {
     const [selectedHand, setSelectedHand] = useState<InventoryCard[]>([]); // Current selection in deck-select
     const [battleResult, setBattleResult] = useState<BattleResult | null>(null);
     const [activeBattleDeck, setActiveBattleDeck] = useState<Card[]>([]);
+    const [showTacticsTutorial, setShowTacticsTutorial] = useState(false);
 
 
     useEffect(() => {
@@ -60,6 +61,11 @@ export default function StageBattlePage() {
         }
         setStoryStage(stage);
 
+        // [TUTORIAL] Check for Tactics tutorial
+        if (stage.battleMode === 'tactics' && !localStorage.getItem('tutorial_tactics_shown')) {
+            setShowTacticsTutorial(true);
+        }
+
         // Load User Deck from Inventory
         if (!userLoading) {
             // InventoryCard now properly extends Card with guaranteed templateId
@@ -68,45 +74,20 @@ export default function StageBattlePage() {
 
         // Load Enemies (Specific to Story Stage)
         const loadEnemies = () => {
-            const stageConfig: StageConfig = {
-                stageId: 0,
-                chapter: parseInt(stage.id.split('-')[1]),
-                stageInChapter: stage.step,
-                playerHandSize: 5,
-                battleCardCount: 3,
-                enemyPowerBonus: 0,
-                rewardMultiplier: 1,
-                isBoss: stage.difficulty === 'BOSS',
-                enemyPattern: 'random',
-                description: stage.description
-            };
+            if (!stage) return;
 
-            const generatedEnemies = generateEnemies(stageConfig, 100);
+            const targetCount = (stage.battleMode === 'ambush' || stage.battleMode === 'double') ? 6 : 5;
 
-            // Adjust count based on battle mode
-            let targetCount = 5;
-            if (stage.battleMode === 'ambush' || stage.battleMode === 'double') targetCount = 6;
+            // Use the new generator that respects stage patterns and boss boosts
+            const opponent = generateOpponentDeck(
+                level || 1,
+                undefined,
+                targetCount,
+                stage.enemy.deckPattern,
+                stage.difficulty === 'BOSS'
+            );
 
-            while (generatedEnemies.length < targetCount) {
-                generatedEnemies.push({ ...generatedEnemies[0], id: `enemy-extra-${generatedEnemies.length}` });
-            }
-
-            const enemyCards = generatedEnemies.slice(0, targetCount).map((e: { id?: string; name: string; attribute: string; power: number }, i: number) => ({
-                id: `enemy-${i}`,
-                instanceId: `enemy-instance-${i}-${Date.now()}`,
-                templateId: e.id || `enemy-${i}`,
-                name: language === 'ko' ? e.name : e.name,
-                type: (e.attribute === 'rock' ? 'EFFICIENCY' : e.attribute === 'scissors' ? 'CREATIVITY' : 'FUNCTION') as 'EFFICIENCY' | 'CREATIVITY' | 'FUNCTION',
-                stats: { totalPower: e.power, efficiency: e.power, creativity: e.power, function: e.power },
-                rarity: 'common' as const,
-                level: stage.step,
-                image: '/assets/cards/default-enemy.png',
-                ownerId: 'system',
-                experience: 0,
-                acquiredAt: new Date(),
-                isLocked: false
-            }));
-            setEnemies(enemyCards);
+            setEnemies(opponent.deck);
         };
         loadEnemies();
 
@@ -375,6 +356,48 @@ export default function StageBattlePage() {
                     </motion.div>
                 )}
             </div>
+
+            {/* Tactics Tutorial Overlay */}
+            <AnimatePresence>
+                {showTacticsTutorial && (
+                    <motion.div
+                        initial={{ opacity: 0 }}
+                        animate={{ opacity: 1 }}
+                        exit={{ opacity: 0 }}
+                        className="fixed inset-0 z-[200] flex items-center justify-center bg-black/90 p-6"
+                    >
+                        <div className="max-w-md w-full bg-zinc-900 border border-cyan-500/50 rounded-3xl p-8 shadow-[0_0_50px_rgba(6,182,212,0.2)]">
+                            <div className="text-cyan-400 text-xs font-black orbitron tracking-[0.3em] mb-2 uppercase text-center">Protocol: Tactics</div>
+                            <h2 className="text-3xl font-black italic text-white mb-6 text-center italic">전술 승부 튜토리얼</h2>
+
+                            <div className="space-y-4 mb-8">
+                                <div className="bg-white/5 p-4 rounded-2xl border border-white/10">
+                                    <div className="text-cyan-400 font-bold mb-1 text-sm">RULE 01</div>
+                                    <div className="text-gray-200">5장의 카드를 미리 1라운드부터 5라운드까지 배치합니다.</div>
+                                </div>
+                                <div className="bg-white/5 p-4 rounded-2xl border border-white/10">
+                                    <div className="text-cyan-400 font-bold mb-1 text-sm">RULE 02</div>
+                                    <div className="text-gray-200">배치가 끝나면 수정할 수 없으며, 순서대로 자동 대결이 진행됩니다.</div>
+                                </div>
+                                <div className="bg-white/5 p-4 rounded-2xl border border-white/10">
+                                    <div className="text-cyan-400 font-bold mb-1 text-sm">RULE 03</div>
+                                    <div className="text-gray-200 text-sm opacity-80 italic">상대의 타입을 미리 읽고 유리한 상성을 배치하는 것이 핵심 승리 전략입니다.</div>
+                                </div>
+                            </div>
+
+                            <Button
+                                className="w-full bg-cyan-600 hover:bg-cyan-500 text-white font-black py-4 rounded-xl shadow-lg"
+                                onPress={() => {
+                                    setShowTacticsTutorial(false);
+                                    localStorage.setItem('tutorial_tactics_shown', 'true');
+                                }}
+                            >
+                                분석 완료
+                            </Button>
+                        </div>
+                    </motion.div>
+                )}
+            </AnimatePresence>
         </div>
     );
 }

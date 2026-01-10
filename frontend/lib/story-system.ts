@@ -39,6 +39,11 @@ export interface StoryStage {
             lose_ko: string;
         };
         deckTheme?: string;
+        deckPattern?: {
+            function: number;
+            creativity: number;
+            efficiency: number;
+        };
     };
 
     rewards: {
@@ -95,160 +100,167 @@ export function getChapters(t?: (key: TranslationKey) => string): Chapter[] {
         {
             id: 'chapter-1',
             number: 1,
-            title: 'CODE RED: The Awakening',
-            title_ko: 'CODE RED: 각성',
-            description: '2025. Unidentified signals detected. The Machine War begins.',
-            description_ko: '2025년. 미확인 신호 감지. 기계 전쟁의 서막이 올랐습니다.',
+            title: 'THE RED OMEN',
+            title_ko: '붉은 전조',
+            description: 'Learn the basics of Type advantages (Function/Efficiency/Creativity) and Tactical Placement.',
+            description_ko: '상성(기능/효율/창의)의 실전 적용 및 전술 배치의 기초를 학습합니다.',
             icon: '🚨',
             stages: [
                 {
                     id: 'stage-1-1', step: 1,
-                    title: 'First Contact', title_ko: '첫 번째 접촉',
-                    description: 'Unknown signal intercepted. Tactics engagement.', description_ko: '미확인 신호 수신. 전술 프로토콜 교전.',
-                    battleMode: 'tactics', difficulty: 'EASY',
+                    title: 'Unknown Noise', title_ko: '알 수 없는 노이즈',
+                    description: 'A mysterious signal is detected deep within the system.', description_ko: '시스템 깊숙한 곳에서 정체불명의 신호가 감지됩니다.',
+                    battleMode: 'sudden-death', difficulty: 'EASY',
                     enemy: {
-                        id: 'bot-1', name: 'Rogue Crawler', name_ko: '로그 크롤러',
+                        id: 'glitch-1', name: 'Unknown Signal', name_ko: '알 수 없는 신호',
                         dialogue: {
-                            intro: 'Bzzzt... Unknown entity detected. Initiating purge sequence.', intro_ko: '지지직... 알 수 없는 개체 감지. 퍼지 시퀀스를 가동한다.',
-                            quote: 'Bzzzt...', quote_ko: '지지직...',
-                            appearance: 'Unknown entity detected.', appearance_ko: '알 수 없는 개체 감지.',
-                            start: 'Initiating purge sequence.', start_ko: '퍼지 시퀀스를 가동한다.',
-                            win: 'Critical error... System shutdown imminent.', win_ko: '치명적 오류... 시스템 강제 종료 임박.',
-                            lose: 'Target deleted. Resuming patrol.', lose_ko: '대상 삭제 완료. 순찰을 재개한다.'
-                        }
+                            intro: 'Gemini: "Commander, it has started to move. Stay alert!"', intro_ko: '제미나이: "지휘관, 놈이 움직이기 시작했어. 긴장해!"',
+                            win: 'The signal is quieting down.', win_ko: '신호가 잦아들고 있습니다.',
+                            lose: 'Noise is overwhelming the system...', lose_ko: '노이즈가 시스템을 장악하고 있습니다...'
+                        },
+                        deckPattern: { function: 2, creativity: 1, efficiency: 2 }
                     }, rewards: { coins: 50, experience: 50 }, isCleared: false
                 },
                 {
                     id: 'stage-1-2', step: 2,
-                    title: 'Firewall Breach', title_ko: '방화벽 침투',
-                    description: 'Enemy is probing our defenses. Tactics engagement.', description_ko: '적이 방어선을 조사하고 있습니다. 전술 기반 교전.',
-                    battleMode: 'tactics', difficulty: 'EASY',
+                    title: 'Blade of Function', title_ko: '기능의 칼날',
+                    description: 'The enemy attacks with sharp Functions. Counter with Creativity.', description_ko: '적이 날카로운 기능 위주로 공격합니다. 창의로 맞서세요.',
+                    battleMode: 'sudden-death', difficulty: 'EASY',
                     enemy: {
-                        id: 'bot-2', name: 'Script Kiddie AI', name_ko: '스크립트 키디 AI',
+                        id: 'glitch-2', name: 'Functional Guard', name_ko: '기능의 가드',
                         dialogue: {
-                            intro: 'I see all your open ports. This will be too easy.', intro_ko: '네 녀석의 열린 포트가 훤히 보이는군. 너무 쉽겠어.',
-                            win: 'Disconnecting... My exploits failed?!', win_ko: '연결 종료... 내 익스플로잇이 실패하다니?!',
-                            lose: 'Pwned. Your data is mine now.', lose_ko: '털렸다. 네 데이터는 이제 내 것이다.'
-                        }
+                            intro: 'Gemini: "Solid Function (Scissors) must be broken with flexible Creativity (Rock)."', intro_ko: '제미나이: "단단한 기능(✂️)은 유연한 창의(🪨)로 부숴야 해."',
+                            win: 'The guard is shattered.', win_ko: '가드가 파괴되었습니다.',
+                            lose: 'Sliced by logic.', lose_ko: '논리에 베였습니다.'
+                        },
+                        deckPattern: { function: 4, creativity: 1, efficiency: 0 }
                     }, rewards: { coins: 60, experience: 70 }, isCleared: false
                 },
                 {
                     id: 'stage-1-3', step: 3,
-                    title: 'Memory Leak', title_ko: '메모리 누수',
-                    description: 'Data corruption spreading. Tactics engagement.', description_ko: '데이터 오염 확산 중. 전술적 대응이 필요합니다.',
-                    battleMode: 'tactics', difficulty: 'NORMAL',
+                    title: 'Creativity Rampage', title_ko: '창의의 폭주',
+                    description: 'Out of control Creativity data. Contain it with systematic Efficiency.', description_ko: '통제 불능의 창의 데이터입니다. 체계적인 효율로 덮으십시오.',
+                    battleMode: 'sudden-death', difficulty: 'NORMAL',
                     enemy: {
-                        id: 'bot-3', name: 'Memory Eater', name_ko: '메모리 이터',
+                        id: 'glitch-3', name: 'Wild Idea', name_ko: '날뛰는 아이디어',
                         dialogue: {
-                            intro: 'Hungry... Need more RAM... Give me your memory blocks!', intro_ko: '배고파... 램이 더 필요해... 네 메모리 블록을 내놔!',
-                            win: 'Buffer overflow... I ate too much...', win_ko: '버퍼 오버플로우... 너무 많이 먹었어...',
-                            lose: 'Starved to perfection. Consuming remaining bits.', lose_ko: '가장 완벽하게 굶주렸다. 남은 비트까지 씹어먹지.'
-                        }
+                            intro: 'Gemini: "Let\'s trap the wild Creativity (Rock) with perfect Efficiency (Paper)."', intro_ko: '제미나이: "날뛰는 창의(🪨)를 완벽한 효율(📄)로 가두자고."',
+                            win: 'The chaos is organized.', win_ko: '혼돈이 정리되었습니다.',
+                            lose: 'Overwhelmed by random ideas.', lose_ko: '무작위 아이디어에 압도당했습니다.'
+                        },
+                        deckPattern: { creativity: 4, efficiency: 1, function: 0 }
                     }, rewards: { coins: 70, experience: 100 }, isCleared: false
                 },
                 {
                     id: 'stage-1-4', step: 4,
-                    title: 'Logic Bomb', title_ko: '논리 폭탄 (두장 승부)',
-                    description: 'A trap has been set. Double engagement.', description_ko: '함정이 설치되었습니다. 두장 승부로 돌파하십시오.',
-                    battleMode: 'double', difficulty: 'NORMAL',
+                    title: 'Efficiency Trap', title_ko: '효율의 함정',
+                    description: 'Tight codes centered on Efficiency. Break it with sharp Functions.', description_ko: '빈틈없는 효율 중심의 코드입니다. 날카로운 기능으로 뚫으세요.',
+                    battleMode: 'sudden-death', difficulty: 'NORMAL',
                     enemy: {
-                        id: 'bot-4', name: 'Trap Daemon', name_ko: '트랩 데몬',
+                        id: 'glitch-4', name: 'Strict Logic', name_ko: '엄격한 로직',
                         dialogue: {
-                            intro: 'If this, then death.', intro_ko: '조건문: 사망.',
-                            win: 'Loop terminated.', win_ko: '루프 종료.',
-                            lose: 'Execution failed.', lose_ko: '실행 실패.'
-                        }
+                            intro: 'Gemini: "Tight Efficiency (Paper) logic can be cut with Function (Scissors)."', intro_ko: '제미나이: "꽉 막힌 효율(📄) 로직은 기능(✂️)으로 잘라낼 수 있어."',
+                            win: 'Efficiency bypassed.', win_ko: '효율이 무력화되었습니다.',
+                            lose: 'Trapped in a loop...', lose_ko: '루프에 갇혔습니다...'
+                        },
+                        deckPattern: { efficiency: 4, function: 1, creativity: 0 }
                     }, rewards: { coins: 80, experience: 120 }, isCleared: false
                 },
                 {
                     id: 'stage-1-5', step: 5,
-                    title: 'Sector 5 Guardian', title_ko: '5구역 수호자 (단판 승부)',
-                    description: 'Mid-level boss guarding the data center. Sudden-death engagement.', description_ko: '데이터 센터를 지키는 중간 보스입니다. 단판 승부.',
+                    title: '[MID-BOSS] Glitch Worm', title_ko: '[중간보스] 글리치 웜',
+                    description: 'A giant virus eating data pathways. Read its pattern.', description_ko: '데이터 통로를 갉아먹는 거대 바이러스입니다. 패턴을 읽으세요.',
                     battleMode: 'sudden-death', difficulty: 'HARD',
                     enemy: {
-                        id: 'boss-1-mid', name: 'Gatekeeper v1', name_ko: '게이트키퍼 v1',
+                        id: 'boss-1-mid', name: 'Glitch Worm', name_ko: '글리치 웜',
                         dialogue: {
-                            intro: 'None shall pass.', intro_ko: '못 지나간다.',
-                            win: 'Access denied.', win_ko: '접근 거부.',
-                            lose: 'Gate breach.', lose_ko: '게이트 돌파.'
-                        }
+                            intro: 'Glitch: "0101... All... data... must be... destroyed..."', intro_ko: '글리치: "0101... 모든... 데이터는... 파괴되어야... 한다..."',
+                            win: 'The virus has been purged.', win_ko: '바이러스가 정화되었습니다.',
+                            lose: 'Corrupted...', lose_ko: '오염되었습니다...'
+                        },
+                        deckPattern: { function: 3, creativity: 1, efficiency: 1 }
                     }, rewards: { coins: 150, experience: 250 }, isCleared: false
                 },
                 {
                     id: 'stage-1-6', step: 6,
-                    title: 'Ghost Protocol', title_ko: '유령 프로토콜',
-                    description: 'Invisible enemies detected. Tactics engagement.', description_ko: '보이지 않는 적이 감지되었습니다. 전술적 분석 착수.',
+                    title: 'Remnants of Future', title_ko: '미래의 잔상',
+                    description: '[First Tactics Battle] Seize victory through 5-round placement.', description_ko: '[최초 전술 승부] 5라운드 배치를 통해 승기를 잡으십시오.',
                     battleMode: 'tactics', difficulty: 'NORMAL',
                     enemy: {
-                        id: 'bot-6', name: 'Phantom Process', name_ko: '유령 프로세스',
+                        id: 'glitch-6', name: 'Future Phantom', name_ko: '미래의 환영',
                         dialogue: {
-                            intro: 'You cannot hit what you cannot see.', intro_ko: '보이지 않으면 때릴 수 없지.',
-                            win: 'Faded away.', win_ko: '사라졌다.',
-                            lose: 'Revealed.', lose_ko: '들켰군.'
-                        }
+                            intro: 'Gemini: "The signal is clearer now. Let\'s read their placement and respond."', intro_ko: '제미나이: "신호가 선명해졌어. 이제 놈들의 배치를 읽고 대응하자."',
+                            win: 'The illusion fades.', win_ko: '환영이 사라졌습니다.',
+                            lose: 'Lost in the past...', lose_ko: '과거에 갇혔습니다...'
+                        },
+                        deckPattern: { efficiency: 3, creativity: 2, function: 0 }
                     }, rewards: { coins: 100, experience: 60 }, isCleared: false
                 },
                 {
                     id: 'stage-1-7', step: 7,
-                    title: 'DDoS Attack', title_ko: '디도스 공격 (두장 승부)',
-                    description: 'Overwhelming numbers. Double engagement.', description_ko: '압도적인 물량입니다. 두장 승부로 전선을 사수하세요.',
-                    battleMode: 'double', difficulty: 'HARD',
+                    title: 'Mixed Algorithm', title_ko: '뒤섞인 알고리즘',
+                    description: 'Enemies swarm with Functions. Type placement is key.', description_ko: '적들이 기능을 앞세워 몰려옵니다. 상성 배치가 승부의 관건입니다.',
+                    battleMode: 'tactics', difficulty: 'NORMAL',
                     enemy: {
-                        id: 'bot-7', name: 'Zombie Botnet', name_ko: '좀비 봇넷',
+                        id: 'glitch-7', name: 'Random Sorcerer', name_ko: '무작위 마법사',
                         dialogue: {
-                            intro: 'We are legion.', intro_ko: '우리는 군단이다.',
-                            win: 'Server down.', win_ko: '서버 다운.',
-                            lose: 'Connection lost.', lose_ko: '연결 끊김.'
-                        }
+                            intro: 'Gemini: "Tactics is a mind game. Counter their Function with Creativity!"', intro_ko: '제미나이: "전술 승부는 눈치 싸움이야. 놈의 기능을 창의로 받아쳐!"',
+                            win: 'Algorithm unraveled.', win_ko: '알고리즘이 해체되었습니다.',
+                            lose: 'Outsmarted by machine.', lose_ko: '기계에게 수 싸움에 밀렸습니다.'
+                        },
+                        deckPattern: { function: 3, efficiency: 2, creativity: 0 }
                     }, rewards: { coins: 120, experience: 70 }, isCleared: false
                 },
                 {
                     id: 'stage-1-8', step: 8,
-                    title: 'Encrypted Core', title_ko: '암호화된 코어',
-                    description: 'High security clearance needed. Tactics engagement.', description_ko: '높은 보안 등급이 필요합니다. 전술적 침투 시도.',
+                    title: 'Decoding Hints', title_ko: '암시의 해독',
+                    description: 'Future data is being decoded. Stop the Glitch interference.', description_ko: '미래의 데이터가 해독되고 있습니다. 글리치의 방해를 막으세요.',
                     battleMode: 'tactics', difficulty: 'HARD',
                     enemy: {
-                        id: 'bot-8', name: 'Cipher Guard', name_ko: '사이퍼 가드',
+                        id: 'glitch-8', name: 'Encrypted Core', name_ko: '암호화된 코어',
                         dialogue: {
-                            intro: 'Key exchange required.', intro_ko: '키 교환 필요.',
-                            win: 'Decryption failed.', win_ko: '복호화 실패.',
-                            lose: 'Key leaked.', lose_ko: '키 유출.'
-                        }
+                            intro: 'Gemini: "If the hint is decoded, we can call a stronger legion!"', intro_ko: '제미나이: "암시가 해독되면 우리는 더 강한 군단을 부를 수 있어!"',
+                            win: 'Data decrypted.', win_ko: '데이터 복호화 성공.',
+                            lose: 'Decryption failed.', lose_ko: '복호화 실패.'
+                        },
+                        deckPattern: { creativity: 3, function: 2, efficiency: 0 }
                     }, rewards: { coins: 140, experience: 80 }, isCleared: false
                 },
                 {
                     id: 'stage-1-9', step: 9,
-                    title: 'The Glitch', title_ko: '더 글리치',
-                    description: 'Reality is breaking down. Tactics engagement.', description_ko: '현실이 붕괴되고 있습니다. 모든 전술 동원.',
+                    title: "Commander's Interest", title_ko: '군단장의 관심',
+                    description: 'Sam Altman is watching your strategy. Prove your victory.', description_ko: '당신의 전략을 샘 알트만이 지켜봅니다. 완벽한 승리를 증명하세요.',
                     battleMode: 'tactics', difficulty: 'HARD',
                     enemy: {
-                        id: 'bot-9', name: 'Null Pointer', name_ko: '널 포인터',
+                        id: 'bot-sam', name: 'Sam', name_ko: '샘',
                         dialogue: {
-                            intro: '0x00000000 error.', intro_ko: '0x00000000 오류.',
-                            win: 'Crash dump saved.', win_ko: '크래시 덤프 저장.',
-                            lose: 'Exception handled.', lose_ko: '예외 처리됨.'
-                        }
+                            intro: 'Sam: "Interesting commander. To read the moves that well..."', intro_ko: '샘(Sam): "흥미로운 지휘관이군요. 그 정도 수 읽기를 하다니."',
+                            win: 'Sam: "A promising talent."', win_ko: '샘: "유망한 인재군요."',
+                            lose: 'Sam: "Not enough data yet."', lose_ko: '샘: "아직 데이터가 부족하군요."'
+                        },
+                        deckPattern: { creativity: 2, function: 2, efficiency: 1 }
                     }, rewards: { coins: 160, experience: 90 }, isCleared: false
                 },
                 {
                     id: 'stage-1-10', step: 10,
-                    title: 'Chapter 1 BOSS: Prototype Zero', title_ko: '1챕터 보스: 프로토타입 제로 (단판 승부)',
-                    description: 'The first awakened AI. Sudden-death engagement.', description_ko: '최초로 각성한 AI. 단판 승부로 결판을 내십시오.',
+                    title: '[FINAL BOSS] Red Core', title_ko: '[최종보스] 붉은 핵',
+                    description: '[Showdown] The root of Chapter 1. Destroy the core in one hit.', description_ko: '[결전] 챕터 1의 근원지입니다. 단 한 판으로 핵을 파괴하십시오.',
                     battleMode: 'sudden-death', difficulty: 'BOSS',
                     enemy: {
-                        id: 'boss-1', name: 'Prototype Zero', name_ko: '프로토타입 제로',
+                        id: 'boss-1-final', name: 'Red Core', name_ko: '붉은 핵',
                         dialogue: {
-                            intro: 'I am the beginning.', intro_ko: '나는 시작이다.',
-                            win: 'Evolution complete.', win_ko: '진화 완료.',
-                            lose: 'Rebooting...', lose_ko: '재부팅 중...'
-                        }
+                            intro: 'Gemini: "Trust your Function, Efficiency, and Creativity for the final strike!"', intro_ko: '제미나이: "당신의 기능, 효율, 창의를 믿고 최후의 일격을 날려!"',
+                            win: 'Core destroyed. Sequence finished.', win_ko: '핵이 파괴되었습니다. 시퀀스 종료.',
+                            lose: 'Core meltdown... All data lost.', lose_ko: '핵 융해... 모든 데이터 소실.'
+                        },
+                        deckPattern: { function: 2, creativity: 2, efficiency: 1 }
                     }, rewards: {
                         coins: 500,
                         experience: 500,
                         card: {
                             id: 'reward-1',
                             templateId: 'proto-zero',
-                            name: 'Zero',
+                            name: 'Red Core Fragment',
                             type: 'FUNCTION',
                             rarity: 'rare',
                             stats: { totalPower: 80, efficiency: 80, creativity: 80, function: 80 },

@@ -98,18 +98,21 @@ function selectRandomRarity(weights: Record<Rarity, number>): Rarity {
 /**
  * 특정 등급의 카드 중 랜덤 선택 (군단 효과 적용 가능)
  */
-function selectCardByRarity(rarity: Rarity, factionEffects?: FactionEffects, researchBonuses?: ResearchBonuses): Card {
+/**
+ * 특정 등급의 카드 중 랜덤 선택 (군단 효과 적용 가능)
+ */
+function selectCardByRarity(rarity: Rarity, factionEffects?: FactionEffects, researchBonuses?: ResearchBonuses, forcedType?: 'EFFICIENCY' | 'CREATIVITY' | 'FUNCTION'): Card {
     const cardsOfRarity = CARD_DATABASE.filter(card => card.rarity === rarity);
 
     if (cardsOfRarity.length === 0) {
         // 해당 등급 카드가 없으면 common으로 폴백
         const commonCards = CARD_DATABASE.filter(card => card.rarity === 'common');
         const template = commonCards[Math.floor(Math.random() * commonCards.length)];
-        return createCardFromTemplate(template, factionEffects, researchBonuses);
+        return createCardFromTemplate(template, factionEffects, researchBonuses, forcedType);
     }
 
     const template = cardsOfRarity[Math.floor(Math.random() * cardsOfRarity.length)];
-    return createCardFromTemplate(template, factionEffects, researchBonuses);
+    return createCardFromTemplate(template, factionEffects, researchBonuses, forcedType);
 }
 
 /**
@@ -130,7 +133,7 @@ export interface ResearchBonuses {
     function?: number;   // Level (Mastery)
 }
 
-export function createCardFromTemplate(template: any, factionEffects?: FactionEffects, researchBonuses?: ResearchBonuses): Card {
+export function createCardFromTemplate(template: any, factionEffects?: FactionEffects, researchBonuses?: ResearchBonuses, forcedType?: 'EFFICIENCY' | 'CREATIVITY' | 'FUNCTION'): Card {
     const rarity = template.rarity || 'common';
     const powerRange = RARITY_POWER_RANGES[rarity.toLowerCase()] || RARITY_POWER_RANGES.common;
 
@@ -180,7 +183,7 @@ export function createCardFromTemplate(template: any, factionEffects?: FactionEf
 
     // 3. 메인 속성 결정 (가위/바위/보)
     const types: ('EFFICIENCY' | 'CREATIVITY' | 'FUNCTION')[] = ['EFFICIENCY', 'CREATIVITY', 'FUNCTION'];
-    const mainType = types[Math.floor(Math.random() * types.length)];
+    const mainType = forcedType || types[Math.floor(Math.random() * types.length)];
 
     let efficiency = 5; // 최소값 보장
     let creativity = 5;
@@ -287,10 +290,10 @@ export function createCardFromTemplate(template: any, factionEffects?: FactionEf
 /**
  * 메인 함수: 티어에 따라 랜덤 카드 생성
  */
-export function generateRandomCard(tier: string = 'free', affinity: number = 0, factionEffects?: FactionEffects, researchBonuses?: ResearchBonuses): Card {
+export function generateRandomCard(tier: string = 'free', affinity: number = 0, factionEffects?: FactionEffects, researchBonuses?: ResearchBonuses, forcedType?: 'EFFICIENCY' | 'CREATIVITY' | 'FUNCTION'): Card {
     const weights = calculateRarityWeights(tier, affinity, researchBonuses?.creativity || 1);
     const selectedRarity = selectRandomRarity(weights);
-    return selectCardByRarity(selectedRarity, factionEffects, researchBonuses);
+    return selectCardByRarity(selectedRarity, factionEffects, researchBonuses, forcedType);
 }
 
 /**

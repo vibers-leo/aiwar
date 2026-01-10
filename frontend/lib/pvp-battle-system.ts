@@ -442,9 +442,15 @@ export async function checkPVPRequirements(
 }
 
 /**
- * AI 연습 모드용 상대 덱 생성
+ * AI 연습 모드 및 스토리 모드용 상대 덱 생성
  */
-export function generateOpponentDeck(playerLevel: number, cardPool?: Card[], targetSize: number = 5): BattleParticipant {
+export function generateOpponentDeck(
+    playerLevel: number,
+    cardPool?: Card[],
+    targetSize: number = 5,
+    pattern?: { function: number; creativity: number; efficiency: number },
+    isBoss: boolean = false
+): BattleParticipant {
     const isEasy = playerLevel < 4;
     const styles = [
         { name: '맹장형', type: 'EFFICIENCY', desc: '공격적인 성향' },
@@ -454,23 +460,51 @@ export function generateOpponentDeck(playerLevel: number, cardPool?: Card[], tar
     ];
     const style = styles[Math.floor(Math.random() * styles.length)];
 
+    // 패턴이 있으면 패턴에 맞춰 타입별 개수를 정함
+    const typesToGenerate: ('FUNCTION' | 'CREATIVITY' | 'EFFICIENCY')[] = [];
+    if (pattern) {
+        for (let i = 0; i < pattern.function; i++) typesToGenerate.push('FUNCTION');
+        for (let i = 0; i < pattern.creativity; i++) typesToGenerate.push('CREATIVITY');
+        for (let i = 0; i < pattern.efficiency; i++) typesToGenerate.push('EFFICIENCY');
+
+        // 남은 자리는 랜덤 (5장 미만일 경우 대비)
+        while (typesToGenerate.length < targetSize) {
+            const types: ('FUNCTION' | 'CREATIVITY' | 'EFFICIENCY')[] = ['FUNCTION', 'CREATIVITY', 'EFFICIENCY'];
+            typesToGenerate.push(types[Math.floor(Math.random() * 3)]);
+        }
+    }
+
     const aiCards = Array.from({ length: targetSize }).map((_, i) => {
         let rarity: Rarity = 'common';
         const roll = Math.random();
-        if (isEasy) rarity = roll > 0.8 ? 'rare' : 'common';
+
+        if (isBoss) rarity = 'rare'; // 보스는 최소 레어
+        else if (isEasy) rarity = roll > 0.8 ? 'rare' : 'common';
         else rarity = roll > 0.7 ? 'epic' : roll > 0.3 ? 'rare' : 'common';
 
-        const card = generateRandomCard(rarity);
+        // 특정 타입 강제 또는 전체 랜덤
+        const forcedType = typesToGenerate[i];
+        const card = generateRandomCard(rarity, 0, undefined, undefined, forcedType);
+
         card.id = `ai-gen-${Date.now()}-${i}`;
-        card.level = Math.max(1, playerLevel + (isEasy ? -1 : 1));
+        card.level = Math.max(1, playerLevel + (isBoss ? 1 : isEasy ? -1 : 1));
+
+        // [BOSS BOOST] 비겼을 때를 대비해 스탯 상향 조정
+        if (isBoss && card.stats) {
+            card.stats.efficiency = (card.stats.efficiency || 0) + 5;
+            card.stats.creativity = (card.stats.creativity || 0) + 5;
+            card.stats.function = (card.stats.function || 0) + 5;
+            card.stats.totalPower = (card.stats.totalPower || 0) + 5;
+        }
+
         return card;
     });
 
     return {
-        name: `[AI] ${style.name}`,
+        name: isBoss ? `[BOSS]` : `[AI] ${style.name}`,
         level: playerLevel,
         deck: aiCards,
-        style: style.desc
+        style: isBoss ? '챕터 최종 보스' : style.desc
     };
 }
 

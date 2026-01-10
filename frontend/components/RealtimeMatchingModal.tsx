@@ -35,6 +35,7 @@ export default function RealtimeMatchingModal({
     const [inputCode, setInputCode] = useState('');
     const [copied, setCopied] = useState(false);
     const [searching, setSearching] = useState(false);
+    const [allowGhostFallback, setAllowGhostFallback] = useState(true);
     const [error, setError] = useState<string | null>(null);
 
     // [FIX] Store unsubscribe functions in refs for cleanup
@@ -96,7 +97,7 @@ export default function RealtimeMatchingModal({
             // [NEW] 매칭 폴링: 3초마다 findMatch 호출하여 상대 검색
             const pollInterval = setInterval(async () => {
                 try {
-                    const matchFound = await findMatch(battleMode, state.userId, playerLevel);
+                    const matchFound = await findMatch(battleMode, state.userId, playerLevel, allowGhostFallback);
                     if (matchFound.success && matchFound.roomId) {
                         if (pollIntervalRef.current) {
                             clearInterval(pollIntervalRef.current);
@@ -440,10 +441,30 @@ export default function RealtimeMatchingModal({
 
                                 <button
                                     onClick={() => setMode('friend-join')}
-                                    className="w-full p-4 bg-white/5 hover:bg-white/10 border border-white/10 rounded-xl transition-all text-center"
+                                    className="w-full p-4 bg-white/5 border border-white/10 rounded-xl transition-all text-center"
                                 >
                                     <p className="text-white/80">초대 코드로 참가</p>
                                 </button>
+
+                                {/* [NEW] AI 매치 옵션 */}
+                                <div className="p-4 bg-white/5 border border-white/10 rounded-xl flex items-center justify-between">
+                                    <div className="text-left">
+                                        <h4 className="text-sm font-bold text-white">AI 매칭 허용</h4>
+                                        <p className="text-[10px] text-white/40">30초 이상 매칭이 안 될 경우 AI와 대전합니다</p>
+                                    </div>
+                                    <button
+                                        onClick={() => setAllowGhostFallback(!allowGhostFallback)}
+                                        className={cn(
+                                            "w-12 h-6 rounded-full transition-colors relative",
+                                            allowGhostFallback ? "bg-cyan-500" : "bg-gray-700"
+                                        )}
+                                    >
+                                        <motion.div
+                                            animate={{ x: allowGhostFallback ? 24 : 4 }}
+                                            className="w-4 h-4 bg-white rounded-full absolute top-1"
+                                        />
+                                    </button>
+                                </div>
 
                                 {/* [NEW] 참가비 공지 */}
                                 <div className="mt-6 flex flex-col items-center gap-2 p-4 bg-yellow-500/5 border border-yellow-500/20 rounded-xl">
@@ -482,10 +503,13 @@ export default function RealtimeMatchingModal({
                                     <Loader2 className="w-full h-full text-cyan-400" />
                                 </motion.div>
                                 <h3 className="text-xl font-bold text-white mb-2">
-                                    {waitTime > 10 ? '정밀 탐색 중...' : '상대를 찾는 중...'}
+                                    {waitTime > 30 ? '정밀 탐색 중...' : '상대를 찾는 중...'}
                                 </h3>
                                 <p className="text-3xl font-black text-cyan-400 orbitron mb-4">{formatTime(waitTime)}</p>
-                                <p className="text-sm text-white/60 mb-6">비슷한 레벨의 상대를 찾고 있습니다</p>
+                                <p className="text-sm text-white/60 mb-2">비슷한 레벨의 상대를 찾고 있습니다</p>
+                                <p className="text-[10px] text-white/40 mb-6">
+                                    {allowGhostFallback ? '30초 경과 시 AI와 매칭될 수 있습니다.' : '진짜 플레이어만 찾고 있습니다 (무한 대기).'}
+                                </p>
 
                                 {error && (
                                     <div className="bg-red-500/20 border border-red-500/30 rounded-lg p-3 mb-4">
@@ -571,6 +595,6 @@ export default function RealtimeMatchingModal({
                     </div>
                 </motion.div>
             </motion.div>
-        </AnimatePresence>
+        </AnimatePresence >
     );
 }

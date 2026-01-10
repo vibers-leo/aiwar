@@ -61,7 +61,7 @@ export default function PVPArenaPage() {
     const [playerDeck, setPlayerDeck] = useState<Card[]>([]);
     const [opponentDeck, setOpponentDeck] = useState<Card[]>([]);
     const [cardOrder, setCardOrder] = useState<number[]>([0, 1, 2, 3, 4]);
-    const [revealTimer, setRevealTimer] = useState(20);
+    const [revealTimer, setRevealTimer] = useState(60); // [FIX] 20 -> 60 (More generous for deck reveal)
     const [battleResult, setBattleResult] = useState<BattleResult | null>(null);
     const [currentRound, setCurrentRound] = useState(0);
     const [animating, setAnimating] = useState(false);

@@ -100,7 +100,8 @@ export async function leaveMatchmaking(
 export async function findMatch(
     battleMode: RealtimeBattleMode,
     myPlayerId: string,
-    myLevel: number
+    myLevel: number,
+    allowGhostFallback: boolean = true
 ): Promise<MatchResult> {
     try {
         const db = getDatabase(app || undefined);
@@ -118,10 +119,10 @@ export async function findMatch(
 
         // 대기 시간에 따른 매칭 허용 범위 차별화
         let tolerance = 3;
-        if (waitTimeSec > 15) tolerance = 999;
-        else if (waitTimeSec > 5) tolerance = 7;
+        if (waitTimeSec > 25) tolerance = 999;
+        else if (waitTimeSec > 10) tolerance = 7;
 
-        console.log(`🔍 [PVP] Matching... Wait: ${Math.floor(waitTimeSec)}s, Tolerance: ±${tolerance}, Modal: ${battleMode}`);
+        console.log(`🔍 [PVP] Matching... Wait: ${Math.floor(waitTimeSec)}s, Tolerance: ±${tolerance}, Mode: ${battleMode}`);
 
         // 원자적 매칭을 위해 트랜잭션 사용
         for (const [opponentId, opponent] of Object.entries(players) as [string, MatchmakingQueue][]) {
@@ -169,9 +170,10 @@ export async function findMatch(
             }
         }
 
-        // [FIX] 10초 이상 대기 시 고스트 AI 매칭 시도 (더 빠른 매칭)
-        if (waitTimeSec > 10) {
-            console.log(`🤖 [PVP] No real players found. Triggering Ghost AI fallback...`);
+        // [FIX] 30초 이상 대기 시 고스트 AI 매칭 시도 (더 긴 대기 시간 권장)
+        // allowGhostFallback이 true일 경우에만 작동
+        if (allowGhostFallback && waitTimeSec > 30) {
+            console.log(`🤖 [PVP] No real players found after 30s. Triggering Ghost AI fallback...`);
             let ghostUser: { uid: string; nickname: string; level: number };
 
             try {

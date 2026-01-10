@@ -44,11 +44,11 @@ export default function RealtimeBattleRoomPage() {
     const [localPhase, setLocalPhase] = useState<LocalPhase>('loading');
     const [myCards, setMyCards] = useState<InventoryCard[]>([]);
     const [selectedCards, setSelectedCards] = useState<Card[]>([]);
-    const [countdown, setCountdown] = useState(20); // [FIX] 30 -> 20
+    const [countdown, setCountdown] = useState(60); // [FIX] 20 -> 60 (More generous for deck selection)
     const [isConnected, setIsConnected] = useState(false);
     const [isReady, setIsReady] = useState(false);
     const [error, setError] = useState<string | null>(null);
-    const [vsCountdown, setVsCountdown] = useState(20); // [FIX] 5 -> 20
+    const [vsCountdown, setVsCountdown] = useState(30); // [FIX] 20 -> 30 (More time for vs-matchup intro)
     const [localWinner, setLocalWinner] = useState<string | null>(null);
 
     const heartbeatRef = useRef<NodeJS.Timeout | null>(null);
