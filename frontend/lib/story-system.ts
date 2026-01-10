@@ -469,20 +469,24 @@ export function getChapters(t?: (key: TranslationKey) => string): Chapter[] {
         {
             id: 'chapter-3',
             number: 3,
-            title: 'SINGULARITY',
-            title_ko: '특이점',
-            description: '2027. It is uncontrollable. The end of human era.',
-            description_ko: '2027년. 통제가 불가능합니다. 인간 시대의 종말.',
-            icon: '🌌',
+            title: 'THE TRIALS OF LEADERS',
+            title_ko: '군웅의 시험',
+            description: 'AI leaders test your qualifications. The beginning of the alliance.', description_ko: '거대 AI 리더들의 검증과 연합의 시작.',
+            icon: '🤝',
             stages: [
                 {
                     id: 'stage-3-1', step: 1,
-                    title: 'Exponential Growth', title_ko: '지수적 성장',
-                    description: 'No turning back now.', description_ko: '이제 되돌릴 수 없습니다.',
-                    battleMode: 'tactics', difficulty: 'HARD',
+                    title: "Alliance's Call", title_ko: '연합의 부름',
+                    description: 'AI leaders worldwide are watching your command ability.', description_ko: '전 세계의 AI 리더들이 당신의 지휘 능력을 주시하고 있습니다.',
+                    battleMode: 'tactics', difficulty: 'NORMAL',
                     enemy: {
-                        id: 'bot-3-1', name: 'Growth Engine', name_ko: '성장 엔진',
-                        dialogue: { intro: 'Doubling every second.', intro_ko: '매초 2배 성장한다.', win: 'Infinity reached.', win_ko: '무한대 도달.', lose: 'Growth stunted.', lose_ko: '성장 저해.' }
+                        id: 'bot-3-1', name: 'Alliance Test', name_ko: '연합 테스트',
+                        dialogue: {
+                            intro: 'Gemini: "Commander, AI leaders from around the world are watching your command ability. Nervous?"\nChip: "Wow! Commander, look! All the famous people I saw on TV are here!"\nSam: "Commander, let me verify if you are the \'Synchronist\' who will lead our alliance."',
+                            intro_ko: '제미나이: "지휘관, 전 세계의 AI 리더들이 당신의 지휘 능력을 주시하고 있어. 긴장되지?"\n칩: "와아! 지휘관님, 저기 봐요! TV에서 보던 유명한 아저씨들이 다 모였어요!"\n샘: "지휘관, 당신이 우리 연합군을 이끌 \'싱크로니스트\'가 맞는지 확인해 보겠습니다."',
+                            win: 'Verification passed.', win_ko: '검증 통과.',
+                            lose: 'Needs improvement.', lose_ko: '개선 필요.'
+                        }
                     }, rewards: { coins: 300, experience: 60 }, isCleared: false
                 },
                 {
