@@ -79,29 +79,101 @@ export default function DialogueOverlay({
                         className="absolute inset-0 bg-black/60 backdrop-blur-sm"
                     />
 
-                    {/* Character Portrait */}
+                    {/* Character Portraits */}
                     <div className="absolute inset-0 flex items-center justify-center overflow-hidden pointer-events-none">
                         <AnimatePresence mode="wait">
                             {portraitImage && (
-                                <motion.div
-                                    key={portraitImage}
-                                    initial={{ x: isGemini ? -100 : 100, opacity: 0, scale: 0.9 }}
-                                    animate={{ x: isGemini ? -150 : 150, opacity: 1, scale: 1.1 }}
-                                    exit={{ x: isGemini ? -200 : 200, opacity: 0 }}
-                                    transition={{ duration: 0.5, ease: "easeOut" }}
-                                    className={cn(
-                                        "absolute bottom-0 h-[80%] aspect-square max-w-[500px]",
-                                        isGemini ? "left-1/4" : "right-1/4"
+                                <div className="relative w-full h-full flex items-center justify-center">
+                                    {/* Backdrop Text for Atmosphere */}
+                                    {!isGemini && (
+                                        <motion.div
+                                            initial={{ opacity: 0, scale: 2 }}
+                                            animate={{ opacity: [0, 0.2, 0.1], scale: [2, 0.9, 1] }}
+                                            className="absolute inset-0 flex items-center justify-center pointer-events-none select-none"
+                                        >
+                                            <h1 className="text-[25vw] font-black orbitron uppercase tracking-[0.2em] text-red-600/30 italic blur-sm">
+                                                WARNING
+                                            </h1>
+                                        </motion.div>
                                     )}
-                                >
-                                    <Image
-                                        src={portraitImage}
-                                        alt={speakerName}
-                                        fill
-                                        className="object-contain drop-shadow-[0_0_30px_rgba(34,211,238,0.3)]"
-                                        priority
-                                    />
-                                </motion.div>
+
+                                    {/* Screen Flash Effect for Hostiles */}
+                                    {!isGemini && (
+                                        <motion.div
+                                            initial={{ opacity: 0 }}
+                                            animate={{ opacity: [0, 0.5, 0] }}
+                                            transition={{ duration: 0.3 }}
+                                            className="absolute inset-0 bg-red-600/20 z-0 pointer-events-none"
+                                        />
+                                    )}
+
+                                    {/* Portrait with specialized animations */}
+                                    <motion.div
+                                        key={portraitImage}
+                                        initial={{
+                                            x: isGemini ? -150 : 150,
+                                            opacity: 0,
+                                            scale: isGemini ? 1.0 : 1.4,
+                                            filter: isGemini ? "blur(0px)" : "blur(10px) brightness(0.5)",
+                                        }}
+                                        animate={{
+                                            x: isGemini ? -150 : 180,
+                                            y: !isGemini ? [0, -5, 5, -5, 0] : 0, // Screen shake / Rumble
+                                            opacity: 1,
+                                            scale: isGemini ? 1.1 : 1.5,
+                                            filter: isGemini ? "blur(0px)" : "blur(0px) brightness(1)",
+                                        }}
+                                        transition={{
+                                            x: { duration: 0.6, ease: "circOut" },
+                                            y: { repeat: !isGemini ? Infinity : 0, duration: 0.15, repeatType: "mirror" },
+                                            duration: 0.6
+                                        }}
+                                        className={cn(
+                                            "absolute bottom-0 h-[90%] aspect-square max-w-[800px]",
+                                            isGemini ? "left-0" : "right-0"
+                                        )}
+                                    >
+                                        {/* Glow Effect behind portrait */}
+                                        <div className={cn(
+                                            "absolute inset-0 blur-[60px] opacity-30 rounded-full",
+                                            isGemini ? "bg-cyan-500" : "bg-red-500"
+                                        )} />
+
+                                        <Image
+                                            src={portraitImage}
+                                            alt={speakerName}
+                                            fill
+                                            className={cn(
+                                                "object-contain z-10",
+                                                !isGemini && "drop-shadow-[0_0_50px_rgba(239,68,68,0.4)]"
+                                            )}
+                                            priority
+                                        />
+
+                                        {/* Glitch Overlay for Hostiles */}
+                                        {!isGemini && (
+                                            <motion.div
+                                                animate={{
+                                                    opacity: [0, 0.4, 0],
+                                                    x: [0, 10, -10, 0]
+                                                }}
+                                                transition={{
+                                                    repeat: Infinity,
+                                                    duration: 0.2,
+                                                    repeatDelay: 2
+                                                }}
+                                                className="absolute inset-0 z-20 mix-blend-screen overflow-hidden"
+                                            >
+                                                <Image
+                                                    src={portraitImage}
+                                                    alt="glitch"
+                                                    fill
+                                                    className="object-contain opacity-50 sepia(100%) hue-rotate(320deg)"
+                                                />
+                                            </motion.div>
+                                        )}
+                                    </motion.div>
+                                </div>
                             )}
                         </AnimatePresence>
                     </div>

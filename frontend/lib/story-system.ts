@@ -113,6 +113,7 @@ export function getChapters(t?: (key: TranslationKey) => string): Chapter[] {
                     battleMode: 'sudden-death', difficulty: 'EASY',
                     enemy: {
                         id: 'glitch-1', name: 'Unknown Noise', name_ko: '알 수 없는 노이즈',
+                        image: '/assets/cards/shodan-echo.png',
                         dialogue: {
                             intro: 'Gemini: "Commander, it\'s starting. Stay alert!"', intro_ko: '제미나이: "지휘관, 놈이 움직이기 시작했어. 긴장해!"',
                             win: 'Signal stabilized.', win_ko: '신호가 안정되었습니다.',
@@ -128,6 +129,7 @@ export function getChapters(t?: (key: TranslationKey) => string): Chapter[] {
                     battleMode: 'sudden-death', difficulty: 'EASY',
                     enemy: {
                         id: 'glitch-2', name: 'Creative Glitch', name_ko: '창의의 글리치',
+                        image: '/assets/cards/midjourney-character.png',
                         dialogue: {
                             intro: 'Gemini: "Wild Creativity (Paper) can be subdued with precise Function (Scissors)."', intro_ko: '제미나이: "날뛰는 창의(📄) 로직은 정교한 기능(✂️)으로 제압할 수 있어."',
                             win: 'Creativity organized.', win_ko: '창의가 정리되었습니다.',
@@ -143,6 +145,7 @@ export function getChapters(t?: (key: TranslationKey) => string): Chapter[] {
                     battleMode: 'sudden-death', difficulty: 'NORMAL',
                     enemy: {
                         id: 'glitch-3', name: 'Efficiency Mass', name_ko: '효율의 덩어리',
+                        image: '/assets/cards/copilot-character.png',
                         dialogue: {
                             intro: 'Gemini: "Solid Efficiency (Rock) blocks can be neutralized with flexible Creativity (Paper)."', intro_ko: '제미나이: "단단한 효율(🪨) 덩어리는 유연한 창의(📄)로 무력화해야 해."',
                             win: 'Efficiency bypassed.', win_ko: '효율이 무력화되었습니다.',
@@ -158,6 +161,7 @@ export function getChapters(t?: (key: TranslationKey) => string): Chapter[] {
                     battleMode: 'sudden-death', difficulty: 'NORMAL',
                     enemy: {
                         id: 'glitch-4', name: 'Functional Barrier', name_ko: '기능의 장벽',
+                        image: '/assets/cards/cursor-character.png',
                         dialogue: {
                             intro: 'Gemini: "Rigid Function (Scissors) will break against overwhelming Efficiency (Rock)."', intro_ko: '제미나이: "날카로운 기능(✂️)도 압도적인 효율(🪨) 앞에서는 부러질 뿐이야."',
                             win: 'Barrier shattered.', win_ko: '장벽이 파괴되었습니다.',
@@ -173,6 +177,7 @@ export function getChapters(t?: (key: TranslationKey) => string): Chapter[] {
                     battleMode: 'sudden-death', difficulty: 'BOSS',
                     enemy: {
                         id: 'boss-1-mid', name: 'Glitch Worm', name_ko: '글리치 웜',
+                        image: '/assets/cards/cyber-warlord.png',
                         dialogue: {
                             intro: 'Glitch: "0101... All... data... must... be... destroyed..."', intro_ko: '글리치: "0101... 모든... 데이터는... 파괴되어야... 한다..."',
                             win: 'Virus neutralized.', win_ko: '바이러스가 무력화되었습니다.',
@@ -188,6 +193,7 @@ export function getChapters(t?: (key: TranslationKey) => string): Chapter[] {
                     battleMode: 'tactics', difficulty: 'NORMAL',
                     enemy: {
                         id: 'glitch-6', name: 'Mirage Code', name_ko: '미라쥬 코드',
+                        image: '/assets/cards/stable-diffusion-character.png',
                         dialogue: {
                             intro: 'Gemini: "Signals are clear now. Let\'s read their placement and counter."', intro_ko: '제미나이: "신호가 선명해졌어. 이제 놈들의 배치를 읽고 대응하자."',
                             win: 'Placement successful.', win_ko: '배치에 성공했습니다.',
@@ -203,6 +209,7 @@ export function getChapters(t?: (key: TranslationKey) => string): Chapter[] {
                     battleMode: 'tactics', difficulty: 'NORMAL',
                     enemy: {
                         id: 'glitch-7', name: 'Mixed Logic', name_ko: '혼합 로직',
+                        image: '/assets/cards/grok-character.png',
                         dialogue: {
                             intro: 'Gemini: "Tactics is a game of intuition. Counter Efficiency with Creativity!"', intro_ko: '제미나이: "전술 승부는 눈치 싸움이야. 놈의 효율을 창의로 받아쳐!"',
                             win: 'Algorithms sorted.', win_ko: '알고리즘이 분류되었습니다.',
@@ -218,6 +225,7 @@ export function getChapters(t?: (key: TranslationKey) => string): Chapter[] {
                     battleMode: 'tactics', difficulty: 'HARD',
                     enemy: {
                         id: 'glitch-8', name: 'Omen Fragment', name_ko: '암시의 파편',
+                        image: '/assets/cards/claude-character.png',
                         dialogue: {
                             intro: 'Gemini: "Once decoded, we can call a stronger army!"', intro_ko: '제미나이: "암시가 해독되면 우리는 더 강한 군단을 부를 수 있어!"',
                             win: 'Omen decoded.', win_ko: '암시가 해독되었습니다.',
@@ -233,6 +241,7 @@ export function getChapters(t?: (key: TranslationKey) => string): Chapter[] {
                     battleMode: 'tactics', difficulty: 'HARD',
                     enemy: {
                         id: 'sam-1', name: 'Sam Altman', name_ko: '샘 알트만',
+                        image: '/assets/cards/cmdr-chatgpt.png',
                         dialogue: {
                             intro: 'Sam: "Interesting Commander. To read the moves like that..."', intro_ko: '샘(Sam): "흥미로운 지휘관이군요. 그 정도 수 읽기를 하다니."',
                             win: 'Impressive.', win_ko: '인상적이군요.',
@@ -248,6 +257,7 @@ export function getChapters(t?: (key: TranslationKey) => string): Chapter[] {
                     battleMode: 'sudden-death', difficulty: 'BOSS',
                     enemy: {
                         id: 'boss-1-final', name: 'Red Core', name_ko: '붉은 핵',
+                        image: '/assets/cards/legendary-emperor-character.png',
                         dialogue: {
                             intro: 'Gemini: "Trust your Function, Efficiency, and Creativity for the final strike!"', intro_ko: '제미나이: "당신의 기능, 효율, 창의를 믿고 최후의 일격을 날려!"',
                             win: 'Core destroyed. Sequence finished.', win_ko: '핵이 파괴되었습니다. 시퀀스 종료.',
