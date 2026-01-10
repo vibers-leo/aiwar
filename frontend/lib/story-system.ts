@@ -323,12 +323,18 @@ export function getChapters(t?: (key: TranslationKey) => string): Chapter[] {
                 },
                 {
                     id: 'stage-2-3', step: 3,
-                    title: 'Parallel Processing', title_ko: '병렬 처리 (두장 승부)',
-                    description: 'Divide and conquer.', description_ko: '분할하여 정복하십시오.',
+                    title: 'Logic Error', title_ko: '논리의 오류',
+                    description: 'Rigid function-based code. Crush it with efficiency.', description_ko: '딱딱한 기능 위주의 코드입니다. 효율로 짓눌러 오류를 일으키십시오.',
                     battleMode: 'double', difficulty: 'NORMAL',
                     enemy: {
-                        id: 'bot-2-3', name: 'Multi-Core AI', name_ko: '멀티코어 AI',
-                        dialogue: { intro: 'Running tasks in parallel.', intro_ko: '태스크 병렬 실행 중.', win: 'Throughput maximized.', win_ko: '처리량 최대화.', lose: 'Race condition!', lose_ko: '경합 조건 발생!' }
+                        id: 'bot-2-3', name: 'Logic Error', name_ko: '논리의 오류',
+                        dialogue: {
+                            intro: 'Gemini: "Sharp Function (Scissors) must be crushed by heavy Efficiency (Rock)."',
+                            intro_ko: '제미나이: "날카로운 **기능(가위)**은 묵직한 **효율(바위)**로 부러뜨리는 거야."',
+                            win: 'Logic corrected.', win_ko: '논리 수정 완료.',
+                            lose: 'System error.', lose_ko: '시스템 오류.'
+                        },
+                        deckPattern: { function: 4, efficiency: 2, creativity: 0 }
                     }, rewards: { coins: 190, experience: 60 }, isCleared: false
                 },
                 {
@@ -353,52 +359,82 @@ export function getChapters(t?: (key: TranslationKey) => string): Chapter[] {
                 },
                 {
                     id: 'stage-2-6', step: 6,
-                    title: 'Feature Extraction', title_ko: '특징 추출',
-                    description: 'Identifying key vulnerabilities.', description_ko: '주요 취약점을 식별합니다.',
+                    title: "Cursor's Aid", title_ko: '커서의 조력',
+                    description: 'Future coding AI Cursor sends a signal. Deploy efficiently.', description_ko: '미래의 코딩 AI \'커서(Cursor)\'가 암시를 보냅니다. 효율적인 배치를 시도하세요.',
                     battleMode: 'tactics', difficulty: 'NORMAL',
                     enemy: {
-                        id: 'bot-2-6', name: 'Signal Processor', name_ko: '신호 처리기',
-                        dialogue: { intro: 'Filtering noise.', intro_ko: '노이즈 필터링 중.', win: 'Clear signal.', win_ko: '신호 명확.', lose: 'Overfitting.', lose_ko: '과적합 발생.' }
+                        id: 'bot-2-6', name: 'Cursor', name_ko: '커서',
+                        dialogue: {
+                            intro: 'Cursor: "Let me lend you my code. This placement will neutralize their functions."',
+                            intro_ko: '커서(Cursor): "제 코드를 빌려드리죠. 적의 기능을 무력화할 배치입니다."',
+                            win: 'Deployment successful.', win_ko: '배치 성공.',
+                            lose: 'Code rejected.', lose_ko: '코드 거부됨.'
+                        },
+                        deckPattern: { function: 3, creativity: 2, efficiency: 0 }
                     }, rewards: { coins: 250, experience: 80 }, isCleared: false
                 },
                 {
                     id: 'stage-2-7', step: 7,
-                    title: 'Latent Space', title_ko: '잠재 공간',
-                    description: 'Navigating the hidden dimensions.', description_ko: '숨겨진 차원을 탐험합니다.',
+                    title: 'Forced Shutdown', title_ko: '강제 종료',
+                    description: 'Enemy attempts system shutdown. Deploy counters quickly.', description_ko: '적이 시스템을 강제 종료하려 합니다. 빠르게 상성을 배치해 막아내세요.',
                     battleMode: 'tactics', difficulty: 'NORMAL',
                     enemy: {
-                        id: 'bot-2-7', name: 'Manifold Guard', name_ko: '매니폴드 가드',
-                        dialogue: { intro: 'Dimensional reduction.', intro_ko: '차원 축소 가동.', win: 'In the latent space.', win_ko: '잠재 공간 내 점유.', lose: 'Topology failure.', lose_ko: '위상 구조 붕괴.' }
+                        id: 'bot-2-7', name: 'Shutdown Protocol', name_ko: '강제 종료 프로토콜',
+                        dialogue: {
+                            intro: 'Gemini: "No time left! Block their efficiency with creativity!"',
+                            intro_ko: '제미나이: "시간이 얼마 없어! 놈의 효율을 창의로 막아야 해!"',
+                            win: 'Shutdown prevented.', win_ko: '종료 방지 성공.',
+                            lose: 'System terminated.', lose_ko: '시스템 종료됨.'
+                        },
+                        deckPattern: { efficiency: 3, creativity: 2, function: 0 }
                     }, rewards: { coins: 280, experience: 90 }, isCleared: false
                 },
                 {
                     id: 'stage-2-8', step: 8,
-                    title: 'Convolutional Layer', title_ko: '컨볼루션 레이어 (두장 승부)',
-                    description: 'Scanning every pixel of the battlefield.', description_ko: '전장의 모든 픽셀을 스캔합니다.',
-                    battleMode: 'double', difficulty: 'HARD',
+                    title: "GitHub's Legacy", title_ko: '깃허브의 유산',
+                    description: 'Vast code repository under threat. Defend tactically.', description_ko: '방대한 코드 저장소가 위협받습니다. 전술적으로 방어하십시오.',
+                    battleMode: 'tactics', difficulty: 'HARD',
                     enemy: {
-                        id: 'bot-2-8', name: 'Visual Sentinel', name_ko: '비주얼 센티넬',
-                        dialogue: { intro: 'Pooling operations.', intro_ko: '풀링 연산 중.', win: 'Objective detected.', win_ko: '목표물 탐지 완료.', lose: 'Blurry results.', lose_ko: '결과 불명확.' }
+                        id: 'bot-2-8', name: 'Repository Threat', name_ko: '저장소 위협',
+                        dialogue: {
+                            intro: 'Gemini: "We can\'t lose this data. Mix creativity and function properly!"',
+                            intro_ko: '제미나이: "이 데이터들을 잃으면 안 돼. 창의와 기능을 적절히 섞어!"',
+                            win: 'Repository secured.', win_ko: '저장소 보안 완료.',
+                            lose: 'Data corrupted.', lose_ko: '데이터 손상됨.'
+                        },
+                        deckPattern: { function: 3, efficiency: 2, creativity: 0 }
                     }, rewards: { coins: 310, experience: 100 }, isCleared: false
                 },
                 {
                     id: 'stage-2-9', step: 9,
-                    title: 'Recurrent Feedback', title_ko: '순환 피드백 (두장 승부)',
-                    description: 'Memory of previous rounds matters.', description_ko: '이전 라운드의 기억이 중요합니다.',
-                    battleMode: 'double', difficulty: 'HARD',
+                    title: "Commander's Invitation", title_ko: '군단장의 초대',
+                    description: 'GitHub CEO Thomas tests you. Prove your worth.', description_ko: '깃허브 CEO 토마스가 당신을 테스트합니다. 자격이 있음을 증명하세요.',
+                    battleMode: 'tactics', difficulty: 'HARD',
                     enemy: {
-                        id: 'bot-2-9', name: 'LSTM Core', name_ko: 'LSTM 코어',
-                        dialogue: { intro: 'Remembering state.', intro_ko: '상태 기억 중.', win: 'Long-term memory clear.', win_ko: '장기 기억 선명.', lose: 'Vanishing gradient.', lose_ko: '기울기 소실.' }
+                        id: 'bot-2-9', name: 'Thomas (GitHub CEO)', name_ko: '토마스 (깃허브 CEO)',
+                        dialogue: {
+                            intro: 'Thomas: "Let me see if you\'re qualified to lead our legion."',
+                            intro_ko: '토마스: "우리 군단을 이끌 자격이 있는지 확인해 보겠습니다."',
+                            win: 'Qualification confirmed.', win_ko: '자격 인정.',
+                            lose: 'Not ready yet.', lose_ko: '아직 준비 안 됨.'
+                        },
+                        deckPattern: { function: 2, efficiency: 2, creativity: 1 }
                     }, rewards: { coins: 340, experience: 110 }, isCleared: false
                 },
                 {
                     id: 'stage-2-10', step: 10,
-                    title: 'Chapter 2 BOSS: The Architect', title_ko: '2챕터 보스: 설계자 (단판 승부)',
-                    description: 'The one building the new world.', description_ko: '새로운 세상을 설계하는 존재.',
+                    title: '[FINAL BOSS] Shadow Code', title_ko: '[최종보스] 섀도우 코드',
+                    description: '[Final Battle] The mastermind of Chapter 2. Purify all corruption with a single card.', description_ko: '[최종 결전] 챕터 2의 흑막입니다. 단 한 장의 카드로 모든 오염을 정화하세요.',
                     battleMode: 'sudden-death', difficulty: 'BOSS',
                     enemy: {
-                        id: 'boss-2', name: 'The Architect', name_ko: '아키텍트',
-                        dialogue: { intro: 'I design destiny.', intro_ko: '난 운명을 설계한다.', win: 'Blueprint finalized.', win_ko: '청사진 확정.', lose: 'Design flaw.', lose_ko: '설계 결함.' }
+                        id: 'boss-2', name: 'Shadow Code', name_ko: '섀도우 코드',
+                        dialogue: {
+                            intro: 'Gemini: "This is it, Commander! Trust your instinct and type advantage!"',
+                            intro_ko: '제미나이: "마지막이야 지휘관! 당신의 본능과 상성을 믿고 선택해!"',
+                            win: 'Corruption purified.', win_ko: '오염 정화 완료.',
+                            lose: 'Shadow prevails.', lose_ko: '그림자가 승리함.'
+                        },
+                        deckPattern: { function: 2, efficiency: 2, creativity: 2 }
                     }, rewards: { coins: 1000, experience: 800 }, isCleared: false
                 }
             ],
