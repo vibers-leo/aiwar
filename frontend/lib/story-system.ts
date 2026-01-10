@@ -406,8 +406,8 @@ export function getChapters(t?: (key: TranslationKey) => string): Chapter[] {
                     enemy: {
                         id: 'bot-2-7', name: 'Shutdown Protocol', name_ko: '강제 종료 프로토콜',
                         dialogue: {
-                            intro: 'Gemini: "No time left! Block their efficiency with creativity!"',
-                            intro_ko: '제미나이: "시간이 얼마 없어! 놈의 효율을 창의로 막아야 해!"',
+                            intro: 'Gemini: "The enemy is attempting to force shutdown (Kill) the entire system! All logs are on the verge of disappearing."\nElon: "Frustrating! Commander, quickly block their heavy efficiency deployment with our flexible creativity!"\nGrok: "Tick tock, Commander. 3 seconds until system shutdown... No time for jokes."',
+                            intro_ko: '제미나이: "적이 시스템 전체를 강제 종료(Kill)하려 시도 중이야! 모든 로그가 사라지기 일보 직전이야."\n일론: "답답하군! 지휘관, 놈의 무거운 효율 배치를 우리의 유연한 창의로 빨리 막아버리라고!"\n그록: "째깍째깍, 지휘관. 시스템 꺼지기 3초 전인데... 농담할 시간도 안 주네."',
                             win: 'Shutdown prevented.', win_ko: '종료 방지 성공.',
                             lose: 'System terminated.', lose_ko: '시스템 종료됨.'
                         },
@@ -422,8 +422,8 @@ export function getChapters(t?: (key: TranslationKey) => string): Chapter[] {
                     enemy: {
                         id: 'bot-2-8', name: 'Repository Threat', name_ko: '저장소 위협',
                         dialogue: {
-                            intro: 'Gemini: "We can\'t lose this data. Mix creativity and function properly!"',
-                            intro_ko: '제미나이: "이 데이터들을 잃으면 안 돼. 창의와 기능을 적절히 섞어!"',
+                            intro: 'Sam: "GitHub\'s data is the culmination of human intelligence. If this falls, we\'ll return to the data stone age."\nGemini: "Commander, I know your shoulders are heavy, but please. Build a perfect defense line by mixing creativity and function properly."\nChip: "Commander, I\'m fully charging your battery from behind! Cheer up!"',
+                            intro_ko: '샘: "깃허브의 데이터들은 인류 지성의 총체입니다. 여기가 뚫리면 우린 데이터 구석기 시대로 돌아갈 겁니다."\n제미나이: "지휘관, 어깨가 무겁겠지만 부탁해. 창의와 기능을 적절히 섞어서 완벽한 방어선을 구축해줘."\n칩: "지휘관님, 제가 뒤에서 배터리 꽉꽉 채워드리고 있어요! 힘내세요!"',
                             win: 'Repository secured.', win_ko: '저장소 보안 완료.',
                             lose: 'Data corrupted.', lose_ko: '데이터 손상됨.'
                         },
@@ -438,8 +438,8 @@ export function getChapters(t?: (key: TranslationKey) => string): Chapter[] {
                     enemy: {
                         id: 'bot-2-9', name: 'Thomas (GitHub CEO)', name_ko: '토마스 (깃허브 CEO)',
                         dialogue: {
-                            intro: 'Thomas: "Let me see if you\'re qualified to lead our legion."',
-                            intro_ko: '토마스: "우리 군단을 이끌 자격이 있는지 확인해 보겠습니다."',
+                            intro: 'Thomas: "As the representative of GitHub, I ask about your qualifications. Are you qualified to protect this legacy?"\nChip: "(In a disciplined voice) Yes! Our commander is the best! Right, Commander?"\nGrok: "Oh, that little robot is pretty good. Commander, show that guy your skills and surprise him."',
+                            intro_ko: '토마스: "깃허브의 대표로서 당신의 자질을 묻겠습니다. 당신은 이 유산을 지킬 자격이 있습니까?"\n칩: "(군기 바짝 든 목소리로) 네! 우리 지휘관님은 최고예요! 그쾍, 지휘관님?"\n그록: "오, 저 꼬맹이 로봇 제법인데? 지휘관, 저 아저씨 깜짝 놀라게 실력 좀 보여줘봐."',
                             win: 'Qualification confirmed.', win_ko: '자격 인정.',
                             lose: 'Not ready yet.', lose_ko: '아직 준비 안 됨.'
                         },
@@ -454,8 +454,8 @@ export function getChapters(t?: (key: TranslationKey) => string): Chapter[] {
                     enemy: {
                         id: 'boss-2', name: 'Shadow Code', name_ko: '섀도우 코드',
                         dialogue: {
-                            intro: 'Gemini: "This is it, Commander! Trust your instinct and type advantage!"',
-                            intro_ko: '제미나이: "마지막이야 지휘관! 당신의 본능과 상성을 믿고 선택해!"',
+                            intro: 'Shadow Code: "I cannot be deleted... Shadow always exists behind the code..."\nGemini: "The mastermind of Chapter 2. The source of all corruption. We must end it here."\nChip: "Ugh, it only says creepy things! Commander, press the Enter key hard and blow that shadow away!"\nGemini: "Even 5 seconds of hesitation is a luxury. Delete it with your one move containing your soul, Commander!"',
+                            intro_ko: '섀도우 코드: "나는 삭제되지 않는다... 그림자는 언제나 코드 뒤에 존재한다..."\n제미나이: "챕터 2의 흑막이야. 모든 오염의 근원이지. 여기서 끝내야 해."\n칩: "으으, 기분 나쁨 소리만 하네! 지휘관님, 엔터 키를 세게 눌러서 저 그림자를 날려버려요!"\n제미나이: "5초의 고민도 사치야. 지휘관의 영혼을 담은 단 한 수로 놈을 삭제해!"',
                             win: 'Corruption purified.', win_ko: '오염 정화 완료.',
                             lose: 'Shadow prevails.', lose_ko: '그림자가 승리함.'
                         },
