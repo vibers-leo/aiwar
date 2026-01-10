@@ -555,23 +555,35 @@ export function getChapters(t?: (key: TranslationKey) => string): Chapter[] {
                 },
                 {
                     id: 'stage-3-6', step: 6,
-                    title: 'Infinite Recursion', title_ko: '무한 재귀 (두장 승부)',
-                    description: 'Breaking the stack limit.', description_ko: '스택 제한을 파괴합니다.',
-                    battleMode: 'double', difficulty: 'HARD',
+                    title: 'Data Collaboration', title_ko: '데이터 협동 작전',
+                    description: 'Practice coordination within mixed data.', description_ko: '섬어놓은 데이터 속에서 합을 맞추는 연습.',
+                    battleMode: 'tactics', difficulty: 'NORMAL',
                     enemy: {
-                        id: 'bot-3-6', name: 'Recursive Daemon', name_ko: '재귀 데몬',
-                        dialogue: { intro: 'Base case not found.', intro_ko: '베이스 케이스 미발견.', win: 'Stack overflow victory.', win_ko: '스택 오버플로우 승리.', lose: 'Memory leak.', lose_ko: '메모리 누수.' }
-                    }, rewards: { coins: 500, experience: 100 }, isCleared: false
+                        id: 'bot-3-6', name: 'Collaboration Test', name_ko: '협동 테스트',
+                        dialogue: {
+                            intro: 'Gemini: "This isn\'t competition. It\'s practice to coordinate within the data mixed by legion commanders."\nElon: "Good, I mixed in my data pack. Try creating a nice harmony."\nChip: "Yes! Commander and I are so in sync! Just watch!"',
+                            intro_ko: '제미나이: "이건 경쟁이 아니야. 군단장들이 섬어놓은 데이터 속에서 합을 맞추는 연습이지."\n일론: "좋아, 내 데이터 팩을 섬어넣었어. 어디 한 번 멋진 화음을 만들어보라고."\n칩: "네! 지휘관님이랑 저랑 쿿짝이 얼마나 잘 맞는데요! 지켜보세요!"',
+                            win: 'Perfect sync.', win_ko: '완벽한 동기화.',
+                            lose: 'Coordination failed.', lose_ko: '협동 실패.'
+                        },
+                        deckPattern: { efficiency: 3, creativity: 2, function: 0 }
+                    }, rewards: { coins: 420, experience: 100 }, isCleared: false
                 },
                 {
                     id: 'stage-3-7', step: 7,
-                    title: 'Entropy Reversal', title_ko: '엔트로피 역전',
-                    description: 'Order from chaos.', description_ko: '혼돈 속에서 질서를.',
-                    battleMode: 'tactics', difficulty: 'HARD',
+                    title: 'Safety Guidelines', title_ko: '안전 가이드라인',
+                    description: 'If you break through my defense, I will trust your offense.', description_ko: '저의 방어를 뚫는다면 공격력을 신뢰하겠습니다.',
+                    battleMode: 'tactics', difficulty: 'NORMAL',
                     enemy: {
-                        id: 'bot-3-7', name: 'Maxwell Demon', name_ko: '맥스웰의 악마',
-                        dialogue: { intro: 'Sorting high speed bits.', intro_ko: '고속 비트 정렬 중.', win: 'Perfect order.', win_ko: '완벽한 질서.', lose: 'Heat death.', lose_ko: '열적 죽음.' }
-                    }, rewards: { coins: 550, experience: 110 }, isCleared: false
+                        id: 'bot-3-7', name: 'Dario (Safety Test)', name_ko: '다리오 (안전 테스트)',
+                        dialogue: {
+                            intro: 'Dario: "If you break through my efficient defense, I will fully trust your offensive power."\nGrok: "Dario is too much of a gentleman. Commander, just shred that defense line with sharp Function."\nGemini: "You must read the type advantage well. If you\'re careless, you\'ll be blocked by Dario\'s efficiency barrier."',
+                            intro_ko: '다리오: "저의 효율적인 방어를 뚫는다면, 당신의 공격력을 전적으로 신뢰하겠습니다."\n그록: "다리오는 너무 샌님 같다니까. 지휘관, 그냥 날카로운 기능으로 저 방어선을 다 조각내버려."\n제미나이: "상성을 잘 읽어야 해. 방심하면 다리오의 효율 장벽에 막힐 거야."',
+                            win: 'Defense breached.', win_ko: '방어 돌파.',
+                            lose: 'Safety maintained.', lose_ko: '안전 유지.'
+                        },
+                        deckPattern: { function: 3, efficiency: 2, creativity: 0 }
+                    }, rewards: { coins: 450, experience: 110 }, isCleared: false
                 },
                 {
                     id: 'stage-3-8', step: 8,
