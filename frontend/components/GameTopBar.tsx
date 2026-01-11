@@ -75,7 +75,7 @@ export default function GameTopBar({ sidebarCollapsed = false }: GameTopBarProps
     return (
         <>
             <div
-                className="fixed top-0 left-0 right-0 h-16 bg-black/90 backdrop-blur-2xl border-b border-cyan-500/10 z-30 px-6 flex items-center justify-between transition-all duration-300 ease-out"
+                className="fixed top-0 left-0 right-0 h-16 bg-black/90 backdrop-blur-2xl border-b border-cyan-500/10 z-60 px-6 flex items-center justify-between transition-all duration-300 ease-out"
             >
                 {/* Decorative top line */}
                 <div className="absolute top-0 left-0 right-0 h-px bg-gradient-to-r from-[var(--primary-blue)] via-transparent to-[var(--primary-purple)]" />
