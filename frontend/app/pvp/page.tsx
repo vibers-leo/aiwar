@@ -217,7 +217,7 @@ export default function PVPArenaPage() {
             icon: Eye,
             color: 'from-purple-500 to-pink-500',
             rounds: '6장 덱',
-            reward: `+${PVP_REWARDS.ambush.coins} 코인`,
+            reward: `+${PVP_REWARDS.strategy.coins} 코인`,
         },
     ];
 
