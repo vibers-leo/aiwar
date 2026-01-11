@@ -271,7 +271,7 @@ export default function EnhancePage() {
             color="amber"
         >
             {/* 메인 영역: 카드 목록 */}
-            <div className="p-6 pb-[140px] w-full mx-auto overflow-auto custom-scrollbar h-[calc(100vh-80px)]">
+            <div className="p-6 pb-[160px] w-full mx-auto overflow-auto custom-scrollbar h-[calc(100vh-80px)]">
                 {/* 인벤토리 헤더 및 필터 */}
                 <div className="mb-6 flex flex-col gap-4">
                     <div className="flex items-center justify-between">
