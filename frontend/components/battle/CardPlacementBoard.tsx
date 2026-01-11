@@ -483,6 +483,7 @@ export default function CardPlacementBoard({ selectedCards, onPlacementComplete,
                             hasHidden={battleMode === 'double'}
                             mainCard={placement.round1}
                             hiddenCard={placement.round1Hidden}
+                            opponentCard={opponentDeck[0]}
                             mainSlotId="round1"
                             hiddenSlotId="round1Hidden"
                             onDropMain={(cardId, sourceSlot) => handleDropMain('round1', cardId, sourceSlot)}
@@ -496,6 +497,7 @@ export default function CardPlacementBoard({ selectedCards, onPlacementComplete,
                             hasHidden={battleMode === 'double'}
                             mainCard={placement.round2Main}
                             hiddenCard={placement.round2Hidden}
+                            opponentCard={opponentDeck[1]}
                             mainSlotId="round2Main"
                             hiddenSlotId="round2Hidden"
                             onDropMain={(cardId, sourceSlot) => handleDropMain('round2Main', cardId, sourceSlot)}
@@ -509,6 +511,7 @@ export default function CardPlacementBoard({ selectedCards, onPlacementComplete,
                             hasHidden={battleMode === 'strategy' || battleMode === 'double'}
                             mainCard={placement.round3Main}
                             hiddenCard={placement.round3Hidden}
+                            opponentCard={opponentDeck[2]}
                             mainSlotId="round3Main"
                             hiddenSlotId="round3Hidden"
                             onDropMain={(cardId, sourceSlot) => handleDropMain('round3Main', cardId, sourceSlot)}
@@ -524,6 +527,7 @@ export default function CardPlacementBoard({ selectedCards, onPlacementComplete,
                                     hasHidden={false}
                                     hiddenCard={null}
                                     mainCard={placement.round4Main}
+                                    opponentCard={opponentDeck[3]}
                                     mainSlotId="round4Main"
                                     onDropMain={(cardId, sourceSlot) => handleDropMain('round4Main', cardId, sourceSlot)}
                                     onDropHidden={() => { }}
@@ -535,6 +539,7 @@ export default function CardPlacementBoard({ selectedCards, onPlacementComplete,
                                     hasHidden={false}
                                     hiddenCard={null}
                                     mainCard={placement.round5}
+                                    opponentCard={opponentDeck[4]}
                                     mainSlotId="round5"
                                     onDropMain={(cardId, sourceSlot) => handleDropMain('round5', cardId, sourceSlot)}
                                     onDropHidden={() => { }}

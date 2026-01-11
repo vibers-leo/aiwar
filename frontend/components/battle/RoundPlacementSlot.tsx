@@ -11,6 +11,7 @@ interface RoundPlacementSlotProps {
     hasHidden: boolean;
     mainCard: any | null;
     hiddenCard: any | null;
+    opponentCard?: any | null; // NEW: Opponent card for this round
     onDropMain: (cardId: string, sourceSlot?: string) => void;
     onDropHidden: (cardId: string, sourceSlot?: string) => void;
     onRemoveMain: () => void;
@@ -23,6 +24,7 @@ function RoundPlacementSlot({
     hasHidden,
     mainCard,
     hiddenCard,
+    opponentCard, // NEW
     onDropMain,
     onDropHidden,
     onRemoveMain,
@@ -30,10 +32,22 @@ function RoundPlacementSlot({
     mainSlotId,
     hiddenSlotId,
 }: RoundPlacementSlotProps & { mainSlotId: string; hiddenSlotId?: string }) {
+    const { hasTypeAdvantage } = require('@/lib/type-system');
+
     const getCardImage = (card: any) => {
         const { getCardCharacterImage } = require('@/lib/card-images');
         return getCardCharacterImage(card.templateId, card.name, card.rarity) || '/assets/cards/default-card.png';
     };
+
+    // Check type advantage
+    const getAdvantageStatus = (myCard: any, oppCard: any) => {
+        if (!myCard || !oppCard || !myCard.type || !oppCard.type) return null;
+        if (hasTypeAdvantage(myCard.type, oppCard.type)) return 'advantage';
+        if (hasTypeAdvantage(oppCard.type, myCard.type)) return 'disadvantage';
+        return 'neutral';
+    };
+
+    const advantageStatus = mainCard && opponentCard ? getAdvantageStatus(mainCard, opponentCard) : null;
 
     const handleDragStart = (e: React.DragEvent, card: any, slotId: string) => {
         e.dataTransfer.setData('cardId', card.id);
@@ -79,6 +93,19 @@ function RoundPlacementSlot({
 
     return (
         <div className="flex flex-col items-center gap-3">
+            {/* Opponent Card Type Indicator */}
+            {opponentCard && opponentCard.type && (
+                <div className="flex flex-col items-center gap-1">
+                    <div className="text-[9px] text-red-400 font-bold">ENEMY</div>
+                    <div
+                        className="w-8 h-8 rounded-full border-2 border-red-500/50 flex items-center justify-center text-lg shadow-lg"
+                        style={{ backgroundColor: getTypeColor(opponentCard.type) }}
+                    >
+                        {getTypeIcon(opponentCard.type)}
+                    </div>
+                </div>
+            )}
+
             {/* Round Label */}
             <div className="text-sm font-bold text-white/80">
                 Round {roundNumber}
@@ -152,8 +179,23 @@ function RoundPlacementSlot({
                             <div className="text-[9px] font-bold text-cyan-400 tracking-widest orbitron">PWR {Math.floor(mainCard.stats?.totalPower || 0)}</div>
                         </div>
 
+
                         {/* Hover Overlay */}
                         <div className="absolute inset-0 bg-white/0 hover:bg-white/5 transition-colors pointer-events-none" />
+
+                        {/* Type Advantage Indicator */}
+                        {advantageStatus && (
+                            <div className={cn(
+                                "absolute -bottom-2 left-1/2 -translate-x-1/2 px-3 py-1 rounded-full text-[10px] font-black shadow-xl border-2 z-30 pointer-events-none whitespace-nowrap",
+                                advantageStatus === 'advantage' ? "bg-green-500 text-white border-green-300" :
+                                    advantageStatus === 'disadvantage' ? "bg-red-500 text-white border-red-300" :
+                                        "bg-gray-500 text-white border-gray-300"
+                            )}>
+                                {advantageStatus === 'advantage' ? '✓ 유리' :
+                                    advantageStatus === 'disadvantage' ? '✗ 불리' :
+                                        '= 동등'}
+                            </div>
+                        )}
                     </>
                 ) : (
                     <div className="absolute inset-0 flex flex-col items-center justify-center text-white/10 pointer-events-none group-hover:text-cyan-400/20 transition-colors">
