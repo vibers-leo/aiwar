@@ -2,7 +2,6 @@
 
 import { useState, useEffect, useCallback } from 'react';
 import { Card as CardType } from '@/lib/types';
-import { InventoryCard } from '@/lib/inventory-system';
 import { enhanceCard, getEnhanceCost, getEnhancePreview } from '@/lib/enhance-utils';
 import CyberPageLayout from '@/components/CyberPageLayout';
 import EnhanceFooter from '@/components/Footer/EnhanceFooter';
