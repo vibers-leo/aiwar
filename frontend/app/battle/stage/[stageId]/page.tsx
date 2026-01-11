@@ -184,11 +184,19 @@ export default function StageBattlePage() {
 
     const confirmDeck = (selected: Card[]) => {
         setSelectedHand(selected);
-        setRevealTimer(60); // Reset timer
-        setPhase('opponent-reveal'); // NEW: Go to opponent reveal first
+
+        if (!storyStage) return;
+
+        // sudden-death goes straight to battle
+        if (storyStage.battleMode === 'sudden-death') {
+            handleStartBattle(selected);
+        } else {
+            // tactics, strategy, double go to placement
+            setPhase('placement');
+        }
     };
 
-    // NEW: Handle opponent reveal completion
+    // NEW: Handle opponent reveal completion (not used anymore, but keeping for compatibility)
     const handleRevealComplete = () => {
         if (!storyStage) return;
 
