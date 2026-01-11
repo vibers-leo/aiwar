@@ -294,6 +294,7 @@ export default function StageBattlePage() {
                         title={language === 'ko' ? storyStage.title_ko : storyStage.title}
                         battleMode={storyStage.battleMode as any}
                         enemySelectionMode={storyStage.battleMode === 'strategy' ? 'random' : 'ordered'}
+                        autoStartBattle={true}
                     />
                 )}
 

@@ -44,6 +44,7 @@ interface BattleArenaProps {
     maxRounds?: number;
     enemySelectionMode?: 'ordered' | 'random';
     battleMode?: 'sudden-death' | 'tactics' | 'strategy' | 'double';
+    autoStartBattle?: boolean;
 }
 
 export function BattleArena({
@@ -55,7 +56,8 @@ export function BattleArena({
     strategyTime = 20,
     maxRounds: maxRoundsProp = 5,
     enemySelectionMode = 'ordered',
-    battleMode = 'tactics'
+    battleMode = 'tactics',
+    autoStartBattle = false
 }: BattleArenaProps) {
     const maxRounds = (battleMode === 'strategy' || battleMode === 'tactics' || battleMode === 'sudden-death') ? 5 : (battleMode === 'double' ? 3 : maxRoundsProp);
     const winsNeeded = battleMode === 'sudden-death' ? 1 : (battleMode === 'tactics' ? 3 : (battleMode === 'strategy' ? 3 : 2));
@@ -101,13 +103,20 @@ export function BattleArena({
     // 타이머
     useEffect(() => {
         if (status !== 'strategy') return;
+
+        // [NEW] Auto-start battle if requested (skips strategy phase)
+        if (autoStartBattle) {
+            startBattle();
+            return;
+        }
+
         if (timer <= 0) {
             startBattle();
             return;
         }
         const interval = setInterval(() => setTimer(prev => prev - 1), 1000);
         return () => clearInterval(interval);
-    }, [status, timer]);
+    }, [status, timer, autoStartBattle]);
 
     const moveCardUp = (index: number) => {
         if (index === 0) return;
