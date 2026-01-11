@@ -90,8 +90,9 @@ export default function GameSidebar() {
     return (
         <aside
             className="fixed right-0 top-16 h-[calc(100vh-4rem)] bg-black/95 backdrop-blur-2xl border-l border-white/5 z-50 transition-all duration-300 ease-out overflow-hidden flex flex-col"
-            style={{ width: '240px' }}
+            style={{ width: isCollapsed ? '60px' : '240px' }}
             onWheel={handleWheel}
+            onDoubleClick={handleDoubleClick}
         >
             {/* Top Border Gradient */}
             <div className="absolute top-0 left-0 right-0 h-px bg-gradient-to-r from-transparent via-cyan-500/50 to-transparent" />
