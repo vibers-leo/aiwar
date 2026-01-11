@@ -12,7 +12,7 @@ import CardRewardModal from '@/components/CardRewardModal';
 import { useAlert } from '@/context/AlertContext';
 import { cn } from '@/lib/utils';
 import { getResearchBonus } from '@/lib/research-system';
-import { loadInventory, sortCards } from '@/lib/inventory-system';
+import { loadInventory, InventoryCard, filterCards, sortCards, getInventoryStats, updateInventoryCard, getMainCards } from '@/lib/inventory-system';
 import { getGameState } from '@/lib/game-state';
 import { gameStorage } from '@/lib/game-storage';
 import { FACTION_CATEGORY_MAP } from '@/lib/token-constants'; // [NEW]
