@@ -282,13 +282,12 @@ export default function ChapterDetailPage() {
                 <DialogueOverlay
                     isOpen={isDialogueOpen}
                     onClose={handleDialogueComplete}
-                    dialogue={
-                        selectedStage.enemy.dialogue.appearance_ko ||
-                        selectedStage.enemy.dialogue.appearance ||
-                        selectedStage.enemy.dialogue.intro_ko ||
-                        selectedStage.enemy.dialogue.intro ||
-                        ''
-                    }
+                    dialogues={[
+                        selectedStage.enemy.dialogue.appearance_ko || selectedStage.enemy.dialogue.appearance,
+                        selectedStage.enemy.dialogue.intro_ko || selectedStage.enemy.dialogue.intro,
+                        selectedStage.enemy.dialogue.quote_ko || selectedStage.enemy.dialogue.quote,
+                        selectedStage.enemy.dialogue.start_ko || selectedStage.enemy.dialogue.start,
+                    ].filter((d): d is string => Boolean(d))}
                     speakerName={
                         language === 'ko'
                             ? (selectedStage.enemy.name_ko || selectedStage.enemy.name)

@@ -11,7 +11,7 @@ import { TextGenerateEffect } from '@/components/ui/aceternity/text-generate-eff
 interface DialogueOverlayProps {
     isOpen: boolean;
     onClose: () => void;
-    dialogue: string;
+    dialogues: string[]; // Changed to array
     speakerName: string;
     characterImage?: string;
     type?: 'intro' | 'narrative' | 'boss';
@@ -20,7 +20,7 @@ interface DialogueOverlayProps {
 export default function DialogueOverlay({
     isOpen,
     onClose,
-    dialogue,
+    dialogues,
     speakerName,
     characterImage,
     type = 'intro'
@@ -28,18 +28,31 @@ export default function DialogueOverlay({
     const [displayText, setDisplayText] = useState('');
     const [isTypewriterFinished, setIsTypewriterFinished] = useState(false);
     const [currentIndex, setCurrentIndex] = useState(0);
+    const [currentDialogueIndex, setCurrentDialogueIndex] = useState(0);
 
-    // Detect character types early for useEffect
-    const isGemini = speakerName.toLowerCase().includes('gemini') || speakerName.includes('제미나이');
-    const isChip = speakerName.toLowerCase().includes('chip') || speakerName.includes('칩');
+    // Get current dialogue
+    const currentDialogue = dialogues[currentDialogueIndex] || '';
+
+    // Extract speaker name from dialogue (format: "Name: text")
+    const extractSpeaker = (text: string) => {
+        const match = text.match(/^([^:]+):/);
+        return match ? match[1].trim() : speakerName;
+    };
+
+    const currentSpeaker = extractSpeaker(currentDialogue);
+    const dialogueText = currentDialogue.replace(/^[^:]+:\s*/, '').replace(/^["']|["']$/g, ''); // Remove "Name: " and quotes
+
+    // Detect character types based on current speaker
+    const isGemini = currentSpeaker.toLowerCase().includes('gemini') || currentSpeaker.includes('제미나이');
+    const isChip = currentSpeaker.toLowerCase().includes('chip') || currentSpeaker.includes('칩');
 
     // Detect commander characters
-    const isSam = speakerName.toLowerCase().includes('sam') || speakerName.includes('샘');
-    const isDario = speakerName.toLowerCase().includes('dario') || speakerName.includes('다리오');
-    const isElon = speakerName.toLowerCase().includes('elon') || speakerName.includes('일론');
-    const isHassabis = speakerName.toLowerCase().includes('hassabis') || speakerName.includes('하사비스');
-    const isCopilot = speakerName.toLowerCase().includes('copilot') || speakerName.includes('코파일럿');
-    const isGrok = speakerName.toLowerCase().includes('grok') || speakerName.includes('그록');
+    const isSam = currentSpeaker.toLowerCase().includes('sam') || currentSpeaker.includes('샘');
+    const isDario = currentSpeaker.toLowerCase().includes('dario') || currentSpeaker.includes('다리오');
+    const isElon = currentSpeaker.toLowerCase().includes('elon') || currentSpeaker.includes('일론');
+    const isHassabis = currentSpeaker.toLowerCase().includes('hassabis') || currentSpeaker.includes('하사비스');
+    const isCopilot = currentSpeaker.toLowerCase().includes('copilot') || currentSpeaker.includes('코파일럿');
+    const isGrok = currentSpeaker.toLowerCase().includes('grok') || currentSpeaker.includes('그록');
 
     const isAlly = isGemini || isChip || isSam || isDario || isElon || isHassabis || isCopilot || isGrok;
 
@@ -47,25 +60,32 @@ export default function DialogueOverlay({
     useEffect(() => {
         if (!isOpen) {
             setIsTypewriterFinished(false);
+            setCurrentDialogueIndex(0);
             return;
         }
 
         // For Aceternity effects, set a timer based on dialogue length
-        const estimatedDuration = isAlly ? dialogue.length * 50 : 2000; // 50ms per char for allies, 2s for enemies
+        const estimatedDuration = isAlly ? dialogueText.length * 50 : 2000;
         const timeout = setTimeout(() => {
             setIsTypewriterFinished(true);
         }, estimatedDuration);
 
         return () => clearTimeout(timeout);
-    }, [isOpen, dialogue, isAlly]);
+    }, [isOpen, dialogueText, isAlly, currentDialogueIndex]);
 
     const handleSkip = useCallback(() => {
         if (!isTypewriterFinished) {
             setIsTypewriterFinished(true);
         } else {
-            onClose();
+            // Move to next dialogue or close
+            if (currentDialogueIndex < dialogues.length - 1) {
+                setCurrentDialogueIndex(prev => prev + 1);
+                setIsTypewriterFinished(false);
+            } else {
+                onClose();
+            }
         }
-    }, [isTypewriterFinished, onClose]);
+    }, [isTypewriterFinished, currentDialogueIndex, dialogues.length, onClose]);
 
     if (!isOpen) return null;
 
@@ -259,12 +279,12 @@ export default function DialogueOverlay({
                             <div className="text-xl md:text-2xl font-medium leading-relaxed pr-12">
                                 {isGemini ? (
                                     <TextGenerateEffect
-                                        words={dialogue}
+                                        words={dialogueText}
                                         className="text-gray-100"
                                     />
                                 ) : (
                                     <EncryptedText
-                                        text={dialogue}
+                                        text={dialogueText}
                                         duration={2000}
                                         className="text-red-400"
                                     />
