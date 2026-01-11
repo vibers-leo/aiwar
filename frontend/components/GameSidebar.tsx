@@ -19,6 +19,7 @@ export default function GameSidebar() {
     const [nickname, setNickname] = useState('COMMANDER');
     const [showProfileModal, setShowProfileModal] = useState(false);
     const [showFriendsModal, setShowFriendsModal] = useState(false); // [NEW]
+    const [isCollapsed, setIsCollapsed] = useState(false);
 
     const { user } = useUser();
     const [hasReadyGenerations, setHasReadyGenerations] = useState(false);
@@ -87,6 +88,14 @@ export default function GameSidebar() {
         return colors[color] || colors.cyan;
     };
 
+    const handleDoubleClick = (e: React.MouseEvent) => {
+        // Only toggle if clicking on empty space (not on buttons or interactive elements)
+        const target = e.target as HTMLElement;
+        if (target.tagName === 'ASIDE' || target.classList.contains('sidebar-empty-space')) {
+            setIsCollapsed(!isCollapsed);
+        }
+    };
+
     return (
         <aside
             className="fixed right-0 top-16 h-[calc(100vh-4rem)] bg-black/95 backdrop-blur-2xl border-l border-white/5 z-50 transition-all duration-300 ease-out overflow-hidden flex flex-col"
@@ -145,8 +154,8 @@ export default function GameSidebar() {
                     const colors = getColorClasses(item.color);
                     const content = (
                         <>
-                            {/* Active Glow */}
-                            {isActive && (
+                            {/* Menu text - show when expanded */}
+                            {!isCollapsed && isActive && (
                                 <div className={`absolute left-0 top-1/2 -translate-y-1/2 w-1 h-6 bg-${item.color}-500/50 rounded-r-full shadow-[0_0_10px_currentColor]`} />
                             )}
 
@@ -154,8 +163,8 @@ export default function GameSidebar() {
                                 {item.icon}
                             </span>
 
-                            {/* Always show text */}
-                            {true && (
+                            {/* Commander Name - show when expanded */}
+                            {!isCollapsed && (
                                 <span className={`text-xs font-medium ${isActive ? 'text-white' : 'text-white/60 group-hover:text-white'} transition-colors font-mono tracking-wide truncate`}>
                                     {item.name}
                                 </span>
