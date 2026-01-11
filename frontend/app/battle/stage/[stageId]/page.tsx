@@ -257,18 +257,12 @@ export default function StageBattlePage() {
                         dialogues={(() => {
                             const d = storyStage.enemy.dialogue;
                             const isKo = language === 'ko';
-                            const rawList = isKo
-                                ? [d.intro_ko, d.appearance_ko, d.quote_ko, d.start_ko]
-                                : [d.intro, d.appearance, d.quote, d.start];
-
-                            // Remove empty, null, undefined and DUPLICATES
-                            const uniqueDialogues = Array.from(new Set(
-                                rawList
-                                    .filter((text): text is string => !!text && text.trim().length > 0)
-                                    .map(text => text.trim())
-                            ));
-
-                            return uniqueDialogues;
+                            return [
+                                isKo ? d.intro_ko : d.intro,
+                                isKo ? d.appearance_ko : d.appearance,
+                                isKo ? d.quote_ko : d.quote,
+                                isKo ? d.start_ko : d.start
+                            ].filter((text): text is string => !!text && text.trim().length > 0);
                         })()}
                         speakerName={language === 'ko' ? storyStage.enemy.name_ko : storyStage.enemy.name}
                         characterImage={storyStage.enemy.image}

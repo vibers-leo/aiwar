@@ -91,7 +91,9 @@ export default function DialogueOverlay({
         return () => clearTimeout(timeout);
     }, [isOpen, dialogueText, isAlly, currentDialogueIndex]);
 
-    const handleSkip = useCallback(() => {
+    const handleSkip = useCallback((e?: React.MouseEvent) => {
+        if (e) e.stopPropagation();
+
         if (!isTypewriterFinished) {
             setIsTypewriterFinished(true);
         } else {
