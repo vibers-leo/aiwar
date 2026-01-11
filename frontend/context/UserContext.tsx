@@ -39,6 +39,7 @@ import { gameStorage } from '@/lib/game-storage';
 import { updateGameState } from '@/lib/game-state';
 import { isFirebaseConfigured, db } from '@/lib/firebase';
 import { serverTimestamp, doc, updateDoc } from 'firebase/firestore';
+import SubscriptionWarningModal from '@/components/SubscriptionWarningModal';
 
 interface UserContextType {
     coins: number;
@@ -99,6 +100,7 @@ export function UserProvider({ children }: { children: React.ReactNode }) {
     const [mounted, setMounted] = useState(false);
     const [showSafeMode, setShowSafeMode] = useState(false); // [NEW] Safe Mode Recovery
     const [isLoggingOut, setIsLoggingOut] = useState(false); // [NEW] Logout UX Overlay
+    const [showSubscriptionWarning, setShowSubscriptionWarning] = useState(false); // [NEW] Subscription Warning Modal
     const isRefreshing = useRef(false);
 
     const isAdmin = user?.email === 'juuuno@naver.com';
@@ -123,8 +125,18 @@ export function UserProvider({ children }: { children: React.ReactNode }) {
     }, []);
 
     const handleSignOut = useCallback(async () => {
+        // [NEW] Check for active subscriptions
+        const activeSubscriptions = subscriptions.filter(sub => sub.status === 'active');
+
+        if (activeSubscriptions.length > 0 && !showSubscriptionWarning) {
+            // Show warning modal if there are active subscriptions
+            setShowSubscriptionWarning(true);
+            return;
+        }
+
         console.log("🚀 [Auth] Initiating Secure Sign Out...");
         setIsLoggingOut(true); // Show overlay
+        setShowSubscriptionWarning(false); // Hide warning modal
 
         // [Secure Sync] Force save critical data before scorching earth
         if (user?.uid) {
@@ -156,7 +168,7 @@ export function UserProvider({ children }: { children: React.ReactNode }) {
 
         // The utility handles the redirect, but just in case logic falls through or utility fails silently (unlikely)
         // we can force a backup redirect here if the utility promise resolves (which it shouldn't if it redirects)
-    }, [user?.uid, quests, research, stageProgress]);
+    }, [user?.uid, quests, research, stageProgress, subscriptions, showSubscriptionWarning]);
 
 
     const initialSyncDone = useRef(false);
@@ -821,6 +833,18 @@ export function UserProvider({ children }: { children: React.ReactNode }) {
                 updateMainDeck     // [NEW]
             }}
         >
+            {/* Subscription Warning Modal */}
+            <SubscriptionWarningModal
+                isOpen={showSubscriptionWarning}
+                subscriptions={subscriptions}
+                onConfirmLogout={() => {
+                    setShowSubscriptionWarning(false);
+                    // Call handleSignOut again, but this time it will skip the warning
+                    handleSignOut();
+                }}
+                onCancel={() => setShowSubscriptionWarning(false)}
+            />
+
             {isLoggingOut && (
                 <div className="fixed inset-0 z-[100000] flex flex-col items-center justify-center bg-black/90 backdrop-blur-xl pointer-events-auto">
                     {/* Top Left Effect - Similar to Login */}
