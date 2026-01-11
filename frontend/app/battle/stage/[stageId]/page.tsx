@@ -258,7 +258,7 @@ export default function StageBattlePage() {
                             language === 'ko' ? storyStage.enemy.dialogue.intro_ko : storyStage.enemy.dialogue.intro,
                             language === 'ko' ? storyStage.enemy.dialogue.quote_ko : storyStage.enemy.dialogue.quote,
                             language === 'ko' ? storyStage.enemy.dialogue.start_ko : storyStage.enemy.dialogue.start
-                        ].filter(d => d && d.trim())} // Filter out empty dialogues
+                        ].filter((d): d is string => !!d && d.trim().length > 0)} // Filter out empty dialogues
                         speakerName={language === 'ko' ? storyStage.enemy.name_ko : storyStage.enemy.name}
                         characterImage={storyStage.enemy.image}
                     />
