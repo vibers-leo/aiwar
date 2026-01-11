@@ -56,7 +56,7 @@ export default function DoubleBattleArena({
 
             // 승자 판정
             const winner = determineRoundWinner(card, enemyChoice);
-            setRoundWinner(winner);
+            setRoundWinner(winner === 'opponent' ? 'enemy' : winner);
 
             const roundResult = {
                 round: currentRound,
@@ -69,7 +69,7 @@ export default function DoubleBattleArena({
             // 점수 업데이트
             if (winner === 'player') {
                 setPlayerWins(prev => prev + 1);
-            } else if (winner === 'opponent') {
+            } else if (winner === 'enemy') {
                 setEnemyWins(prev => prev + 1);
             }
 
@@ -141,7 +141,6 @@ export default function DoubleBattleArena({
                                         card={card}
                                         onClick={() => handleCardSelect(card)}
                                         isSelected={false}
-                                        showLevel={true}
                                     />
                                 </motion.div>
                             ))}
@@ -178,7 +177,6 @@ export default function DoubleBattleArena({
                             card={selectedPlayerCard}
                             onClick={() => { }}
                             isSelected={roundWinner === 'player'}
-                            showLevel={true}
                         />
                         {roundWinner === 'player' && (
                             <motion.div
@@ -201,10 +199,9 @@ export default function DoubleBattleArena({
                         <GameCard
                             card={selectedEnemyCard}
                             onClick={() => { }}
-                            isSelected={roundWinner === 'opponent'}
-                            showLevel={true}
+                            isSelected={roundWinner === 'enemy'}
                         />
-                        {roundWinner === 'opponent' && (
+                        {roundWinner === 'enemy' && (
                             <motion.div
                                 initial={{ scale: 0 }}
                                 animate={{ scale: 1 }}

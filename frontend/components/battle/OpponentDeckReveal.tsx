@@ -85,7 +85,6 @@ export default function OpponentDeckReveal({
                             card={card}
                             onClick={() => { }}
                             isSelected={false}
-                            showLevel={true}
                         />
                     </motion.div>
                 ))}
