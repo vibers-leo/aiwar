@@ -17,12 +17,16 @@ import { cn } from '@/lib/utils';
 import { BackgroundBeams } from '@/components/ui/aceternity/background-beams';
 import { BattleArena } from '@/components/BattleArena';
 import DialogueOverlay from '@/components/story/DialogueOverlay';
+import OpponentDeckReveal from '@/components/battle/OpponentDeckReveal';
+import CardPlacementBoard, { RoundPlacement } from '@/components/battle/CardPlacementBoard';
 
 
 // Shared Phase Type
 type Phase =
     | 'intro'
     | 'deck-select'
+    | 'opponent-reveal'  // NEW: Show opponent deck
+    | 'placement'        // NEW: Tactical deployment
     | 'battle'
     | 'result';
 
@@ -44,6 +48,8 @@ export default function StageBattlePage() {
     // Battle State
     const [phase, setPhase] = useState<Phase>('intro');
     const [selectedHand, setSelectedHand] = useState<InventoryCard[]>([]); // Current selection in deck-select
+    const [cardPlacement, setCardPlacement] = useState<RoundPlacement | null>(null); // NEW: Tactical placement
+    const [revealTimer, setRevealTimer] = useState(60); // NEW: Opponent deck reveal timer
     const [battleResult, setBattleResult] = useState<BattleResult | null>(null);
     const [activeBattleDeck, setActiveBattleDeck] = useState<Card[]>([]);
     const [showTacticsTutorial, setShowTacticsTutorial] = useState(false);
@@ -178,7 +184,27 @@ export default function StageBattlePage() {
 
     const confirmDeck = (selected: Card[]) => {
         setSelectedHand(selected);
-        handleStartBattle(selected);
+        setRevealTimer(60); // Reset timer
+        setPhase('opponent-reveal'); // NEW: Go to opponent reveal first
+    };
+
+    // NEW: Handle opponent reveal completion
+    const handleRevealComplete = () => {
+        if (!storyStage) return;
+
+        // sudden-death goes straight to battle
+        if (storyStage.battleMode === 'sudden-death') {
+            handleStartBattle(selectedHand);
+        } else {
+            // tactics, strategy, double go to placement
+            setPhase('placement');
+        }
+    };
+
+    // NEW: Handle placement completion
+    const handlePlacementComplete = (placement: RoundPlacement) => {
+        setCardPlacement(placement);
+        handleStartBattle(selectedHand);
     };
 
 
@@ -256,6 +282,29 @@ export default function StageBattlePage() {
                         onSelectionChange={setSelectedHand}
                         onConfirm={confirmDeck}
                         onCancel={() => setPhase('intro')}
+                    />
+                )}
+
+                {/* 3. Opponent Deck Reveal */}
+                {phase === 'opponent-reveal' && (
+                    <OpponentDeckReveal
+                        opponentDeck={enemies}
+                        opponentName={language === 'ko' ? storyStage.enemy.name_ko : storyStage.enemy.name}
+                        opponentLevel={storyStage.step}
+                        timer={revealTimer}
+                        onTimerEnd={handleRevealComplete}
+                        onBattleStart={handleRevealComplete}
+                    />
+                )}
+
+                {/* 4. Tactical Deployment (for tactics/strategy/double modes) */}
+                {phase === 'placement' && (
+                    <CardPlacementBoard
+                        selectedCards={selectedHand}
+                        onPlacementComplete={handlePlacementComplete}
+                        onCancel={() => setPhase('deck-select')}
+                        battleMode={storyStage.battleMode as any}
+                        opponentDeck={enemies}
                     />
                 )}
 
