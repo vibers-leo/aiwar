@@ -33,6 +33,14 @@ export default function DialogueOverlay({
     // Get current dialogue with comprehensive safety check
     const currentDialogue = (dialogues && dialogues.length > 0 && dialogues[currentDialogueIndex]) ? dialogues[currentDialogueIndex] : '';
 
+    // DEBUG: Log dialogue data
+    console.log('DialogueOverlay DEBUG:', {
+        dialogues,
+        currentDialogueIndex,
+        currentDialogue,
+        dialoguesLength: dialogues?.length
+    });
+
     // Extract speaker name from dialogue (format: "Name: text")
     const extractSpeaker = (text: string) => {
         if (!text || typeof text !== 'string') return speakerName;
@@ -44,6 +52,13 @@ export default function DialogueOverlay({
     const dialogueText = (currentDialogue && typeof currentDialogue === 'string')
         ? currentDialogue.replace(/^[^:]+:\s*/, '').replace(/^["']|["']$/g, '')
         : ''; // Remove "Name: " and quotes
+
+    // DEBUG: Log extracted text
+    console.log('Extracted dialogue text:', {
+        currentSpeaker,
+        dialogueText,
+        dialogueTextLength: dialogueText.length
+    });
 
     // Detect character types based on current speaker
     const isGemini = currentSpeaker.toLowerCase().includes('gemini') || currentSpeaker.includes('제미나이');
