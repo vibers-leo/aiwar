@@ -135,8 +135,8 @@ export default function GameSidebar() {
                     <div className="absolute bottom-0 right-0 w-3 h-3 bg-green-500 rounded-full border-2 border-black shadow-[0_0_5px_#22c55e]" />
                 </div>
 
-                {/* Always show profile info */}
-                {true && (
+                {/* Profile info - show when expanded */}
+                {!isCollapsed && (
                     <div className="text-center w-full">
                         <h3 className="font-bold text-white text-base mb-0.5 truncate px-1 font-orbitron group-hover:text-cyan-400 transition-colors">{nickname}</h3>
                         <div className="flex items-center justify-center gap-1">
