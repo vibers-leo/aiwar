@@ -55,14 +55,15 @@ export default function DoubleBattleArena({
             setPhase('reveal');
 
             // 승자 판정
-            const winner = determineRoundWinner(card, enemyChoice);
-            setRoundWinner(winner === 'opponent' ? 'enemy' : winner);
+            const rawWinner = determineRoundWinner(card, enemyChoice);
+            const winner = rawWinner === 'opponent' ? 'enemy' : rawWinner;
+            setRoundWinner(winner);
 
             const roundResult = {
                 round: currentRound,
                 playerCard: card,
                 enemyCard: enemyChoice,
-                winner
+                winner: rawWinner // Keep original for compatibility
             };
             setRounds(prev => [...prev, roundResult]);
 
