@@ -132,9 +132,6 @@ export default function CardPlacementBoard({ selectedCards, onPlacementComplete,
     };
 
     const handleDropMain = (round: string, cardId: string, sourceSlot?: string) => {
-        // Ambush 모드에서는 메인 슬롯 변경 불가
-        if (hasHiddenSlots && !round.includes('Hidden')) return;
-
         // Swap logic
         if (sourceSlot) {
             handleSwap(sourceSlot, round);
@@ -209,9 +206,6 @@ export default function CardPlacementBoard({ selectedCards, onPlacementComplete,
     };
 
     const handleRemove = (round: string) => {
-        // Ambush 모드에서도 삭제 허용
-        // if (hasHiddenSlots && !round.includes('Hidden')) return;
-
         setPlacement(prev => ({
             ...prev,
             [round]: null,
