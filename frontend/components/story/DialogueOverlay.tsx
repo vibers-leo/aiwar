@@ -61,10 +61,10 @@ export default function DialogueOverlay({
 
     // Get display name with title for characters
     const getCharacterDisplayName = () => {
-        if (isSam) return 'Sam Altman - ChatGPT 군단장';
-        if (isDario) return 'Dario Amodei - Claude 군단장';
-        if (isElon) return 'Elon Musk - Grok 군단장';
-        if (isHassabis) return 'Demis Hassabis - Gemini 군단장';
+        if (isSam) return '샘 알트먼 - ChatGPT 군단장';
+        if (isDario) return '다리오 아모데이 - Claude 군단장';
+        if (isElon) return '일론 머스크 - Grok 군단장';
+        if (isHassabis) return '데미스 하사비스 - Gemini 군단장';
         if (isGemini) return 'Gemini - AI 어시스턴트';
         if (isChip) return 'Chip - 싱귤래리티';
         if (isCopilot) return 'Copilot - 코딩 어시스턴트';
@@ -103,7 +103,7 @@ export default function DialogueOverlay({
                 onClose();
             }
         }
-    }, [isTypewriterFinished, currentDialogueIndex, dialogues.length, onClose]);
+    }, [isTypewriterFinished, currentDialogueIndex, dialogues, onClose]);
 
     if (!isOpen) return null;
     if (!dialogues || dialogues.length === 0) return null;
