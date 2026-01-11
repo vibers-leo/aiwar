@@ -254,11 +254,27 @@ export default function StageBattlePage() {
                     <DialogueOverlay
                         isOpen={phase === 'intro'}
                         onClose={startDeckSelection}
-                        dialogues={[
-                            language === 'ko' ? storyStage.enemy.dialogue.intro_ko : storyStage.enemy.dialogue.intro,
-                            language === 'ko' ? storyStage.enemy.dialogue.quote_ko : storyStage.enemy.dialogue.quote,
-                            language === 'ko' ? storyStage.enemy.dialogue.start_ko : storyStage.enemy.dialogue.start
-                        ].filter((d): d is string => !!d && d.trim().length > 0)} // Filter out empty dialogues
+                        dialogues={(() => {
+                            const dialogue = storyStage.enemy.dialogue;
+                            const lang = language === 'ko';
+                            const dialogues: string[] = [];
+
+                            // Collect all dialogue fields in order: intro, appearance, quote, start
+                            if (lang ? dialogue.intro_ko : dialogue.intro) {
+                                dialogues.push(lang ? dialogue.intro_ko! : dialogue.intro!);
+                            }
+                            if (lang ? dialogue.appearance_ko : dialogue.appearance) {
+                                dialogues.push(lang ? dialogue.appearance_ko! : dialogue.appearance!);
+                            }
+                            if (lang ? dialogue.quote_ko : dialogue.quote) {
+                                dialogues.push(lang ? dialogue.quote_ko! : dialogue.quote!);
+                            }
+                            if (lang ? dialogue.start_ko : dialogue.start) {
+                                dialogues.push(lang ? dialogue.start_ko! : dialogue.start!);
+                            }
+
+                            return dialogues.filter(d => d && d.trim().length > 0);
+                        })()}
                         speakerName={language === 'ko' ? storyStage.enemy.name_ko : storyStage.enemy.name}
                         characterImage={storyStage.enemy.image}
                     />
