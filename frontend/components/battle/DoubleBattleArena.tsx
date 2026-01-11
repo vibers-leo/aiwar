@@ -76,7 +76,7 @@ export default function DoubleBattleArena({
             // 결과 표시 후 다음 라운드 또는 종료
             setTimeout(() => {
                 const newPlayerWins = winner === 'player' ? playerWins + 1 : playerWins;
-                const newEnemyWins = winner === 'opponent' ? enemyWins + 1 : enemyWins;
+                const newEnemyWins = winner === 'enemy' ? enemyWins + 1 : enemyWins;
 
                 // 2선승제 체크
                 if (newPlayerWins >= 2 || newEnemyWins >= 2 || currentRound >= 3) {
