@@ -255,25 +255,20 @@ export default function StageBattlePage() {
                         isOpen={phase === 'intro'}
                         onClose={startDeckSelection}
                         dialogues={(() => {
-                            const dialogue = storyStage.enemy.dialogue;
-                            const lang = language === 'ko';
-                            const dialogues: string[] = [];
+                            const d = storyStage.enemy.dialogue;
+                            const isKo = language === 'ko';
+                            const rawList = isKo
+                                ? [d.intro_ko, d.appearance_ko, d.quote_ko, d.start_ko]
+                                : [d.intro, d.appearance, d.quote, d.start];
 
-                            // Collect all dialogue fields in order: intro, appearance, quote, start
-                            if (lang ? dialogue.intro_ko : dialogue.intro) {
-                                dialogues.push(lang ? dialogue.intro_ko! : dialogue.intro!);
-                            }
-                            if (lang ? dialogue.appearance_ko : dialogue.appearance) {
-                                dialogues.push(lang ? dialogue.appearance_ko! : dialogue.appearance!);
-                            }
-                            if (lang ? dialogue.quote_ko : dialogue.quote) {
-                                dialogues.push(lang ? dialogue.quote_ko! : dialogue.quote!);
-                            }
-                            if (lang ? dialogue.start_ko : dialogue.start) {
-                                dialogues.push(lang ? dialogue.start_ko! : dialogue.start!);
-                            }
+                            // Remove empty, null, undefined and DUPLICATES
+                            const uniqueDialogues = Array.from(new Set(
+                                rawList
+                                    .filter((text): text is string => !!text && text.trim().length > 0)
+                                    .map(text => text.trim())
+                            ));
 
-                            return dialogues.filter(d => d && d.trim().length > 0);
+                            return uniqueDialogues;
                         })()}
                         speakerName={language === 'ko' ? storyStage.enemy.name_ko : storyStage.enemy.name}
                         characterImage={storyStage.enemy.image}

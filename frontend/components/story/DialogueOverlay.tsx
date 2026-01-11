@@ -33,14 +33,6 @@ export default function DialogueOverlay({
     // Get current dialogue with comprehensive safety check
     const currentDialogue = (dialogues && dialogues.length > 0 && dialogues[currentDialogueIndex]) ? dialogues[currentDialogueIndex] : '';
 
-    // DEBUG: Log dialogue data
-    console.log('DialogueOverlay DEBUG:', {
-        dialogues,
-        currentDialogueIndex,
-        currentDialogue,
-        dialoguesLength: dialogues?.length
-    });
-
     // Extract speaker name from dialogue (format: "Name: text")
     const extractSpeaker = (text: string) => {
         if (!text || typeof text !== 'string') return speakerName;
@@ -52,13 +44,6 @@ export default function DialogueOverlay({
     const dialogueText = (currentDialogue && typeof currentDialogue === 'string')
         ? currentDialogue.replace(/^[^:]+:\s*/, '').replace(/^["']|["']$/g, '')
         : ''; // Remove "Name: " and quotes
-
-    // DEBUG: Log extracted text
-    console.log('Extracted dialogue text:', {
-        currentSpeaker,
-        dialogueText,
-        dialogueTextLength: dialogueText.length
-    });
 
     // Detect character types based on current speaker
     const isGemini = currentSpeaker.toLowerCase().includes('gemini') || currentSpeaker.includes('제미나이');
@@ -309,20 +294,19 @@ export default function DialogueOverlay({
                                 <div className="w-1 h-2 bg-cyan-400/30" />
                             </div>
 
-                            {/* Dialogue Text with Effects */}
-                            <div className="text-xl md:text-2xl font-medium leading-relaxed pr-12">
-                                {isAlly ? (
-                                    <TextGenerateEffect
-                                        words={dialogueText}
-                                        className={isChip ? "text-yellow-100" : "text-gray-100"}
-                                    />
-                                ) : (
-                                    <EncryptedText
-                                        text={dialogueText}
-                                        duration={2000}
-                                        className="text-red-400"
-                                    />
-                                )}
+                            {/* Dialogue Text with Reliable Animation */}
+                            <div className="text-xl md:text-2xl font-medium leading-relaxed pr-12 min-h-[4rem]">
+                                <motion.p
+                                    key={`${currentDialogueIndex}-${isAlly}`}
+                                    initial={{ opacity: 0 }}
+                                    animate={{ opacity: 1 }}
+                                    transition={{ duration: 0.5 }}
+                                    className={cn(
+                                        isAlly ? (isChip ? "text-yellow-100" : "text-gray-100") : "text-red-400"
+                                    )}
+                                >
+                                    {dialogueText}
+                                </motion.p>
                             </div>
 
                             {/* Prompt to continue */}
