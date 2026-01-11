@@ -234,6 +234,67 @@ export default function ChapterDetailPage() {
                                                 </div>
                                             </div>
 
+                                            {/* 전투 방식 안내 */}
+                                            <div className="bg-black/40 border border-cyan-500/30 rounded-2xl p-6">
+                                                <div className="flex items-center gap-2 text-cyan-400 font-bold mb-4">
+                                                    <Swords size={18} /> BATTLE MODE
+                                                </div>
+                                                <div className="space-y-3">
+                                                    <div className="flex items-center gap-3">
+                                                        <div className={cn(
+                                                            "px-3 py-1 rounded-lg font-bold text-sm",
+                                                            selectedStage.battleMode === 'sudden-death' ? "bg-red-500/20 text-red-400 border border-red-500/30" :
+                                                                selectedStage.battleMode === 'tactics' ? "bg-blue-500/20 text-blue-400 border border-blue-500/30" :
+                                                                    selectedStage.battleMode === 'double' ? "bg-purple-500/20 text-purple-400 border border-purple-500/30" :
+                                                                        "bg-orange-500/20 text-orange-400 border border-orange-500/30"
+                                                        )}>
+                                                            {selectedStage.battleMode === 'sudden-death' ? '⚡ 서든 데스' :
+                                                                selectedStage.battleMode === 'tactics' ? '🎯 전술 승부' :
+                                                                    selectedStage.battleMode === 'double' ? '🎴 2장 대결' :
+                                                                        '🌪️ 기습 전투'}
+                                                        </div>
+                                                    </div>
+                                                    <div className="text-gray-300 text-sm bg-white/5 p-4 rounded-lg leading-relaxed">
+                                                        {selectedStage.battleMode === 'sudden-death' && (
+                                                            <>
+                                                                <p className="font-bold text-red-400 mb-2">⚡ 서든 데스 (Sudden Death)</p>
+                                                                <p>• 한 라운드에 한 장씩 카드를 내며 5라운드 진행</p>
+                                                                <p>• 각 라운드마다 즉시 승부 결정</p>
+                                                                <p>• 3승을 먼저 달성하는 쪽이 승리</p>
+                                                                <p className="text-yellow-400 mt-2">💡 빠른 판단력과 상성 이해가 중요!</p>
+                                                            </>
+                                                        )}
+                                                        {selectedStage.battleMode === 'tactics' && (
+                                                            <>
+                                                                <p className="font-bold text-blue-400 mb-2">🎯 전술 승부 (Tactical Duel)</p>
+                                                                <p>• 5장의 카드를 미리 1~5라운드에 배치</p>
+                                                                <p>• 배치 완료 후 수정 불가</p>
+                                                                <p>• 순서대로 자동 대결 진행</p>
+                                                                <p className="text-yellow-400 mt-2">💡 상대의 패턴을 예측하고 전략적으로 배치!</p>
+                                                            </>
+                                                        )}
+                                                        {selectedStage.battleMode === 'double' && (
+                                                            <>
+                                                                <p className="font-bold text-purple-400 mb-2">🎴 2장 대결 (Two-Card Battle)</p>
+                                                                <p>• 한 라운드에 2장씩 동시에 카드 선택</p>
+                                                                <p>• 총 6장의 카드로 3라운드 진행</p>
+                                                                <p>• 각 라운드의 합산 파워로 승부</p>
+                                                                <p className="text-yellow-400 mt-2">💡 카드 조합과 시너지가 승패를 가른다!</p>
+                                                            </>
+                                                        )}
+                                                        {selectedStage.battleMode === 'ambush' && (
+                                                            <>
+                                                                <p className="font-bold text-orange-400 mb-2">🌪️ 기습 전투 (Ambush Battle)</p>
+                                                                <p>• 6장의 카드를 미리 배치</p>
+                                                                <p>• 적은 무작위 순서로 카드 출전</p>
+                                                                <p>• 예측 불가능한 전투 흐름</p>
+                                                                <p className="text-yellow-400 mt-2">💡 모든 상황에 대비한 균형잡힌 덱 구성 필수!</p>
+                                                            </>
+                                                        )}
+                                                    </div>
+                                                </div>
+                                            </div>
+
                                             <div className="bg-black/40 border border-white/5 rounded-2xl p-6">
                                                 <div className="flex items-center gap-2 text-yellow-500 font-bold mb-4">
                                                     <Award size={18} /> REWARDS
