@@ -274,7 +274,7 @@ export default function DialogueOverlay({
                         <div className="flex mb-[-2px] ml-4">
                             <div className={cn(
                                 "px-8 py-2 font-black orbitron italic skew-x-[-12deg] border-t border-x relative",
-                                isGemini ? "bg-cyan-600 border-cyan-400 text-white" : "bg-red-600 border-red-400 text-white"
+                                isAlly ? (isChip ? "bg-yellow-600 border-yellow-400 text-white" : "bg-cyan-600 border-cyan-400 text-white") : "bg-red-600 border-red-400 text-white"
                             )}>
                                 <span className="inline-block skew-x-[12deg] tracking-wider uppercase">
                                     {displayName}
@@ -285,7 +285,7 @@ export default function DialogueOverlay({
                         {/* Main Dialogue Box */}
                         <div className={cn(
                             "w-full bg-zinc-900/90 backdrop-blur-xl border-2 p-8 rounded-tr-3xl rounded-b-3xl shadow-2xl relative min-h-[160px]",
-                            isGemini ? "border-cyan-500/50" : "border-red-500/50"
+                            isAlly ? (isChip ? "border-yellow-500/50" : "border-cyan-500/50") : "border-red-500/50"
                         )}>
                             {/* Decorative HUD Elements */}
                             <div className="absolute top-2 right-4 flex gap-1 opacity-50">
@@ -296,10 +296,10 @@ export default function DialogueOverlay({
 
                             {/* Dialogue Text with Effects */}
                             <div className="text-xl md:text-2xl font-medium leading-relaxed pr-12">
-                                {isGemini ? (
+                                {isAlly ? (
                                     <TextGenerateEffect
                                         words={dialogueText}
-                                        className="text-gray-100"
+                                        className={isChip ? "text-yellow-100" : "text-gray-100"}
                                     />
                                 ) : (
                                     <EncryptedText
