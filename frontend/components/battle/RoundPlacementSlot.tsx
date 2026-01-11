@@ -112,6 +112,70 @@ function RoundPlacementSlot({
                 {hasHidden && <span className="text-purple-400 ml-1">🎭</span>}
             </div>
 
+            {/* Hidden Card Slot (shown ABOVE main slot for strategy mode) */}
+            {hasHidden && hiddenSlotId && (
+                <div
+                    onDragOver={handleDragOver}
+                    onDrop={handleDropHidden}
+                    draggable={!!hiddenCard}
+                    onDragStart={(e) => hiddenCard && handleDragStart(e, hiddenCard, hiddenSlotId)}
+                    className={cn(
+                        "relative w-28 h-40 rounded-2xl border-2 transition-all overflow-hidden",
+                        hiddenCard
+                            ? "border-purple-500 bg-purple-900/20 shadow-[0_0_20px_rgba(168,85,247,0.3)] cursor-grab active:cursor-grabbing backdrop-blur-md"
+                            : "border-dashed border-purple-400/30 bg-purple-500/5 hover:border-purple-400 hover:bg-purple-500/10"
+                    )}
+                >
+                    {hiddenCard ? (
+                        <>
+                            {/* Card Image */}
+                            <div
+                                className="absolute inset-0 bg-cover bg-center pointer-events-none group-hover:scale-110"
+                                style={{
+                                    backgroundImage: `url(${getCardImage(hiddenCard)})`,
+                                }}
+                            />
+                            <div className="absolute inset-0 bg-gradient-to-t from-purple-900/95 via-purple-900/40 to-transparent pointer-events-none" />
+
+                            {/* Hidden Badge */}
+                            <div className="absolute top-1.5 left-1.5 px-2 py-1 bg-purple-600 rounded-full text-[8px] font-black text-white z-20 shadow-xl border border-white/20 pointer-events-none">
+                                🎭
+                            </div>
+
+                            {/* Type Icon - Large and Prominent */}
+                            {hiddenCard.type && (
+                                <div
+                                    className="absolute top-1 right-1 w-9 h-9 rounded-full border-2 border-white/50 flex items-center justify-center text-xl shadow-2xl z-30 pointer-events-none backdrop-blur-sm"
+                                    style={{ backgroundColor: getTypeColor(hiddenCard.type) }}
+                                >
+                                    <span className="drop-shadow-md">{getTypeIcon(hiddenCard.type)}</span>
+                                </div>
+                            )}
+
+                            {/* Level Badge */}
+                            <div className="absolute bottom-8 right-1.5 z-20 pointer-events-none">
+                                <div className="px-2 py-0.5 bg-black/80 rounded border border-white/20 text-[9px] font-black text-white shadow-xl">
+                                    LV.{hiddenCard.level || 1}
+                                </div>
+                            </div>
+
+                            {/* Card Name + Power */}
+                            <div className="absolute bottom-0 left-0 right-0 text-center bg-black/80 py-1.5 border-t border-white/10 pointer-events-none backdrop-blur-sm">
+                                <div className="text-[10px] font-black text-white truncate px-2 mb-0.5">
+                                    {hiddenCard.name}
+                                </div>
+                                <div className="text-[9px] font-bold text-purple-400 tracking-widest orbitron">PWR {Math.floor(hiddenCard.stats?.totalPower || 0)}</div>
+                            </div>
+                        </>
+                    ) : (
+                        <div className="absolute inset-0 flex flex-col items-center justify-center text-purple-400/20 group-hover:text-purple-400/40 transition-colors pointer-events-none">
+                            <div className="text-3xl mb-1">🎭</div>
+                            <div className="text-[10px] uppercase tracking-widest font-black">Hidden</div>
+                        </div>
+                    )}
+                </div>
+            )}
+
             {/* Main Card Slot */}
             <div
                 onDragOver={handleDragOver}
@@ -204,70 +268,6 @@ function RoundPlacementSlot({
                     </div>
                 )}
             </div>
-
-            {/* Hidden Card Slot (for R2, R4) */}
-            {hasHidden && hiddenSlotId && (
-                <div
-                    onDragOver={handleDragOver}
-                    onDrop={handleDropHidden}
-                    draggable={!!hiddenCard}
-                    onDragStart={(e) => hiddenCard && handleDragStart(e, hiddenCard, hiddenSlotId)}
-                    className={cn(
-                        "relative w-28 h-40 rounded-2xl border-2 transition-all overflow-hidden mt-2",
-                        hiddenCard
-                            ? "border-purple-500 bg-purple-900/20 shadow-[0_0_20px_rgba(168,85,247,0.3)] cursor-grab active:cursor-grabbing backdrop-blur-md"
-                            : "border-dashed border-purple-400/30 bg-purple-500/5 hover:border-purple-400 hover:bg-purple-500/10"
-                    )}
-                >
-                    {hiddenCard ? (
-                        <>
-                            {/* Card Image */}
-                            <div
-                                className="absolute inset-0 bg-cover bg-center pointer-events-none group-hover:scale-110"
-                                style={{
-                                    backgroundImage: `url(${getCardImage(hiddenCard)})`,
-                                }}
-                            />
-                            <div className="absolute inset-0 bg-gradient-to-t from-purple-900/95 via-purple-900/40 to-transparent pointer-events-none" />
-
-                            {/* Hidden Badge */}
-                            <div className="absolute top-1.5 left-1.5 px-2 py-1 bg-purple-600 rounded-full text-[8px] font-black text-white z-20 shadow-xl border border-white/20 pointer-events-none">
-                                🎭
-                            </div>
-
-                            {/* Type Icon - Large and Prominent */}
-                            {hiddenCard.type && (
-                                <div
-                                    className="absolute top-1 right-1 w-9 h-9 rounded-full border-2 border-white/50 flex items-center justify-center text-xl shadow-2xl z-30 pointer-events-none backdrop-blur-sm"
-                                    style={{ backgroundColor: getTypeColor(hiddenCard.type) }}
-                                >
-                                    <span className="drop-shadow-md">{getTypeIcon(hiddenCard.type)}</span>
-                                </div>
-                            )}
-
-                            {/* Level Badge */}
-                            <div className="absolute bottom-8 right-1.5 z-20 pointer-events-none">
-                                <div className="px-2 py-0.5 bg-black/80 rounded border border-white/20 text-[9px] font-black text-white shadow-xl">
-                                    LV.{hiddenCard.level || 1}
-                                </div>
-                            </div>
-
-                            {/* Card Name + Power */}
-                            <div className="absolute bottom-0 left-0 right-0 text-center bg-black/80 py-1.5 border-t border-white/10 pointer-events-none backdrop-blur-sm">
-                                <div className="text-[10px] font-black text-white truncate px-2 mb-0.5">
-                                    {hiddenCard.name}
-                                </div>
-                                <div className="text-[9px] font-bold text-purple-400 tracking-widest orbitron">PWR {Math.floor(hiddenCard.stats?.totalPower || 0)}</div>
-                            </div>
-                        </>
-                    ) : (
-                        <div className="absolute inset-0 flex flex-col items-center justify-center text-purple-400/20 group-hover:text-purple-400/40 transition-colors pointer-events-none">
-                            <div className="text-3xl mb-1">🎭</div>
-                            <div className="text-[10px] uppercase tracking-widest font-black">Hidden</div>
-                        </div>
-                    )}
-                </div>
-            )}
         </div>
     );
 }
