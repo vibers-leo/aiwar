@@ -229,6 +229,7 @@ export default function DialogueOverlay({
                                             src={portraitImage}
                                             alt={speakerName}
                                             fill
+                                            sizes="(max-width: 1024px) 100vw, 50vw"
                                             className={cn(
                                                 "object-contain z-10",
                                                 !isGemini && "drop-shadow-[0_0_50px_rgba(239,68,68,0.4)]"
@@ -254,6 +255,7 @@ export default function DialogueOverlay({
                                                     src={portraitImage}
                                                     alt="glitch"
                                                     fill
+                                                    sizes="(max-width: 1024px) 100vw, 50vw"
                                                     className="object-contain opacity-50 sepia(100%) hue-rotate(320deg)"
                                                 />
                                             </motion.div>

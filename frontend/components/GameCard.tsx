@@ -201,6 +201,7 @@ function GameCard({
                         src="/assets/cards/card-back-sci-fi.png"
                         alt="Card Back"
                         fill
+                        sizes="(max-width: 768px) 100vw, 160px"
                         className="object-cover"
                     />
                 </div>
@@ -274,6 +275,7 @@ function GameCard({
                                 src={characterImage}
                                 alt={card.name || 'Card'}
                                 fill
+                                sizes="(max-width: 768px) 100vw, 160px"
                                 className="object-cover"
                                 onError={() => setImageError(true)}
                             />
