@@ -254,13 +254,12 @@ export default function StageBattlePage() {
                     <DialogueOverlay
                         isOpen={phase === 'intro'}
                         onClose={startDeckSelection}
-                        dialogues={[language === 'ko' ? (storyStage.enemy.dialogue.start_ko || storyStage.enemy.dialogue.intro_ko) : (storyStage.enemy.dialogue.start || storyStage.enemy.dialogue.intro)]}
-                        speakerName={
-                            (language === 'ko' ? (storyStage.enemy.dialogue.start_ko || storyStage.enemy.dialogue.intro_ko) : (storyStage.enemy.dialogue.start || storyStage.enemy.dialogue.intro)).includes('제미나이') ||
-                                (language === 'ko' ? (storyStage.enemy.dialogue.start_ko || storyStage.enemy.dialogue.intro_ko) : (storyStage.enemy.dialogue.start || storyStage.enemy.dialogue.intro)).includes('Gemini')
-                                ? 'Gemini'
-                                : (language === 'ko' ? storyStage.enemy.name_ko : storyStage.enemy.name)
-                        }
+                        dialogues={[
+                            language === 'ko' ? storyStage.enemy.dialogue.intro_ko : storyStage.enemy.dialogue.intro,
+                            language === 'ko' ? storyStage.enemy.dialogue.quote_ko : storyStage.enemy.dialogue.quote,
+                            language === 'ko' ? storyStage.enemy.dialogue.start_ko : storyStage.enemy.dialogue.start
+                        ].filter(d => d && d.trim())} // Filter out empty dialogues
+                        speakerName={language === 'ko' ? storyStage.enemy.name_ko : storyStage.enemy.name}
                         characterImage={storyStage.enemy.image}
                     />
                 )}
