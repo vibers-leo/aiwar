@@ -103,6 +103,7 @@ export default function DialogueOverlay({
     }, [isTypewriterFinished, currentDialogueIndex, dialogues.length, onClose]);
 
     if (!isOpen) return null;
+    if (!dialogues || dialogues.length === 0) return null;
 
     // Map character images
     const defaultGeminiImage = '/assets/cards/gemini-character.png';
