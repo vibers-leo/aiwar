@@ -184,32 +184,16 @@ export default function StageBattlePage() {
 
     const confirmDeck = (selected: Card[]) => {
         setSelectedHand(selected);
-
-        if (!storyStage) return;
-
-        // sudden-death goes straight to battle
-        if (storyStage.battleMode === 'sudden-death') {
-            handleStartBattle(selected);
-        } else {
-            // tactics, strategy, double go to placement
-            setPhase('placement');
-        }
+        handleStartBattle(selected); // Go directly to battle for all modes
     };
 
     // NEW: Handle opponent reveal completion (not used anymore, but keeping for compatibility)
     const handleRevealComplete = () => {
         if (!storyStage) return;
-
-        // sudden-death goes straight to battle
-        if (storyStage.battleMode === 'sudden-death') {
-            handleStartBattle(selectedHand);
-        } else {
-            // tactics, strategy, double go to placement
-            setPhase('placement');
-        }
+        handleStartBattle(selectedHand);
     };
 
-    // NEW: Handle placement completion
+    // NEW: Handle placement completion (not used anymore, but keeping for compatibility)
     const handlePlacementComplete = (placement: RoundPlacement) => {
         setCardPlacement(placement);
         handleStartBattle(selectedHand);
