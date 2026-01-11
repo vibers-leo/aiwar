@@ -276,29 +276,6 @@ export default function StageBattlePage() {
                     />
                 )}
 
-                {/* 3. Opponent Deck Reveal */}
-                {phase === 'opponent-reveal' && (
-                    <OpponentDeckReveal
-                        opponentDeck={enemies}
-                        opponentName={language === 'ko' ? storyStage.enemy.name_ko : storyStage.enemy.name}
-                        opponentLevel={storyStage.step}
-                        timer={revealTimer}
-                        onTimerEnd={handleRevealComplete}
-                        onBattleStart={handleRevealComplete}
-                    />
-                )}
-
-                {/* 4. Tactical Deployment (for tactics/strategy/double modes) */}
-                {phase === 'placement' && (
-                    <CardPlacementBoard
-                        selectedCards={selectedHand}
-                        onPlacementComplete={handlePlacementComplete}
-                        onCancel={() => setPhase('deck-select')}
-                        battleMode={storyStage.battleMode as any}
-                        opponentDeck={enemies}
-                    />
-                )}
-
                 {/* 4. Battle Animation (Unified BattleArena) */}
                 {phase === 'battle' && (
                     <BattleArena
