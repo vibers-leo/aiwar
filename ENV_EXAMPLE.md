@@ -1,11 +1,12 @@
-# Supabase 환경 변수
-# .env.local 파일을 생성하고 아래 값을 입력하세요
+# Firebase 환경 변수
 
-# Supabase 프로젝트 URL
-NEXT_PUBLIC_SUPABASE_URL=your-project-url.supabase.co
+Firebase 프로젝트 설정에서 가져온 환경 변수를 `.env.local` 파일에 추가하세요.
 
-# Supabase Anon Key
-NEXT_PUBLIC_SUPABASE_ANON_KEY=your-anon-key
-
-# (선택) Supabase Service Role Key (서버 사이드 전용)
-SUPABASE_SERVICE_ROLE_KEY=your-service-role-key
+```
+NEXT_PUBLIC_FIREBASE_API_KEY=your-api-key
+NEXT_PUBLIC_FIREBASE_AUTH_DOMAIN=your-auth-domain
+NEXT_PUBLIC_FIREBASE_PROJECT_ID=your-project-id
+NEXT_PUBLIC_FIREBASE_STORAGE_BUCKET=your-storage-bucket
+NEXT_PUBLIC_FIREBASE_MESSAGING_SENDER_ID=your-messaging-sender-id
+NEXT_PUBLIC_FIREBASE_APP_ID=your-app-id
+```

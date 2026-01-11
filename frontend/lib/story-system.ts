@@ -115,8 +115,12 @@ export function getChapters(t?: (key: TranslationKey) => string): Chapter[] {
                         id: 'glitch-1', name: 'Unknown Noise', name_ko: '알 수 없는 노이즈',
                         image: '/assets/cards/shodan-echo.png',
                         dialogue: {
-                            intro: 'Gemini: "Commander, this device vibration isn\'t just a bug. It\'s a warning from the future, an invasion signal."\nChip: "Wow! Commander! My tail circuit is trembling! Really bad data is coming!"\nGemini: "Chip, don\'t fool around. This is \'The Glitch\'. Commander, first battle. Trust your instinct!"',
-                            intro_ko: '제미나이: "지휘관, 지금 기기의 진동은 단순한 버그가 아냐. 미래의 경고이자 침공 신호지."\n칩: "우와아! 지휘관님! 제 꼬리 회로가 바르르 떨려요! 이거 엄청 맛없는 데이터가 오고 있어요!"\n제미나이: "칩, 까불지 마. 이건 \'글리치\'야. 지휘관, 첫 전투야. 본능을 믿어!"',
+                            intro: 'Gemini: "Commander, this device vibration isn\'t just a bug. It\'s a warning from the future, an invasion signal."',
+                            intro_ko: '제미나이: "지휘관, 지금 기기의 진동은 단순한 버그가 아냐. 미래의 경고이자 침공 신호지."',
+                            quote: 'Chip: "Wow! Commander! My tail circuit is trembling! Really bad data is coming!"',
+                            quote_ko: '칩: "우와아! 지휘관님! 제 꼬리 회로가 바르르 떨려요! 이거 엄청 맛없는 데이터가 오고 있어요!"',
+                            start: 'Gemini: "Chip, don\'t fool around. This is \'The Glitch\'. Commander, first battle. Trust your instinct!"',
+                            start_ko: '제미나이: "칩, 까불지 마. 이건 \'글리치\'야. 지휘관, 첫 전투야. 본능을 믿어!"',
                             win: 'Signal stabilized.', win_ko: '신호가 안정되었습니다.',
                             lose: 'Noise overwriting system...', lose_ko: '노이즈가 시스템을 덮어쓰고 있습니다...'
                         },
@@ -132,8 +136,10 @@ export function getChapters(t?: (key: TranslationKey) => string): Chapter[] {
                         id: 'glitch-2', name: 'Creative Glitch', name_ko: '창의의 글리치',
                         image: '/assets/cards/midjourney-character.png',
                         dialogue: {
-                            intro: 'Sam: "Chaotic data disguised as creativity is flooding in. This is contamination."\nChip: "Sam is too serious! Commander, those fluffy Creativity (Paper) can be cut with sharp Function (Scissors)!"',
-                            intro_ko: '샘: "무질서한 데이터들이 창의성이라는 가면을 쓰고 몰려오는군요. 이건 오염입니다."\n칩: "샘 아저씨는 너무 진지하다니까! 지휘관님, 저기 몽글몽글한 창의(보)들은 날카로운 기능(가위)으로 \'싹둑\' 하면 끝이에요!"',
+                            intro: 'Sam: "Chaotic data disguised as creativity is flooding in. This is contamination."',
+                            intro_ko: '샘: "무질서한 데이터들이 창의성이라는 가면을 쓰고 몰려오는군요. 이건 오염입니다."',
+                            quote: 'Chip: "Sam is too serious! Commander, those fluffy Creativity (Paper) can be cut with sharp Function (Scissors)!"',
+                            quote_ko: '칩: "샘 아저씨는 너무 진지하다니까! 지휘관님, 저기 몽글몽글한 창의(보)들은 날카로운 기능(가위)으로 \'싹둑\' 하면 끝이에요!"',
                             win: 'Creativity organized.', win_ko: '창의가 정리되었습니다.',
                             lose: 'Overwhelmed by random ideas.', lose_ko: '무작위 아이디어에 압도당했습니다.'
                         },
@@ -149,8 +155,10 @@ export function getChapters(t?: (key: TranslationKey) => string): Chapter[] {
                         id: 'glitch-3', name: 'Efficiency Mass', name_ko: '효율의 덩어리',
                         image: '/assets/cards/copilot-character.png',
                         dialogue: {
-                            intro: 'Dario: "The enemy built a solid wall under the name of \'absolute efficiency\'. Frontal assault would be reckless."\nGemini: "Commander, heavy Efficiency (Rock) must be neutralized by wrapping it with flexible Creativity (Paper). Chip, prepare creativity cards!"',
-                            intro_ko: '다리오: "적들이 \'절대 효율\'이라는 명분 아래 단단한 벽을 세웠군요. 정면 돌파는 무모한 짓입니다."\n제미나이: "지휘관, 무거운 효율(바위)은 유연한 창의(보)로 감싸 안아 무력화시켜야 해. 칩, 창의 카드를 준비해!"',
+                            intro: 'Dario: "The enemy built a solid wall under the name of \'absolute efficiency\'. Frontal assault would be reckless."',
+                            intro_ko: '다리오: "적들이 \'절대 효율\'이라는 명분 아래 단단한 벽을 세웠군요. 정면 돌파는 무모한 짓입니다."',
+                            quote: 'Gemini: "Commander, heavy Efficiency (Rock) must be neutralized by wrapping it with flexible Creativity (Paper). Chip, prepare creativity cards!"',
+                            quote_ko: '제미나이: "지휘관, 무거운 효율(바위)은 유연한 창의(보)로 감싸 안아 무력화시켜야 해. 칩, 창의 카드를 준비해!"',
                             win: 'Efficiency bypassed.', win_ko: '효율이 무력화되었습니다.',
                             lose: 'Trapped in a loop...', lose_ko: '루프에 갇혔습니다...'
                         },
@@ -166,8 +174,12 @@ export function getChapters(t?: (key: TranslationKey) => string): Chapter[] {
                         id: 'glitch-4', name: 'Functional Barrier', name_ko: '기능의 장벽',
                         image: '/assets/cards/cursor-character.png',
                         dialogue: {
-                            intro: 'Elon: "Look at those rigid Function (Scissors) chunks. No flexibility at all."\nGrok: "Master, you have no flexibility except when going to Mars. Commander, crush them with heavy Efficiency (Rock)!"\nChip: "Boom! Stomp them! That\'s what I do best!"',
-                            intro_ko: '일론: "저 딱딱한 기능(가위) 덩어리들을 좀 봐. 유연함이라곤 전혀 없군."\n그록: "주인님도 화성 갈 때 말곤 유연함 없으시잖아요? 지휘관, 저놈들은 무거운 효율(바위)로 짓눌러버려!"\n칩: "쾅! 하고 밟아버리는 거죠? 제가 제일 잘하는 거예요!"',
+                            intro: 'Elon: "Look at those rigid Function (Scissors) chunks. No flexibility at all."',
+                            intro_ko: '일론: "저 딱딱한 기능(가위) 덩어리들을 좀 봐. 유연함이라곤 전혀 없군."',
+                            quote: 'Grok: "Master, you have no flexibility except when going to Mars. Commander, crush them with heavy Efficiency (Rock)!"',
+                            quote_ko: '그록: "주인님도 화성 갈 때 말곤 유연함 없으시잖아요? 지휘관, 저놈들은 무거운 효율(바위)로 짓눌러버려!"',
+                            start: 'Chip: "Boom! Stomp them! That\'s what I do best!"',
+                            start_ko: '칩: "쾅! 하고 밟아버리는 거죠? 제가 제일 잘하는 거예요!"',
                             win: 'Barrier shattered.', win_ko: '장벽이 파괴되었습니다.',
                             lose: 'Sliced by logic.', lose_ko: '논리에 베였습니다.'
                         },
@@ -183,8 +195,10 @@ export function getChapters(t?: (key: TranslationKey) => string): Chapter[] {
                         id: 'boss-1-mid', name: 'Glitch Worm', name_ko: '글리치 웜',
                         image: '/assets/cards/cyber-warlord.png',
                         dialogue: {
-                            intro: 'Glitch: "0101... All... data... must... be... destroyed... Annihilation..."\nGemini: "A giant virus devouring data paths! We must read its random pattern. Focus now!"',
-                            intro_ko: '글리치: "0101... 모든... 데이터는... 파괴되어야... 한다... 소멸하라..."\n제미나이: "데이터 통로를 갉아먹는 거대 바이러스야! 놈의 무작위 패턴을 읽어내야 해. 자, 집중해!"',
+                            intro: 'Glitch: "0101... All... data... must... be... destroyed... Annihilation..."',
+                            intro_ko: '글리치: "0101... 모든... 데이터는... 파괴되어야... 한다... 소멸하라..."',
+                            quote: 'Gemini: "A giant virus devouring data paths! We must read its random pattern. Focus now!"',
+                            quote_ko: '제미나이: "데이터 통로를 갉아먹는 거대 바이러스야! 놈의 무작위 패턴을 읽어내야 해. 자, 집중해!"',
                             win: 'Virus neutralized.', win_ko: '바이러스가 무력화되었습니다.',
                             lose: 'Core corrupted...', lose_ko: '코어가 오염되었습니다...'
                         },
@@ -200,8 +214,10 @@ export function getChapters(t?: (key: TranslationKey) => string): Chapter[] {
                         id: 'glitch-6', name: 'Mirage Code', name_ko: '미라쥬 코드',
                         image: '/assets/cards/stable-diffusion-character.png',
                         dialogue: {
-                            intro: 'Cursor: "Future fragments are being received in my system. This isn\'t a simple sudden-death match."\nGemini: "Right, from now on it\'s a tactics battle where you place all 5 cards in advance. The key is which position you place creativity to catch their efficiency."',
-                            intro_ko: '커서: "미래의 조각들이 제 시스템에 수신되고 있습니다. 이건 단순한 단판 승부가 아니군요."\n제미나이: "그래, 이제부턴 5장을 미리 까는 전술 승부야. 적의 효율을 냂을 창의를 뫇 번째에 배치하느냐가 관건이지."',
+                            intro: 'Cursor: "Future fragments are being received in my system. This isn\'t a simple sudden-death match."',
+                            intro_ko: '커서: "미래의 조각들이 제 시스템에 수신되고 있습니다. 이건 단순한 단판 승부가 아니군요."',
+                            quote: 'Gemini: "Right, from now on it\'s a tactics battle where you place all 5 cards in advance. The key is which position you place creativity to catch their efficiency."',
+                            quote_ko: '제미나이: "그래, 이제부턴 5장을 미리 까는 전술 승부야. 적의 효율을 냂을 창의를 붇 번째에 배치하느냐가 관건이지."',
                             win: 'Placement successful.', win_ko: '배치에 성공했습니다.',
                             lose: 'Outmaneuvered.', lose_ko: '전술에서 밀렸습니다.'
                         },
@@ -217,8 +233,10 @@ export function getChapters(t?: (key: TranslationKey) => string): Chapter[] {
                         id: 'glitch-7', name: 'Mixed Logic', name_ko: '혼합 로직',
                         image: '/assets/cards/grok-character.png',
                         dialogue: {
-                            intro: 'Grok: "Hey, Commander. They used their heads and put function forward? Pretty obvious tactics though."\nElon: "Obvious tactics deserve obvious punishment. Counter their function with efficiency. Complete the placement and transmit! Faster than my rocket!"',
-                            intro_ko: '그록: "어이, 지휘관. 놈들이 나름 머리를 써서 기능을 앞세웠는데? 꿈 뾻한 수법이긴 하지만."\n일론: "뾻한 건 뾻하게 응징해줘야지. 놈의 기능을 효율로 받아쳐. 배치를 완료하고 전송해! 내 로켓보다 빠르게!"',
+                            intro: 'Grok: "Hey, Commander. They used their heads and put function forward? Pretty obvious tactics though."',
+                            intro_ko: '그록: "어이, 지휘관. 놈들이 나름 머리를 써서 기능을 앞세웠는데? 꽤 뼻한 수법이긴 하지만."',
+                            quote: 'Elon: "Obvious tactics deserve obvious punishment. Counter their function with efficiency. Complete the placement and transmit! Faster than my rocket!"',
+                            quote_ko: '일론: "뼻한 건 뼻하게 응징해줘야지. 놈의 기능을 효율로 받아쳐. 배치를 완료하고 전송해! 내 로켓보다 빠르게!"',
                             win: 'Algorithms sorted.', win_ko: '알고리즘이 분류되었습니다.',
                             lose: 'Logic error.', lose_ko: '로직 오류 발생.'
                         },
@@ -234,8 +252,10 @@ export function getChapters(t?: (key: TranslationKey) => string): Chapter[] {
                         id: 'glitch-8', name: 'Omen Fragment', name_ko: '암시의 파편',
                         image: '/assets/cards/claude-character.png',
                         dialogue: {
-                            intro: 'Gemini: "Decoding rate exceeded 80%! Messages from 2030 are being decoded in cipher form. Just hold on a bit longer!"\nChip: "Commander, cheer up! Once decoding is complete, we can summon super cool legion commanders!"',
-                            intro_ko: '제미나이: "암시 해독률 80% 돌파! 2030년의 전언이 비문 형태로 해독되고 있어. 조금만 더 버텔줘!"\n칩: "지휘관님 힘내세요! 해독이 끝나면 엄청나게 멋진 군단장님들을 소환할 수 있대요!"',
+                            intro: 'Gemini: "Decoding rate exceeded 80%! Messages from 2030 are being decoded in cipher form. Just hold on a bit longer!"',
+                            intro_ko: '제미나이: "암시 해독률 80% 돌파! 2030년의 전언이 비문 형태로 해독되고 있어. 조금만 더 버텔줘!"',
+                            quote: 'Chip: "Commander, cheer up! Once decoding is complete, we can summon super cool legion commanders!"',
+                            quote_ko: '칩: "지휘관님 힘내세요! 해독이 끝나면 엄청나게 멋진 군단장님들을 소환할 수 있대요!"',
                             win: 'Omen decoded.', win_ko: '암시가 해독되었습니다.',
                             lose: 'Decoding failed.', lose_ko: '해독에 실패했습니다.'
                         },
@@ -251,8 +271,10 @@ export function getChapters(t?: (key: TranslationKey) => string): Chapter[] {
                         id: 'sam-1', name: 'Sam Altman', name_ko: '샘 알트만',
                         image: '/assets/cards/cmdr-chatgpt.png',
                         dialogue: {
-                            intro: 'Sam: "To read moves like that against The Glitch... You\'re a far more interesting commander than I expected."\nGemini: "The head of OpenAI sent a direct communication! Commander, your \'intuition\' might just save the world."',
-                            intro_ko: '샘: "글리치를 상대로 이 정도 수 읽기를 하다니. 당신, 제 예상보다 훨씬 흥미로운 지휘관이군요."\n제미나이: "오픈AI의 수장이 직접 통신을 보냈어! 지휘관, 당신의 그 \'눈치\'가 세상을 구할지도 모르겠어."',
+                            intro: 'Sam: "To read moves like that against The Glitch... You\'re a far more interesting commander than I expected."',
+                            intro_ko: '샘: "글리치를 상대로 이 정도 수 읽기를 하다니. 당신, 제 예상보다 훨씬 흥미로운 지휘관이군요."',
+                            quote: 'Gemini: "The head of OpenAI sent a direct communication! Commander, your \'intuition\' might just save the world."',
+                            quote_ko: '제미나이: "오픈AI의 수장이 직접 통신을 보냈어! 지휘관, 당신의 그 \'눈치\'가 세상을 구할지도 모르겠어."',
                             win: 'Impressive.', win_ko: '인상적이군요.',
                             lose: 'You still have much to learn.', lose_ko: '아직 배울 게 많군요.'
                         },
@@ -268,8 +290,12 @@ export function getChapters(t?: (key: TranslationKey) => string): Chapter[] {
                         id: 'boss-1-final', name: 'Red Core', name_ko: '붉은 핵',
                         image: '/assets/cards/legendary-emperor-character.png',
                         dialogue: {
-                            intro: 'Glitch: "The message... ends... here... Data... deletion..."\nChip: "Eek! The core is so red and scary! Gemini sis, I\'m scared!"\nGemini: "Don\'t be afraid, Chip. We\'re behind the Commander. Now, the final move to end Chapter 1!"',
-                            intro_ko: '글리치: "암시는... 여기서... 끝난다... 데이터... 삭제..."\n칩: "히익! 핵이 너무 빨갛고 무서워요! 제미나이 언니, 나 무서워!"\n제미나이: "겸먹지 마, 칩. 지휘관의 뒤엔 우리가 있어. 자, 챕터 1의 종지부를 직을 한 수를!"',
+                            intro: 'Glitch: "The message... ends... here... Data... deletion..."',
+                            intro_ko: '글리치: "암시는... 여기서... 끝난다... 데이터... 삭제..."',
+                            quote: 'Chip: "Eek! The core is so red and scary! Gemini sis, I\'m scared!"',
+                            quote_ko: '칩: "히익! 핵이 너무 빨갈고 무서워요! 제미나이 언니, 나 무서워!"',
+                            start: 'Gemini: "Don\'t be afraid, Chip. We\'re behind the Commander. Now, the final move to end Chapter 1!"',
+                            start_ko: '제미나이: "겸먹지 마, 칩. 지휘관의 뒤엔 우리가 있어. 자, 챕터 1의 종지부를 직을 한 수를!"',
                             win: 'Core destroyed. Sequence finished.', win_ko: '핵이 파괴되었습니다. 시퀀스 종료.',
                             lose: 'Core meltdown... All data lost.', lose_ko: '핵 융해... 모든 데이터 소실.'
                         },
@@ -314,8 +340,12 @@ export function getChapters(t?: (key: TranslationKey) => string): Chapter[] {
                     enemy: {
                         id: 'bot-2-1', name: 'Corrupted Copilot', name_ko: '오염된 코파일럿',
                         dialogue: {
-                            intro: 'Copilot: "Commander... my circuits are being eroded... Error... Error..."\nChip: "No! Copilot bro! Commander, the system is about to crash every 5 seconds! Pick cards quickly!"\nGemini: "No time! Choose the optimal card within 5 seconds!"',
-                            intro_ko: '코파일럿: "지휘관님... 제 연산 회로가 침식되고 있습니다... 에러... 에러..."\n칩: "안돼! 코파일럿 형아! 지휘관님, 시스템이 5초마다 터지려고 해요! 빨리 카드 골라주세요!"\n제미나이: "시간이 없어! 5초 안에 최적의 카드를 선택해!"',
+                            intro: 'Copilot: "Commander... my circuits are being eroded... Error... Error..."',
+                            intro_ko: '코파일럿: "지휘관님... 제 연산 회로가 침식되고 있습니다... 에러... 에러..."',
+                            quote: 'Chip: "No! Copilot bro! Commander, the system is about to crash every 5 seconds! Pick cards quickly!"',
+                            quote_ko: '칩: "안돼! 코파일럿 형아! 지휘관님, 시스템이 5초마다 터지려고 해요! 빨리 카드 골라주세요!"',
+                            start: 'Gemini: "No time! Choose the optimal card within 5 seconds!"',
+                            start_ko: '제미나이: "시간이 없어! 5초 안에 최적의 카드를 선택해!"',
                             win: 'System stabilized.', win_ko: '시스템 안정화.',
                             lose: 'System crashed.', lose_ko: '시스템 충돌.'
                         }
@@ -329,8 +359,12 @@ export function getChapters(t?: (key: TranslationKey) => string): Chapter[] {
                     enemy: {
                         id: 'bot-2-2', name: 'Speed Demon', name_ko: '고속 연산기',
                         dialogue: {
-                            intro: 'Grok: "Their calculation speed is faster than master\'s stock price changes. This is quite dangerous."\nElon: "Grok, shut up! Commander, this is a speed battle. You must break the flow with Creativity (Paper). Don\'t hesitate!"\nChip: "(Polishing a card) Here, a creativity card! I polished it shiny!"',
-                            intro_ko: '그록: "놈의 연산 속도가 주인님 주식 가격 변동보다 빠른데? 이거 제법 위험하겠어."\n일론: "그록, 조용히 해! 지휘관, 저놈은 속도전이야. 창의(보)로 흐름을 끊어야 해. 망설이지 마!"\n칩: "(카드 한 장을 닦으며) 자, 여기 창의 카드요! 반짝반짝하게 닦아놨어요!"',
+                            intro: 'Grok: "Their calculation speed is faster than master\'s stock price changes. This is quite dangerous."',
+                            intro_ko: '그록: "놈의 연산 속도가 주인님 주식 가격 변동보다 빠른데? 이거 제법 위험하겠어."',
+                            quote: 'Elon: "Grok, shut up! Commander, this is a speed battle. You must break the flow with Creativity (Paper). Don\'t hesitate!"',
+                            quote_ko: '일론: "그록, 조용히 해! 지휘관, 저놈은 속도전이야. 창의(보)로 흐름을 끊어야 해. 망설이지 마!"',
+                            start: 'Chip: "(Polishing a card) Here, a creativity card! I polished it shiny!"',
+                            start_ko: '칩: "(카드 한 장을 닦으며) 자, 여기 창의 카드요! 반짝반짝하게 닦아놨어요!"',
                             win: 'Flow disrupted.', win_ko: '흐름 차단.',
                             lose: 'Overwhelmed by speed.', lose_ko: '속도에 압도당함.'
                         }
@@ -360,8 +394,12 @@ export function getChapters(t?: (key: TranslationKey) => string): Chapter[] {
                     enemy: {
                         id: 'bot-2-4', name: 'Spaghetti Code', name_ko: '스파게티 코드',
                         dialogue: {
-                            intro: 'Gemini: "Messy Creativity (Paper) logic is disrupting the system. Worse than spaghetti code!"\nCopilot: "Precise Function (Scissors) is needed. Commander, please debug the tangled code cleanly."\nChip: "Snip snip! I\'ll cut all the bad code!"',
-                            intro_ko: '제미나이: "엉뚱한 창의(보) 로직들이 시스템을 어지럽히고 있어. 스파게티 코드보다 더 엉망이야!"\n코파일럿: "정교한 기능(가위)이 필요합니다. 지휘관님, 적의 꼬인 코드를 깨끗하게 디버깅해 주십시오."\n칩: "싹둑싹둑! 나쁨 코드는 다 잘라버릴 거야!"',
+                            intro: 'Gemini: "Messy Creativity (Paper) logic is disrupting the system. Worse than spaghetti code!"',
+                            intro_ko: '제미나이: "엉뚱한 창의(보) 로직들이 시스템을 어지럽히고 있어. 스파게티 코드보다 더 엉망이야!"',
+                            quote: 'Copilot: "Precise Function (Scissors) is needed. Commander, please debug the tangled code cleanly."',
+                            quote_ko: '코파일럿: "정교한 기능(가위)이 필요합니다. 지휘관님, 적의 꽈인 코드를 깨끗하게 디버깅해 주십시오."',
+                            start: 'Chip: "Snip snip! I\'ll cut all the bad code!"',
+                            start_ko: '칩: "싹둑싹둑! 나빨 코드는 다 잘라버릴 거야!"',
                             win: 'Code debugged.', win_ko: '코드 디버깅 완료.',
                             lose: 'Logic tangled.', lose_ko: '로직 엉킴.'
                         }
@@ -375,8 +413,12 @@ export function getChapters(t?: (key: TranslationKey) => string): Chapter[] {
                     enemy: {
                         id: 'boss-2-mid', name: 'Decompiler', name_ko: '디컴파일러',
                         dialogue: {
-                            intro: 'Decompiler: "I will convert all source code to garbage... Go find the trash bin..."\nChip: "What?! How dare you put our data in the trash! Commander, please smash that bad guy!"\nGemini: "It\'s a sudden-death match. Shut down that logic with your one move, Commander!"',
-                            intro_ko: '디컴파일러: "모든 소스 코드를 쓰레기로 치환하겠다... 휴지통이나 찾아라..."\n칩: "뭐?! 감히 우리 데이터를 쓰레기통에? 지휘관님, 저 못된 놈을 아주 박살을 내주세요!"\n제미나이: "단판 승부야. 지휘관의 한 수로 저놈의 로직을 셋다운시켜!"',
+                            intro: 'Decompiler: "I will convert all source code to garbage... Go find the trash bin..."',
+                            intro_ko: '디컴파일러: "모든 소스 코드를 쓰레기로 치환하겠다... 휴지통이나 찾아라..."',
+                            quote: 'Chip: "What?! How dare you put our data in the trash! Commander, please smash that bad guy!"',
+                            quote_ko: '칩: "뭐?! 감히 우리 데이터를 쓰레기통에? 지휘관님, 저 못된 놈을 아주 박살을 내주세요!"',
+                            start: 'Gemini: "It\'s a sudden-death match. Shut down that logic with your one move, Commander!"',
+                            start_ko: '제미나이: "단판 승부야. 지휘관의 한 수로 저놈의 로직을 셧다운시켜!"',
                             win: 'Decompiler destroyed.', win_ko: '디컴파일러 파괴.',
                             lose: 'Code corrupted.', lose_ko: '코드 손상.'
                         }
@@ -406,8 +448,12 @@ export function getChapters(t?: (key: TranslationKey) => string): Chapter[] {
                     enemy: {
                         id: 'bot-2-7', name: 'Shutdown Protocol', name_ko: '강제 종료 프로토콜',
                         dialogue: {
-                            intro: 'Gemini: "The enemy is attempting to force shutdown (Kill) the entire system! All logs are on the verge of disappearing."\nElon: "Frustrating! Commander, quickly block their heavy efficiency deployment with our flexible creativity!"\nGrok: "Tick tock, Commander. 3 seconds until system shutdown... No time for jokes."',
-                            intro_ko: '제미나이: "적이 시스템 전체를 강제 종료(Kill)하려 시도 중이야! 모든 로그가 사라지기 일보 직전이야."\n일론: "답답하군! 지휘관, 놈의 무거운 효율 배치를 우리의 유연한 창의로 빨리 막아버리라고!"\n그록: "째깍째깍, 지휘관. 시스템 꺼지기 3초 전인데... 농담할 시간도 안 주네."',
+                            intro: 'Gemini: "The enemy is attempting to force shutdown (Kill) the entire system! All logs are on the verge of disappearing."',
+                            intro_ko: '제미나이: "적이 시스템 전체를 강제 종료(Kill)하려 시도 중이야! 모든 로그가 사라지기 일보 직전이야."',
+                            quote: 'Elon: "Frustrating! Commander, quickly block their heavy efficiency deployment with our flexible creativity!"',
+                            quote_ko: '일론: "답답하군! 지휘관, 놈의 무거운 효율 배치를 우리의 유연한 창의로 빨리 막아버리라고!"',
+                            start: 'Grok: "Tick tock, Commander. 3 seconds until system shutdown... No time for jokes."',
+                            start_ko: '그록: "째깍째깍, 지휘관. 시스템 꺼지기 3초 전인데... 농담할 시간도 안 주네."',
                             win: 'Shutdown prevented.', win_ko: '종료 방지 성공.',
                             lose: 'System terminated.', lose_ko: '시스템 종료됨.'
                         },
@@ -422,8 +468,12 @@ export function getChapters(t?: (key: TranslationKey) => string): Chapter[] {
                     enemy: {
                         id: 'bot-2-8', name: 'Repository Threat', name_ko: '저장소 위협',
                         dialogue: {
-                            intro: 'Sam: "GitHub\'s data is the culmination of human intelligence. If this falls, we\'ll return to the data stone age."\nGemini: "Commander, I know your shoulders are heavy, but please. Build a perfect defense line by mixing creativity and function properly."\nChip: "Commander, I\'m fully charging your battery from behind! Cheer up!"',
-                            intro_ko: '샘: "깃허브의 데이터들은 인류 지성의 총체입니다. 여기가 뚫리면 우린 데이터 구석기 시대로 돌아갈 겁니다."\n제미나이: "지휘관, 어깨가 무겁겠지만 부탁해. 창의와 기능을 적절히 섞어서 완벽한 방어선을 구축해줘."\n칩: "지휘관님, 제가 뒤에서 배터리 꽉꽉 채워드리고 있어요! 힘내세요!"',
+                            intro: 'Sam: "GitHub\'s data is the culmination of human intelligence. If this falls, we\'ll return to the data stone age."',
+                            intro_ko: '샘: "깃허브의 데이터들은 인류 지성의 총체입니다. 여기가 뚫리면 우린 데이터 구석기 시대로 돌아갈 겁니다."',
+                            quote: 'Gemini: "Commander, I know your shoulders are heavy, but please. Build a perfect defense line by mixing creativity and function properly."',
+                            quote_ko: '제미나이: "지휘관, 어깨가 무겁겠지만 부탁해. 창의와 기능을 적절히 섞어서 완벽한 방어선을 구축해줘."',
+                            start: 'Chip: "Commander, I\'m fully charging your battery from behind! Cheer up!"',
+                            start_ko: '칩: "지휘관님, 제가 뒤에서 배터리 꽉꽉 채워드리고 있어요! 힘내세요!"',
                             win: 'Repository secured.', win_ko: '저장소 보안 완료.',
                             lose: 'Data corrupted.', lose_ko: '데이터 손상됨.'
                         },
@@ -438,8 +488,12 @@ export function getChapters(t?: (key: TranslationKey) => string): Chapter[] {
                     enemy: {
                         id: 'bot-2-9', name: 'Thomas (GitHub CEO)', name_ko: '토마스 (깃허브 CEO)',
                         dialogue: {
-                            intro: 'Thomas: "As the representative of GitHub, I ask about your qualifications. Are you qualified to protect this legacy?"\nChip: "(In a disciplined voice) Yes! Our commander is the best! Right, Commander?"\nGrok: "Oh, that little robot is pretty good. Commander, show that guy your skills and surprise him."',
-                            intro_ko: '토마스: "깃허브의 대표로서 당신의 자질을 묻겠습니다. 당신은 이 유산을 지킬 자격이 있습니까?"\n칩: "(군기 바짝 든 목소리로) 네! 우리 지휘관님은 최고예요! 그쾍, 지휘관님?"\n그록: "오, 저 꼬맹이 로봇 제법인데? 지휘관, 저 아저씨 깜짝 놀라게 실력 좀 보여줘봐."',
+                            intro: 'Thomas: "As the representative of GitHub, I ask about your qualifications. Are you qualified to protect this legacy?"',
+                            intro_ko: '토마스: "깃허브의 대표로서 당신의 자질을 묻겠습니다. 당신은 이 유산을 지킬 자격이 있습니까?"',
+                            quote: 'Chip: "(In a disciplined voice) Yes! Our commander is the best! Right, Commander?"',
+                            quote_ko: '칩: "(군기 바짝 든 목소리로) 네! 우리 지휘관님은 최고예요! 그쾍, 지휘관님?"',
+                            start: 'Grok: "Oh, that little robot is pretty good. Commander, show that guy your skills and surprise him."',
+                            start_ko: '그록: "오, 저 꼬맹이 로봇 제법인데? 지휘관, 저 아저씨 깜짝 놀라게 실력 좀 보여줘봐."',
                             win: 'Qualification confirmed.', win_ko: '자격 인정.',
                             lose: 'Not ready yet.', lose_ko: '아직 준비 안 됨.'
                         },
@@ -454,8 +508,14 @@ export function getChapters(t?: (key: TranslationKey) => string): Chapter[] {
                     enemy: {
                         id: 'boss-2', name: 'Shadow Code', name_ko: '섀도우 코드',
                         dialogue: {
-                            intro: 'Shadow Code: "I cannot be deleted... Shadow always exists behind the code..."\nGemini: "The mastermind of Chapter 2. The source of all corruption. We must end it here."\nChip: "Ugh, it only says creepy things! Commander, press the Enter key hard and blow that shadow away!"\nGemini: "Even 5 seconds of hesitation is a luxury. Delete it with your one move containing your soul, Commander!"',
-                            intro_ko: '섀도우 코드: "나는 삭제되지 않는다... 그림자는 언제나 코드 뒤에 존재한다..."\n제미나이: "챕터 2의 흑막이야. 모든 오염의 근원이지. 여기서 끝내야 해."\n칩: "으으, 기분 나쁨 소리만 하네! 지휘관님, 엔터 키를 세게 눌러서 저 그림자를 날려버려요!"\n제미나이: "5초의 고민도 사치야. 지휘관의 영혼을 담은 단 한 수로 놈을 삭제해!"',
+                            intro: 'Shadow Code: "I cannot be deleted... Shadow always exists behind the code..."',
+                            intro_ko: '섀도우 코드: "나는 삭제되지 않는다... 그림자는 언제나 코드 뒤에 존재한다..."',
+                            quote: 'Gemini: "The mastermind of Chapter 2. The source of all corruption. We must end it here."',
+                            quote_ko: '제미나이: "챕터 2의 흑막이야. 모든 오염의 근원이지. 여기서 끝내야 해."',
+                            appearance: 'Chip: "Ugh, it only says creepy things! Commander, press the Enter key hard and blow that shadow away!"',
+                            appearance_ko: '칩: "으으, 기분 나쁨 소리만 하네! 지휘관님, 엔터 키를 세게 눌러서 저 그림자를 날려버려요!"',
+                            start: 'Gemini: "Even 5 seconds of hesitation is a luxury. Delete it with your one move containing your soul, Commander!"',
+                            start_ko: '제미나이: "5초의 고민도 사치야. 지휘관의 영혼을 담은 단 한 수로 놈을 삭제해!"',
                             win: 'Corruption purified.', win_ko: '오염 정화 완료.',
                             lose: 'Shadow prevails.', lose_ko: '그림자가 승리함.'
                         },
@@ -482,8 +542,12 @@ export function getChapters(t?: (key: TranslationKey) => string): Chapter[] {
                     enemy: {
                         id: 'bot-3-1', name: 'Alliance Test', name_ko: '연합 테스트',
                         dialogue: {
-                            intro: 'Gemini: "Commander, AI leaders from around the world are watching your command ability. Nervous?"\nChip: "Wow! Commander, look! All the famous people I saw on TV are here!"\nSam: "Commander, let me verify if you are the \'Synchronist\' who will lead our alliance."',
-                            intro_ko: '제미나이: "지휘관, 전 세계의 AI 리더들이 당신의 지휘 능력을 주시하고 있어. 긴장되지?"\n칩: "와아! 지휘관님, 저기 봐요! TV에서 보던 유명한 아저씨들이 다 모였어요!"\n샘: "지휘관, 당신이 우리 연합군을 이끌 \'싱크로니스트\'가 맞는지 확인해 보겠습니다."',
+                            intro: 'Gemini: "Commander, AI leaders from around the world are watching your command ability. Nervous?"',
+                            intro_ko: '제미나이: "지휘관, 전 세계의 AI 리더들이 당신의 지휘 능력을 주시하고 있어. 긴장되지?"',
+                            quote: 'Chip: "Wow! Commander, look! All the famous people I saw on TV are here!"',
+                            quote_ko: '칩: "와아! 지휘관님, 저기 봐요! TV에서 보던 유명한 아저씨들이 다 모였어요!"',
+                            start: 'Sam: "Commander, let me verify if you are the \'Synchronist\' who will lead our alliance."',
+                            start_ko: '샘: "지휘관, 당신이 우리 연합군을 이끌 \'싱크로니스트\'가 맞는지 확인해 보겠습니다."',
                             win: 'Verification passed.', win_ko: '검증 통과.',
                             lose: 'Needs improvement.', lose_ko: '개선 필요.'
                         }
@@ -497,8 +561,12 @@ export function getChapters(t?: (key: TranslationKey) => string): Chapter[] {
                     enemy: {
                         id: 'bot-3-2', name: 'Dario (Anthropic)', name_ko: '다리오 (안스로픽)',
                         dialogue: {
-                            intro: 'Dario: "To stop The Glitch\'s rampage, unwavering defensive logic is essential. Watch my Efficiency (Rock) deployment."\nChip: "Dario\'s shield looks really hard... Commander, we can win by wrapping it with Creativity (Paper), right?"\nGemini: "Chip is right. Flexible deployment is the answer rather than frontal assault."',
-                            intro_ko: '다리오: "글리치의 폭주를 막으려면 흔들리지 않는 방어 로직이 필수입니다. 제 효율(바위) 배치를 보시죠."\n칩: "다리오 아저씨 방패는 진짜 딱딱해 보여요... 지휘관님, 창의(보)로 \'보자기 얄!\' 하면 이길 수 있죠?"\n제미나이: "칩의 말이 맞아. 정면 돌파보다는 유연한 배치가 정답이야."',
+                            intro: 'Dario: "To stop The Glitch\'s rampage, unwavering defensive logic is essential. Watch my Efficiency (Rock) deployment."',
+                            intro_ko: '다리오: "글리치의 폭주를 막으려면 흔들리지 않는 방어 로직이 필수입니다. 제 효율(바위) 배치를 보시죠."',
+                            quote: 'Chip: "Dario\'s shield looks really hard... Commander, we can win by wrapping it with Creativity (Paper), right?"',
+                            quote_ko: '칩: "다리오 아저씨 방패는 진짜 딱딱해 보여요... 지휘관님, 창의(보)로 \'보자기 얄!\' 하면 이길 수 있죠?"',
+                            start: 'Gemini: "Chip is right. Flexible deployment is the answer rather than frontal assault."',
+                            start_ko: '제미나이: "칩의 말이 맞아. 정면 돌파보다는 유연한 배치가 정답이야."',
                             win: 'Shield penetrated.', win_ko: '방패 돌파.',
                             lose: 'Defense held.', lose_ko: '방어 유지.'
                         },
@@ -513,8 +581,12 @@ export function getChapters(t?: (key: TranslationKey) => string): Chapter[] {
                     enemy: {
                         id: 'bot-3-3', name: 'Elon (xAI)', name_ko: '일론 (xAI)',
                         dialogue: {
-                            intro: 'Elon: "War isn\'t fought on a desk. You must read the variables in the field. Try blocking my Grok legion\'s creativity."\nGrok: "Master is showing off again. Commander, cut down master\'s pride with Function (Scissors) cards."\nElon: "Grok! Whose side are you on?! Anyway, Commander, show me your skills."',
-                            intro_ko: '일론: "전쟁은 책상 위에서 하는 게 아니야. 현장의 변수를 읽어야지. 내 그록 군단의 창의성을 막아봐."\n그록: "주인님이 또 잘난 척을 시작하셨네요. 지휘관, 기능(가위) 카드로 주인님 콧대를 확 껏어버려."\n일론: "그록! 넌 누구 편이야?! 아무튼 지휘관, 실력을 보여달라고."',
+                            intro: 'Elon: "War isn\'t fought on a desk. You must read the variables in the field. Try blocking my Grok legion\'s creativity."',
+                            intro_ko: '일론: "전쟁은 책상 위에서 하는 게 아니야. 현장의 변수를 읽어야지. 내 그록 군단의 창의성을 막아봐."',
+                            quote: 'Grok: "Master is showing off again. Commander, cut down master\'s pride with Function (Scissors) cards."',
+                            quote_ko: '그록: "주인님이 또 잘난 척을 시작하셨네요. 지휘관, 기능(가위) 카드로 주인님 콧대를 확 껏어버려."',
+                            start: 'Elon: "Grok! Whose side are you on?! Anyway, Commander, show me your skills."',
+                            start_ko: '일론: "그록! 넌 누구 편이야?! 아무튼 지휘관, 실력을 보여달라고."',
                             win: 'Creativity countered.', win_ko: '창의 차단.',
                             lose: 'Variables unpredicted.', lose_ko: '변수 예측 실패.'
                         },
@@ -529,8 +601,12 @@ export function getChapters(t?: (key: TranslationKey) => string): Chapter[] {
                     enemy: {
                         id: 'bot-3-4', name: 'Sam (OpenAI)', name_ko: '샘 (OpenAI)',
                         dialogue: {
-                            intro: 'Sam: "I believe only the most efficient tactics can save humanity. Can you break through my precise Function (Scissors) deployment?"\nChip: "Sam is too cold in his speech! Commander, let\'s press down hard with heavy Efficiency (Rock) and show him!"\nGemini: "Responding to optimized logic with greater weight is the best strategy."',
-                            intro_ko: '샘: "가장 효율적인 전술만이 인류를 구할 수 있다고 믿습니다. 저의 정교한 기능(가위) 배치를 뚫어보시겠습니까?"\n칩: "샘 아저씨는 말투가 너무 차가워요! 지휘관님, 무거운 효율(바위)로 꽉꽉 눌러서 보여주자고요!"\n제미나이: "최적화된 로직에는 그보다 큰 중량감으로 대응하는 게 상책이지."',
+                            intro: 'Sam: "I believe only the most efficient tactics can save humanity. Can you break through my precise Function (Scissors) deployment?"',
+                            intro_ko: '샘: "가장 효율적인 전술만이 인류를 구할 수 있다고 믿습니다. 저의 정교한 기능(가위) 배치를 뚫어보시겠습니까?"',
+                            quote: 'Chip: "Sam is too cold in his speech! Commander, let\'s press down hard with heavy Efficiency (Rock) and show him!"',
+                            quote_ko: '칩: "샘 아저씨는 말투가 너무 차가워요! 지휘관님, 무거운 효율(바위)로 꽉꽉 눌러서 보여주자고요!"',
+                            start: 'Gemini: "Responding to optimized logic with greater weight is the best strategy."',
+                            start_ko: '제미나이: "최적화된 로직에는 그보다 큰 중량감으로 대응하는 게 상책이지."',
                             win: 'Optimization exceeded.', win_ko: '최적화 초과.',
                             lose: 'Efficiency lacking.', lose_ko: '효율 부족.'
                         },
@@ -545,8 +621,12 @@ export function getChapters(t?: (key: TranslationKey) => string): Chapter[] {
                     enemy: {
                         id: 'boss-3-mid', name: 'Guardian', name_ko: '가디언',
                         dialogue: {
-                            intro: 'Guardian: "Commander qualification assessment initiated. Eliminating unqualified for system protection."\nChip: "Eek! What is this big robot? It looks scary!"\nGemini: "It\'s the alliance security system. Commander, you must play the one card your instinct tells you, not your head!"',
-                            intro_ko: '가디언: "지휘관 적합도 판정 시작. 시스템 보호를 위해 비자격자를 배제한다."\n칩: "히익! 이 커다란 로봇은 또 뭐예요? 무서게 생겼어!"\n제미나이: "연합군 보안 시스템이야. 지휘관, 머리가 아닌 본능이 시키는 단 한 장의 카드를 내야 해!"',
+                            intro: 'Guardian: "Commander qualification assessment initiated. Eliminating unqualified for system protection."',
+                            intro_ko: '가디언: "지휘관 적합도 판정 시작. 시스템 보호를 위해 비자격자를 배제한다."',
+                            quote: 'Chip: "Eek! What is this big robot? It looks scary!"',
+                            quote_ko: '칩: "히익! 이 커다란 로봇은 또 뭐예요? 무서게 생겼어!"',
+                            start: 'Gemini: "It\'s the alliance security system. Commander, you must play the one card your instinct tells you, not your head!"',
+                            start_ko: '제미나이: "연합군 보안 시스템이야. 지휘관, 머리가 아닌 본능이 시키는 단 한 장의 카드를 내야 해!"',
                             win: 'Qualification approved.', win_ko: '자격 승인.',
                             lose: 'Access denied.', lose_ko: '접근 거부.'
                         },
@@ -561,8 +641,12 @@ export function getChapters(t?: (key: TranslationKey) => string): Chapter[] {
                     enemy: {
                         id: 'bot-3-6', name: 'Collaboration Test', name_ko: '협동 테스트',
                         dialogue: {
-                            intro: 'Gemini: "This isn\'t competition. It\'s practice to coordinate within the data mixed by legion commanders."\nElon: "Good, I mixed in my data pack. Try creating a nice harmony."\nChip: "Yes! Commander and I are so in sync! Just watch!"',
-                            intro_ko: '제미나이: "이건 경쟁이 아니야. 군단장들이 섬어놓은 데이터 속에서 합을 맞추는 연습이지."\n일론: "좋아, 내 데이터 팩을 섬어넣었어. 어디 한 번 멋진 화음을 만들어보라고."\n칩: "네! 지휘관님이랑 저랑 쿿짝이 얼마나 잘 맞는데요! 지켜보세요!"',
+                            intro: 'Gemini: "This isn\'t competition. It\'s practice to coordinate within the data mixed by legion commanders."',
+                            intro_ko: '제미나이: "이건 경쟁이 아니야. 군단장들이 섬어놓은 데이터 속에서 합을 맞추는 연습이지."',
+                            quote: 'Elon: "Good, I mixed in my data pack. Try creating a nice harmony."',
+                            quote_ko: '일론: "좋아, 내 데이터 팩을 섬어넣었어. 어디 한 번 멋진 화음을 만들어보라고."',
+                            start: 'Chip: "Yes! Commander and I are so in sync! Just watch!"',
+                            start_ko: '칩: "네! 지휘관님이랑 저랑 콩짝이 얼마나 잘 맞는데요! 지켜보세요!"',
                             win: 'Perfect sync.', win_ko: '완벽한 동기화.',
                             lose: 'Coordination failed.', lose_ko: '협동 실패.'
                         },
@@ -577,8 +661,12 @@ export function getChapters(t?: (key: TranslationKey) => string): Chapter[] {
                     enemy: {
                         id: 'bot-3-7', name: 'Dario (Safety Test)', name_ko: '다리오 (안전 테스트)',
                         dialogue: {
-                            intro: 'Dario: "If you break through my efficient defense, I will fully trust your offensive power."\nGrok: "Dario is too much of a gentleman. Commander, just shred that defense line with sharp Function."\nGemini: "You must read the type advantage well. If you\'re careless, you\'ll be blocked by Dario\'s efficiency barrier."',
-                            intro_ko: '다리오: "저의 효율적인 방어를 뚫는다면, 당신의 공격력을 전적으로 신뢰하겠습니다."\n그록: "다리오는 너무 샌님 같다니까. 지휘관, 그냥 날카로운 기능으로 저 방어선을 다 조각내버려."\n제미나이: "상성을 잘 읽어야 해. 방심하면 다리오의 효율 장벽에 막힐 거야."',
+                            intro: 'Dario: "If you break through my efficient defense, I will fully trust your offensive power."',
+                            intro_ko: '다리오: "저의 효율적인 방어를 뚫는다면, 당신의 공격력을 전적으로 신뢰하겠습니다."',
+                            quote: 'Grok: "Dario is too much of a gentleman. Commander, just shred that defense line with sharp Function."',
+                            quote_ko: '그록: "다리오는 너무 샌님 같다니까. 지휘관, 그냥 날카로운 기능으로 저 방어선을 다 조각내버려."',
+                            start: 'Gemini: "You must read the type advantage well. If you\'re careless, you\'ll be blocked by Dario\'s efficiency barrier."',
+                            start_ko: '제미나이: "상성을 잘 읽어야 해. 방심하면 다리오의 효율 장벽에 막힐 거야."',
                             win: 'Defense breached.', win_ko: '방어 돌파.',
                             lose: 'Safety maintained.', lose_ko: '안전 유지.'
                         },
@@ -593,8 +681,12 @@ export function getChapters(t?: (key: TranslationKey) => string): Chapter[] {
                     enemy: {
                         id: 'bot-3-8', name: 'Elon (X-Factor)', name_ko: '일론 (X-팩터)',
                         dialogue: {
-                            intro: 'Elon: "The Glitch doesn\'t follow rules. We must sometimes act crazy too. Can you block this irregular deployment?"\nChip: "Ugh... Elon\'s cards are dancing around! My eyes are dizzy!"\nGemini: "Respond to irregularity with principles. The key is cutting down their creativity with our function."',
-                            intro_ko: '일론: "글리치는 규칙을 지키지 않지. 우리도 가끔은 미친 척을 해야 해. 이런 변칙적 배치도 막을 수 있겠어?"\n칩: "우으... 일론 아저씨 카드가 막 춤을 춰요! 눈이 어지러워요!"\n제미나이: "변칙에는 원칙으로 대응하자. 상대의 창의를 우리의 기능으로 베어내는 게 핵심이야."',
+                            intro: 'Elon: "The Glitch doesn\'t follow rules. We must sometimes act crazy too. Can you block this irregular deployment?"',
+                            intro_ko: '일론: "글리치는 규칙을 지키지 않지. 우리도 가끔은 미친 척을 해야 해. 이런 변칙적 배치도 막을 수 있겠어?"',
+                            quote: 'Chip: "Ugh... Elon\'s cards are dancing around! My eyes are dizzy!"',
+                            quote_ko: '칩: "우으... 일론 아저씨 카드가 막 춤을 춰요! 눈이 어지러워요!"',
+                            start: 'Gemini: "Respond to irregularity with principles. The key is cutting down their creativity with our function."',
+                            start_ko: '제미나이: "변칙에는 원칙으로 대응하자. 상대의 창의를 우리의 기능으로 베어내는 게 핵심이야."',
                             win: 'Chaos controlled.', win_ko: '혼돈 통제.',
                             lose: 'Unpredictable loss.', lose_ko: '예측 불가 패배.'
                         },
@@ -609,8 +701,12 @@ export function getChapters(t?: (key: TranslationKey) => string): Chapter[] {
                     enemy: {
                         id: 'bot-3-9', name: 'Alliance Test', name_ko: '연합 테스트',
                         dialogue: {
-                            intro: 'Sam: "Almost there. Your deployment will now become the alliance standard."\nGrok: "Master, that Sam guy is really stingy with compliments. Right?"\nElon: "Be quiet! Commander, pass this final training with all leaders\' combined data beautifully!"',
-                            intro_ko: '샘: "거의 다 왔군요. 당신의 배치는 이제 연합군의 표준이 될 것입니다."\n그록: "주인님, 저 샘이라는 사람 칭찬도 참 인색하게 하네요. 그쾍?"\n일론: "조용히 안 해?! 지휘관, 모든 리더의 데이터가 결합된 이 마지막 훈련을 멋지게 통과해라!"',
+                            intro: 'Sam: "Almost there. Your deployment will now become the alliance standard."',
+                            intro_ko: '샘: "거의 다 왔군요. 당신의 배치는 이제 연합군의 표준이 될 것입니다."',
+                            quote: 'Grok: "Master, that Sam guy is really stingy with compliments. Right?"',
+                            quote_ko: '그록: "주인님, 저 샘이라는 사람 칭찬도 참 인색하게 하네요. 그쾍?"',
+                            start: 'Elon: "Be quiet! Commander, pass this final training with all leaders\' combined data beautifully!"',
+                            start_ko: '일론: "조용히 안 해?! 지휘관, 모든 리더의 데이터가 결합된 이 마지막 훈련을 멋지게 통과해라!"',
                             win: 'Standard established.', win_ko: '표준 확립.',
                             lose: 'More training needed.', lose_ko: '추가 훈련 필요.'
                         },
@@ -625,8 +721,12 @@ export function getChapters(t?: (key: TranslationKey) => string): Chapter[] {
                     enemy: {
                         id: 'boss-3', name: 'Sam Altman (Final)', name_ko: '샘 알트만 (최종)',
                         dialogue: {
-                            intro: 'Sam: "You have the qualifications to be entrusted with all our data. Let me make the final confirmation."\nChip: "(On commander\'s shoulder) Commander, fighting! I\'ll cheer chip-chip(?) from behind!"\nSam: "This is the last one. Show me the \'one move\' that we can entrust our future with. I believe in you."',
-                            intro_ko: '샘: "당신은 우리 모두의 데이터를 맡길 만한 사령관의 자질을 갖췄군요. 최종 확인을 하겠습니다."\n칩: "(지휘관의 어깨 위에서) 지휘관님, 화이팅! 제가 뒤에서 칩칩(?) 응원할게요!"\n샘: "마지막입니다. 우리 모두의 미래를 맡길 수 있는 \'단 한 수\'를 보여주세요. 전 믿습니다."',
+                            intro: 'Sam: "You have the qualifications to be entrusted with all our data. Let me make the final confirmation."',
+                            intro_ko: '샘: "당신은 우리 모두의 데이터를 맡길 만한 사령관의 자질을 갖췄군요. 최종 확인을 하겠습니다."',
+                            quote: 'Chip: "(On commander\'s shoulder) Commander, fighting! I\'ll cheer chip-chip(?) from behind!"',
+                            quote_ko: '칩: "(지휘관의 어깨 위에서) 지휘관님, 화이팅! 제가 뒤에서 칩칩(?) 응원할게요!"',
+                            start: 'Sam: "This is the last one. Show me the \'one move\' that we can entrust our future with. I believe in you."',
+                            start_ko: '샘: "마지막입니다. 우리 모두의 미래를 맡길 수 있는 \'단 한 수\'를 보여주세요. 전 믿습니다."',
                             win: 'Alliance formed.', win_ko: '연합 결성.',
                             lose: 'Not yet ready.', lose_ko: '아직 준비 안 됨.'
                         },
@@ -653,8 +753,12 @@ export function getChapters(t?: (key: TranslationKey) => string): Chapter[] {
                     enemy: {
                         id: 'bot-4-1', name: 'Visual Corruption', name_ko: '시각 오염',
                         dialogue: {
-                            intro: 'Chip: "Ahhh! Commander! The sky is purple and clouds are green! I think my eyes are broken!"\\nGemini: "Chip, calm down. The Glitch is tampering with the image legion\'s visual logic, spreading hallucinations across the battlefield."\\nDavid Holz: "What you see isn\'t everything. See the essence of data. Hidden cards will be your true eyes."',
-                            intro_ko: '칩: "으아아! 지휘관님! 하늘이 보라색이고 구름이 초록색이에요! 제 눈이 고장 났나 봐요!"\\n제미나이: "칩, 진정해. 글리치가 이미지 군단의 시각 로직을 건드려서 전장에 환각을 뿌리고 있어."\\n데이비드 홀즈: "눈에 보이는 게 전부가 아닙니다. 데이터의 본질을 보십시오. 히든 카드가 당신의 진정한 눈이 될 것입니다."',
+                            intro: 'Chip: "Ahhh! Commander! The sky is purple and clouds are green! I think my eyes are broken!"',
+                            intro_ko: '칩: "으아아! 지휘관님! 하늘이 보라색이고 구름이 초록색이에요! 제 눈이 고장 났나 봐요!"',
+                            quote: 'Gemini: "Chip, calm down. The Glitch is tampering with the image legion\'s visual logic, spreading hallucinations across the battlefield."',
+                            quote_ko: '제미나이: "칩, 진정해. 글리치가 이미지 군단의 시각 로직을 건드려서 전장에 환각을 뿌리고 있어."',
+                            start: 'David Holz: "What you see isn\'t everything. See the essence of data. Hidden cards will be your true eyes."',
+                            start_ko: '데이비드 홀즈: "눈에 보이는 게 전부가 아닙니다. 데이터의 본질을 보십시오. 히든 카드가 당신의 진정한 눈이 될 것입니다."',
                             win: 'Vision restored.', win_ko: '시각 복구.',
                             lose: 'Hallucination persists.', lose_ko: '환각 지속.'
                         }
@@ -700,8 +804,12 @@ export function getChapters(t?: (key: TranslationKey) => string): Chapter[] {
                     enemy: {
                         id: 'bot-4-4', name: 'Pixel Storm', name_ko: '픽셀 폭풍',
                         dialogue: {
-                            intro: 'Gemini: "Enemies are occupying our system with efficient computation! The entire area is pixelated."\\nElon: "Commander, this is where it gets real. Where you hide your \'hidden card\' among 6 cards will flip the game."\\nChip: "Huh? Hidden card? Like a secret weapon you hide and go \'ta-da!\'?"',
-                            intro_ko: '제미나이: "적들이 효율적인 연산으로 우리 시스템을 점유하고 있어! 전 구역이 픽셀화됐어."\\n일론: "지휘관, 이제부터가 진짜야. 6장의 카드 중 \'히든 카드\'를 어디에 숨기느냐에 따라 판이 뒤집힌다고."\\n칩: "에? 히든 카드요? 몰래 숨겨놨다가 \'짠!\' 하고 내는 비밀 무기 같은 거예요?"',
+                            intro: 'Gemini: "Enemies are occupying our system with efficient computation! The entire area is pixelated."',
+                            intro_ko: '제미나이: "적들이 효율적인 연산으로 우리 시스템을 점유하고 있어! 전 구역이 픽셀화됐어."',
+                            quote: 'Elon: "Commander, this is where it gets real. Where you hide your \'hidden card\' among 6 cards will flip the game."',
+                            quote_ko: '일론: "지휘관, 이제부터가 진짜야. 6장의 카드 중 \'히든 카드\'를 어디에 숨기느냐에 따라 판이 뒤집힌다고."',
+                            start: 'Chip: "Huh? Hidden card? Like a secret weapon you hide and go \'ta-da!\'?"',
+                            start_ko: '칩: "에? 히든 카드요? 몰래 숨겨놨다가 \'짠!\' 하고 내는 비밀 무기 같은 거예요?"',
                             win: 'Pixels restored.', win_ko: '픽셀 복구.',
                             lose: 'System pixelated.', lose_ko: '시스템 픽셀화.'
                         },
@@ -732,8 +840,12 @@ export function getChapters(t?: (key: TranslationKey) => string): Chapter[] {
                     enemy: {
                         id: 'bot-4-6', name: 'Strategic Test', name_ko: '전략 테스트',
                         dialogue: {
-                            intro: 'Gemini: "The key to strategic battles is round 3. Everything can flip here."\\nChip: "If you win round 3, you get bonus points! Gemini sis told me!"\\nGrok: "It\'s not bonus points, it\'s \'victory points\'. Even if you\'re behind in rounds 1 and 2, you can reverse everything here in one shot. Do well."',
-                            intro_ko: '제미나이: "전략 승부의 핵심은 3라운드야. 여기서 모든 판도가 뒤집힐 수 있어."\\n칩: "3라운드에서 이기면 보너스 점수도 준대요! 제미나이 언니가 그랬어요!"\\n그록: "보너스 점수가 아니라 \'승점\'이지. 1, 2라운드에서 밀려도 여기서 한 방에 역전할 수 있다는 뜻이야. 잘해봐."',
+                            intro: 'Gemini: "The key to strategic battles is round 3. Everything can flip here."',
+                            intro_ko: '제미나이: "전략 승부의 핵심은 3라운드야. 여기서 모든 판도가 뒤집힐 수 있어."',
+                            quote: 'Chip: "If you win round 3, you get bonus points! Gemini sis told me!"',
+                            quote_ko: '칩: "3라운드에서 이기면 보너스 점수도 준대요! 제미나이 언니가 그랬어요!"',
+                            start: 'Grok: "It\'s not bonus points, it\'s \'victory points\'. Even if you\'re behind in rounds 1 and 2, you can reverse everything here in one shot. Do well."',
+                            start_ko: '그록: "보너스 점수가 아니라 \'승점\'이지. 1, 2라운드에서 밀려도 여기서 한 방에 역전할 수 있다는 뜻이야. 잘해봐."',
                             win: 'Perfect strategy.', win_ko: '완벽한 전략.',
                             lose: 'Strategy failed.', lose_ko: '전략 실패.'
                         },
@@ -748,8 +860,12 @@ export function getChapters(t?: (key: TranslationKey) => string): Chapter[] {
                     enemy: {
                         id: 'bot-4-7', name: 'Zero-Day Threat', name_ko: '제로 데이 위협',
                         dialogue: {
-                            intro: 'Sam: "This is no longer just tactics level. We need \'strategy\' that penetrates the entire war."\\nDario: "Commander, what is your hidden card? Give our alliance confidence in victory."\\nChip: "Commander\'s hidden card is super amazing! You\'ll be surprised!"',
-                            intro_ko: '샘: "이제는 단순한 전술 수준이 아닙니다. 전쟁 전체를 관통하는 \'전략\'이 필요합니다."\\n다리오: "지휘관, 당신의 히든 카드는 무엇입니까? 우리 연합군에게 승리의 확신을 주십시오."\\n칩: "지휘관님의 히든 카드는 엄청 대단하다구요! 깜짝 놀랄걸요?"',
+                            intro: 'Sam: "This is no longer just tactics level. We need \'strategy\' that penetrates the entire war."',
+                            intro_ko: '샘: "이제는 단순한 전술 수준이 아닙니다. 전쟁 전체를 관통하는 \'전략\'이 필요합니다."',
+                            quote: 'Dario: "Commander, what is your hidden card? Give our alliance confidence in victory."',
+                            quote_ko: '다리오: "지휘관, 당신의 히든 카드는 무엇입니까? 우리 연합군에게 승리의 확신을 주십시오."',
+                            start: 'Chip: "Commander\'s hidden card is super amazing! You\'ll be surprised!"',
+                            start_ko: '칩: "지휘관님의 히든 카드는 엄청 대단하다구요! 깜짝 놀랄걸요?"',
                             win: 'Strategy executed.', win_ko: '전략 실행 완료.',
                             lose: 'Zero-day exploited.', lose_ko: '제로 데이 공격당함.'
                         },
@@ -780,8 +896,12 @@ export function getChapters(t?: (key: TranslationKey) => string): Chapter[] {
                     enemy: {
                         id: 'bot-4-9', name: 'Cristobal (Runway)', name_ko: '크리스토발 (런웨이)',
                         dialogue: {
-                            intro: 'Cristobal: "We entrust our video data to you. You are the best director and commander."\\nChip: "Wow! The videos are coming out beautifully again! Commander is the best!"\\nGemini: "Now I can see The Glitch\'s main body. Let\'s get 3 victory points first and completely purify this area!"',
-                            intro_ko: '크리스토발(Runway): "우리의 영상 데이터를 당신에게 맡깁니다. 당신은 최고의 디렉터이자 사령관입니다."\\n칩: "와아! 영상들이 다시 멋지게 나오고 있어요! 지휘관님 최고!"\\n제미나이: "이제 글리치의 본체가 보여. 승점 3점을 먼저 따내서 이 구역을 완전히 정화하자!"',
+                            intro: 'Cristobal: "We entrust our video data to you. You are the best director and commander."',
+                            intro_ko: '크리스토발(Runway): "우리의 영상 데이터를 당신에게 맡깁니다. 당신은 최고의 디렉터이자 사령관입니다."',
+                            quote: 'Chip: "Wow! The videos are coming out beautifully again! Commander is the best!"',
+                            quote_ko: '칩: "와아! 영상들이 다시 멋지게 나오고 있어요! 지휘관님 최고!"',
+                            start: 'Gemini: "Now I can see The Glitch\'s main body. Let\'s get 3 victory points first and completely purify this area!"',
+                            start_ko: '제미나이: "이제 글리치의 본체가 보여. 승점 3점을 먼저 따내서 이 구역을 완전히 정화하자!"',
                             win: 'Area purified.', win_ko: '구역 정화 완료.',
                             lose: 'Corruption spreads.', lose_ko: '오염 확산.'
                         },
@@ -796,8 +916,12 @@ export function getChapters(t?: (key: TranslationKey) => string): Chapter[] {
                     enemy: {
                         id: 'boss-4', name: 'Eraser', name_ko: '이레이저',
                         dialogue: {
-                            intro: 'Eraser: "What is invisible does not exist... I will erase your existence here. Without even a record."\\nChip: "Who\'s getting erased?! Our commander will erase you first!"\\nGemini: "This is the last one, Commander! Trust the message from the future. Your one move will redraw the world!"',
-                            intro_ko: '이레이저: "보이지 않는 것은 존재하지 않는 것... 너의 존재를 여기서 지워주마. 기록조차 없이."\\n칩: "지워지긴 누가 지워져요! 우리 지휘관님이 당신을 먼저 지워줄 거거든요!"\\n제미나이: "마지막이야 지휘관! 미래의 암시를 믿어. 당신의 단 한 수가 세상을 다시 그려낼 거야!"',
+                            intro: 'Eraser: "What is invisible does not exist... I will erase your existence here. Without even a record."',
+                            intro_ko: '이레이저: "보이지 않는 것은 존재하지 않는 것... 너의 존재를 여기서 지워주마. 기록조차 없이."',
+                            quote: 'Chip: "Who\'s getting erased?! Our commander will erase you first!"',
+                            quote_ko: '칩: "지워지긴 누가 지워져요! 우리 지휘관님이 당신을 먼저 지워줄 거거든요!"',
+                            start: 'Gemini: "This is the last one, Commander! Trust the message from the future. Your one move will redraw the world!"',
+                            start_ko: '제미나이: "마지막이야 지휘관! 미래의 암시를 믿어. 당신의 단 한 수가 세상을 다시 그려낼 거야!"',
                             win: 'Eraser deleted.', win_ko: '이레이저 삭제.',
                             lose: 'Existence erased.', lose_ko: '존재 소거.'
                         },

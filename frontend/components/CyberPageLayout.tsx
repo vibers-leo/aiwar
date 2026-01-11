@@ -8,6 +8,7 @@ import { BackgroundBeams } from '@/components/ui/aceternity/background-beams';
 import { cn } from '@/lib/utils';
 import { useUserProfile } from '@/hooks/useUserProfile';
 import Link from 'next/link';
+import LeftSidebar from './LeftSidebar';
 
 interface CyberPageLayoutProps {
     children: React.ReactNode;
@@ -19,6 +20,11 @@ interface CyberPageLayoutProps {
     showBack?: boolean;
     backPath?: string;
     action?: React.ReactNode;
+    // Left Sidebar Props
+    showLeftSidebar?: boolean;
+    leftSidebarIcon?: React.ReactNode;
+    leftSidebarTips?: string[];
+    leftSidebarGameConditions?: React.ReactNode;
 }
 
 const colorConfig = {
@@ -90,6 +96,10 @@ export default function CyberPageLayout({
     showBack = true,
     backPath,
     action,
+    showLeftSidebar = true,
+    leftSidebarIcon,
+    leftSidebarTips = [],
+    leftSidebarGameConditions,
 }: CyberPageLayoutProps) {
     const router = useRouter();
     const colors = colorConfig[color];
@@ -104,91 +114,136 @@ export default function CyberPageLayout({
     };
 
     return (
-        <div className="relative min-h-screen bg-black text-white overflow-hidden">
-            {/* Grid Background */}
-            <div className="absolute inset-0 bg-[linear-gradient(rgba(6,182,212,0.02)_1px,transparent_1px),linear-gradient(90deg,rgba(6,182,212,0.02)_1px,transparent_1px)] bg-[size:60px_60px]" />
+        <div className="relative min-h-screen bg-black text-white overflow-hidden flex">
+            {/* Left Sidebar */}
+            {showLeftSidebar && (
+                <LeftSidebar
+                    title={title}
+                    englishTitle={englishTitle}
+                    icon={leftSidebarIcon}
+                    tips={leftSidebarTips}
+                    gameConditions={leftSidebarGameConditions}
+                    color={color}
+                />
+            )}
 
-            {/* Top Glow Effect - Simplified for performance */}
-            <div className="absolute top-0 left-1/2 -translate-x-1/2 w-[800px] h-[300px] bg-gradient-to-b from-cyan-500/5 to-transparent rounded-full blur-2xl" />
+            {/* Main Content Area */}
+            <div className="flex-1 flex flex-col min-w-0 transition-all duration-300">
+                {/* Grid Background */}
+                <div className="absolute inset-0 bg-[linear-gradient(rgba(6,182,212,0.02)_1px,transparent_1px),linear-gradient(90deg,rgba(6,182,212,0.02)_1px,transparent_1px)] bg-[size:60px_60px]" />
 
-            {/* Scanlines */}
-            <div className="absolute inset-0 pointer-events-none opacity-[0.01] bg-[linear-gradient(rgba(18,16,16,0)_50%,rgba(0,0,0,0.25)_50%)] bg-[length:100%_4px]" />
+                {/* Top Glow Effect */}
+                <div className="absolute top-0 left-1/2 -translate-x-1/2 w-[800px] h-[300px] bg-gradient-to-b from-cyan-500/5 to-transparent rounded-full blur-2xl" />
 
-            {/* Background Beams - Global Effect (Slightly more transparent) */}
-            <div className="absolute inset-0 pointer-events-none opacity-30">
-                <BackgroundBeams />
-            </div>
+                {/* Scanlines */}
+                <div className="absolute inset-0 pointer-events-none opacity-[0.01] bg-[linear-gradient(rgba(18,16,16,0)_50%,rgba(0,0,0,0.25)_50%)] bg-[length:100%_4px]" />
 
-            {/* Content */}
-            <div className="relative z-10 max-w-7xl mx-auto px-6 py-8">
-                {/* Page Header */}
-                <motion.header
-                    initial={{ opacity: 0, y: -20 }}
-                    animate={{ opacity: 1, y: 0 }}
-                    transition={{ duration: 0.5 }}
-                    className="mb-10"
-                >
-                    {/* Top Row: Title + Back Button + Avatar */}
-                    <div className="flex items-center justify-between mb-4">
-                        <div className="flex items-center gap-4">
-                            {/* Accent Line */}
-                            <div className={cn("w-1 h-10 rounded-full", colors.line, colors.glow)} />
+                {/* Background Beams */}
+                <div className="absolute inset-0 pointer-events-none opacity-30">
+                    <BackgroundBeams />
+                </div>
 
-                            <div>
-                                {/* Subtitle */}
-                                {subtitle && (
-                                    <p className={cn("text-[10px] font-mono uppercase tracking-[0.3em] mb-1", colors.text)}>
-                                        {subtitle}
-                                    </p>
-                                )}
-                                {/* Title */}
-                                <div className="flex items-baseline gap-3">
-                                    <h1 className="text-3xl md:text-5xl font-black italic tracking-tighter text-white font-sans">
-                                        {title}
-                                    </h1>
-                                    {englishTitle && (
-                                        <span className="text-sm md:text-lg font-bold orbitron text-white/30 tracking-widest uppercase">
-                                            {englishTitle}
-                                        </span>
+                {/* Content */}
+                <div className="relative z-10 max-w-7xl mx-auto px-6 py-8 w-full">
+                    {/* Page Header */}
+                    <motion.header
+                        initial={{ opacity: 0, y: -20 }}
+                        animate={{ opacity: 1, y: 0 }}
+                        transition={{ duration: 0.5 }}
+                        className="mb-10"
+                    >
+                        {/* Show title in header when sidebar is disabled */}
+                        {!showLeftSidebar && (
+                            <div className="flex items-center justify-between mb-6">
+                                <div className="flex items-center gap-4">
+                                    {/* Accent Line */}
+                                    <div className={cn("w-1 h-12 rounded-full", colors.line, colors.glow)} />
+
+                                    <div>
+                                        {/* Subtitle */}
+                                        {subtitle && (
+                                            <p className={cn("text-[10px] font-mono uppercase tracking-[0.3em] mb-1", colors.text)}>
+                                                {subtitle}
+                                            </p>
+                                        )}
+                                        {/* Title */}
+                                        <div className="flex items-baseline gap-3">
+                                            <h1 className="text-4xl md:text-5xl font-black italic tracking-tighter text-white font-sans">
+                                                {title}
+                                            </h1>
+                                            {englishTitle && (
+                                                <span className="text-sm md:text-lg font-bold orbitron text-white/30 tracking-widest uppercase">
+                                                    {englishTitle}
+                                                </span>
+                                            )}
+                                        </div>
+                                    </div>
+                                </div>
+
+                                {/* Right: Actions + Back Button */}
+                                <div className="flex items-center gap-3">
+                                    {action}
+
+                                    {showBack && (
+                                        <button
+                                            onClick={handleBack}
+                                            className="flex items-center gap-2 px-4 py-2 rounded-lg bg-white/5 border border-white/10 text-white/40 hover:text-white hover:border-white/20 transition-all group"
+                                        >
+                                            <ArrowLeft size={14} className="group-hover:-translate-x-1 transition-transform" />
+                                            <span className="text-[9px] font-mono uppercase tracking-widest">BACK</span>
+                                        </button>
                                     )}
                                 </div>
                             </div>
-                        </div>
+                        )}
 
-                        <div className="flex items-center gap-3">
-                            {action}
+                        {/* Show minimal header when sidebar is enabled */}
+                        {showLeftSidebar && (
+                            <div className="flex items-center justify-between">
+                                {/* Left: Description */}
+                                {description && (
+                                    <p className="text-sm text-white/40 max-w-4xl leading-relaxed">
+                                        {description}
+                                    </p>
+                                )}
 
-                            {showBack && (
-                                <button
-                                    onClick={handleBack}
-                                    className="flex items-center gap-2 px-4 py-2 rounded-lg bg-white/5 border border-white/10 text-white/40 hover:text-white hover:border-white/20 transition-all group"
-                                >
-                                    <ArrowLeft size={14} className="group-hover:-translate-x-1 transition-transform" />
-                                    <span className="text-[9px] font-mono uppercase tracking-widest">BACK</span>
-                                </button>
-                            )}
-                        </div>
-                    </div>
+                                {/* Right: Actions + Back Button */}
+                                <div className="flex items-center gap-3">
+                                    {action}
 
-                    {/* Description */}
-                    {description && (
-                        <p className="text-sm text-white/40 max-w-4xl leading-relaxed pl-5 border-l border-white/10">
-                            {description}
-                        </p>
-                    )}
+                                    {showBack && (
+                                        <button
+                                            onClick={handleBack}
+                                            className="flex items-center gap-2 px-4 py-2 rounded-lg bg-white/5 border border-white/10 text-white/40 hover:text-white hover:border-white/20 transition-all group"
+                                        >
+                                            <ArrowLeft size={14} className="group-hover:-translate-x-1 transition-transform" />
+                                            <span className="text-[9px] font-mono uppercase tracking-widest">BACK</span>
+                                        </button>
+                                    )}
+                                </div>
+                            </div>
+                        )}
 
-                    {/* Separator Line */}
-                    <div className="mt-6 h-px bg-gradient-to-r from-white/10 via-white/5 to-transparent" />
-                </motion.header>
+                        {/* Description below title when sidebar is disabled */}
+                        {!showLeftSidebar && description && (
+                            <p className="text-sm text-white/40 max-w-4xl leading-relaxed pl-5 border-l border-white/10 mt-4">
+                                {description}
+                            </p>
+                        )}
 
-                {/* Page Content */}
-                <motion.div
-                    initial={{ opacity: 0, y: 20 }}
-                    animate={{ opacity: 1, y: 0 }}
-                    transition={{ duration: 0.5, delay: 0.2 }}
-                >
-                    {children}
-                </motion.div>
+                        {/* Separator Line */}
+                        <div className="mt-4 h-px bg-gradient-to-r from-white/10 via-white/5 to-transparent" />
+                    </motion.header>
+
+                    {/* Page Content */}
+                    <motion.div
+                        initial={{ opacity: 0, y: 20 }}
+                        animate={{ opacity: 1, y: 0 }}
+                        transition={{ duration: 0.5, delay: 0.2 }}
+                    >
+                        {children}
+                    </motion.div>
+                </div>
             </div>
         </div>
     );

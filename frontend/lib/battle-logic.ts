@@ -21,17 +21,17 @@ export function checkTypeAdvantage(
 ): 'card1' | 'card2' | 'draw' {
     if (type1 === type2) return 'draw';
 
-    // EFFICIENCY > CREATIVITY
-    if (type1 === 'EFFICIENCY' && type2 === 'CREATIVITY') return 'card1';
-    if (type1 === 'CREATIVITY' && type2 === 'EFFICIENCY') return 'card2';
+    // CREATIVITY (보) > EFFICIENCY (바위)
+    if (type1 === 'CREATIVITY' && type2 === 'EFFICIENCY') return 'card1';
+    if (type1 === 'EFFICIENCY' && type2 === 'CREATIVITY') return 'card2';
 
-    // CREATIVITY > FUNCTION
-    if (type1 === 'CREATIVITY' && type2 === 'FUNCTION') return 'card1';
-    if (type1 === 'FUNCTION' && type2 === 'CREATIVITY') return 'card2';
+    // EFFICIENCY (바위) > FUNCTION (가위)
+    if (type1 === 'EFFICIENCY' && type2 === 'FUNCTION') return 'card1';
+    if (type1 === 'FUNCTION' && type2 === 'EFFICIENCY') return 'card2';
 
-    // FUNCTION > EFFICIENCY
-    if (type1 === 'FUNCTION' && type2 === 'EFFICIENCY') return 'card1';
-    if (type1 === 'EFFICIENCY' && type2 === 'FUNCTION') return 'card2';
+    // FUNCTION (가위) > CREATIVITY (보)
+    if (type1 === 'FUNCTION' && type2 === 'CREATIVITY') return 'card1';
+    if (type1 === 'CREATIVITY' && type2 === 'FUNCTION') return 'card2';
 
     return 'draw';
 }

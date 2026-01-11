@@ -90,8 +90,8 @@ export default function GameTopBar({ sidebarCollapsed = false }: GameTopBarProps
                     </Link>
                 </div>
 
-                {/* Middle - Navigation (shifted slightly left for balance) */}
-                <nav className="absolute left-[45%] -translate-x-1/2 flex items-center gap-6 h-full">
+                {/* Middle - Navigation (wider spacing, bold italic) */}
+                <nav className="absolute left-[42%] -translate-x-1/2 flex items-center gap-8 h-full">
                     {navLinks.map((link) => {
                         const isActive = pathname.startsWith(link.path);
                         return (
@@ -100,16 +100,16 @@ export default function GameTopBar({ sidebarCollapsed = false }: GameTopBarProps
                                 href={link.path}
                                 className="relative h-full flex items-center group"
                             >
-                                <span className={`text-sm md:text-base font-black tracking-[0.2em] orbitron transition-all duration-300 ${isActive
-                                    ? 'text-transparent bg-clip-text bg-gradient-to-r from-cyan-400 to-purple-400 scale-110 drop-shadow-[0_0_8px_rgba(34,211,238,0.5)]'
-                                    : 'text-white/40 group-hover:text-white group-hover:scale-105'
+                                <span className={`text-base md:text-lg font-black italic tracking-[0.15em] transition-all duration-300 ${isActive
+                                    ? 'text-transparent bg-clip-text bg-gradient-to-r from-cyan-400 to-purple-400 scale-110 drop-shadow-[0_0_12px_rgba(34,211,238,0.6)]'
+                                    : 'text-white/50 group-hover:text-white group-hover:scale-105 group-hover:drop-shadow-[0_0_8px_rgba(255,255,255,0.3)]'
                                     }`}>
                                     {link.name}
                                 </span>
 
-                                {/* Active indicator */}
+                                {/* Active indicator - more prominent */}
                                 {isActive && (
-                                    <div className="absolute bottom-0 left-1/2 -translate-x-1/2 w-full h-0.5 bg-gradient-to-r from-cyan-500 to-purple-500 shadow-[0_0_15px_rgba(34,211,238,0.8)] rounded-full" />
+                                    <div className="absolute bottom-0 left-1/2 -translate-x-1/2 w-full h-1 bg-gradient-to-r from-cyan-500 via-purple-500 to-cyan-500 shadow-[0_0_20px_rgba(34,211,238,0.9)] rounded-full animate-pulse" />
                                 )}
 
                                 {/* Hover highlight */}

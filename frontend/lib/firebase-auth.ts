@@ -2,6 +2,8 @@ import {
     signInAnonymously,
     GoogleAuthProvider,
     signInWithPopup,
+    signInWithRedirect,
+    getRedirectResult,
     onAuthStateChanged,
     signOut,
     User,
@@ -16,7 +18,7 @@ import { auth, isFirebaseConfigured } from './firebase';
 import { gameStorage } from './game-storage';
 
 /**
- * 구글 로그인
+ * 구글 로그인 (Popup 방식, 실패 시 Redirect로 폴백)
  */
 export async function signInWithGoogle(): Promise<User | null> {
     if (!isFirebaseConfigured || !auth) {
@@ -26,28 +28,79 @@ export async function signInWithGoogle(): Promise<User | null> {
 
     try {
         const provider = new GoogleAuthProvider();
+
+        // Try popup first
+        console.log('[Auth] Attempting popup-based Google login...');
         const result = await signInWithPopup(auth, provider);
 
         // [Safety] Clear Any Pending Logout Flag on successful entry
         gameStorage.clearPendingLogout();
 
+        console.log('[Auth] Popup login successful');
         return result.user;
     } catch (error: any) {
-        console.error('구글 로그인 실패:', error);
+        console.error('구글 팝업 로그인 실패:', error);
 
+        // Handle specific errors
         if (error.code === 'auth/unauthorized-domain') {
             alert(`[Firebase] 도메인 승인 오류: ${window.location.hostname} 가 승인된 도메인에 없습니다.\nFirebase Console > Authentication > Settings > Authorized Domains 에서 추가해주세요.`);
+            return null;
         } else if (error.code === 'auth/popup-closed-by-user') {
             console.log('사용자가 로그인 팝업을 닫았습니다.');
-            alert('로그인 팝업이 닫혔습니다. 다시 시도해 주세요.');
+            return null;
         } else if (error.code === 'auth/cancelled-popup-request') {
-            alert('이전 로그인 요청이 처리 중입니다. 잠시 후 다시 시도해 주세요.');
+            console.log('이전 팝업 요청 취소됨');
+            return null;
         } else if (error.code === 'auth/popup-blocked') {
-            alert('팝업이 차단되었습니다. 브라우저 설정에서 팝업을 허용해 주세요.');
+            console.warn('[Auth] Popup blocked, falling back to redirect...');
+            // Fallback to redirect
+            try {
+                const provider = new GoogleAuthProvider();
+                await signInWithRedirect(auth, provider);
+                // Redirect will happen, return null for now
+                return null;
+            } catch (redirectError) {
+                console.error('[Auth] Redirect login also failed:', redirectError);
+                alert('로그인에 실패했습니다. 페이지를 새로고침 후 다시 시도해주세요.');
+                return null;
+            }
         } else {
-            alert(`[Firebase Error ${error.code}] ${error.message}`);
+            // For CORS or other errors, try redirect as fallback
+            console.warn('[Auth] Popup failed with error, trying redirect as fallback...');
+            try {
+                const provider = new GoogleAuthProvider();
+                await signInWithRedirect(auth, provider);
+                return null;
+            } catch (redirectError) {
+                console.error('[Auth] Redirect login also failed:', redirectError);
+                alert(`로그인 실패: ${error.message}`);
+                return null;
+            }
+        }
+    }
+}
+
+/**
+ * 리다이렉트 결과 처리 (페이지 로드 시 호출)
+ */
+export async function handleRedirectResult(): Promise<User | null> {
+    if (!isFirebaseConfigured || !auth) {
+        return null;
+    }
+
+    try {
+        console.log('[Auth] Checking for redirect result...');
+        const result = await getRedirectResult(auth);
+
+        if (result && result.user) {
+            console.log('[Auth] Redirect login successful');
+            gameStorage.clearPendingLogout();
+            return result.user;
         }
 
+        return null;
+    } catch (error: any) {
+        console.error('[Auth] Redirect result error:', error);
         return null;
     }
 }

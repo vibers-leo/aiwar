@@ -1,24 +1,38 @@
 'use client';
 
 import { signInWithGoogle } from '@/lib/auth-utils';
+import { handleRedirectResult } from '@/lib/firebase-auth';
 import { useRouter } from 'next/navigation';
-import { useState, useEffect } from 'react'; // [FIX] Added useEffect
-import { useUser } from '@/context/UserContext'; // [FIX] Added useUser
+import { useState, useEffect } from 'react';
+import { useUser } from '@/context/UserContext';
 
 export default function GoogleLoginButton() {
     const router = useRouter();
-    const { user } = useUser(); // [FIX] Get user from context
+    const { user } = useUser();
     const [isLoading, setIsLoading] = useState(false);
 
-    // [Removed] Auto-redirect effect to prevent race conditions.
-    // We strictly rely on handleGoogleLogin's success or onAuthChange flow properly handled by the provider.
+    // Handle redirect result on mount
+    useEffect(() => {
+        const checkRedirectResult = async () => {
+            try {
+                const redirectUser = await handleRedirectResult();
+                if (redirectUser) {
+                    console.log('[GoogleLoginButton] Redirect login successful, navigating to home');
+                    router.push('/');
+                }
+            } catch (error) {
+                console.error('[GoogleLoginButton] Error handling redirect:', error);
+            }
+        };
+
+        checkRedirectResult();
+    }, [router]);
 
     const handleGoogleLogin = async () => {
         setIsLoading(true);
         try {
             const result = await signInWithGoogle();
             if (result.success) {
-                // router.push('/') handled by effect or here
                 router.push('/');
             } else {
                 if (result.message) alert(result.message);

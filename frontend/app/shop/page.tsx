@@ -205,6 +205,14 @@ export default function ShopPage() {
             englishTitle="SHOP"
             description="코인으로 카드팩을 구매하세요"
             color="yellow"
+            leftSidebarIcon={<ShoppingBag size={32} className="text-yellow-400" />}
+            leftSidebarTips={[
+                "데이터 상점 - AI 카드팩 구매 및 토큰 환전소",
+                "협상력 연구를 올리면 모든 카드팩을 할인된 가격에 구매할 수 있습니다.",
+                "행운 연구를 올리면 구매 시 잭팟으로 코인을 돌려받을 확률이 높아집니다.",
+                "통찰력 연구를 올리면 더 높은 등급의 카드를 획득할 확률이 증가합니다.",
+                "100 코인으로 1,000 토큰을 환전할 수 있습니다.",
+            ]}
         >
             <div className="max-w-6xl mx-auto">
                 {/* Header / Nav */}
@@ -215,15 +223,6 @@ export default function ShopPage() {
                         </h1>
                         <p className="text-gray-400 mt-1">AI 카드팩 구매 및 토큰 환전소</p>
                     </div>
-
-                    {/* [NEW] Subscription Button */}
-                    <button
-                        onClick={() => setShowSubscriptionModal(true)}
-                        className="flex items-center gap-2 px-4 py-2 bg-gray-800 border border-gray-700 rounded-lg text-blue-400 hover:bg-gray-700 hover:text-white transition-colors"
-                    >
-                        <RefreshCw className="w-4 h-4" />
-                        <span className="font-bold">AI 군단 구독 관리</span>
-                    </button>
                 </div>
 
                 {/* 보유 코인 */}

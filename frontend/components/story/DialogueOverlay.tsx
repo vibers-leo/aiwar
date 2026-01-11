@@ -5,6 +5,8 @@ import { motion, AnimatePresence } from 'framer-motion';
 import { Shield, ChevronRight } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import Image from 'next/image';
+import { EncryptedText } from '@/components/ui/aceternity/encrypted-text';
+import { TextGenerateEffect } from '@/components/ui/aceternity/text-generate-effect';
 
 interface DialogueOverlayProps {
     isOpen: boolean;
@@ -27,42 +29,75 @@ export default function DialogueOverlay({
     const [isTypewriterFinished, setIsTypewriterFinished] = useState(false);
     const [currentIndex, setCurrentIndex] = useState(0);
 
-    // Typewriter effect
+    // Detect character types early for useEffect
+    const isGemini = speakerName.toLowerCase().includes('gemini') || speakerName.includes('제미나이');
+    const isChip = speakerName.toLowerCase().includes('chip') || speakerName.includes('칩');
+
+    // Detect commander characters
+    const isSam = speakerName.toLowerCase().includes('sam') || speakerName.includes('샘');
+    const isDario = speakerName.toLowerCase().includes('dario') || speakerName.includes('다리오');
+    const isElon = speakerName.toLowerCase().includes('elon') || speakerName.includes('일론');
+    const isHassabis = speakerName.toLowerCase().includes('hassabis') || speakerName.includes('하사비스');
+    const isCopilot = speakerName.toLowerCase().includes('copilot') || speakerName.includes('코파일럿');
+    const isGrok = speakerName.toLowerCase().includes('grok') || speakerName.includes('그록');
+
+    const isAlly = isGemini || isChip || isSam || isDario || isElon || isHassabis || isCopilot || isGrok;
+
+    // Track when effect is finished
     useEffect(() => {
         if (!isOpen) {
-            setDisplayText('');
-            setCurrentIndex(0);
             setIsTypewriterFinished(false);
             return;
         }
 
-        if (currentIndex < dialogue.length) {
-            const timeout = setTimeout(() => {
-                setDisplayText(prev => prev + dialogue[currentIndex]);
-                setCurrentIndex(prev => prev + 1);
-            }, 30); // 30ms per character
-            return () => clearTimeout(timeout);
-        } else {
+        // For Aceternity effects, set a timer based on dialogue length
+        const estimatedDuration = isAlly ? dialogue.length * 50 : 2000; // 50ms per char for allies, 2s for enemies
+        const timeout = setTimeout(() => {
             setIsTypewriterFinished(true);
-        }
-    }, [isOpen, dialogue, currentIndex]);
+        }, estimatedDuration);
+
+        return () => clearTimeout(timeout);
+    }, [isOpen, dialogue, isAlly]);
 
     const handleSkip = useCallback(() => {
         if (!isTypewriterFinished) {
-            setDisplayText(dialogue);
-            setCurrentIndex(dialogue.length);
             setIsTypewriterFinished(true);
         } else {
             onClose();
         }
-    }, [isTypewriterFinished, dialogue, onClose]);
+    }, [isTypewriterFinished, onClose]);
 
     if (!isOpen) return null;
 
-    // Detect if speaker is Gemini
-    const isGemini = speakerName.toLowerCase().includes('gemini') || speakerName.includes('제미나이');
+    // Map character images
     const defaultGeminiImage = '/assets/cards/gemini-character.png';
-    const portraitImage = isGemini ? defaultGeminiImage : characterImage;
+    const defaultChipImage = '/assets/cards/unique-singularity.png';
+    const commanderImages: Record<string, string> = {
+        sam: '/assets/cards/cmdr-chatgpt.png',
+        dario: '/assets/cards/cmdr-claude.png',
+        elon: '/assets/cards/cmdr-grok.png',
+        hassabis: '/assets/cards/cmdr-gemini.png',
+        copilot: '/assets/cards/copilot-character.png',  // 코파일럿도 캐릭터 카드 사용
+        grok: '/assets/cards/grok-character.png',  // 그록은 캐릭터 카드 사용
+    };
+
+    const portraitImage = isGemini
+        ? defaultGeminiImage
+        : isChip
+            ? defaultChipImage
+            : isSam
+                ? commanderImages.sam
+                : isDario
+                    ? commanderImages.dario
+                    : isElon
+                        ? commanderImages.elon
+                        : isHassabis
+                            ? commanderImages.hassabis
+                            : isCopilot
+                                ? commanderImages.copilot
+                                : isGrok
+                                    ? commanderImages.grok
+                                    : characterImage;
 
     return (
         <AnimatePresence>
@@ -98,7 +133,7 @@ export default function DialogueOverlay({
                                     )}
 
                                     {/* Screen Flash Effect for Hostiles */}
-                                    {!isGemini && (
+                                    {!isAlly && (
                                         <motion.div
                                             initial={{ opacity: 0 }}
                                             animate={{ opacity: [0, 0.5, 0] }}
@@ -107,37 +142,47 @@ export default function DialogueOverlay({
                                         />
                                     )}
 
-                                    {/* Portrait with specialized animations */}
+                                    /* Portrait with specialized animations */
                                     <motion.div
                                         key={portraitImage}
                                         initial={{
-                                            x: isGemini ? -150 : 150,
+                                            x: isAlly ? -150 : 150,
                                             opacity: 0,
-                                            scale: isGemini ? 1.0 : 1.4,
-                                            filter: isGemini ? "blur(0px)" : "blur(10px) brightness(0.5)",
+                                            scale: isAlly ? 1.0 : 1.4,
+                                            filter: isAlly ? "blur(0px)" : "blur(10px) brightness(0.5)",
                                         }}
                                         animate={{
-                                            x: isGemini ? -150 : 180,
-                                            y: !isGemini ? [0, -5, 5, -5, 0] : 0, // Screen shake / Rumble
+                                            x: isAlly ? -150 : 180,
+                                            y: (!isAlly && type === 'boss') ? [0, -3, 3, -3, 0] : 0, // Only shake for bosses
                                             opacity: 1,
-                                            scale: isGemini ? 1.1 : 1.5,
-                                            filter: isGemini ? "blur(0px)" : "blur(0px) brightness(1)",
+                                            scale: isAlly ? 1.1 : 1.5,
+                                            filter: isAlly ? "blur(0px)" : "blur(0px) brightness(1)",
                                         }}
                                         transition={{
                                             x: { duration: 0.6, ease: "circOut" },
-                                            y: { repeat: !isGemini ? Infinity : 0, duration: 0.15, repeatType: "mirror" },
+                                            y: { repeat: (!isAlly && type === 'boss') ? Infinity : 0, duration: 0.4, repeatType: "mirror" },
                                             duration: 0.6
                                         }}
                                         className={cn(
                                             "absolute bottom-0 h-[90%] aspect-square max-w-[800px]",
-                                            isGemini ? "left-0" : "right-0"
+                                            isAlly ? "left-0" : "right-0"
                                         )}
                                     >
-                                        {/* Glow Effect behind portrait */}
-                                        <div className={cn(
-                                            "absolute inset-0 blur-[60px] opacity-30 rounded-full",
-                                            isGemini ? "bg-cyan-500" : "bg-red-500"
-                                        )} />
+                                        {/* Glow Effect behind portrait - Pulsing for non-boss enemies */}
+                                        <motion.div
+                                            className={cn(
+                                                "absolute inset-0 blur-[60px] rounded-full",
+                                                isAlly ? (isChip ? "bg-yellow-400" : "bg-cyan-500") : "bg-red-500"
+                                            )}
+                                            animate={{
+                                                opacity: isAlly ? 0.3 : [0.2, 0.4, 0.2],
+                                                scale: isAlly ? 1 : [1, 1.05, 1]
+                                            }}
+                                            transition={{
+                                                opacity: { repeat: Infinity, duration: 2, ease: "easeInOut" },
+                                                scale: { repeat: Infinity, duration: 2, ease: "easeInOut" }
+                                            }}
+                                        />
 
                                         <Image
                                             src={portraitImage}
@@ -210,14 +255,18 @@ export default function DialogueOverlay({
                                 <div className="w-1 h-2 bg-cyan-400/30" />
                             </div>
 
-                            {/* Dialogue Text */}
-                            <div className="text-xl md:text-2xl font-medium leading-relaxed text-gray-100 pr-12 whitespace-pre-wrap">
-                                {displayText}
-                                {!isTypewriterFinished && (
-                                    <motion.span
-                                        animate={{ opacity: [0, 1, 0] }}
-                                        transition={{ repeat: Infinity, duration: 0.8 }}
-                                        className="inline-block w-3 h-6 bg-cyan-400 ml-1 translate-y-1"
+                            {/* Dialogue Text with Effects */}
+                            <div className="text-xl md:text-2xl font-medium leading-relaxed pr-12">
+                                {isGemini ? (
+                                    <TextGenerateEffect
+                                        words={dialogue}
+                                        className="text-gray-100"
+                                    />
+                                ) : (
+                                    <EncryptedText
+                                        text={dialogue}
+                                        duration={2000}
+                                        className="text-red-400"
                                     />
                                 )}
                             </div>

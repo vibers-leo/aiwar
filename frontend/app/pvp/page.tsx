@@ -619,6 +619,32 @@ export default function PVPArenaPage() {
             englishTitle="PVP ARENA"
             description="실시간 플레이어 대전 - 최강자를 가리자!"
             color="red"
+            leftSidebarIcon={<Trophy size={32} className="text-red-400" />}
+            leftSidebarGameConditions={
+                <div className="space-y-3">
+                    <h3 className="text-xs font-black tracking-widest text-red-400 mb-2">참가 조건</h3>
+                    <div className="space-y-2 text-xs text-white/70 leading-relaxed">
+                        <div className="flex items-start gap-2">
+                            <span className="text-red-400 font-bold shrink-0">•</span>
+                            <p><span className="text-white font-semibold">레벨:</span> 1 이상</p>
+                        </div>
+                        <div className="flex items-start gap-2">
+                            <span className="text-red-400 font-bold shrink-0">•</span>
+                            <p><span className="text-white font-semibold">참가비:</span> 50 코인</p>
+                        </div>
+                        <div className="flex items-start gap-2">
+                            <span className="text-red-400 font-bold shrink-0">•</span>
+                            <p><span className="text-white font-semibold">카드:</span> 등급별 5장 이상 보유</p>
+                        </div>
+                    </div>
+                </div>
+            }
+            leftSidebarTips={[
+                "전략 승부 모드에서는 3라운드에 히든 카드를 배치할 수 있습니다.",
+                "상대방은 카드를 랜덤 순서로 제출하므로 운도 중요합니다.",
+                "AI 대전은 오전 6시에 리셋되며, 횟수가 늘어날수록 토큰 소모가 증가합니다.",
+                "승리 시 코인과 경험치를 획득하며, 연승 보너스도 있습니다!",
+            ]}
         >
             <div className="max-w-7xl mx-auto">
                 {/* Season Banner */}
@@ -682,8 +708,8 @@ export default function PVPArenaPage() {
                                 </div>
                             </div>
 
-                            {/* 참가 조건 */}
-                            <div className="bg-yellow-500/10 border border-yellow-500/30 rounded-xl p-4 mb-8 flex flex-col md:flex-row items-center justify-between gap-4">
+                            {/* 참가 조건 - Moved to sidebar */}
+                            {/* <div className="bg-yellow-500/10 border border-yellow-500/30 rounded-xl p-4 mb-8 flex flex-col md:flex-row items-center justify-between gap-4">
                                 <h3 className="text-lg font-bold text-yellow-400 flex items-center gap-2 whitespace-nowrap">
                                     <Award size={20} />
                                     참가 조건
@@ -710,14 +736,14 @@ export default function PVPArenaPage() {
                                         <span className="text-white/80">등급별 카드 보유 (5장+)</span>
                                     </div>
                                 </div>
-                            </div>
+                            </div> */}
 
                             {/* 전투 모드 선택 */}
                             <h2 className="text-2xl font-bold text-white mb-6 flex items-center gap-2">
                                 <Target className="text-red-400" size={24} />
                                 전투 모드 선택
                             </h2>
-                            <div className="grid grid-cols-3 gap-6 mb-8">
+                            <div className="grid grid-cols-3 gap-4 mb-6">
                                 {modes.map((mode) => {
                                     const Icon = mode.icon;
                                     const isSelected = selectedMode === mode.id;
@@ -727,7 +753,7 @@ export default function PVPArenaPage() {
                                             key={mode.id}
                                             onClick={() => handleModeSelect(mode.id)}
                                             className={cn(
-                                                "relative p-6 rounded-2xl border-2 transition-all text-left overflow-hidden group",
+                                                "relative p-4 rounded-xl border-2 transition-all text-left overflow-hidden group",
                                                 isSelected
                                                     ? "border-cyan-500 bg-cyan-500/10 scale-105 shadow-lg shadow-cyan-500/20"
                                                     : "border-white/10 hover:border-white/30 bg-black/20"
@@ -1212,9 +1238,10 @@ export default function PVPArenaPage() {
                     {phase === 'card-placement' && (
                         <motion.div
                             key="card-placement"
-                            initial={{ opacity: 0, y: 20 }}
-                            animate={{ opacity: 1, y: 0 }}
-                            exit={{ opacity: 0, y: -20 }}
+                            initial={{ opacity: 0 }}
+                            animate={{ opacity: 1 }}
+                            exit={{ opacity: 0 }}
+                            className="fixed inset-0 z-50 bg-black"
                         >
                             <CardPlacementBoard
                                 selectedCards={playerDeck}

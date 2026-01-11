@@ -66,13 +66,28 @@ export default function EnhancePage() {
         e.dataTransfer.setData('application/json', JSON.stringify(card));
     };
 
-    // 카드 클릭 (타겟이 없으면 타겟으로, 있으면 재료로)
+    // 카드 클릭 (타겟이 없으면 타겟으로, 있으면 재료로, 이미 선택된 카드면 제거)
     const handleCardClick = (card: InventoryCard) => {
+        // 1. 타겟 카드를 다시 클릭한 경우 -> 타겟 제거
+        if (targetCard && card.instanceId === targetCard.instanceId) {
+            handleTargetRemove();
+            return;
+        }
+
+        // 2. 재료 슬롯에 있는 카드를 다시 클릭한 경우 -> 해당 슬롯에서 제거
+        const materialIndex = materialSlots.findIndex(s => s?.instanceId === card.instanceId);
+        if (materialIndex !== -1) {
+            handleMaterialRemove(materialIndex);
+            return;
+        }
+
+        // 3. 타겟이 없으면 타겟으로 설정
         if (!targetCard) {
             setTargetCard(card);
             // 타겟 설정 시 슬롯 초기화 (혹시 모르니)
             setMaterialSlots(Array(10).fill(null));
-        } else if (card.instanceId !== targetCard.instanceId) {
+        } else {
+            // 4. 타겟이 있고, 다른 카드를 클릭한 경우 -> 재료로 추가
             // Rarity Check
             if ((card.rarity || 'common') !== (targetCard.rarity || 'common')) {
                 showAlert({ title: '등급 불일치', message: '강화 재료는 대상 카드와 같은 등급이어야 합니다.', type: 'warning' });

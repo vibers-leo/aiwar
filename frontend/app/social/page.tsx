@@ -43,6 +43,7 @@ export default function SocialPage() {
     const { profile } = useUserProfile();
     const { showAlert, showConfirm } = useAlert();
     const [activeTab, setActiveTab] = useState<'friends' | 'search' | 'requests'>('friends');
+    const [language] = useState('ko'); // TODO: Get from context/settings
 
     const [friends, setFriends] = useState<FriendUser[]>([]);
     const [requests, setRequests] = useState<FriendUser[]>([]);
@@ -168,9 +169,9 @@ export default function SocialPage() {
 
     return (
         <CyberPageLayout
-            title="SOCIAL DASHBOARD"
-            englishTitle="COMMANDER HUB"
-            subtitle="Connect & Challenge"
+            title="친구"
+            englishTitle="FRIENDS"
+            subtitle="친구 목록 및 관리"
             color="purple"
         >
             <div className="grid grid-cols-1 lg:grid-cols-12 gap-6 pb-20">
@@ -187,14 +188,14 @@ export default function SocialPage() {
                                 </div>
                                 <div>
                                     <h3 className="text-xl font-bold text-white italic orbitron tracking-tighter truncate max-w-[200px]">
-                                        {profile?.nickname || 'COMMANDER'}
+                                        {profile?.nickname || '지휘관'}
                                     </h3>
-                                    <p className="text-[10px] text-purple-400 font-bold uppercase tracking-widest mt-1 opacity-70">RANK PREVIEW: #77</p>
+                                    <p className="text-[10px] text-purple-400 font-bold uppercase tracking-widest mt-1 opacity-70">랭킹 미리보기: #77</p>
                                 </div>
                                 <div className="w-full flex gap-2">
                                     <Link href={`/profile/${user?.uid}`} className="flex-1">
                                         <Button variant="ghost" size="sm" fullWidth className="text-[10px] orbitron h-8 border-purple-500/30 hover:bg-purple-500/10">
-                                            MY PROFILE
+                                            내 프로필
                                         </Button>
                                     </Link>
                                 </div>
@@ -205,9 +206,9 @@ export default function SocialPage() {
                     {/* Navigation Tabs */}
                     <div className="space-y-2">
                         {[
-                            { id: 'friends', name: 'FRIENDS', icon: <Users size={16} />, count: friends.length },
-                            { id: 'requests', name: 'REQUESTS', icon: <Bell size={16} />, count: requests.length },
-                            { id: 'search', name: 'SEARCH', icon: <Search size={16} />, count: 0 },
+                            { id: 'friends', name: '친구 목록', icon: <Users size={16} />, count: friends.length },
+                            { id: 'requests', name: '친구 요청', icon: <Bell size={16} />, count: requests.length },
+                            { id: 'search', name: '친구 찾기', icon: <Search size={16} />, count: 0 },
                         ].map(tab => (
                             <button
                                 key={tab.id}
@@ -242,8 +243,8 @@ export default function SocialPage() {
                             value={searchQuery}
                             onChange={(e) => setSearchQuery(e.target.value)}
                             onKeyDown={(e) => e.key === 'Enter' && handleSearch()}
-                            placeholder="FIND COMMANDERS BY NICKNAME..."
-                            className="w-full bg-black/60 border border-white/10 rounded-2xl py-5 pl-12 pr-28 text-sm text-white orbitron focus:outline-none focus:border-purple-500/50 backdrop-blur-xl transition-all shadow-[0_0_30px_rgba(0,0,0,0.5)]"
+                            placeholder="닉네임으로 지휘관 검색..."
+                            className="w-full bg-black/60 border border-white/10 rounded-2xl py-5 pl-12 pr-28 text-sm text-white focus:outline-none focus:border-purple-500/50 backdrop-blur-xl transition-all shadow-[0_0_30px_rgba(0,0,0,0.5)]"
                         />
                         <div className="absolute right-4 top-1/2 -translate-y-1/2">
                             <Button
@@ -251,9 +252,9 @@ export default function SocialPage() {
                                 isLoading={isSearching}
                                 size="sm"
                                 color="secondary"
-                                className="orbitron font-bold px-6 h-10 shadow-[0_0_15px_rgba(168,85,247,0.3)]"
+                                className="font-bold px-6 h-10 shadow-[0_0_15px_rgba(168,85,247,0.3)]"
                             >
-                                SEARCH
+                                검색
                             </Button>
                         </div>
                     </div>
@@ -268,14 +269,14 @@ export default function SocialPage() {
                                 className="space-y-4"
                             >
                                 <div className="flex items-center justify-between px-2 mb-2">
-                                    <h2 className="text-xs font-bold text-white/50 orbitron tracking-widest">ACTIVE COMMANDERS ({friends.length})</h2>
+                                    <h2 className="text-xs font-bold text-white/50 tracking-widest">활성 지휘관 ({friends.length})</h2>
                                 </div>
                                 {friends.length === 0 ? (
                                     <div className="text-center py-20 bg-black/20 rounded-3xl border border-dashed border-white/5">
                                         <Users className="mx-auto text-white/10 mb-4" size={48} />
-                                        <p className="text-gray-500 font-mono text-sm leading-relaxed">
-                                            NO ALLIES DETECTED IN YOUR GRID.<br />
-                                            USE THE SEARCH PROTOCOL TO FIND OTHER COMMANDERS.
+                                        <p className="text-gray-500 text-sm leading-relaxed">
+                                            아직 친구가 없습니다.<br />
+                                            '친구 찾기' 탭에서 다른 지휘관을 검색하세요.
                                         </p>
                                     </div>
                                 ) : (
@@ -296,12 +297,12 @@ export default function SocialPage() {
                                                             <div className="flex items-center gap-2">
                                                                 <h4 className="font-bold text-white truncate max-w-[150px] italic">{friend.nickname}</h4>
                                                                 {isUserOnline(friend.updatedAt) ? (
-                                                                    <span className="text-[10px] text-green-400 font-mono uppercase">ONLINE</span>
+                                                                    <span className="text-[10px] text-green-400 uppercase">온라인</span>
                                                                 ) : (
-                                                                    <span className="text-[10px] text-white/30 font-mono uppercase">OFFLINE</span>
+                                                                    <span className="text-[10px] text-white/30 uppercase">오프라인</span>
                                                                 )}
                                                             </div>
-                                                            <div className="text-[10px] text-white/30 font-mono mt-0.5">LV.{friend.level || 1} • ELITE COMMANDER</div>
+                                                            <div className="text-[10px] text-white/30 mt-0.5">LV.{friend.level || 1} • 엘리트 지휘관</div>
                                                         </div>
                                                     </div>
                                                     <div className="flex items-center gap-2 opacity-60 group-hover:opacity-100 transition-opacity">
@@ -310,12 +311,12 @@ export default function SocialPage() {
                                                             size="sm"
                                                             variant="light"
                                                             className="h-10 w-10 p-0 text-cyan-400 hover:bg-cyan-500/10"
-                                                            title="BATTLE"
+                                                            title="대전"
                                                         >
                                                             <Swords size={20} />
                                                         </Button>
                                                         <Link href={`/profile/${friend.uid}`}>
-                                                            <Button size="sm" variant="light" className="h-10 w-10 p-0 text-white/50 hover:text-white hover:bg-white/5" title="VIEW PROFILE">
+                                                            <Button size="sm" variant="light" className="h-10 w-10 p-0 text-white/50 hover:text-white hover:bg-white/5" title="프로필 보기">
                                                                 <ExternalLink size={20} />
                                                             </Button>
                                                         </Link>
@@ -324,7 +325,7 @@ export default function SocialPage() {
                                                             size="sm"
                                                             variant="light"
                                                             className="h-10 w-10 p-0 text-red-500/40 hover:text-red-500 hover:bg-red-500/10"
-                                                            title="REMOVE"
+                                                            title="삭제"
                                                         >
                                                             <UserX size={20} />
                                                         </Button>
@@ -346,12 +347,12 @@ export default function SocialPage() {
                                 className="space-y-4"
                             >
                                 <div className="flex items-center justify-between px-2 mb-2">
-                                    <h2 className="text-xs font-bold text-white/50 orbitron tracking-widest">PENDING TRANSMISSIONS ({requests.length})</h2>
+                                    <h2 className="text-xs font-bold text-white/50 tracking-widest">대기 중인 요청 ({requests.length})</h2>
                                 </div>
                                 {requests.length === 0 ? (
                                     <div className="text-center py-20 bg-black/20 rounded-3xl border border-dashed border-white/5">
                                         <Bell className="mx-auto text-white/10 mb-4" size={48} />
-                                        <p className="text-gray-500 font-mono text-sm">NO PENDING REQUESTS IN THE BUFFER.</p>
+                                        <p className="text-gray-500 text-sm">대기 중인 요청이 없습니다.</p>
                                     </div>
                                 ) : (
                                     <div className="grid grid-cols-1 gap-3">
@@ -362,24 +363,24 @@ export default function SocialPage() {
                                                         <Avatar src={req.avatarUrl} className="w-12 h-12" />
                                                         <div>
                                                             <h4 className="font-bold text-white">{req.nickname}</h4>
-                                                            <p className="text-[10px] text-gray-500 font-mono uppercase leading-none">INVITATION RECEIVED</p>
+                                                            <p className="text-[10px] text-gray-500 uppercase leading-none">친구 요청 받음</p>
                                                         </div>
                                                     </div>
                                                     <div className="flex gap-2">
                                                         <Button
                                                             onClick={() => handleAccept(req.uid)}
                                                             size="sm"
-                                                            className="orbitron font-bold text-[10px] bg-green-500/20 text-green-400 border border-green-500/30 hover:bg-green-500/40"
+                                                            className="font-bold text-[10px] bg-green-500/20 text-green-400 border border-green-500/30 hover:bg-green-500/40"
                                                         >
-                                                            ACCEPT
+                                                            수락
                                                         </Button>
                                                         <Button
                                                             onClick={() => removeFriend(user?.uid || '', req.uid)}
                                                             size="sm"
                                                             variant="ghost"
-                                                            className="orbitron font-bold text-[10px] border-red-500/30 text-red-400 hover:bg-red-500/10"
+                                                            className="font-bold text-[10px] border-red-500/30 text-red-400 hover:bg-red-500/10"
                                                         >
-                                                            DECLINE
+                                                            거절
                                                         </Button>
                                                     </div>
                                                 </CardBody>
@@ -399,14 +400,14 @@ export default function SocialPage() {
                                 className="space-y-4"
                             >
                                 <div className="flex items-center justify-between px-2 mb-2">
-                                    <h2 className="text-xs font-bold text-white/50 orbitron tracking-widest">INTEL SEARCH RESULTS ({searchResults.length})</h2>
+                                    <h2 className="text-xs font-bold text-white/50 tracking-widest">검색 결과 ({searchResults.length})</h2>
                                 </div>
                                 {searchResults.length === 0 ? (
                                     <div className="text-center py-20 bg-black/20 rounded-3xl border border-dashed border-white/5">
                                         <Search className="mx-auto text-white/10 mb-4" size={48} />
-                                        <p className="text-gray-500 font-mono text-sm leading-relaxed">
-                                            NO COMMANDERS FOUND MATCHING YOUR DATA.<br />
-                                            PLEASE RE-ENTER THE NICKNAME PROTOCOL.
+                                        <p className="text-gray-500 text-sm leading-relaxed">
+                                            검색 결과가 없습니다.<br />
+                                            다른 닉네임으로 다시 검색해보세요.
                                         </p>
                                     </div>
                                 ) : (
@@ -421,12 +422,12 @@ export default function SocialPage() {
                                                         <Avatar src={result.avatarUrl} className="w-20 h-20 border border-white/10 shadow-lg" />
                                                         <div>
                                                             <h4 className="font-bold text-white italic text-lg">{result.nickname}</h4>
-                                                            <p className="text-[10px] text-gray-500 font-mono">LEVEL {result.level || 1} • COMMANDER</p>
+                                                            <p className="text-[10px] text-gray-500">레벨 {result.level || 1} • 지휘관</p>
                                                         </div>
                                                         <div className="w-full pt-2 flex gap-2">
                                                             <Link href={`/profile/${result.uid}`} className="flex-1">
-                                                                <Button variant="ghost" size="sm" fullWidth className="text-[10px] orbitron border-white/10">
-                                                                    VIEW PROFILE
+                                                                <Button variant="ghost" size="sm" fullWidth className="text-[10px] border-white/10">
+                                                                    프로필 보기
                                                                 </Button>
                                                             </Link>
                                                             {!isFriend && !isAlreadyRequested && (
@@ -434,14 +435,14 @@ export default function SocialPage() {
                                                                     onClick={() => handleSendRequest(result)}
                                                                     size="sm"
                                                                     color="primary"
-                                                                    className="flex-1 orbitron font-bold text-[10px]"
+                                                                    className="flex-1 font-bold text-[10px]"
                                                                 >
-                                                                    ADD FRIEND
+                                                                    친구 추가
                                                                 </Button>
                                                             )}
                                                             {isFriend && (
-                                                                <div className="flex-1 flex items-center justify-center bg-purple-500/20 rounded-lg border border-purple-500/30 text-[10px] text-purple-400 font-bold orbitron">
-                                                                    FRIEND
+                                                                <div className="flex-1 flex items-center justify-center bg-purple-500/20 rounded-lg border border-purple-500/30 text-[10px] text-purple-400 font-bold">
+                                                                    친구
                                                                 </div>
                                                             )}
                                                         </div>
@@ -462,25 +463,25 @@ export default function SocialPage() {
                         <CardBody className="p-6">
                             <div className="flex items-center gap-2 mb-6">
                                 <ShieldAlert size={18} className="text-cyan-400" />
-                                <h3 className="text-xs font-bold text-white orbitron tracking-widest uppercase">INTEL FEED</h3>
+                                <h3 className="text-xs font-bold text-white tracking-widest uppercase">정보 피드</h3>
                             </div>
                             <div className="mb-6 p-4 bg-purple-500/5 border border-purple-500/10 rounded-2xl">
                                 <ResetTimer className="justify-center" />
                             </div>
                             <div className="space-y-4">
                                 <div className="p-3 bg-white/5 rounded-xl border-l-2 border-cyan-500">
-                                    <p className="text-[11px] text-gray-400 font-mono leading-relaxed">
-                                        <span className="text-cyan-400 font-bold">SYSTEM:</span> SEASON 1 "GENESIS" IS NOW ACTIVE. ALL SOCIAL RANKS HAVE BEEN RESET.
+                                    <p className="text-[11px] text-gray-400 leading-relaxed">
+                                        <span className="text-cyan-400 font-bold">시스템:</span> 시즌 1 "제네시스"가 활성화되었습니다. 모든 소셜 랭킹이 초기화되었습니다.
                                     </p>
                                 </div>
                                 <div className="p-3 bg-white/5 rounded-xl border-l-2 border-purple-500">
-                                    <p className="text-[11px] text-gray-400 font-mono leading-relaxed">
-                                        <span className="text-purple-400 font-bold">TIP:</span> REACHING LEVEL 10 UNLOCKS "BATTLE SQUADS" - FORM ALLIANCES WITH TOP COMMANDERS.
+                                    <p className="text-[11px] text-gray-400 leading-relaxed">
+                                        <span className="text-purple-400 font-bold">팁:</span> 레벨 10 달성 시 "전투 분대" 기능이 해금됩니다 - 최고의 지휘관들과 동맹을 맺으세요.
                                     </p>
                                 </div>
                                 <div className="p-3 bg-white/5 rounded-xl border-l-2 border-amber-500">
-                                    <p className="text-[11px] text-gray-400 font-mono leading-relaxed">
-                                        <span className="text-amber-400 font-bold">SECURITY:</span> YOUR DATA IS FULLY ENCRYPTED THROUGH THE NEURAL NETWORK.
+                                    <p className="text-[11px] text-gray-400 leading-relaxed">
+                                        <span className="text-amber-400 font-bold">보안:</span> 귀하의 데이터는 신경망을 통해 완전히 암호화됩니다.
                                     </p>
                                 </div>
                             </div>
@@ -493,12 +494,12 @@ export default function SocialPage() {
                             <div className="relative z-10 space-y-4">
                                 <Trophy className="text-amber-400" size={32} />
                                 <div>
-                                    <h3 className="text-sm font-black text-white orbitron tracking-tight italic">GLOBAL RANKINGS</h3>
-                                    <p className="text-[10px] text-white/50 font-mono mt-1">COMPETE WITH COMMANDERS WORLDWIDE.</p>
+                                    <h3 className="text-sm font-black text-white tracking-tight italic">글로벌 랭킹</h3>
+                                    <p className="text-[10px] text-white/50 mt-1">전 세계 지휘관들과 경쟁하세요.</p>
                                 </div>
                                 <Link href="/ranking">
-                                    <Button fullWidth size="sm" variant="ghost" className="text-[10px] orbitron border-white/20 hover:bg-white/10 mt-2">
-                                        VIEW LEADERBOARD
+                                    <Button fullWidth size="sm" variant="ghost" className="text-[10px] border-white/20 hover:bg-white/10 mt-2">
+                                        리더보드 보기
                                     </Button>
                                 </Link>
                             </div>

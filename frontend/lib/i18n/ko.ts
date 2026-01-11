@@ -53,7 +53,7 @@ export const ko: Translations = {
     'page.training.englishTitle': 'Research Lab',
     'page.training.description': 'AI 유닛을 훈련하고 강화하여 전투력을 높이세요.',
 
-    'page.unique.title': '유니크 카드 제작기',
+    'page.unique.title': '유니크 생성',
     'page.unique.englishTitle': 'Unique Card Creator',
     'page.unique.description': '나만의 AI 유닛을 직접 설계하고 게임에 등록하세요.',
 

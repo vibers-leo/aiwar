@@ -17,7 +17,6 @@ import { motion, AnimatePresence } from "framer-motion";
 import { ArrowLeft, Swords, Shield, Skull, Lock, CheckCircle2, Trophy, Quote, Award } from "lucide-react";
 import { cn } from '@/lib/utils';
 import { addNotification } from '@/components/NotificationCenter';
-import PageHeader from '@/components/PageHeader';
 import { useTranslation } from '@/context/LanguageContext';
 import { useUser } from '@/context/UserContext';
 import DialogueOverlay from '@/components/story/DialogueOverlay';
@@ -283,12 +282,17 @@ export default function ChapterDetailPage() {
                 <DialogueOverlay
                     isOpen={isDialogueOpen}
                     onClose={handleDialogueComplete}
-                    dialogue={selectedStage.enemy.dialogue.appearance_ko || selectedStage.enemy.dialogue.appearance || selectedStage.enemy.dialogue.intro_ko || selectedStage.enemy.dialogue.intro}
+                    dialogue={
+                        selectedStage.enemy.dialogue.appearance_ko ||
+                        selectedStage.enemy.dialogue.appearance ||
+                        selectedStage.enemy.dialogue.intro_ko ||
+                        selectedStage.enemy.dialogue.intro ||
+                        ''
+                    }
                     speakerName={
-                        (selectedStage.enemy.dialogue.appearance_ko || selectedStage.enemy.dialogue.appearance || selectedStage.enemy.dialogue.intro_ko || selectedStage.enemy.dialogue.intro).includes('제미나이') ||
-                            (selectedStage.enemy.dialogue.appearance_ko || selectedStage.enemy.dialogue.appearance || selectedStage.enemy.dialogue.intro_ko || selectedStage.enemy.dialogue.intro).includes('Gemini')
-                            ? 'Gemini'
-                            : (language === 'ko' ? selectedStage.enemy.name_ko : selectedStage.enemy.name)
+                        language === 'ko'
+                            ? (selectedStage.enemy.name_ko || selectedStage.enemy.name)
+                            : selectedStage.enemy.name
                     }
                     characterImage={selectedStage.enemy.image}
                     type={selectedStage.difficulty === 'BOSS' ? 'boss' : 'intro'}

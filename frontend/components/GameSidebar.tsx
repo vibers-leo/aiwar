@@ -11,12 +11,8 @@ import { useUserProfile } from '@/hooks/useUserProfile';
 import { useUser } from '@/context/UserContext';
 import { getGenerationSlots } from '@/lib/generation-utils';
 
-interface GameSidebarProps {
-    isCollapsed: boolean;
-    onToggle: () => void;
-}
-
-export default function GameSidebar({ isCollapsed, onToggle }: GameSidebarProps) {
+// No props needed - sidebar is always expanded
+export default function GameSidebar() {
     const pathname = usePathname();
     const { t } = useTranslation();
     const { profile } = useUserProfile();
@@ -65,7 +61,7 @@ export default function GameSidebar({ isCollapsed, onToggle }: GameSidebarProps)
         { name: t('menu.enhance'), path: '/enhance', icon: '🆙', color: 'amber' },
         { name: t('menu.fusion'), path: '/fusion', icon: '🔮', color: 'blue' },
         { name: t('menu.encyclopedia'), path: '/encyclopedia', icon: '📖', color: 'cyan' },
-        { name: '친구 목록', onClick: () => setShowFriendsModal(true), icon: '👥', color: 'pink' }, // [NEW] Friends Item
+        { name: '친구 목록', path: '/social', icon: '👥', color: 'pink' },
         { name: '지원센터', path: '/support', icon: '🛠️', color: 'blue' },
     ];
 
@@ -93,52 +89,56 @@ export default function GameSidebar({ isCollapsed, onToggle }: GameSidebarProps)
 
     return (
         <aside
-            className="fixed right-0 top-16 bottom-[200px] bg-black/95 backdrop-blur-2xl border-l border-white/5 z-50 transition-all duration-300 ease-out overflow-hidden flex flex-col"
-            style={{ width: 'var(--sidebar-width)' }}
+            className="fixed right-0 top-16 h-[calc(100vh-4rem)] bg-black/95 backdrop-blur-2xl border-l border-white/5 z-50 transition-all duration-300 ease-out overflow-hidden flex flex-col"
+            style={{ width: '240px' }}
             onWheel={handleWheel}
         >
             {/* Top Border Gradient */}
             <div className="absolute top-0 left-0 right-0 h-px bg-gradient-to-r from-transparent via-cyan-500/50 to-transparent" />
 
-            {/* Toggle Button */}
-            <button
-                onClick={onToggle}
-                className="absolute left-0 top-1/2 -translate-y-1/2 -translate-x-1/2 w-6 h-12 bg-black/50 border border-white/10 rounded-l-lg flex items-center justify-center text-white/40 hover:text-white hover:bg-black/80 transition-all z-50 backdrop-blur-sm group/toggle"
-            >
-                {isCollapsed ? <ChevronLeft size={14} /> : <ChevronRight size={14} />}
-            </button>
-
             {/* 1. Commander Profile */}
             <div
-                className="p-6 border-b border-white/5 flex flex-col items-center flex-none cursor-pointer hover:bg-white/5 transition-all group"
-                onClick={() => setShowProfileModal(true)}
+                className="p-4 border-b border-white/5 flex flex-col items-center flex-none cursor-pointer hover:bg-white/5 transition-all group"
+                onClick={(e) => {
+                    e.stopPropagation();
+                    setShowProfileModal(true);
+                }}
             >
-                <div className={`relative mb-3 transition-all ${isCollapsed ? 'w-10 h-10' : 'w-20 h-20'} group-hover:scale-105`}>
+                <div className={`relative mb-3 transition-all w-20 h-20 group-hover:scale-105`}>
                     <div className="absolute inset-0 bg-gradient-to-br from-cyan-500 to-purple-500 rounded-full opacity-20 animate-pulse group-hover:opacity-30" />
                     <div className="absolute inset-0 border border-white/10 rounded-full group-hover:border-cyan-500/50" />
-                    <div className="w-full h-full rounded-full bg-black/50 flex items-center justify-center text-2xl overflow-hidden relative">
-                        {/* Placeholder Avatar */}
-                        <span className="z-10 relative">👨‍✈️</span>
-                        <div className="absolute inset-0 bg-[radial-gradient(circle_at_center,_var(--tw-gradient-stops))] from-cyan-500/10 via-transparent to-transparent" />
+                    <div className="w-full h-full rounded-full bg-black/50 flex items-center justify-center overflow-hidden relative">
+                        {profile?.photoURL ? (
+                            <img
+                                src={profile.photoURL}
+                                alt="Commander"
+                                className="w-full h-full object-cover"
+                            />
+                        ) : (
+                            <>
+                                <span className="z-10 relative text-3xl">👨‍✈️</span>
+                                <div className="absolute inset-0 bg-[radial-gradient(circle_at_center,_var(--tw-gradient-stops))] from-cyan-500/10 via-transparent to-transparent" />
+                            </>
+                        )}
                     </div>
                     {/* Online Status Indicator */}
                     <div className="absolute bottom-0 right-0 w-3 h-3 bg-green-500 rounded-full border-2 border-black shadow-[0_0_5px_#22c55e]" />
                 </div>
 
-                {!isCollapsed && (
+                {/* Always show profile info */}
+                {true && (
                     <div className="text-center w-full">
-                        <h3 className="font-bold text-white text-sm mb-1 truncate px-2 font-orbitron group-hover:text-cyan-400 transition-colors">{nickname}</h3>
-                        <div className="flex items-center justify-center gap-1.5">
-                            <span className="w-1.5 h-1.5 bg-green-500 rounded-full animate-pulse" />
-                            <span className="text-[9px] font-mono text-cyan-400">SYSTEM_ONLINE</span>
+                        <h3 className="font-bold text-white text-base mb-0.5 truncate px-1 font-orbitron group-hover:text-cyan-400 transition-colors">{nickname}</h3>
+                        <div className="flex items-center justify-center gap-1">
+                            <span className="w-1 h-1 bg-green-500 rounded-full animate-pulse" />
+                            <span className="text-[8px] font-mono text-cyan-400">ONLINE</span>
                         </div>
-                        <p className="text-[8px] text-cyan-400/60 mt-1 font-mono">프로필 보기</p>
                     </div>
                 )}
             </div>
 
             {/* 2. Menu Items */}
-            <nav className="flex-1 overflow-y-auto py-4 px-3 space-y-1 scrollbar-hide">
+            <nav className="flex-1 overflow-y-auto py-3 px-2 space-y-1 scrollbar-hide">
                 {menuItems.map((item) => {
                     const isActive = pathname === item.path;
                     const colors = getColorClasses(item.color);
@@ -146,27 +146,28 @@ export default function GameSidebar({ isCollapsed, onToggle }: GameSidebarProps)
                         <>
                             {/* Active Glow */}
                             {isActive && (
-                                <div className={`absolute left-0 top-1/2 -translate-y-1/2 w-1 h-8 bg-${item.color}-500/50 rounded-r-full shadow-[0_0_10px_currentColor]`} />
+                                <div className={`absolute left-0 top-1/2 -translate-y-1/2 w-1 h-6 bg-${item.color}-500/50 rounded-r-full shadow-[0_0_10px_currentColor]`} />
                             )}
 
                             <span className={`text-xl flex-none ${isActive ? '' : 'grayscale opacity-60 group-hover:grayscale-0 group-hover:opacity-100'} transition-all`}>
                                 {item.icon}
                             </span>
 
-                            {!isCollapsed && (
-                                <span className={`text-sm font-medium ${isActive ? 'text-white' : 'text-white/60 group-hover:text-white'} transition-colors font-mono tracking-wide truncate`}>
+                            {/* Always show text */}
+                            {true && (
+                                <span className={`text-xs font-medium ${isActive ? 'text-white' : 'text-white/60 group-hover:text-white'} transition-colors font-mono tracking-wide truncate`}>
                                     {item.name}
                                 </span>
                             )}
 
                             {/* Generation Ready Indicator */}
                             {item.path === '/generation' && hasReadyGenerations && (
-                                <div className="absolute right-3 w-2.5 h-2.5 bg-green-500 rounded-full shadow-[0_0_8px_#22c55e] animate-pulse" />
+                                <div className="absolute right-2 w-2 h-2 bg-green-500 rounded-full shadow-[0_0_8px_#22c55e] animate-pulse" />
                             )}
                         </>
                     );
 
-                    const commonClasses = `flex items-center gap-4 px-3 py-3 rounded-lg transition-all duration-200 group relative ${isActive
+                    const commonClasses = `flex items-center gap-3 px-3 py-3 rounded-lg transition-all duration-200 group relative ${isActive
                         ? `${colors.bg} border border-${item.color}-500/20`
                         : 'hover:bg-white/5 border border-transparent'
                         }`;
@@ -199,8 +200,7 @@ export default function GameSidebar({ isCollapsed, onToggle }: GameSidebarProps)
                 })}
             </nav>
 
-            {/* Bottom Gradient Overlay */}
-            <div className="absolute bottom-0 left-0 right-0 h-12 bg-gradient-to-t from-black/50 to-transparent pointer-events-none z-10" />
+
 
             {/* Commander Profile Modal */}
             <CommanderProfileModal

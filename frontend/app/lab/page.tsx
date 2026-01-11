@@ -212,26 +212,20 @@ export default function LabPage() {
             description="지휘관 능력을 강화하여 게임 전반의 효율을 높이세요"
             color="cyan"
             backPath="/main"
+            leftSidebarIcon={<FlaskConical size={32} className="text-cyan-400" />}
+            leftSidebarTips={[
+                "지휘관 연구 - 연구를 통해 영구적인 보너스를 획득하세요",
+                "협상력: 상점 카드팩 가격 할인",
+                "행운: 카드팩 구매 시 잭팟 확률 증가",
+                "통찰력: 높은 등급 카드 획득 확률 증가",
+                "효율: 연구 시간 단축",
+                "덱에 연구원 카드를 배치하면 연구 시간이 단축됩니다",
+            ]}
         >
 
 
 
-            {/* 지휘관 연구 */}
-            <div className="mb-6">
-                <h2 className="text-2xl font-bold text-white mb-2 flex items-center justify-between">
-                    <div className="flex items-center gap-2">
-                        <FlaskConical className="text-cyan-400" />
-                        지휘관 연구
-                    </div>
-                    {timeReduction > 0 && (
-                        <div className="flex items-center gap-2 text-xs text-yellow-500 bg-yellow-500/10 px-3 py-1.5 rounded-full border border-yellow-500/20 animate-pulse">
-                            <Sparkles size={14} />
-                            연구 시간 {Math.round(timeReduction * 100)}% 단축 적용 중
-                        </div>
-                    )}
-                </h2>
-                <p className="text-white/60">연구를 통해 영구적인 보너스를 획득하세요. (보유: {coins.toLocaleString()} 코인)</p>
-            </div>
+
 
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
                 {RESEARCH_STATS.map((stat, i) => {

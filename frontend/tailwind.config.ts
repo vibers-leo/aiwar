@@ -19,6 +19,7 @@ const config: Config = {
                 'slide-up': 'slideUp 0.5s ease-out',
                 'bounce-in': 'bounceIn 0.6s ease-out',
                 'shimmer': 'shimmer 2s linear infinite',
+                'meteor-effect': 'meteor 5s linear infinite',
             },
             keyframes: {
                 float: {
@@ -46,6 +47,11 @@ const config: Config = {
                 shimmer: {
                     '0%': { backgroundPosition: '-1000px 0' },
                     '100%': { backgroundPosition: '1000px 0' },
+                },
+                meteor: {
+                    '0%': { transform: 'rotate(215deg) translateX(0)', opacity: '1' },
+                    '70%': { opacity: '1' },
+                    '100%': { transform: 'rotate(215deg) translateX(-500px)', opacity: '0' },
                 },
             },
         },

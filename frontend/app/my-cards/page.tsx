@@ -90,6 +90,14 @@ export default function MyCardsPage() {
             subtitle={language === 'ko' ? '카드 인벤토리' : 'Card Inventory'}
             description={language === 'ko' ? '생성된 유닛을 관리하세요.' : 'Manage your generated units.'}
             color="purple"
+            leftSidebarIcon={<Grid3X3 size={32} className="text-purple-400" />}
+            leftSidebarTips={[
+                "보유 카드 관리 - 생성된 AI 유닛 인벤토리",
+                "대표 덱: 5-6장의 주력 카드를 설정하여 전투에 사용",
+                "등급별 필터: 일반 → 희귀 → 영웅 → 전설 → 유니크 → 군단장",
+                "정렬 옵션: 등급, 전투력, 이름, 획득일로 정렬 가능",
+                "덱 관리 모드에서 카드를 클릭하여 대표 덱 구성",
+            ]}
         >
             {/* Stats Overview */}
             <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mb-8">

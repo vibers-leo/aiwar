@@ -167,6 +167,13 @@ export default function FactionsPage() {
             englishTitle="AI FACTIONS"
             description="AI 군단을 구독하여 카드를 자동 생성하세요"
             color="purple"
+            leftSidebarIcon={<Shield size={32} className="text-purple-400" />}
+            leftSidebarTips={[
+                "군단 구독은 매일 자동으로 코인이 차감되는 정기 결제 방식입니다.",
+                "Pro 티어는 토큰 충전 속도가 빨라지고, Ultra 티어는 최대 토큰이 증가합니다.",
+                "구독 해지 시 환불 정책이 적용됩니다. 첫 해지는 50% 환불, 이후는 24시간 내 전액 환불입니다.",
+                "각 군단마다 고유한 특성과 스토리가 있습니다. 정보 버튼을 눌러 확인하세요!",
+            ]}
         >
             <div className="flex flex-col">
                 {/* Subscription Status Panel (New) */}

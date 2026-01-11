@@ -63,6 +63,14 @@ export default function StoryPage() {
             description={selectedSeason ? (selectedSeason.description_ko || selectedSeason.description) : "인류와 AI의 거대한 전쟁, 그 서막을 여는 이야기"}
             backPath={selectedSeason ? "/story" : "/main"}
             showBack={true}
+            color="cyan"
+            leftSidebarIcon={<BookOpen size={32} className="text-cyan-400" />}
+            leftSidebarTips={[
+                "스토리 모드를 완료하면 코인과 경험치를 획득할 수 있습니다.",
+                "각 챕터를 클리어하면 특별한 보상이 주어집니다.",
+                "시즌별로 고유한 스토리와 보스가 등장합니다.",
+                "챕터는 순서대로 해금되며, 이전 챕터를 완료해야 다음 챕터를 플레이할 수 있습니다.",
+            ]}
         >
             <AnimatePresence mode="wait">
                 {/* 1. 시즌 선택 화면 */}
@@ -71,64 +79,67 @@ export default function StoryPage() {
                         initial={{ opacity: 0 }}
                         animate={{ opacity: 1 }}
                         exit={{ opacity: 0 }}
-                        className="grid grid-cols-1 md:grid-cols-3 gap-8 py-8"
+                        className="w-full"
                     >
-                        {seasons.map((season, index) => (
-                            <motion.div
-                                key={season.id}
-                                initial={{ opacity: 0, y: 50 }}
-                                animate={{ opacity: 1, y: 0 }}
-                                transition={{ delay: index * 0.1 }}
-                                onClick={() => handleSelectSeason(season)}
-                                className={cn(
-                                    "relative h-[400px] rounded-3xl border overflow-hidden cursor-pointer group transition-all duration-500",
-                                    season.isOpened
-                                        ? "border-cyan-500/30 hover:border-cyan-500/80 hover:scale-[1.02] hover:shadow-[0_0_30px_rgba(6,182,212,0.3)]"
-                                        : "border-white/5 opacity-70 hover:opacity-100 grayscale hover:grayscale-0"
-                                )}
-                            >
-                                {/* 배경 이미지 대용 그라디언트 */}
-                                <div className={cn(
-                                    "absolute inset-0 bg-gradient-to-br transition-transform duration-700 group-hover:scale-110",
-                                    season.number === 1 ? "from-black via-blue-950 to-cyan-900" :
-                                        season.number === 2 ? "from-black via-purple-950 to-pink-900" :
-                                            "from-black via-red-950 to-orange-900"
-                                )} />
+                        <div className="grid grid-cols-1 gap-6 py-8">
+                            {seasons.map((season, index) => (
+                                <motion.div
+                                    key={season.id}
+                                    initial={{ opacity: 0, y: 50 }}
+                                    animate={{ opacity: 1, y: 0 }}
+                                    transition={{ delay: index * 0.1 }}
+                                    onClick={() => handleSelectSeason(season)}
+                                    className={cn(
+                                        "relative h-[280px] rounded-2xl border overflow-hidden cursor-pointer group transition-all duration-500",
+                                        season.isOpened
+                                            ? "border-cyan-500/30 hover:border-cyan-500/80 hover:scale-[1.01] hover:shadow-[0_0_40px_rgba(6,182,212,0.4)]"
+                                            : "border-white/5 opacity-70 hover:opacity-100 grayscale hover:grayscale-0"
+                                    )}
+                                >
+                                    {/* Background Image */}
+                                    <div className="absolute inset-0">
+                                        <img
+                                            src={`/images/season${season.number}-bg.png`}
+                                            alt={season.title}
+                                            className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-110"
+                                        />
+                                    </div>
 
-                                {/* 오버레이 */}
-                                <div className="absolute inset-0 bg-black/40 group-hover:bg-black/20 transition-colors" />
+                                    {/* Gradient Overlay */}
+                                    <div className="absolute inset-0 bg-gradient-to-t from-black via-black/60 to-transparent group-hover:from-black/90 transition-colors" />
 
-                                {/* 컨텐츠 */}
-                                <div className="absolute inset-0 p-8 flex flex-col justify-between">
-                                    <div className="flex justify-between items-start">
-                                        <div className="bg-black/50 backdrop-blur-sm px-3 py-1 rounded-full border border-white/10 text-xs font-mono text-cyan-400">
-                                            SEASON {season.number}
+                                    {/* 컨텐츠 */}
+                                    <div className="absolute inset-0 p-8 flex flex-col justify-between">
+                                        <div className="flex justify-between items-start">
+                                            <div className="bg-black/50 backdrop-blur-sm px-3 py-1 rounded-full border border-white/10 text-xs font-mono text-cyan-400">
+                                                SEASON {season.number}
+                                            </div>
+                                            {season.isOpened ? (
+                                                <div className="bg-cyan-500/20 px-3 py-1 rounded-full border border-cyan-500/50 text-xs font-bold text-cyan-300 flex items-center gap-1">
+                                                    <Play size={10} /> OPEN
+                                                </div>
+                                            ) : (
+                                                <div className="bg-red-500/20 px-3 py-1 rounded-full border border-red-500/50 text-xs font-bold text-red-300 flex items-center gap-1">
+                                                    <Lock size={10} /> LOCKED
+                                                </div>
+                                            )}
                                         </div>
-                                        {season.isOpened ? (
-                                            <div className="bg-cyan-500/20 px-3 py-1 rounded-full border border-cyan-500/50 text-xs font-bold text-cyan-300 flex items-center gap-1">
-                                                <Play size={10} /> OPEN
-                                            </div>
-                                        ) : (
-                                            <div className="bg-red-500/20 px-3 py-1 rounded-full border border-red-500/50 text-xs font-bold text-red-300 flex items-center gap-1">
-                                                <Lock size={10} /> LOCKED
-                                            </div>
-                                        )}
-                                    </div>
 
-                                    <div>
-                                        <h3 className="text-3xl font-black text-white mb-2 italic">
-                                            {season.title_ko || season.title}
-                                        </h3>
-                                        <p className="text-white/60 text-sm line-clamp-2 mb-4 font-mono text-[10px] uppercase tracking-wider text-cyan-600">
-                                            {season.title}
-                                        </p>
-                                        <p className="text-gray-300 text-sm line-clamp-3">
-                                            {season.description_ko || season.description}
-                                        </p>
+                                        <div>
+                                            <h3 className="text-3xl font-black text-white mb-2 italic">
+                                                {season.title_ko || season.title}
+                                            </h3>
+                                            <p className="text-white/60 text-sm line-clamp-2 mb-4 font-mono text-[10px] uppercase tracking-wider text-cyan-600">
+                                                {season.title}
+                                            </p>
+                                            <p className="text-gray-300 text-sm line-clamp-3">
+                                                {season.description_ko || season.description}
+                                            </p>
+                                        </div>
                                     </div>
-                                </div>
-                            </motion.div>
-                        ))}
+                                </motion.div>
+                            ))}
+                        </div>
                     </motion.div>
                 )}
 

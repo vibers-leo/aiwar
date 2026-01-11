@@ -6,6 +6,7 @@ import Link from 'next/link';
 import { motion, AnimatePresence } from 'framer-motion';
 import { useGameSound } from '@/hooks/useGameSound';
 import { BackgroundBeams } from "@/components/ui/aceternity/background-beams";
+import { SparklesCore } from "@/components/ui/aceternity/effects";
 import { CardBody, Card3D as CardContainer, CardItem } from "@/components/ui/aceternity/3d-card";
 import { useUser } from '@/context/UserContext';
 import Season1EndingModal from '@/components/Season1EndingModal';
@@ -66,14 +67,35 @@ export default function MainPage() {
 
   return (
     <CyberPageLayout
-      title="MAIN DASHBOARD"
-      englishTitle="COMMAND CENTER"
+      title="대시보드"
+      englishTitle="DASHBOARD"
       subtitle="Select Operation"
       color="cyan"
+      leftSidebarIcon={<svg xmlns="http://www.w3.org/2000/svg" width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="text-cyan-400"><path d="m3 9 9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"></path><polyline points="9 22 9 12 15 12 15 22"></polyline></svg>}
+      leftSidebarTips={[
+        "메인 대시보드에서 모든 게임 모드로 빠르게 이동할 수 있습니다.",
+        "스토리 모드를 완료하면 특별한 보상과 엔딩을 볼 수 있습니다.",
+        "AI 군단을 구독하면 자동으로 카드가 생성됩니다.",
+        "연구소에서 다양한 능력을 연구하여 게임을 유리하게 진행하세요.",
+        "PVP 아레나에서 다른 플레이어와 실시간 대결을 즐기세요!",
+      ]}
     >
-      {/* Background Beams Effect - Restored from Log 2025-12-22 */}
-      <div className="absolute inset-0 z-0 pointer-events-none opacity-40">
+      {/* Background Beams Effect - Enhanced visibility */}
+      <div className="absolute inset-0 z-0 pointer-events-none opacity-50">
         <BackgroundBeams />
+      </div>
+
+      {/* Subtle Sparkles in Top-Left Corner */}
+      <div className="absolute top-0 left-0 w-96 h-96 pointer-events-none z-10">
+        <SparklesCore
+          id="main-sparkles"
+          background="transparent"
+          minSize={0.4}
+          maxSize={1.2}
+          particleDensity={20}
+          particleColor="#00D9FF"
+          speed={0.5}
+        />
       </div>
 
       {/* History Archive Button */}

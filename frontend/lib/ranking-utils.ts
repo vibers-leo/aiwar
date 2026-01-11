@@ -8,12 +8,12 @@ import { getPvPStats } from './pvp-utils';
  */
 export function getCurrentSeason(): Season {
     const now = Date.now();
-    const seasonStart = new Date('2025-12-01').getTime();
-    const seasonEnd = new Date('2025-12-31').getTime();
+    const seasonStart = new Date('2026-01-01').getTime();
+    const seasonEnd = new Date('2026-01-31').getTime();
 
     return {
         id: 'season-1',
-        name: 'AI WAR : 전쟁의 서막 시즌1',
+        name: 'AI WAR : 전쟁의 서막 (시즌1)',
         startDate: seasonStart,
         endDate: seasonEnd,
         status: now < seasonStart ? 'upcoming' : now > seasonEnd ? 'ended' : 'active',

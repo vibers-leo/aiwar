@@ -423,30 +423,30 @@ export default function CardPlacementBoard({ selectedCards, onPlacementComplete,
     const availableCards = getAvailableCards();
 
     return (
-        <div className="w-full h-full max-h-screen flex flex-col overflow-hidden relative">
+        <div className="w-full h-[calc(100vh-80px)] flex flex-col overflow-hidden relative">
             {/* Compact Header */}
-            <div className="shrink-0 pt-6 pb-2 text-center relative z-10">
-                <h2 className="text-3xl font-black text-white italic tracking-tighter flex items-center justify-center gap-2">
+            <div className="shrink-0 pt-3 pb-1 text-center relative z-10">
+                <h2 className="text-2xl font-black text-white italic tracking-tighter flex items-center justify-center gap-2">
                     <span className="text-cyan-500">TACTICAL</span> DEPLOYMENT
-                    <span className="text-xs font-normal text-gray-500 bg-black/50 px-3 py-1.5 rounded-full border border-white/10 ml-3 backdrop-blur-md">
+                    <span className="text-[10px] font-normal text-gray-500 bg-black/50 px-2 py-1 rounded-full border border-white/10 ml-2 backdrop-blur-md">
                         {battleMode === 'ambush' ? '전략 승부 (6장)' : battleMode === 'double' ? '두장 승부 (6장)' : '전술 승부 (5장)'}
                     </span>
                 </h2>
             </div>
 
             {/* Main Content Area */}
-            <div className="flex-1 flex flex-col justify-center items-center gap-2 min-h-0 p-4">
+            <div className="flex-1 flex flex-col justify-center items-center gap-1 min-h-0 px-4 py-2">
 
                 {/* 1. TOP: Opponent Intel */}
                 {opponentDeck && opponentDeck.length > 0 && (
-                    <div className="w-full max-w-5xl flex items-center justify-center gap-6 bg-gradient-to-r from-transparent via-red-950/30 to-transparent border-y border-red-500/20 py-3 mb-4 backdrop-blur-sm">
+                    <div className="w-full max-w-5xl flex items-center justify-center gap-3 bg-gradient-to-r from-transparent via-red-950/30 to-transparent border-y border-red-500/20 py-2 mb-2 backdrop-blur-sm">
                         <div className="text-center shrink-0">
-                            <span className="text-3xl drop-shadow-[0_0_10px_rgba(255,0,0,0.5)]">😈</span>
-                            <div className="text-[10px] font-black text-red-500 tracking-widest mt-1">ENEMY</div>
+                            <span className="text-2xl drop-shadow-[0_0_10px_rgba(255,0,0,0.5)]">😈</span>
+                            <div className="text-[9px] font-black text-red-500 tracking-widest mt-0.5">ENEMY</div>
                         </div>
-                        <div className="flex justify-center gap-3">
+                        <div className="flex justify-center gap-2">
                             {opponentDeck.map((card, idx) => (
-                                <div key={idx} className="relative w-14 h-20 rounded-lg border border-red-500/30 overflow-hidden opacity-90 shadow-lg shadow-red-950/20">
+                                <div key={idx} className="relative w-12 h-16 rounded-lg border border-red-500/30 overflow-hidden opacity-90 shadow-lg shadow-red-950/20">
                                     <div
                                         className="absolute inset-0 bg-cover bg-center transition-transform hover:scale-110"
                                         style={{ backgroundImage: `url(${getCardImage(card)})` }}
@@ -462,10 +462,10 @@ export default function CardPlacementBoard({ selectedCards, onPlacementComplete,
                                 </div>
                             ))}
                         </div>
-                        <div className="absolute top-full mt-2 left-1/2 -translate-x-1/2 whitespace-nowrap z-20">
-                            <div className="text-[10px] text-red-400 flex items-center gap-1.5 bg-black/60 px-3 py-1 rounded-full border border-red-500/30 shadow-lg backdrop-blur-md animate-pulse">
-                                <AlertTriangle size={12} className="text-red-500" />
-                                <span>주의: 적은 카드를 <span className="text-red-300 font-bold underline decoration-red-500/50 underline-offset-2">무작위 순서</span>로 제출합니다</span>
+                        <div className="absolute top-full mt-1 left-1/2 -translate-x-1/2 whitespace-nowrap z-20">
+                            <div className="text-[9px] text-red-400 flex items-center gap-1 bg-black/70 px-2 py-0.5 rounded-full border border-red-500/30 shadow-lg backdrop-blur-md animate-pulse">
+                                <AlertTriangle size={10} className="text-red-500" />
+                                <span>적은 5장의 카드 중 <span className="text-red-300 font-bold">랜덤하게</span> 냅니다</span>
                             </div>
                         </div>
                     </div>
@@ -476,7 +476,7 @@ export default function CardPlacementBoard({ selectedCards, onPlacementComplete,
                     {/* Background Grid */}
                     <div className="absolute inset-0 bg-[url('/assets/grid.svg')] opacity-5 pointer-events-none" />
 
-                    <div className="flex justify-center items-end gap-2 sm:gap-4 flex-wrap z-10 mb-4">
+                    <div className="flex justify-center items-end gap-3 flex-wrap z-10 mb-2">
                         {/* Round 1 */}
                         <RoundPlacementSlot
                             roundNumber={1}
@@ -546,7 +546,7 @@ export default function CardPlacementBoard({ selectedCards, onPlacementComplete,
                     </div>
 
                     {/* Quick Access Bar (Reset/Auto/Start) */}
-                    <div className="flex items-center justify-center gap-4 mt-2">
+                    <div className="flex items-center justify-center gap-3 mt-1">
                         {onCancel && (
                             <button
                                 onClick={onCancel}
@@ -593,19 +593,19 @@ export default function CardPlacementBoard({ selectedCards, onPlacementComplete,
                 </div>
 
                 {/* 3. BOTTOM: My Card Pool */}
-                <div className="shrink-0 w-full max-w-6xl bg-black/60 border-t border-white/20 p-6 backdrop-blur-xl rounded-t-[32px] shadow-[0_-20px_50px_rgba(0,0,0,0.5)]">
-                    <div className="flex items-center justify-between mb-4">
-                        <div className="text-sm font-black text-gray-400 flex items-center gap-3 tracking-widest px-2">
-                            <div className="w-2 h-2 rounded-full bg-green-500 shadow-[0_0_10px_#22c55e] animate-pulse" />
+                <div className="shrink-0 w-full max-w-6xl bg-black/60 border-t border-white/20 p-3 backdrop-blur-xl rounded-t-[24px] shadow-[0_-20px_50px_rgba(0,0,0,0.5)]">
+                    <div className="flex items-center justify-between mb-2">
+                        <div className="text-xs font-black text-gray-400 flex items-center gap-2 tracking-widest px-1">
+                            <div className="w-1.5 h-1.5 rounded-full bg-green-500 shadow-[0_0_10px_#22c55e] animate-pulse" />
                             MY CARDS ({availableCards.length})
                         </div>
                         {availableCards.length === 0 && (
-                            <div className="text-[10px] font-bold text-cyan-400 animate-bounce bg-cyan-950/30 px-3 py-1 rounded-full border border-cyan-500/30">
+                            <div className="text-[9px] font-bold text-cyan-400 animate-bounce bg-cyan-950/30 px-2 py-0.5 rounded-full border border-cyan-500/30">
                                 ALL CARDS DEPLOYED ✨
                             </div>
                         )}
                     </div>
-                    <div className="flex justify-center gap-3 overflow-x-auto pb-4 no-scrollbar min-h-[140px] px-2">
+                    <div className="flex justify-center gap-2 overflow-x-auto pb-2 no-scrollbar min-h-[120px] px-1">
                         {availableCards.length > 0 ? availableCards.map((card) => (
                             <motion.div
                                 key={card.id}
@@ -619,7 +619,7 @@ export default function CardPlacementBoard({ selectedCards, onPlacementComplete,
                                 onClick={() => handleAutoPlace(card)}
                                 whileHover={{ scale: 1.1, y: -10, rotate: 1 }}
                                 whileTap={{ scale: 0.95 }}
-                                className="relative w-20 h-28 rounded-xl border border-white/20 overflow-hidden cursor-pointer shadow-2xl hover:border-cyan-400 transition-colors group shrink-0"
+                                className="relative w-24 h-32 rounded-xl border border-white/20 overflow-hidden cursor-pointer shadow-2xl hover:border-cyan-400 transition-colors group shrink-0"
                             >
                                 <div
                                     className="absolute inset-0 bg-cover bg-center transition-transform group-hover:scale-110"

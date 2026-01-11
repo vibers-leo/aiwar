@@ -97,32 +97,25 @@ export default function CardDetailModal({ card, isOpen, onClose }: CardDetailMod
                             </span>
                         </div>
                         <p className="text-sm text-gray-300 font-light leading-relaxed">
-                            {card.description || "No description available for this unit."}
+                            {card.description || "이 유닛에 대한 설명이 없습니다."}
                         </p>
                     </div>
 
-                    {/* Stats numeric details (complementing visual bars on card) */}
+                    {/* Stats - Total Power Only */}
                     <div className="space-y-4 mb-6">
-                        <div className="flex justify-between items-center bg-white/5 p-2 rounded-lg">
-                            <span className="text-xs text-gray-400 uppercase tracking-widest">Total Power</span>
-                            <span className="text-xl font-bold font-orbitron text-white">{card.stats.totalPower}</span>
-                        </div>
-
-                        <div className="grid grid-cols-2 gap-2">
-                            <StatDetail label="CRE" value={card.stats.creativity} />
-                            <StatDetail label="ACC" value={card.stats.accuracy} />
-                            <StatDetail label="SPD" value={card.stats.speed} />
-                            <StatDetail label="STB" value={card.stats.stability} />
+                        <div className="flex justify-between items-center bg-white/5 p-3 rounded-lg">
+                            <span className="text-sm text-gray-400 uppercase tracking-widest">총 전투력</span>
+                            <span className="text-2xl font-bold font-orbitron text-white">{card.stats.totalPower}</span>
                         </div>
                     </div>
 
                     {/* Actions */}
                     <div className="flex gap-3 mt-auto">
                         <button className="flex-1 py-3 bg-white/5 hover:bg-white/10 border border-white/10 rounded-lg text-sm font-bold text-white transition-all uppercase tracking-wider hover:border-white/30">
-                            Enhance
+                            강화
                         </button>
                         <button className="flex-1 py-3 bg-gradient-to-r from-purple-600 to-blue-600 hover:from-purple-500 hover:to-blue-500 rounded-lg text-sm font-bold text-white shadow-lg transition-all uppercase tracking-wider">
-                            Fusion
+                            합성
                         </button>
                     </div>
                 </div>
