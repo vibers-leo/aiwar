@@ -91,7 +91,7 @@ export default function DialogueOverlay({
 
     // Map character images
     const defaultGeminiImage = '/assets/cards/gemini-character.png';
-    const defaultChipImage = '/assets/cards/unique-singularity.png';
+    const defaultChipImage = '/assets/cards/chip-character.png';
     const commanderImages: Record<string, string> = {
         sam: '/assets/cards/cmdr-chatgpt.png',
         dario: '/assets/cards/cmdr-claude.png',
