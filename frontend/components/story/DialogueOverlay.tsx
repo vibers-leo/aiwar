@@ -35,12 +35,15 @@ export default function DialogueOverlay({
 
     // Extract speaker name from dialogue (format: "Name: text")
     const extractSpeaker = (text: string) => {
+        if (!text || typeof text !== 'string') return speakerName;
         const match = text.match(/^([^:]+):/);
         return match ? match[1].trim() : speakerName;
     };
 
     const currentSpeaker = extractSpeaker(currentDialogue);
-    const dialogueText = currentDialogue.replace(/^[^:]+:\s*/, '').replace(/^["']|["']$/g, ''); // Remove "Name: " and quotes
+    const dialogueText = (currentDialogue && typeof currentDialogue === 'string')
+        ? currentDialogue.replace(/^[^:]+:\s*/, '').replace(/^["']|["']$/g, '')
+        : ''; // Remove "Name: " and quotes
 
     // Detect character types based on current speaker
     const isGemini = currentSpeaker.toLowerCase().includes('gemini') || currentSpeaker.includes('제미나이');
