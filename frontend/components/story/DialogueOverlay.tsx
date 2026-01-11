@@ -56,6 +56,21 @@ export default function DialogueOverlay({
 
     const isAlly = isGemini || isChip || isSam || isDario || isElon || isHassabis || isCopilot || isGrok;
 
+    // Get display name with title for characters
+    const getCharacterDisplayName = () => {
+        if (isSam) return 'Sam Altman - ChatGPT 군단장';
+        if (isDario) return 'Dario Amodei - Claude 군단장';
+        if (isElon) return 'Elon Musk - Grok 군단장';
+        if (isHassabis) return 'Demis Hassabis - Gemini 군단장';
+        if (isGemini) return 'Gemini - AI 어시스턴트';
+        if (isChip) return 'Chip - 싱귤래리티';
+        if (isCopilot) return 'Copilot - 코딩 어시스턴트';
+        if (isGrok) return 'Grok - AI 어시스턴트';
+        return currentSpeaker; // For enemies, show extracted speaker name
+    };
+
+    const displayName = getCharacterDisplayName();
+
     // Track when effect is finished
     useEffect(() => {
         if (!isOpen) {
@@ -258,7 +273,7 @@ export default function DialogueOverlay({
                                 isGemini ? "bg-cyan-600 border-cyan-400 text-white" : "bg-red-600 border-red-400 text-white"
                             )}>
                                 <span className="inline-block skew-x-[12deg] tracking-wider uppercase">
-                                    {speakerName}
+                                    {displayName}
                                 </span>
                             </div>
                         </div>
