@@ -272,6 +272,43 @@ export default function EnhancePage() {
         >
             {/* 메인 영역: 카드 목록 */}
             <div className="p-6 pb-[160px] w-full mx-auto overflow-auto custom-scrollbar h-[calc(100vh-80px)]">
+                {/* Main Cards Section - 주력카드 */}
+                {allCards.length > 0 && (
+                    <div className="mb-6">
+                        <h3 className="text-sm font-bold text-white/80 mb-3 flex items-center gap-2">
+                            <span className="text-amber-400">⭐</span>
+                            주력 카드 (등급별 최고 레벨)
+                        </h3>
+                        <div className="grid grid-cols-3 sm:grid-cols-6 gap-3 bg-gradient-to-br from-amber-900/10 to-yellow-900/10 p-3 rounded-xl border border-amber-500/20">
+                            {(() => {
+                                const mainCards = getMainCards(allCards);
+
+                                return mainCards.map(card => {
+                                    const rarity = card.rarity || 'common';
+                                    if (selectedRarity !== 'all' && (card.rarity || 'common') !== selectedRarity) return null;
+
+                                    const isSelected =
+                                        card.instanceId === targetCard?.instanceId ||
+                                        materialSlots.some(s => s?.instanceId === card.instanceId);
+
+                                    return (
+                                        <div
+                                            key={rarity}
+                                            onClick={() => handleCardClick(card)}
+                                            className={cn(
+                                                "cursor-pointer transition-all hover:scale-105",
+                                                isSelected && "opacity-50 ring-2 ring-amber-500 rounded-xl"
+                                            )}
+                                        >
+                                            <GameCard card={card as any} />
+                                        </div>
+                                    );
+                                }).filter(Boolean);
+                            })()}
+                        </div>
+                    </div>
+                )}
+
                 {/* 인벤토리 헤더 및 필터 */}
                 <div className="mb-6 flex flex-col gap-4">
                     <div className="flex items-center justify-between">
