@@ -4,7 +4,7 @@ export type Rarity = 'common' | 'rare' | 'epic' | 'legendary' | 'unique' | 'comm
 export type Specialty = 'text' | 'image' | 'video' | 'music' | 'voice' | 'code';
 export type CardType = 'normal' | 'automated';
 export type AIType = 'EFFICIENCY' | 'CREATIVITY' | 'FUNCTION' | 'COST';
-export type BattleMode = 'sudden-death' | 'tactics' | 'ambush' | 'double';
+export type BattleMode = 'sudden-death' | 'tactics' | 'strategy' | 'double';
 
 export interface Stats {
     creativity?: number;

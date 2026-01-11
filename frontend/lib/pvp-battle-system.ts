@@ -117,7 +117,7 @@ export interface RewardConfig {
 export const PVP_REWARDS: Record<string, RewardConfig> = {
     'sudden-death': { coins: 100, exp: 30, rating: 15 },
     'tactics': { coins: 100, exp: 50, rating: 25 },
-    'ambush': { coins: 100, exp: 70, rating: 35 },
+    'strategy': { coins: 100, exp: 70, rating: 35 },
     'double': { coins: 100, exp: 60, rating: 30 },
     loss: { coins: 0, exp: 10, rating: -10 },
     draw: { coins: 20, exp: 20, rating: 0 },

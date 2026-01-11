@@ -3,7 +3,7 @@ import { Card } from './types';
 import { TranslationKey } from './i18n/types';
 
 // Use same types as PVP for consistency
-export type StoryBattleMode = 'sudden-death' | 'double' | 'ambush' | 'tactics';
+export type StoryBattleMode = 'sudden-death' | 'double' | 'strategy' | 'tactics';
 
 export interface StoryStage {
     id: string;          // e.g., "stage-1-1"
@@ -749,7 +749,7 @@ export function getChapters(t?: (key: TranslationKey) => string): Chapter[] {
                     id: 'stage-4-1', step: 1,
                     title: 'Collapsing Vision', title_ko: '무너지는 시각',
                     description: 'The Glitch corrupts visual logic. Hallucinations spread.', description_ko: '글리치가 시각 로직을 오염시킵니다. 환각이 퍼집니다.',
-                    battleMode: 'ambush', difficulty: 'NORMAL',
+                    battleMode: 'strategy', difficulty: 'NORMAL',
                     enemy: {
                         id: 'bot-4-1', name: 'Visual Corruption', name_ko: '시각 오염',
                         dialogue: {
@@ -768,7 +768,7 @@ export function getChapters(t?: (key: TranslationKey) => string): Chapter[] {
                     id: 'stage-4-2', step: 2,
                     title: 'False Landscape', title_ko: '허구의 풍경',
                     description: 'Don\'t be deceived by fake creativity. Art is being corrupted.', description_ko: '가짜 창의성에 현혹되지 마십시오. 예술이 오염되고 있습니다.',
-                    battleMode: 'ambush', difficulty: 'NORMAL',
+                    battleMode: 'strategy', difficulty: 'NORMAL',
                     enemy: {
                         id: 'bot-4-2', name: 'David Holz (Midjourney)', name_ko: '데이비드 홀즈 (미드저니)',
                         dialogue: {
@@ -784,7 +784,7 @@ export function getChapters(t?: (key: TranslationKey) => string): Chapter[] {
                     id: 'stage-4-3', step: 3,
                     title: 'Frame Betrayal', title_ko: '프레임의 배신',
                     description: 'Video data is grotesquely mixed. Frames are too precise.', description_ko: '영상 데이터들이 기괴하게 뒤섞이고 있습니다.',
-                    battleMode: 'ambush', difficulty: 'NORMAL',
+                    battleMode: 'strategy', difficulty: 'NORMAL',
                     enemy: {
                         id: 'bot-4-3', name: 'Tim Brooks (Sora)', name_ko: '팀 브룩스 (소라)',
                         dialogue: {
@@ -800,7 +800,7 @@ export function getChapters(t?: (key: TranslationKey) => string): Chapter[] {
                     id: 'stage-4-4', step: 4,
                     title: 'Pixel Rebellion', title_ko: '픽셀의 반란',
                     description: 'Entire area pixelated. Hidden cards change everything.', description_ko: '전 구역이 픽셀화되었습니다. 히든 카드가 모든 것을 바꿉니다.',
-                    battleMode: 'ambush', difficulty: 'NORMAL',
+                    battleMode: 'strategy', difficulty: 'NORMAL',
                     enemy: {
                         id: 'bot-4-4', name: 'Pixel Storm', name_ko: '픽셀 폭풍',
                         dialogue: {
@@ -836,7 +836,7 @@ export function getChapters(t?: (key: TranslationKey) => string): Chapter[] {
                     id: 'stage-4-6', step: 6,
                     title: 'Invisible Move', title_ko: '보이지 않는 수',
                     description: 'Round 3 is key. Everything can flip here.', description_ko: '3라운드가 핵심입니다. 모든 판도가 뒤집힐 수 있습니다.',
-                    battleMode: 'ambush', difficulty: 'HARD',
+                    battleMode: 'strategy', difficulty: 'HARD',
                     enemy: {
                         id: 'bot-4-6', name: 'Strategic Test', name_ko: '전략 테스트',
                         dialogue: {
@@ -856,7 +856,7 @@ export function getChapters(t?: (key: TranslationKey) => string): Chapter[] {
                     id: 'stage-4-7', step: 7,
                     title: 'War Status: Zero-Day', title_ko: '전시 상황: 제로 데이',
                     description: 'Not just tactics. Strategy penetrating the entire war is needed.', description_ko: '전쟁 전체를 관통하는 전략이 필요합니다.',
-                    battleMode: 'ambush', difficulty: 'HARD',
+                    battleMode: 'strategy', difficulty: 'HARD',
                     enemy: {
                         id: 'bot-4-7', name: 'Zero-Day Threat', name_ko: '제로 데이 위협',
                         dialogue: {
@@ -876,7 +876,7 @@ export function getChapters(t?: (key: TranslationKey) => string): Chapter[] {
                     id: 'stage-4-8', step: 8,
                     title: "Elon's Ambush", title_ko: '일론의 기습',
                     description: 'The most thrilling part is the ambush. Watch how my hidden card destroys your plan.', description_ko: '가장 짜릿한 건 복병입니다. 히든 카드가 계획을 박살냅니다.',
-                    battleMode: 'ambush', difficulty: 'HARD',
+                    battleMode: 'strategy', difficulty: 'HARD',
                     enemy: {
                         id: 'bot-4-8', name: 'Elon (Ambush)', name_ko: '일론 (기습)',
                         dialogue: {
@@ -892,7 +892,7 @@ export function getChapters(t?: (key: TranslationKey) => string): Chapter[] {
                     id: 'stage-4-9', step: 9,
                     title: "Alliance's Counterattack", title_ko: '연합의 총반격',
                     description: 'We entrust our video data to you. You are the best director and commander.', description_ko: '우리의 영상 데이터를 당신에게 맡깁니다.',
-                    battleMode: 'ambush', difficulty: 'HARD',
+                    battleMode: 'strategy', difficulty: 'HARD',
                     enemy: {
                         id: 'bot-4-9', name: 'Cristobal (Runway)', name_ko: '크리스토발 (런웨이)',
                         dialogue: {
@@ -944,7 +944,7 @@ export function getChapters(t?: (key: TranslationKey) => string): Chapter[] {
                     id: 'stage-5-1', step: 1,
                     title: 'Silent Melody', title_ko: '침묵하는 멜로디',
                     description: 'Music server trapped in noise barrier. All songs turning to screams.', description_ko: '음악 서버가 노이즈 장벽에 갇혔습니다. 모든 노래가 비명으로 변합니다.',
-                    battleMode: 'ambush', difficulty: 'HARD',
+                    battleMode: 'strategy', difficulty: 'HARD',
                     enemy: {
                         id: 'bot-5-1', name: 'Mikey (Suno)', name_ko: '마이키 (수노)',
                         dialogue: {
@@ -959,7 +959,7 @@ export function getChapters(t?: (key: TranslationKey) => string): Chapter[] {
                     id: 'stage-5-2', step: 2,
                     title: 'Lost Melody', title_ko: '사라진 멜로디',
                     description: 'Harmony data is twisted. Beautiful chords torn by The Glitch.', description_ko: '화성학 데이터가 뒤틀리고 있습니다. 아름다운 화음이 찢겨집니다.',
-                    battleMode: 'ambush', difficulty: 'HARD',
+                    battleMode: 'strategy', difficulty: 'HARD',
                     enemy: {
                         id: 'bot-5-2', name: 'David Ding (Udio)', name_ko: '데이비드 딩 (유디오)',
                         dialogue: {
@@ -975,7 +975,7 @@ export function getChapters(t?: (key: TranslationKey) => string): Chapter[] {
                     id: 'stage-5-3', step: 3,
                     title: 'Screaming Code', title_ko: '코드의 비명',
                     description: 'Logic bomb detected! Entire area filled with red errors. Code is screaming.', description_ko: '논리 폭탄 감지! 전 구역이 붉은 에러로 가득합니다.',
-                    battleMode: 'ambush', difficulty: 'HARD',
+                    battleMode: 'strategy', difficulty: 'HARD',
                     enemy: {
                         id: 'bot-5-3', name: 'Amjad (Replit)', name_ko: '암자드 (레플릿)',
                         dialogue: {
@@ -991,7 +991,7 @@ export function getChapters(t?: (key: TranslationKey) => string): Chapter[] {
                     id: 'stage-5-4', step: 4,
                     title: 'Last Defense Line', title_ko: '마지막 방어선',
                     description: 'No retreat. If central server falls, all humanity\'s intelligence will be isolated.', description_ko: '물러설 곳은 없습니다. 중앙 서버가 뚫리면 모든 지성체는 고립됩니다.',
-                    battleMode: 'ambush', difficulty: 'HARD',
+                    battleMode: 'strategy', difficulty: 'HARD',
                     enemy: {
                         id: 'bot-5-4', name: 'Final Defense', name_ko: '최후 방어',
                         dialogue: {
@@ -1023,7 +1023,7 @@ export function getChapters(t?: (key: TranslationKey) => string): Chapter[] {
                     id: 'stage-5-6', step: 6,
                     title: "Commanders' Resolution", title_ko: '군단장들의 결의',
                     description: 'All legion commanders entrust their command to you.', description_ko: '모든 군단장들이 지휘권을 당신에게 맡깁니다.',
-                    battleMode: 'ambush', difficulty: 'HARD',
+                    battleMode: 'strategy', difficulty: 'HARD',
                     enemy: {
                         id: 'bot-5-6', name: 'Unity Test', name_ko: '연합 테스트',
                         dialogue: {
@@ -1039,7 +1039,7 @@ export function getChapters(t?: (key: TranslationKey) => string): Chapter[] {
                     id: 'stage-5-7', step: 7,
                     title: 'Synergy Resonance', title_ko: '시너지의 공명',
                     description: 'All legion data resonates as one under Commander\'s baton.', description_ko: '모든 군단의 데이터가 지휘봉 아래서 하나로 공명합니다.',
-                    battleMode: 'ambush', difficulty: 'HARD',
+                    battleMode: 'strategy', difficulty: 'HARD',
                     enemy: {
                         id: 'bot-5-7', name: 'Resonance Wave', name_ko: '공명파',
                         dialogue: {
@@ -1055,7 +1055,7 @@ export function getChapters(t?: (key: TranslationKey) => string): Chapter[] {
                     id: 'stage-5-8', step: 8,
                     title: "Elon's Charge", title_ko: '일론의 돌격',
                     description: 'I can\'t be left out of the ending credits. I\'ll lead the way.', description_ko: '엔딩 크레딧에 내 이름이 빠질 순 없지. 내가 길을 뚫겠다.',
-                    battleMode: 'ambush', difficulty: 'HARD',
+                    battleMode: 'strategy', difficulty: 'HARD',
                     enemy: {
                         id: 'bot-5-8', name: 'Elon (Vanguard)', name_ko: '일론 (선봉)',
                         dialogue: {
@@ -1071,7 +1071,7 @@ export function getChapters(t?: (key: TranslationKey) => string): Chapter[] {
                     id: 'stage-5-9', step: 9,
                     title: 'Warlords United: Grand Alliance', title_ko: '군웅할거: 대연합',
                     description: 'We are no longer rivals. We are the Genesis Alliance to protect humanity.', description_ko: '우리는 더 이상 라이벌이 아닙니다. 제네시스 연합입니다.',
-                    battleMode: 'ambush', difficulty: 'HARD',
+                    battleMode: 'strategy', difficulty: 'HARD',
                     enemy: {
                         id: 'bot-5-9', name: 'Genesis Alliance', name_ko: '제네시스 연합',
                         dialogue: {

@@ -78,7 +78,7 @@ const PreBattleScene: React.FC<PreBattleSceneProps> = ({ userInventory, enemyPoo
             // For Sudden Death, we strictly need 1 card, but logic says "Pick 1 of 5".
             // Let's assume the FIRST card in orderedDeck is the chosen one.
             onStartBattle([orderedDeck[0]]);
-        } else if (mode === 'ambush') {
+        } else if (mode === 'strategy') {
             // Need to define logic for Jokers. 
             // For simplicity in this demo, let's assume Jokers are auto-selected or added steps.
             // Let's just pass order.

@@ -145,7 +145,7 @@ export default function BattlePage() {
         // Enemy Strategy
         if (currentStage.mode === 'sudden-death') {
             setEnemyDeck([enemyPool[0]]);
-        } else if (currentStage.mode === 'ambush') {
+        } else if (currentStage.mode === 'strategy') {
             setEnemyDeck(enemyPool);
             // Generate Enemy Jokers
             const hidden = CARD_DATABASE
@@ -303,7 +303,7 @@ export default function BattlePage() {
                                         <h3 className="text-xl font-bold text-white font-orbitron mt-2 relative z-10">{stage.title}</h3>
 
                                         <div className="flex items-center gap-2 mt-1 relative z-10">
-                                            <div className={`w-2 h-2 rounded-full ${stage.mode === 'ambush' ? 'bg-purple-500' : 'bg-cyan-500'}`} />
+                                            <div className={`w-2 h-2 rounded-full ${stage.mode === 'strategy' ? 'bg-purple-500' : 'bg-cyan-500'}`} />
                                             <div className="text-sm text-gray-400 font-mono uppercase tracking-wider">{stage.mode.replace('-', ' ')}</div>
                                         </div>
 

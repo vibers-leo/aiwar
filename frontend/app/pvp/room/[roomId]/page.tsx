@@ -231,7 +231,7 @@ export default function RealtimeBattleRoomPage() {
     // 헬퍼: 모드별 필요한 카드 수
     const getRequiredCardCount = () => {
         if (!room) return 5;
-        return (room.battleMode === 'ambush' || room.battleMode === 'double') ? 6 : 5;
+        return (room.battleMode === 'strategy' || room.battleMode === 'double') ? 6 : 5;
     };
 
     // 카드 선택

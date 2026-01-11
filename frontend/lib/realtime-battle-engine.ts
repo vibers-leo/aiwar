@@ -31,7 +31,7 @@ export async function executeRound(
     let player2Card = player2.selectedCards[p2CardIndex];
 
     // Ambush 모드: 2, 4 라운드는 히든카드 사용
-    if (battleMode === 'ambush' && (roundIndex === 1 || roundIndex === 3)) {
+    if (battleMode === 'strategy' && (roundIndex === 1 || roundIndex === 3)) {
         const hiddenIndex = roundIndex === 1 ? 0 : 1;
         if (player1.hiddenCards && player1.hiddenCards[hiddenIndex]) {
             player1Card = player1.hiddenCards[hiddenIndex];
@@ -359,7 +359,7 @@ function calculateWinnerRewards(mode: RealtimeBattleMode): { coins: number; expe
             return { coins: 200, experience: 50 };
         case 'tactics':
             return { coins: 500, experience: 100 };
-        case 'ambush':
+        case 'strategy':
             return { coins: 800, experience: 150 };
         default:
             return { coins: 200, experience: 50 };
@@ -375,7 +375,7 @@ function calculateLoserRewards(mode: RealtimeBattleMode): { coins: number; exper
             return { coins: 50, experience: 10 };
         case 'tactics':
             return { coins: 100, experience: 20 };
-        case 'ambush':
+        case 'strategy':
             return { coins: 150, experience: 30 };
         default:
             return { coins: 50, experience: 10 };

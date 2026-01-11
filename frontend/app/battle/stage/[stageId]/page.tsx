@@ -77,7 +77,7 @@ export default function StageBattlePage() {
         const loadEnemies = () => {
             if (!stage) return;
 
-            const targetCount = (stage.battleMode === 'ambush' || stage.battleMode === 'double') ? 6 : 5;
+            const targetCount = (stage.battleMode === 'strategy' || stage.battleMode === 'double') ? 6 : 5;
 
             // Use the new generator that respects stage patterns and boss boosts
             const opponent = generateOpponentDeck(
@@ -185,7 +185,7 @@ export default function StageBattlePage() {
 
     if (!storyStage) return <div className="min-h-screen bg-black text-white flex items-center justify-center">{t('common.loading')}</div>;
 
-    const maxSelect = (storyStage.battleMode === 'double' || storyStage.battleMode === 'ambush') ? 6 : 5;
+    const maxSelect = (storyStage.battleMode === 'double' || storyStage.battleMode === 'strategy') ? 6 : 5;
 
     // UI RENDER
     return (
@@ -220,7 +220,7 @@ export default function StageBattlePage() {
                             <span className="bg-white/10 px-2 py-0.5 rounded">
                                 {storyStage.battleMode === 'sudden-death' ? t('battle.mode.suddenDeath') :
                                     storyStage.battleMode === 'double' ? t('battle.mode.twoCardBattle') :
-                                        storyStage.battleMode === 'ambush' ? t('battle.mode.strategyBattle') :
+                                        storyStage.battleMode === 'strategy' ? t('battle.mode.strategyBattle') :
                                             t('battle.mode.tacticalDuel')}
                             </span>
                         </div>
@@ -271,7 +271,7 @@ export default function StageBattlePage() {
                         onFinish={handleBattleFinish}
                         title={language === 'ko' ? storyStage.title_ko : storyStage.title}
                         battleMode={storyStage.battleMode as any}
-                        enemySelectionMode={storyStage.battleMode === 'ambush' ? 'random' : 'ordered'}
+                        enemySelectionMode={storyStage.battleMode === 'strategy' ? 'random' : 'ordered'}
                     />
                 )}
 

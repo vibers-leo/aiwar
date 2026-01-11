@@ -62,7 +62,7 @@ export function useBattleAnimation(
         if (state.victoryState.isGameOver) return;
 
         // Determine if this round has hidden phase
-        const isAmbushRound = battleType === 'ambush' && roundNumber === 3;
+        const isAmbushRound = battleType === 'strategy' && roundNumber === 3;
 
         // Get cards
         const playerCard = playerCards[roundIndex];
@@ -109,7 +109,7 @@ export function useBattleAnimation(
         if (precalculatedResult) {
             // Logic for finding main result:
             // Ambush Round 3 Main is '3-1', others are numbers
-            const targetRoundLabel = battleType === 'ambush' && roundNumber === 3 ? '3-1' : roundNumber;
+            const targetRoundLabel = battleType === 'strategy' && roundNumber === 3 ? '3-1' : roundNumber;
             // Loose matching: round might be number or string in result
             roundRes = precalculatedResult.rounds.find(r => r.round == targetRoundLabel);
             mainWinner = roundRes?.winner || 'draw';

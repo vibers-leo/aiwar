@@ -43,7 +43,7 @@ interface BattleArenaProps {
     strategyTime?: number;
     maxRounds?: number;
     enemySelectionMode?: 'ordered' | 'random';
-    battleMode?: 'sudden-death' | 'tactics' | 'ambush' | 'double';
+    battleMode?: 'sudden-death' | 'tactics' | 'strategy' | 'double';
 }
 
 export function BattleArena({
@@ -57,8 +57,8 @@ export function BattleArena({
     enemySelectionMode = 'ordered',
     battleMode = 'tactics'
 }: BattleArenaProps) {
-    const maxRounds = (battleMode === 'ambush' || battleMode === 'tactics' || battleMode === 'sudden-death') ? 5 : (battleMode === 'double' ? 3 : maxRoundsProp);
-    const winsNeeded = battleMode === 'sudden-death' ? 1 : (battleMode === 'tactics' ? 3 : (battleMode === 'ambush' ? 3 : 2));
+    const maxRounds = (battleMode === 'strategy' || battleMode === 'tactics' || battleMode === 'sudden-death') ? 5 : (battleMode === 'double' ? 3 : maxRoundsProp);
+    const winsNeeded = battleMode === 'sudden-death' ? 1 : (battleMode === 'tactics' ? 3 : (battleMode === 'strategy' ? 3 : 2));
     const { t, language } = useTranslation();
     const lang = (language as 'ko' | 'en') || 'ko';
 
@@ -163,7 +163,7 @@ export function BattleArena({
             : [...enemyDeck];
 
         // [NEW] 전략 전투(ambush) 특수 로직: 6번째 카드를 3라운드 히든으로 배치
-        if (battleMode === 'ambush' && orderedPlayerDeck.length >= 6) {
+        if (battleMode === 'strategy' && orderedPlayerDeck.length >= 6) {
             const hiddenCard = orderedPlayerDeck[5]; // 6번째 카드
             const otherCards = orderedPlayerDeck.slice(0, 5);
             orderedPlayerDeck = [otherCards[0], otherCards[1], hiddenCard, otherCards[2], otherCards[3]];
@@ -172,7 +172,7 @@ export function BattleArena({
             orderedPlayerDeck = [orderedPlayerDeck[0], orderedPlayerDeck[2], orderedPlayerDeck[4]];
         }
 
-        if (battleMode === 'ambush' && actualEnemyDeck.length >= 6) {
+        if (battleMode === 'strategy' && actualEnemyDeck.length >= 6) {
             const hiddenCard = actualEnemyDeck[5]; // 6번째 카드
             const otherCards = actualEnemyDeck.slice(0, 5);
             actualEnemyDeck = [otherCards[0], otherCards[1], hiddenCard, otherCards[2], otherCards[3]];
@@ -196,7 +196,7 @@ export function BattleArena({
             battleRounds.push(roundData);
 
             // 점수 계산
-            const roundPoints = (battleMode === 'ambush' && i === 2) ? 2 : 1;
+            const roundPoints = (battleMode === 'strategy' && i === 2) ? 2 : 1;
             if (winner === 'player') {
                 pPts += roundPoints;
                 pW++;
@@ -216,7 +216,7 @@ export function BattleArena({
             const round = battleRounds[i];
             await playRoundAnimation(i, round);
 
-            const roundPoints = (battleMode === 'ambush' && i === 2) ? 2 : 1;
+            const roundPoints = (battleMode === 'strategy' && i === 2) ? 2 : 1;
             if (round.winner === 'player') {
                 setPlayerWins(prev => prev + 1);
                 setPlayerPoints(prev => prev + roundPoints);
@@ -432,19 +432,19 @@ export function BattleArena({
                                 <div className="flex items-center gap-6">
                                     <div className="text-right">
                                         <p className="text-[8px] text-blue-400 font-bold orbitron uppercase tracking-widest">
-                                            {battleMode === 'ambush' || battleMode === 'tactics' ? 'POINTS' : t('pvp.battle.playerScore')}
+                                            {battleMode === 'strategy' || battleMode === 'tactics' ? 'POINTS' : t('pvp.battle.playerScore')}
                                         </p>
                                         <p className="text-3xl font-black text-white orbitron">
-                                            {battleMode === 'ambush' || battleMode === 'tactics' ? playerPoints : playerWins}
+                                            {battleMode === 'strategy' || battleMode === 'tactics' ? playerPoints : playerWins}
                                         </p>
                                     </div>
                                     <div className="text-lg font-black text-gray-700 font-mono">VS</div>
                                     <div className="text-left">
                                         <p className="text-[8px] text-red-500 font-bold orbitron uppercase tracking-widest">
-                                            {battleMode === 'ambush' || battleMode === 'tactics' ? 'POINTS' : t('pvp.battle.enemyScore')}
+                                            {battleMode === 'strategy' || battleMode === 'tactics' ? 'POINTS' : t('pvp.battle.enemyScore')}
                                         </p>
                                         <p className="text-3xl font-black text-white orbitron">
-                                            {battleMode === 'ambush' || battleMode === 'tactics' ? enemyPoints : enemyWins}
+                                            {battleMode === 'strategy' || battleMode === 'tactics' ? enemyPoints : enemyWins}
                                         </p>
                                     </div>
                                 </div>

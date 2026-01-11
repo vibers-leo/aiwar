@@ -25,7 +25,7 @@ export interface RoundPlacement {
 }
 
 export default function CardPlacementBoard({ selectedCards, onPlacementComplete, onCancel, battleMode = 'tactics', opponentDeck = [] }: CardPlacementBoardProps) {
-    const hasHiddenSlots = battleMode === 'ambush';
+    const hasHiddenSlots = battleMode === 'strategy';
 
     const [placement, setPlacement] = useState<{
         round1: any | null;
@@ -52,7 +52,7 @@ export default function CardPlacementBoard({ selectedCards, onPlacementComplete,
 
         // Ambush 모드: 메인 슬롯 1~5번 자동 배치 (6번째는 히든)
         // Ambush 모드: 초기화 시 빈 상태로 시작 (수동 배치 유도)
-        // if (battleMode === 'ambush' && selectedCards.length === 6) { ... }
+        // if (battleMode === 'strategy' && selectedCards.length === 6) { ... }
 
         return initial;
     });
@@ -164,7 +164,7 @@ export default function CardPlacementBoard({ selectedCards, onPlacementComplete,
         if (!card) return;
 
         // Check if card is already used as hidden in another round (for Ambush)
-        if (battleMode === 'ambush') {
+        if (battleMode === 'strategy') {
             const otherHiddenRound = round === 'round3Hidden' ? null : 'round3Hidden'; // Only one hidden slot in Ambush
             if (otherHiddenRound && placement[otherHiddenRound as keyof typeof placement]?.id === card.id) {
                 alert('이 카드는 이미 다른 라운드의 히든 카드로 사용 중입니다!');
@@ -376,7 +376,7 @@ export default function CardPlacementBoard({ selectedCards, onPlacementComplete,
         if (!basicCheck) return false;
 
         // Ambush: R3 Hidden
-        if (battleMode === 'ambush') {
+        if (battleMode === 'strategy') {
             return placement.round3Hidden;
         }
 
@@ -429,7 +429,7 @@ export default function CardPlacementBoard({ selectedCards, onPlacementComplete,
                 <h2 className="text-2xl font-black text-white italic tracking-tighter flex items-center justify-center gap-2">
                     <span className="text-cyan-500">TACTICAL</span> DEPLOYMENT
                     <span className="text-[10px] font-normal text-gray-500 bg-black/50 px-2 py-1 rounded-full border border-white/10 ml-2 backdrop-blur-md">
-                        {battleMode === 'ambush' ? '전략 승부 (6장)' : battleMode === 'double' ? '두장 승부 (6장)' : '전술 승부 (5장)'}
+                        {battleMode === 'strategy' ? '전략 승부 (6장)' : battleMode === 'double' ? '두장 승부 (6장)' : '전술 승부 (5장)'}
                     </span>
                 </h2>
             </div>
@@ -506,7 +506,7 @@ export default function CardPlacementBoard({ selectedCards, onPlacementComplete,
                         {/* Round 3 */}
                         <RoundPlacementSlot
                             roundNumber={3}
-                            hasHidden={battleMode === 'ambush' || battleMode === 'double'}
+                            hasHidden={battleMode === 'strategy' || battleMode === 'double'}
                             mainCard={placement.round3Main}
                             hiddenCard={placement.round3Hidden}
                             mainSlotId="round3Main"

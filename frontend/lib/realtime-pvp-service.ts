@@ -209,7 +209,7 @@ export async function findMatch(
             // generateRandomCard expects Rarity
             const ghostRarity: Rarity = ghostUser.level > 10 ? 'epic' : ghostUser.level > 5 ? 'rare' : 'common';
 
-            const requiredCards = (battleMode === 'ambush' || battleMode === 'double') ? 6 : 5;
+            const requiredCards = (battleMode === 'strategy' || battleMode === 'double') ? 6 : 5;
             const config = getBattleConfig(battleMode);
 
             const ghostRoomData: BattleRoom & { isGhost: boolean } = {
@@ -480,7 +480,7 @@ function getBattleConfig(mode: RealtimeBattleMode) {
         case 'sudden-death':
             return { maxRounds: 5, winsNeeded: 1 };
         case 'tactics':
-        case 'ambush':
+        case 'strategy':
             return { maxRounds: 5, winsNeeded: 3 };
         case 'double':
             return { maxRounds: 3, winsNeeded: 2 };

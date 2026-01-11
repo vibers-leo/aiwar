@@ -112,7 +112,7 @@ export const STAGE_DATABASE: StageConfig[] = [
     {
         id: '2-1',
         title: 'Ambush Alley',
-        mode: 'ambush',
+        mode: 'strategy',
         difficulty: 3,
         enemy: {
             name: 'Rogue Squad',

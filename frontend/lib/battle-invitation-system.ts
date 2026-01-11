@@ -26,7 +26,7 @@ export interface BattleInvitation {
     fromLevel?: number;
     toUid: string;
     toNickname: string;
-    mode: 'sudden-death' | 'tactics' | 'ambush' | 'double';
+    mode: 'sudden-death' | 'tactics' | 'strategy' | 'double';
     status: 'pending' | 'accepted' | 'declined' | 'expired';
     roomId?: string;
     createdAt: Timestamp;
@@ -40,7 +40,7 @@ export async function sendBattleInvitation(
     fromAvatarUrl: string,
     toUid: string,
     toNickname: string,
-    mode: 'sudden-death' | 'tactics' | 'ambush' | 'double' = 'sudden-death',
+    mode: 'sudden-death' | 'tactics' | 'strategy' | 'double' = 'sudden-death',
     fromLevel: number = 1
 ): Promise<{ success: boolean; invitationId?: string; message?: string }> {
     if (!db) return { success: false, message: "Database not initialized" };

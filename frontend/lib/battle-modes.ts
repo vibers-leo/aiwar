@@ -1,6 +1,6 @@
 // 전투 모드 시스템
 
-export type BattleMode = 'sudden-death' | 'tactics' | 'ambush' | 'pvp-standard' | 'pvp-realtime-sudden' | 'pvp-realtime-tactics' | 'pvp-realtime-ambush';
+export type BattleMode = 'sudden-death' | 'tactics' | 'strategy' | 'pvp-standard' | 'pvp-realtime-sudden' | 'pvp-realtime-tactics' | 'pvp-realtime-ambush';
 
 export interface BattleModeConfig {
     mode: BattleMode;
@@ -67,8 +67,8 @@ export const BATTLE_MODES: Record<BattleMode, BattleModeConfig> = {
             multiplier: 1.5
         }
     },
-    'ambush': {
-        mode: 'ambush',
+    'strategy': {
+        mode: 'strategy',
         name: '매복 작전 (Ambush)',
         description: '히든 카드를 활용한 전략적 3선승제',
         poolSize: 5,

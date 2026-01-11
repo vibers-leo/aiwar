@@ -210,7 +210,7 @@ export default function PVPArenaPage() {
             reward: `+${PVP_REWARDS.tactics.coins} 코인`,
         },
         {
-            id: 'ambush' as BattleMode,
+            id: 'strategy' as BattleMode,
             name: '전략 승부',
             nameEn: 'Strategy Battle',
             description: '6장 덱 - 3라운드 "매복" 시스템 (3점 선승)',
@@ -294,7 +294,7 @@ export default function PVPArenaPage() {
     const handleDeckConfirm = () => {
         const selected = selectedCards;
         let targetSize = 5;
-        if (selectedMode === 'ambush' || selectedMode === 'double') {
+        if (selectedMode === 'strategy' || selectedMode === 'double') {
             targetSize = 6;
         }
 
@@ -328,7 +328,7 @@ export default function PVPArenaPage() {
         } else {
             setSelectedMatchType(type);
             // AI 훈련: AI 덱 생성 및 애니메이션화
-            const targetSize = (selectedMode === 'ambush' || selectedMode === 'double') ? 6 : 5;
+            const targetSize = (selectedMode === 'strategy' || selectedMode === 'double') ? 6 : 5;
             const aiOpponent = generateOpponentDeck(state.level, [], targetSize);
             setOpponentDeck(aiOpponent.deck);
             setRevealTimer(20); // 타이머 초기화
@@ -829,7 +829,7 @@ export default function PVPArenaPage() {
                                                 className="cursor-pointer relative"
                                                 onClick={() => {
                                                     let targetSize = 5;
-                                                    if (selectedMode === 'ambush' || selectedMode === 'double') targetSize = 6;
+                                                    if (selectedMode === 'strategy' || selectedMode === 'double') targetSize = 6;
 
                                                     const isSelected = selectedCards.find(c => c.id === card.id);
                                                     if (isSelected) {
@@ -864,7 +864,7 @@ export default function PVPArenaPage() {
                                             className="cursor-pointer"
                                             onClick={() => {
                                                 let targetSize = 5;
-                                                if (selectedMode === 'ambush' || selectedMode === 'double') targetSize = 6;
+                                                if (selectedMode === 'strategy' || selectedMode === 'double') targetSize = 6;
 
                                                 const isSelected = selectedCards.find(c => c.id === card.id);
                                                 if (isSelected) {
@@ -887,7 +887,7 @@ export default function PVPArenaPage() {
                                 <div className="max-w-5xl mx-auto px-4">
                                     {/* 덱 슬롯 (모드에 따라 5 or 6개) */}
                                     <div className="flex justify-center gap-4 mb-4 overflow-x-auto pb-2">
-                                        {Array.from({ length: (selectedMode === 'ambush' || selectedMode === 'double') ? 6 : 5 }).map((_, i) => {
+                                        {Array.from({ length: (selectedMode === 'strategy' || selectedMode === 'double') ? 6 : 5 }).map((_, i) => {
                                             const card = selectedCards[i];
                                             // 가위바위보 타입 결정
                                             const getTypeInfo = (c: Card) => {
@@ -1033,7 +1033,7 @@ export default function PVPArenaPage() {
                                             onClick={() => {
                                                 // 자동 선택 - 등급별로 균형 잡힌 덱 구성 (주력카드 우선)
                                                 let targetSize = 5;
-                                                if (selectedMode === 'ambush' || selectedMode === 'double') targetSize = 6;
+                                                if (selectedMode === 'strategy' || selectedMode === 'double') targetSize = 6;
 
                                                 const balancedDeck = selectBalancedDeck(inventory, targetSize);
                                                 setSelectedCards(balancedDeck as Card[]);
@@ -1047,27 +1047,27 @@ export default function PVPArenaPage() {
                                         <div className="flex-1 text-center">
                                             <span className="text-2xl font-black orbitron">
                                                 <span className={cn(
-                                                    selectedCards.length === ((selectedMode === 'ambush' || selectedMode === 'double') ? 6 : 5) ? "text-green-400" : "text-white/60"
+                                                    selectedCards.length === ((selectedMode === 'strategy' || selectedMode === 'double') ? 6 : 5) ? "text-green-400" : "text-white/60"
                                                 )}>{selectedCards.length}</span>
-                                                <span className="text-white/40">/{(selectedMode === 'ambush' || selectedMode === 'double') ? 6 : 5}</span>
+                                                <span className="text-white/40">/{(selectedMode === 'strategy' || selectedMode === 'double') ? 6 : 5}</span>
                                             </span>
                                             <span className="text-white/40 ml-2">선택됨</span>
                                         </div>
 
                                         <button
                                             onClick={handleDeckConfirm}
-                                            disabled={selectedCards.length !== ((selectedMode === 'ambush' || selectedMode === 'double') ? 6 : 5)}
+                                            disabled={selectedCards.length !== ((selectedMode === 'strategy' || selectedMode === 'double') ? 6 : 5)}
                                             className={cn(
                                                 "px-10 py-3 rounded-xl font-bold flex items-center gap-2 transition-all",
-                                                selectedCards.length === ((selectedMode === 'ambush' || selectedMode === 'double') ? 6 : 5)
+                                                selectedCards.length === ((selectedMode === 'strategy' || selectedMode === 'double') ? 6 : 5)
                                                     ? "bg-gradient-to-r from-cyan-600 to-blue-600 text-white hover:shadow-lg hover:shadow-cyan-500/50"
                                                     : "bg-gray-700 text-gray-500 cursor-not-allowed"
                                             )}
                                         >
                                             <Swords size={20} />
-                                            {selectedCards.length === ((selectedMode === 'ambush' || selectedMode === 'double') ? 6 : 5)
+                                            {selectedCards.length === ((selectedMode === 'strategy' || selectedMode === 'double') ? 6 : 5)
                                                 ? "덱 확정 및 전투 참가"
-                                                : `${selectedCards.length}/${(selectedMode === 'ambush' || selectedMode === 'double') ? 6 : 5}장 선택`
+                                                : `${selectedCards.length}/${(selectedMode === 'strategy' || selectedMode === 'double') ? 6 : 5}장 선택`
                                             }
                                         </button>
                                     </div>
@@ -1260,7 +1260,7 @@ export default function PVPArenaPage() {
                                             placement.round2.main, placement.round2.hidden,
                                             placement.round3.main, placement.round3.hidden
                                         ].filter(Boolean);
-                                    } else if (selectedMode === 'ambush') {
+                                    } else if (selectedMode === 'strategy') {
                                         // Ambush: 5 Main + 1 Hidden (at R3)
                                         // Order for simulation: [R1, R2, R3, R4, R5, Hidden]
                                         orderedDeck = [
@@ -1752,7 +1752,7 @@ export default function PVPArenaPage() {
                 isOpen={showMatchingModal}
                 onClose={() => setShowMatchingModal(false)}
                 onMatchFound={handleMatchFound}
-                battleMode={selectedMode as 'sudden-death' | 'tactics' | 'ambush'}
+                battleMode={selectedMode as 'sudden-death' | 'tactics' | 'strategy'}
                 playerName={state.nickname || `Player_${state.level}`}
                 playerLevel={state.level}
             />

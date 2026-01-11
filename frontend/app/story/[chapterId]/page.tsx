@@ -251,7 +251,7 @@ export default function ChapterDetailPage() {
                                                             {selectedStage.battleMode === 'sudden-death' ? '⚡ 서든 데스' :
                                                                 selectedStage.battleMode === 'tactics' ? '🎯 전술 승부' :
                                                                     selectedStage.battleMode === 'double' ? '🎴 2장 대결' :
-                                                                        '🌪️ 기습 전투'}
+                                                                        '🌪️ 전략 전투'}
                                                         </div>
                                                     </div>
                                                     <div className="text-gray-300 text-sm bg-white/5 p-4 rounded-lg leading-relaxed">
@@ -282,9 +282,9 @@ export default function ChapterDetailPage() {
                                                                 <p className="text-yellow-400 mt-2">💡 카드 조합과 시너지가 승패를 가른다!</p>
                                                             </>
                                                         )}
-                                                        {selectedStage.battleMode === 'ambush' && (
+                                                        {selectedStage.battleMode === 'strategy' && (
                                                             <>
-                                                                <p className="font-bold text-orange-400 mb-2">🌪️ 기습 전투 (Ambush Battle)</p>
+                                                                <p className="font-bold text-orange-400 mb-2">🌪️ 전략 전투 (Strategy Battle)</p>
                                                                 <p>• 6장의 카드를 미리 배치</p>
                                                                 <p>• 적은 무작위 순서로 카드 출전</p>
                                                                 <p>• 예측 불가능한 전투 흐름</p>
