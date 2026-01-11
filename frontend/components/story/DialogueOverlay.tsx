@@ -30,8 +30,8 @@ export default function DialogueOverlay({
     const [currentIndex, setCurrentIndex] = useState(0);
     const [currentDialogueIndex, setCurrentDialogueIndex] = useState(0);
 
-    // Get current dialogue
-    const currentDialogue = dialogues[currentDialogueIndex] || '';
+    // Get current dialogue with comprehensive safety check
+    const currentDialogue = (dialogues && dialogues.length > 0 && dialogues[currentDialogueIndex]) ? dialogues[currentDialogueIndex] : '';
 
     // Extract speaker name from dialogue (format: "Name: text")
     const extractSpeaker = (text: string) => {
