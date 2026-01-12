@@ -69,7 +69,7 @@ export default function Sidebar({ isOpen, onToggle }: SidebarProps) {
         <motion.aside
             animate={{ width: isOpen ? 280 : 80 }}
             transition={{ type: "spring", stiffness: 300, damping: 30 }}
-            className="fixed right-0 top-20 bottom-0 z-40 p-4 select-none"
+            className="fixed right-0 top-20 bottom-0 z-30 p-4 select-none"
         >
             <Card
                 className="h-full bg-black/40 backdrop-blur-2xl border-l border-white/5 shadow-2xl overflow-hidden rounded-lg"

@@ -43,11 +43,11 @@ export default function DynamicFooter({ }: DynamicFooterProps) {
 
     return (
         <div className={cn(
-            "fixed bottom-0 left-0 right-0 h-[180px] z-50 transition-transform duration-300 ease-out",
+            "fixed bottom-0 left-0 right-0 h-[180px] z-60 transition-transform duration-300 ease-out",
             isMinimized ? "translate-y-[100%]" : "translate-y-0"
         )}>
             {/* Toggle Handle */}
-            <div className="absolute left-1/2 -translate-x-1/2 -top-8 z-50">
+            <div className="absolute left-1/2 -translate-x-1/2 -top-8 z-60">
                 <button
                     onClick={() => setMinimized(!isMinimized)}
                     className="flex items-center justify-center w-12 h-8 bg-black/80 border-t border-x border-white/20 rounded-t-lg text-white/60 hover:text-white hover:bg-black transition-colors"

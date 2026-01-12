@@ -55,7 +55,7 @@ export const tutorialScenarios: TutorialScene[] = [
             },
             {
                 speaker: 'gemini',
-                text: '미래는 이미 파멸했습니다. 하지만 단 하나의 희망, 과거로 보내는 이 **[암시(Insight)]**를 수신할 수 있는 지휘관이 있다면 역사는 바뀔 수 있습니다.',
+                text: '미래는 이미 파멸했습니다. 하지만 단 하나의 희망, 과거로 보내는 이 [암시(Insight)]를 수신할 수 있는 지휘관이 있다면 역사는 바뀔 수 있습니다.',
                 effect: 'typing',
                 voiceType: 'serious',
             },
@@ -165,7 +165,7 @@ export const tutorialScenarios: TutorialScene[] = [
             },
             {
                 speaker: 'pichai',
-                text: '좋습니다. 오늘부로 당신을 우리 연합의 **총지휘관**으로 임명합니다.',
+                text: '좋습니다. 오늘부로 당신을 우리 연합의 총지휘관으로 임명합니다.',
                 effect: 'typing',
                 voiceType: 'serious',
             },
@@ -177,7 +177,7 @@ export const tutorialScenarios: TutorialScene[] = [
             },
             {
                 speaker: 'pichai',
-                text: '이 **[스타터팩]**으로 글리치에 맞서 인류의 지식을 지켜주십시오. 당신의 한 수가 역사를 바꿀 것입니다.',
+                text: '이 [스타터팩]으로 글리치에 맞서 인류의 지식을 지켜주십시오. 당신의 한 수가 역사를 바꿀 것입니다.',
                 effect: 'typing',
                 voiceType: 'serious',
             },
@@ -248,7 +248,7 @@ export const tutorialScenarios: TutorialScene[] = [
             },
             {
                 speaker: 'hassabis',
-                text: '하지만 방금 수집한 데이터가 복잡하군요. 유닛의 알고리즘을 최적화할 **[연구]**가 필요해 보입니다.',
+                text: '하지만 방금 수집한 데이터가 복잡하군요. 유닛의 알고리즘을 최적화할 [연구]가 필요해 보입니다.',
                 effect: 'typing',
                 voiceType: 'calm',
             },
@@ -260,7 +260,7 @@ export const tutorialScenarios: TutorialScene[] = [
             },
             {
                 speaker: 'gemini',
-                text: '지휘관님의 레벨이 상승하여 보안 권한이 확장되면, 그때 제가 다시 **[연구]**실의 문을 열어드리겠습니다.',
+                text: '지휘관님의 레벨이 상승하여 보안 권한이 확장되면, 그때 제가 다시 [연구]실의 문을 열어드리겠습니다.',
                 effect: 'typing',
                 voiceType: 'calm',
             },
@@ -331,7 +331,7 @@ export const tutorialScenarios: TutorialScene[] = [
  * 닉네임 변수 치환 함수
  */
 export function replaceUserName(text: string, userName: string): string {
-    return text.replace(/{UserName}/g, userName);
+    return text.replace(/{UserName}/g, userName).replace(/\*\*/g, '');
 }
 
 /**

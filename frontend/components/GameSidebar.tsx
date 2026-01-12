@@ -98,7 +98,7 @@ export default function GameSidebar() {
 
     return (
         <aside
-            className="fixed right-0 top-16 h-[calc(100vh-4rem)] bg-black/95 backdrop-blur-2xl border-l border-white/5 z-50 transition-all duration-300 ease-out overflow-hidden flex flex-col"
+            className="fixed right-0 top-16 h-[calc(100vh-4rem)] bg-black/95 backdrop-blur-2xl border-l border-white/5 z-30 transition-all duration-300 ease-out overflow-hidden flex flex-col"
             style={{ width: isCollapsed ? '60px' : '240px' }}
             onWheel={handleWheel}
             onDoubleClick={handleDoubleClick}
@@ -118,18 +118,23 @@ export default function GameSidebar() {
                     <div className="absolute inset-0 bg-gradient-to-br from-cyan-500 to-purple-500 rounded-full opacity-20 animate-pulse group-hover:opacity-30" />
                     <div className="absolute inset-0 border border-white/10 rounded-full group-hover:border-cyan-500/50" />
                     <div className="w-full h-full rounded-full bg-black/50 flex items-center justify-center overflow-hidden relative">
-                        {profile?.photoURL ? (
+                        {profile?.avatarUrl || profile?.photoURL ? (
                             <img
-                                src={profile.photoURL}
+                                src={profile?.avatarUrl || profile?.photoURL || '/assets/commander/default.png'}
                                 alt="Commander"
                                 className="w-full h-full object-cover"
+                                onError={(e) => {
+                                    (e.target as HTMLImageElement).src = '/assets/commander/default.png';
+                                }}
                             />
                         ) : (
-                            <>
-                                <span className="z-10 relative text-3xl">👨‍✈️</span>
-                                <div className="absolute inset-0 bg-[radial-gradient(circle_at_center,_var(--tw-gradient-stops))] from-cyan-500/10 via-transparent to-transparent" />
-                            </>
+                            <img
+                                src="/assets/commander/default.png"
+                                alt="Commander"
+                                className="w-full h-full object-cover opacity-80"
+                            />
                         )}
+                        <div className="absolute inset-0 bg-[radial-gradient(circle_at_center,_var(--tw-gradient-stops))] from-cyan-500/10 via-transparent to-transparent" />
                     </div>
                     {/* Online Status Indicator */}
                     <div className="absolute bottom-0 right-0 w-3 h-3 bg-green-500 rounded-full border-2 border-black shadow-[0_0_5px_#22c55e]" />

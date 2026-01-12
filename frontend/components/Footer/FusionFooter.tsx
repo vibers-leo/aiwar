@@ -26,7 +26,7 @@ export default function FusionFooter({
     const filledCount = materialSlots.filter(c => c !== null).length;
 
     return (
-        <div className="fixed bottom-0 left-0 right-0 h-[130px] z-50">
+        <div className="fixed bottom-0 left-0 right-0 h-[130px] z-[100]">
             {/* 상단 그라데이션 블러 */}
             <div className="absolute inset-x-0 top-0 h-8 bg-gradient-to-b from-transparent to-black/50 backdrop-blur-sm" />
 

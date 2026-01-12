@@ -4,7 +4,7 @@ import { gameStorage } from './game-storage';
 import { BattleMode as BaseBattleMode } from './battle-modes';
 import { generateRandomCard } from './card-generation-system';
 import { getLeaderboardData } from './firebase-db';
-import { hasTypeAdvantage, TYPE_ADVANTAGE_MULTIPLIER } from './type-system';
+import { hasTypeAdvantage, TYPE_ADVANTAGE_MULTIPLIER, resolveBattleResult } from './type-system';
 
 export type { BattleMode } from './types';
 export type MatchType = 'realtime' | 'ai-training';
@@ -314,31 +314,8 @@ export function getCardType(card: Card): 'efficiency' | 'creativity' | 'function
  * 라운드 승자 판정
  */
 export function determineRoundWinner(playerCard: Card, opponentCard: Card): 'player' | 'opponent' | 'draw' {
-    if (!playerCard && !opponentCard) return 'draw';
-    if (!playerCard) return 'opponent';
-    if (!opponentCard) return 'player';
-
-    const pType = playerCard.type;
-    const oType = opponentCard.type;
-    const pBase = playerCard.stats?.totalPower || 0;
-    const oBase = opponentCard.stats?.totalPower || 0;
-
-    let pMultiplier = 1.0;
-    let oMultiplier = 1.0;
-
-    if (hasTypeAdvantage(pType, oType)) {
-        pMultiplier = TYPE_ADVANTAGE_MULTIPLIER;
-    } else if (hasTypeAdvantage(oType, pType)) {
-        oMultiplier = TYPE_ADVANTAGE_MULTIPLIER;
-    }
-
-    const pFinal = Math.floor(pBase * pMultiplier);
-    const oFinal = Math.floor(oBase * oMultiplier);
-
-    if (pFinal > oFinal) return 'player';
-    if (oFinal > pFinal) return 'opponent';
-
-    return 'draw';
+    const res = resolveBattleResult(playerCard, opponentCard);
+    return res.winner === 'player1' ? 'player' : res.winner === 'player2' ? 'opponent' : 'draw';
 }
 
 /**
@@ -523,24 +500,11 @@ export function simulateBattle(player: BattleParticipant, opponent: BattlePartic
         const oCard = opponent.deck[oOrder[i]];
         if (!pCard || !oCard) continue;
 
-        const pType = pCard.type;
-        const oType = oCard.type;
-        const pBase = pCard.stats?.totalPower || 0;
-        const oBase = oCard.stats?.totalPower || 0;
+        const res = resolveBattleResult(pCard, oCard);
+        const winner = res.winner === 'player1' ? 'player' : res.winner === 'player2' ? 'opponent' : 'draw';
+        const pFinal = pCard.stats?.totalPower || 0;
+        const oFinal = oCard.stats?.totalPower || 0;
 
-        let pMultiplier = 1.0;
-        let oMultiplier = 1.0;
-
-        if (hasTypeAdvantage(pType, oType)) {
-            pMultiplier = TYPE_ADVANTAGE_MULTIPLIER;
-        } else if (hasTypeAdvantage(oType, pType)) {
-            oMultiplier = TYPE_ADVANTAGE_MULTIPLIER;
-        }
-
-        const pFinal = Math.floor(pBase * pMultiplier);
-        const oFinal = Math.floor(oBase * oMultiplier);
-
-        const winner = pFinal > oFinal ? 'player' : oFinal > pFinal ? 'opponent' : 'draw';
 
         if (winner === 'player') playerWins++;
         else if (winner === 'opponent') opponentWins++;
@@ -554,8 +518,6 @@ export function simulateBattle(player: BattleParticipant, opponent: BattlePartic
             opponentType: getCardType(oCard),
             playerPower: pFinal,
             opponentPower: oFinal,
-            playerMultiplier: pMultiplier,
-            opponentMultiplier: oMultiplier
         });
 
         if (mode === 'sudden-death' && winner !== 'draw') break;

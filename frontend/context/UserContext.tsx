@@ -374,6 +374,38 @@ export function UserProvider({ children }: { children: React.ReactNode }) {
         return () => clearInterval(interval);
     }, [user]);
 
+    // [NEW] Token Auto-Sync (Every 1 Minute)
+    useEffect(() => {
+        if (!user || !mounted || !profile) return;
+
+        const syncTokens = async () => {
+            try {
+                // Check and recharge
+                const newTokens = await checkAndRechargeTokens(
+                    user.uid,
+                    tokens, // current state
+                    profile.lastTokenUpdate, // timestamp from profile
+                    subscriptions
+                );
+
+                // If tokens changed, it means a recharge happened (DB updated)
+                // We must reflect this and update the timestamp to prevent loops
+                if (newTokens !== tokens) {
+                    console.log(`[TokenSync] 💎 Recharge detected: ${tokens} -> ${newTokens}`);
+                    setTokens(newTokens);
+                    // Reload profile to get the new 'lastTokenUpdate' timestamp from DB
+                    // This prevents the next check from using the old timestamp
+                    await reloadProfile();
+                }
+            } catch (error) {
+                console.warn("[TokenSync] Check failed:", error);
+            }
+        };
+
+        const tokenInterval = setInterval(syncTokens, 60 * 1000); // Check every minute
+        return () => clearInterval(tokenInterval);
+    }, [user, mounted, tokens, profile, subscriptions, reloadProfile]);
+
     const checkFeatureUnlocks = (newLevel: number) => {
         if (newLevel === 3) {
             addNotification({ type: 'levelup', title: '연구소 잠금 해제!', message: '이제 연구소에서 AI 기술을 연구하여 카드를 강화할 수 있습니다.', icon: '🧪' });

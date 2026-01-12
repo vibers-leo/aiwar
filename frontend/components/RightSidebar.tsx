@@ -33,7 +33,7 @@ export default function RightSidebar() {
             animate={{ x: 0, width: isExpanded ? 200 : 80 }}
             onMouseEnter={() => setIsExpanded(true)}
             onMouseLeave={() => setIsExpanded(false)}
-            className="fixed right-0 top-20 bottom-0 z-40 bg-slate-900/80 backdrop-blur-xl border-l border-purple-500/10"
+            className="fixed right-0 top-20 bottom-0 z-30 bg-slate-900/80 backdrop-blur-xl border-l border-purple-500/10"
             transition={{ type: "spring", stiffness: 300, damping: 30 }}
         >
             <div className="flex flex-col gap-1 p-3 h-full overflow-hidden">

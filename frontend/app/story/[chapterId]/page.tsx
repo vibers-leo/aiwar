@@ -39,8 +39,6 @@ export default function ChapterDetailPage() {
         onConfirm?: () => void;
     }>({ isOpen: false, title: '', message: '' });
 
-    const [isDialogueOpen, setIsDialogueOpen] = useState(false);
-
     const { consumeTokens, user } = useUser();
 
     useEffect(() => {
@@ -87,11 +85,6 @@ export default function ChapterDetailPage() {
 
     const handleBattleStart = async () => {
         if (!selectedStage) return;
-        setIsDialogueOpen(true);
-    };
-
-    const handleDialogueComplete = async () => {
-        if (!selectedStage) return;
         const cost = selectedStage.tokenCost || (selectedStage.difficulty === 'BOSS' ? 100 : 50);
 
         // [Check Token Balance]
@@ -99,7 +92,6 @@ export default function ChapterDetailPage() {
         if (success) {
             router.push(`/battle/stage/${selectedStage.id}`);
         }
-        setIsDialogueOpen(false);
     };
 
     if (!chapter) return null;
@@ -127,7 +119,7 @@ export default function ChapterDetailPage() {
                     </div>
                 </div>
 
-                <div className="grid grid-cols-1 lg:grid-cols-3 gap-8 flex-1">
+                <div className="grid grid-cols-1 lg:grid-cols-4 gap-8 flex-1">
                     {/* 왼쪽: 스테이지 리스트 */}
                     <div className="lg:col-span-1 bg-zinc-900/50 backdrop-blur-sm border border-white/10 rounded-3xl overflow-hidden flex flex-col">
                         <div className="p-6 border-b border-white/5">
@@ -179,7 +171,7 @@ export default function ChapterDetailPage() {
                     </div>
 
                     {/* 오른쪽: 상세 정보 */}
-                    <div className="lg:col-span-2 flex flex-col gap-6">
+                    <div className="lg:col-span-3 flex flex-col gap-6">
                         <AnimatePresence mode="wait">
                             {selectedStage ? (
                                 <motion.div
@@ -201,31 +193,47 @@ export default function ChapterDetailPage() {
                                                     {selectedStage.description_ko || selectedStage.description}
                                                 </p>
                                             </div>
-                                            {selectedStage.isCleared && (
-                                                <div className="bg-green-500/20 text-green-400 px-4 py-2 rounded-full font-bold flex items-center gap-2 border border-green-500/30">
-                                                    <Trophy size={18} /> CLEARED
-                                                </div>
-                                            )}
+
+                                            <div className="flex flex-col items-end gap-3">
+                                                {/* 상단 미션 시작 버튼 (헤더 영역) */}
+                                                <Button
+                                                    size="sm"
+                                                    onClick={handleBattleStart}
+                                                    className="bg-cyan-500/20 hover:bg-cyan-500/40 text-cyan-400 border border-cyan-500/50 font-bold tracking-wider"
+                                                >
+                                                    <Swords size={16} className="mr-2" />
+                                                    START
+                                                </Button>
+
+                                                {selectedStage.isCleared && (
+                                                    <div className="bg-green-500/20 text-green-400 px-4 py-2 rounded-full font-bold flex items-center gap-2 border border-green-500/30">
+                                                        <Trophy size={18} /> CLEARED
+                                                    </div>
+                                                )}
+                                            </div>
                                         </div>
 
-                                        {/* 적 정보 */}
-                                        <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-8">
-                                            <div className="bg-black/40 border border-white/5 rounded-2xl p-6">
-                                                <div className="flex items-center gap-2 text-red-400 font-bold mb-4">
-                                                    <Skull size={18} /> ENEMY INTEL
-                                                </div>
-                                                <div className="flex items-center gap-4">
-                                                    <div className="w-16 h-16 bg-red-900/20 rounded-xl flex items-center justify-center text-3xl border border-red-500/30">
-                                                        👿
+                                        {/* 적 정보 및 보상 */}
+                                        <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-4">
+                                            {/* ENEMY INTEL */}
+                                            <div className="bg-black/40 border border-white/5 rounded-2xl p-6 flex flex-col justify-between">
+                                                <div>
+                                                    <div className="flex items-center gap-2 text-red-400 font-bold mb-4">
+                                                        <Skull size={18} /> ENEMY INTEL
                                                     </div>
-                                                    <div>
-                                                        <div className="text-white font-bold text-lg">{selectedStage.enemy.name_ko || selectedStage.enemy.name}</div>
-                                                        <div className="text-gray-500 text-sm">Difficulty: <span className={cn(
-                                                            "font-bold",
-                                                            selectedStage.difficulty === 'EASY' ? "text-green-500" :
-                                                                selectedStage.difficulty === 'NORMAL' ? "text-blue-500" :
-                                                                    selectedStage.difficulty === 'HARD' ? "text-orange-500" : "text-red-500"
-                                                        )}>{selectedStage.difficulty}</span></div>
+                                                    <div className="flex items-center gap-4">
+                                                        <div className="w-16 h-16 bg-red-900/20 rounded-xl flex items-center justify-center text-3xl border border-red-500/30">
+                                                            👿
+                                                        </div>
+                                                        <div>
+                                                            <div className="text-white font-bold text-lg">{selectedStage.enemy.name_ko || selectedStage.enemy.name}</div>
+                                                            <div className="text-gray-500 text-sm">Difficulty: <span className={cn(
+                                                                "font-bold",
+                                                                selectedStage.difficulty === 'EASY' ? "text-green-500" :
+                                                                    selectedStage.difficulty === 'NORMAL' ? "text-blue-500" :
+                                                                        selectedStage.difficulty === 'HARD' ? "text-orange-500" : "text-red-500"
+                                                            )}>{selectedStage.difficulty}</span></div>
+                                                        </div>
                                                     </div>
                                                 </div>
                                                 <div className="mt-4 text-gray-400 text-sm bg-white/5 p-3 rounded-lg italic">
@@ -234,67 +242,7 @@ export default function ChapterDetailPage() {
                                                 </div>
                                             </div>
 
-                                            {/* 전투 방식 안내 */}
-                                            <div className="bg-black/40 border border-cyan-500/30 rounded-2xl p-6">
-                                                <div className="flex items-center gap-2 text-cyan-400 font-bold mb-4">
-                                                    <Swords size={18} /> BATTLE MODE
-                                                </div>
-                                                <div className="space-y-3">
-                                                    <div className="flex items-center gap-3">
-                                                        <div className={cn(
-                                                            "px-3 py-1 rounded-lg font-bold text-sm",
-                                                            selectedStage.battleMode === 'sudden-death' ? "bg-red-500/20 text-red-400 border border-red-500/30" :
-                                                                selectedStage.battleMode === 'tactics' ? "bg-blue-500/20 text-blue-400 border border-blue-500/30" :
-                                                                    selectedStage.battleMode === 'double' ? "bg-purple-500/20 text-purple-400 border border-purple-500/30" :
-                                                                        "bg-orange-500/20 text-orange-400 border border-orange-500/30"
-                                                        )}>
-                                                            {selectedStage.battleMode === 'sudden-death' ? '⚡ 서든 데스' :
-                                                                selectedStage.battleMode === 'tactics' ? '🎯 전술 승부' :
-                                                                    selectedStage.battleMode === 'double' ? '🎴 2장 대결' :
-                                                                        '🌪️ 전략 전투'}
-                                                        </div>
-                                                    </div>
-                                                    <div className="text-gray-300 text-sm bg-white/5 p-4 rounded-lg leading-relaxed">
-                                                        {selectedStage.battleMode === 'sudden-death' && (
-                                                            <>
-                                                                <p className="font-bold text-red-400 mb-2">⚡ 서든 데스 (Sudden Death)</p>
-                                                                <p>• 한 라운드에 한 장씩 카드를 내며 5라운드 진행</p>
-                                                                <p>• 각 라운드마다 즉시 승부 결정</p>
-                                                                <p>• 3승을 먼저 달성하는 쪽이 승리</p>
-                                                                <p className="text-yellow-400 mt-2">💡 빠른 판단력과 상성 이해가 중요!</p>
-                                                            </>
-                                                        )}
-                                                        {selectedStage.battleMode === 'tactics' && (
-                                                            <>
-                                                                <p className="font-bold text-blue-400 mb-2">🎯 전술 승부 (Tactical Duel)</p>
-                                                                <p>• 5장의 카드를 미리 1~5라운드에 배치</p>
-                                                                <p>• 배치 완료 후 수정 불가</p>
-                                                                <p>• 순서대로 자동 대결 진행</p>
-                                                                <p className="text-yellow-400 mt-2">💡 상대의 패턴을 예측하고 전략적으로 배치!</p>
-                                                            </>
-                                                        )}
-                                                        {selectedStage.battleMode === 'double' && (
-                                                            <>
-                                                                <p className="font-bold text-purple-400 mb-2">🎴 2장 대결 (Two-Card Battle)</p>
-                                                                <p>• 한 라운드에 2장씩 동시에 카드 선택</p>
-                                                                <p>• 총 6장의 카드로 3라운드 진행</p>
-                                                                <p>• 각 라운드의 합산 파워로 승부</p>
-                                                                <p className="text-yellow-400 mt-2">💡 카드 조합과 시너지가 승패를 가른다!</p>
-                                                            </>
-                                                        )}
-                                                        {selectedStage.battleMode === 'strategy' && (
-                                                            <>
-                                                                <p className="font-bold text-orange-400 mb-2">🌪️ 전략 전투 (Strategy Battle)</p>
-                                                                <p>• 6장의 카드를 미리 배치</p>
-                                                                <p>• 적은 무작위 순서로 카드 출전</p>
-                                                                <p>• 예측 불가능한 전투 흐름</p>
-                                                                <p className="text-yellow-400 mt-2">💡 모든 상황에 대비한 균형잡힌 덱 구성 필수!</p>
-                                                            </>
-                                                        )}
-                                                    </div>
-                                                </div>
-                                            </div>
-
+                                            {/* REWARDS */}
                                             <div className="bg-black/40 border border-white/5 rounded-2xl p-6">
                                                 <div className="flex items-center gap-2 text-yellow-500 font-bold mb-4">
                                                     <Award size={18} /> REWARDS
@@ -302,18 +250,102 @@ export default function ChapterDetailPage() {
                                                 <div className="space-y-3">
                                                     <div className="flex justify-between items-center bg-white/5 p-3 rounded-lg">
                                                         <span className="text-gray-400">Coins</span>
-                                                        <span className="text-yellow-400 font-mono font-bold">+{selectedStage.rewards.coins}</span>
+                                                        <div className="flex items-center gap-2">
+                                                            <div className="w-4 h-4 rounded-full bg-yellow-500/20 flex items-center justify-center text-[10px]">💰</div>
+                                                            <span className="text-yellow-400 font-mono font-bold">+{selectedStage.rewards.coins}</span>
+                                                        </div>
                                                     </div>
                                                     <div className="flex justify-between items-center bg-white/5 p-3 rounded-lg">
                                                         <span className="text-gray-400">EXP</span>
-                                                        <span className="text-cyan-400 font-mono font-bold">+{selectedStage.rewards.experience}</span>
+                                                        <div className="flex items-center gap-2">
+                                                            <div className="w-4 h-4 rounded-full bg-cyan-500/20 flex items-center justify-center text-[10px] text-cyan-500">XP</div>
+                                                            <span className="text-cyan-400 font-mono font-bold">+{selectedStage.rewards.experience}</span>
+                                                        </div>
                                                     </div>
                                                     {selectedStage.rewards.card && (
                                                         <div className="flex justify-between items-center bg-purple-500/10 p-3 rounded-lg border border-purple-500/30">
-                                                            <span className="text-purple-300">Card</span>
-                                                            <span className="text-purple-400 font-bold text-sm">Rare Card</span>
+                                                            <span className="text-purple-300">Card Reward</span>
+                                                            <span className="text-purple-400 font-bold text-sm flex items-center gap-1">
+                                                                <Swords size={12} /> Unit
+                                                            </span>
                                                         </div>
                                                     )}
+                                                </div>
+                                            </div>
+
+                                            {/* BATTLE MODE - Full Width */}
+                                            <div className="bg-black/40 border border-cyan-500/30 rounded-2xl p-6 md:col-span-2">
+                                                <div className="flex items-center justify-between mb-4">
+                                                    <div className="flex items-center gap-2 text-cyan-400 font-bold">
+                                                        <Swords size={18} /> BATTLE MODE
+                                                    </div>
+                                                    <div className={cn(
+                                                        "px-3 py-1 rounded-lg font-bold text-sm",
+                                                        selectedStage.battleMode === 'sudden-death' ? "bg-red-500/20 text-red-400 border border-red-500/30" :
+                                                            selectedStage.battleMode === 'tactics' ? "bg-blue-500/20 text-blue-400 border border-blue-500/30" :
+                                                                selectedStage.battleMode === 'double' ? "bg-purple-500/20 text-purple-400 border border-purple-500/30" :
+                                                                    "bg-orange-500/20 text-orange-400 border border-orange-500/30"
+                                                    )}>
+                                                        {selectedStage.battleMode === 'sudden-death' ? '⚡ 단판 승부' :
+                                                            selectedStage.battleMode === 'tactics' ? '🎯 전술 승부' :
+                                                                selectedStage.battleMode === 'double' ? '🎴 2장 대결' :
+                                                                    '🌪️ 전략 전투'}
+                                                    </div>
+                                                </div>
+
+                                                <div className="text-gray-300 text-sm bg-white/5 p-5 rounded-lg leading-relaxed flex flex-col md:flex-row gap-6">
+                                                    <div className="flex-1 space-y-2">
+                                                        {selectedStage.battleMode === 'sudden-death' && (
+                                                            <>
+                                                                <p className="font-bold text-red-400 text-lg mb-3">⚡ 단판 승부 (Sudden Death)</p>
+                                                                <p className="flex items-center gap-2"><span className="w-1 h-1 bg-red-500 rounded-full" /> 상호 간에 5장의 카드를 모두 공개합니다.</p>
+                                                                <p className="flex items-center gap-2"><span className="w-1 h-1 bg-red-500 rounded-full" /> 그 중 단 1장의 카드로 승부를 결정합니다.</p>
+                                                                <p className="flex items-center gap-2"><span className="w-1 h-1 bg-red-500 rounded-full" /> 단판으로 전투가 즉시 종료되는 방식입니다.</p>
+                                                            </>
+                                                        )}
+                                                        {selectedStage.battleMode === 'tactics' && (
+                                                            <>
+                                                                <p className="font-bold text-blue-400 text-lg mb-3">🎯 전술 승부 (Tactical Duel)</p>
+                                                                <p className="flex items-center gap-2"><span className="w-1 h-1 bg-blue-500 rounded-full" /> 5장의 카드를 미리 1~5라운드에 배치합니다.</p>
+                                                                <p className="flex items-center gap-2"><span className="w-1 h-1 bg-blue-500 rounded-full" /> 배치 완료 후 수정이 불가능합니다.</p>
+                                                                <p className="flex items-center gap-2"><span className="w-1 h-1 bg-blue-500 rounded-full" /> 순서대로 자동 대결이 진행됩니다.</p>
+                                                            </>
+                                                        )}
+                                                        {selectedStage.battleMode === 'double' && (
+                                                            <>
+                                                                <p className="font-bold text-purple-400 text-lg mb-3">🎴 2장 대결 (Two-Card Battle)</p>
+                                                                <p className="flex items-center gap-2"><span className="w-1 h-1 bg-purple-500 rounded-full" /> 한 라운드에 2장씩 동시에 카드를 선택합니다.</p>
+                                                                <p className="flex items-center gap-2"><span className="w-1 h-1 bg-purple-500 rounded-full" /> 총 6장의 카드로 3라운드가 진행됩니다.</p>
+                                                                <p className="flex items-center gap-2"><span className="w-1 h-1 bg-purple-500 rounded-full" /> 각 라운드의 합산 파워로 승부를 겨룹니다.</p>
+                                                            </>
+                                                        )}
+                                                        {selectedStage.battleMode === 'strategy' && (
+                                                            <>
+                                                                <p className="font-bold text-orange-400 text-lg mb-3">🌪️ 전략 전투 (Strategy Battle)</p>
+                                                                <p className="flex items-center gap-2"><span className="w-1 h-1 bg-orange-500 rounded-full" /> 6장의 카드를 미리 배치합니다.</p>
+                                                                <p className="flex items-center gap-2"><span className="w-1 h-1 bg-orange-500 rounded-full" /> 적은 무작위 순서로 카드를 출전시킵니다.</p>
+                                                                <p className="flex items-center gap-2"><span className="w-1 h-1 bg-orange-500 rounded-full" /> 예측 불가능한 전투 흐름이 이어집니다.</p>
+                                                            </>
+                                                        )}
+                                                    </div>
+
+                                                    {/* Right side Tip/Highlight for Wide Layout */}
+                                                    <div className="md:w-1/3 border-l border-white/10 md:pl-6 pl-0 pt-4 md:pt-0 flex flex-col justify-center">
+                                                        <div className="bg-black/20 rounded-lg p-4 h-full flex flex-col justify-center items-center text-center">
+                                                            <span className="text-2xl mb-2">💡</span>
+                                                            <p className={cn("font-bold",
+                                                                selectedStage.battleMode === 'sudden-death' ? "text-red-400" :
+                                                                    selectedStage.battleMode === 'tactics' ? "text-blue-400" :
+                                                                        selectedStage.battleMode === 'double' ? "text-purple-400" : "text-yellow-400"
+                                                            )}>CORE STRATEGY</p>
+                                                            <p className="text-gray-400 mt-2 text-sm">
+                                                                {selectedStage.battleMode === 'sudden-death' ? "단 한 장의 카드가 승패를 가르는 긴장감!" :
+                                                                    selectedStage.battleMode === 'tactics' ? "상대의 패턴을 예측하고 전략적으로 배치!" :
+                                                                        selectedStage.battleMode === 'double' ? "카드 조합과 시너지가 승패를 가른다!" :
+                                                                            "모든 상황에 대비한 균형잡힌 덱 구성 필수!"}
+                                                            </p>
+                                                        </div>
+                                                    </div>
                                                 </div>
                                             </div>
                                         </div>
@@ -325,7 +357,7 @@ export default function ChapterDetailPage() {
                                         onClick={handleBattleStart}
                                     >
                                         <Swords className="mr-2" />
-                                        {selectedStage.isCleared ? "REPLAY MISSION" : "START MISSION"}
+                                        {selectedStage.isCleared ? "미션 재도전" : "미션 시작"}
                                     </Button>
                                 </motion.div>
                             ) : (
@@ -338,26 +370,6 @@ export default function ChapterDetailPage() {
                 </div>
             </div>
 
-            {/* 대화 오버레이 */}
-            {selectedStage && (
-                <DialogueOverlay
-                    isOpen={isDialogueOpen}
-                    onClose={handleDialogueComplete}
-                    dialogues={[
-                        selectedStage.enemy.dialogue.appearance_ko || selectedStage.enemy.dialogue.appearance,
-                        selectedStage.enemy.dialogue.intro_ko || selectedStage.enemy.dialogue.intro,
-                        selectedStage.enemy.dialogue.quote_ko || selectedStage.enemy.dialogue.quote,
-                        selectedStage.enemy.dialogue.start_ko || selectedStage.enemy.dialogue.start,
-                    ].filter((d): d is string => Boolean(d))}
-                    speakerName={
-                        language === 'ko'
-                            ? (selectedStage.enemy.name_ko || selectedStage.enemy.name)
-                            : selectedStage.enemy.name
-                    }
-                    characterImage={selectedStage.enemy.image}
-                    type={selectedStage.difficulty === 'BOSS' ? 'boss' : 'intro'}
-                />
-            )}
 
             {/* 일반 모달 (성공 메시지 등) */}
             <Modal isOpen={modalConfig.isOpen && modalConfig.type !== 'intro'} onClose={() => setModalConfig({ ...modalConfig, isOpen: false })}>

@@ -37,16 +37,24 @@ export function SoundProvider({ children }: { children: React.ReactNode }) {
         });
     }, []);
 
+    // List of sounds that actually exist in /public/sounds/sfx
+    // Add filenames here (without extension) when you add actual files
+    const AVAILABLE_SFX: string[] = ['click', 'hover', 'success', 'error', 'start'];
+
+    // List of BGM files that exist in /public/sounds/bgm
+    const AVAILABLE_BGM: string[] = [];
+
     const playSfx = useCallback((type: SoundType) => {
         if (isMuted) return;
 
-        // Try to play sound if file exists
+        // Only attempt to play if we know the file exists to avoid console 404s
+        if (!AVAILABLE_SFX.includes(type)) return;
+
         try {
             const audio = new Audio(`/sounds/sfx/${type}.mp3`);
             audio.volume = 0.5;
             audio.play().catch((e) => {
-                // Ignore errors if file doesn't exist (common in dev without assets)
-                console.warn(`[Sound] Missing SFX file: /sounds/sfx/${type}.mp3`);
+                // Silently handle if play is interrupted
             });
         } catch (e) {
             console.error('[Sound] Audio Error:', e);
@@ -54,17 +62,15 @@ export function SoundProvider({ children }: { children: React.ReactNode }) {
     }, [isMuted]);
 
     const playBgm = useCallback((bgmName: string) => {
-        if (isMuted) return;
+        if (isMuted || !AVAILABLE_BGM.includes(bgmName)) return;
 
         try {
-            // Stop previous BGM if needed (basic implementation)
             const audio = new Audio(`/sounds/bgm/${bgmName}.mp3`);
             audio.loop = true;
             audio.volume = 0.3;
             audio.play().catch((e) => {
-                console.warn(`[Sound] Missing BGM file: /sounds/bgm/${bgmName}.mp3`);
+                // Silently handle
             });
-            // Store ref to current BGM to stop it later (omitted for simplicity in this step)
         } catch (e) {
             console.error('[Sound] Audio Error:', e);
         }

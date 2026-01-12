@@ -14,6 +14,9 @@ import {
 import { cn } from '@/lib/utils';
 import Image from 'next/image';
 
+import { updateNickname } from '@/lib/firebase-db';
+import { useUserProfile } from '@/hooks/useUserProfile';
+
 interface UnifiedTutorialModalProps {
     onClose?: () => void;
     onClaim?: () => void;
@@ -21,6 +24,7 @@ interface UnifiedTutorialModalProps {
 
 export default function UnifiedTutorialModal({ onClose, onClaim }: UnifiedTutorialModalProps) {
     const { user, claimStarterPack } = useUser();
+    const { reload: reloadProfile } = useUserProfile();
     const [trackingId, setTrackingId] = useState<string | null>(null);
     const [userName, setUserName] = useState<string>('');
 
@@ -152,10 +156,23 @@ export default function UnifiedTutorialModal({ onClose, onClaim }: UnifiedTutori
         }
     };
 
-    const handleNicknameSubmit = () => {
-        if (!nicknameInput.trim()) return;
-        setUserName(nicknameInput.trim());
-        proceedToNextScene();
+    const handleNicknameSubmit = async () => {
+        if (!nicknameInput.trim() || !user) return;
+
+        // [FIX] Save nickname to Firebase immediately
+        setIsProcessing(true);
+        try {
+            await updateNickname(nicknameInput.trim(), user.uid);
+            await reloadProfile(); // Sync global state
+
+            setUserName(nicknameInput.trim());
+            proceedToNextScene();
+        } catch (e) {
+            console.error("Nickname Save Failed", e);
+            // Optionally show error to user
+        } finally {
+            setIsProcessing(false);
+        }
     };
 
     const proceedToNextScene = () => {
@@ -272,15 +289,19 @@ export default function UnifiedTutorialModal({ onClose, onClaim }: UnifiedTutori
                                 className="absolute left-8 bottom-[200px] md:bottom-[180px] w-32 h-32 md:w-40 md:h-40"
                             >
                                 <div className={cn(
-                                    "relative w-full h-full rounded-full border-4 overflow-hidden shadow-2xl",
+                                    "relative w-full h-full rounded-full border-4 overflow-hidden shadow-2xl bg-black",
                                     characterStyle?.borderColor,
                                     characterStyle?.glowColor
                                 )}>
                                     <Image
-                                        src={getCharacterPortrait(currentDialogue.speaker)}
-                                        alt={getCharacterName(currentDialogue.speaker)}
+                                        src={getCharacterPortrait(currentDialogue.speaker.replace(/\*\*/g, '')) || '/assets/icon-192x192.png'}
+                                        alt={getCharacterName(currentDialogue.speaker.replace(/\*\*/g, ''))}
                                         fill
                                         className="object-cover"
+                                        onError={(e) => {
+                                            // Fallback if image fails to load
+                                            e.currentTarget.src = '/assets/icons/icon-512x512.png';
+                                        }}
                                     />
                                 </div>
                             </motion.div>
@@ -302,7 +323,7 @@ export default function UnifiedTutorialModal({ onClose, onClaim }: UnifiedTutori
                                         "font-bold orbitron text-sm md:text-base mb-3 tracking-wide",
                                         characterStyle?.color || "text-white"
                                     )}>
-                                        {getCharacterName(currentDialogue.speaker)}
+                                        {getCharacterName(currentDialogue.speaker.replace(/\*\*/g, ''))}
                                     </div>
                                 )}
 

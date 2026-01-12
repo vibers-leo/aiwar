@@ -7,17 +7,23 @@ export function useGameSound() {
     const playSound = useCallback((soundName: string, type: 'bgm' | 'sfx' = 'sfx') => {
         // Map abstract sound names to file paths
         const soundMap: Record<string, string> = {
-            'click': '/sounds/click.mp3',
-            'hover': '/sounds/hover.mp3',
-            'battle_start': '/sounds/battle_start.mp3',
-            'card_play': '/sounds/card_play.mp3',
-            'attack': '/sounds/attack.mp3',
-            'damage': '/sounds/damage.mp3',
-            'victory': '/sounds/victory.mp3',
-            'defeat': '/sounds/defeat.mp3',
-            'bgm_main': '/sounds/bgm_main.mp3',
-            'bgm_battle': '/sounds/bgm_battle.mp3',
+            'click': '/assets/sounds/sfx/click.mp3',
+            'hover': '/assets/sounds/sfx/hover.mp3',
+            'battle_start': '/assets/sounds/sfx/start.mp3',
+            'card_play': '/assets/sounds/sfx/click.mp3',
+            'attack': '/assets/sounds/sfx/attack.mp3',
+            'damage': '/assets/sounds/sfx/error.mp3',
+            'victory': '/assets/sounds/sfx/success.mp3',
+            'defeat': '/assets/sounds/sfx/error.mp3',
+            'success': '/assets/sounds/sfx/success.mp3',
+            'bgm_main': '/assets/sounds/bgm/main-theme.mp3',
+            'bgm_battle': '/assets/sounds/bgm/main-theme.mp3', // Temporarily same as main
+            'bgm_story': '/assets/sounds/bgm/story-ambient.mp3',
+            'bgm_victory': '/assets/sounds/bgm/victory.mp3',
         };
+
+        const url = soundMap[soundName] || soundName;
+        console.log(`[useGameSound] Playing ${soundName} (${type}) from ${url}`);
 
         const fallbackMap: Record<string, 'click' | 'attack' | 'success' | 'error' | undefined> = {
             'click': 'click',

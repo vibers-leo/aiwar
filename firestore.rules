@@ -83,6 +83,15 @@ service cloud.firestore {
       allow write: if false; // Managed by Cloud Functions only
     }
     
+    // Nicknames - globally unique via document ID
+    match /nicknames/{nickname} {
+      allow read: if isAuthenticated();
+      // Allow creation if the user claims it for themselves
+      allow create: if isAuthenticated() && request.resource.data.uid == request.auth.uid;
+      // Allow update/delete only if the user owns the nickname
+      allow update, delete: if isAuthenticated() && resource.data.uid == request.auth.uid;
+    }
+
     // Global settings - read-only
     match /settings/{document=**} {
       allow read: if true;

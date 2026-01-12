@@ -90,12 +90,16 @@ export default function TutorialManager() {
             // 1. Check if nickname is missing
             const hasNickname = profile?.nickname && profile.nickname !== '';
 
-            if (!hasNickname) {
-                onboardingTriggeredRef.current = true; // Mark as triggered
-                setShowNicknameModal(true);
-                hideFooter();
-                return;
-            }
+            /* 
+               [UPDATED] UnifiedTutorialModal now handles nickname input via Story Scene 2.
+               We bypass the standalone NicknameModal to show the story intro first.
+            */
+            // if (!hasNickname) {
+            //     onboardingTriggeredRef.current = true; // Mark as triggered
+            //     setShowNicknameModal(true);
+            //     hideFooter();
+            //     return;
+            // }
 
             onboardingTriggeredRef.current = true; // Mark as triggered
             setShowTutorialModal(true);

@@ -6,6 +6,7 @@ import { Card } from '@/lib/types';
 import GameCard from '@/components/GameCard';
 import { Trophy, Swords } from 'lucide-react';
 import { determineRoundWinner } from '@/lib/pvp-battle-system';
+import { useGameSound } from '@/hooks/useGameSound';
 
 interface DoubleBattleArenaProps {
     playerDeck: Card[];
@@ -25,6 +26,13 @@ export default function DoubleBattleArena({
     const [playerWins, setPlayerWins] = useState(0);
     const [enemyWins, setEnemyWins] = useState(0);
     const [rounds, setRounds] = useState<any[]>([]);
+    const { playSound, stopBGM } = useGameSound();
+
+    // 시작 시 BGM
+    useEffect(() => {
+        playSound('bgm_battle', 'bgm');
+        return () => stopBGM();
+    }, [playSound, stopBGM]);
 
     // 현재 라운드의 카드 (2장씩)
     const getRoundCards = (round: number) => {
@@ -45,6 +53,7 @@ export default function DoubleBattleArena({
     const handleCardSelect = (card: Card) => {
         if (phase !== 'selection') return;
         setSelectedPlayerCard(card);
+        playSound('card_play'); // 카드 선택 효과음
 
         // AI는 랜덤 선택
         const enemyChoice = roundCards.enemy[Math.random() > 0.5 ? 0 : 1];
@@ -53,6 +62,7 @@ export default function DoubleBattleArena({
         // 공개 단계로 전환
         setTimeout(() => {
             setPhase('reveal');
+            playSound('battle_start'); // 배틀 시작(공개) 효과음
 
             // 승자 판정
             const rawWinner = determineRoundWinner(card, enemyChoice);
@@ -70,8 +80,10 @@ export default function DoubleBattleArena({
             // 점수 업데이트
             if (winner === 'player') {
                 setPlayerWins(prev => prev + 1);
+                playSound('success'); // 승리 효과음
             } else if (winner === 'enemy') {
                 setEnemyWins(prev => prev + 1);
+                playSound('error'); // 패배 효과음
             }
 
             // 결과 표시 후 다음 라운드 또는 종료

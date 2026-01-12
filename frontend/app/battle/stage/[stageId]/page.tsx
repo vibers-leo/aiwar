@@ -19,6 +19,7 @@ import { BattleArena } from '@/components/BattleArena';
 import DialogueOverlay from '@/components/story/DialogueOverlay';
 import OpponentDeckReveal from '@/components/battle/OpponentDeckReveal';
 import CardPlacementBoard, { RoundPlacement } from '@/components/battle/CardPlacementBoard';
+import DoubleBattleArena from '@/components/battle/DoubleBattleArena';
 
 
 // Shared Phase Type
@@ -184,19 +185,43 @@ export default function StageBattlePage() {
 
     const confirmDeck = (selected: Card[]) => {
         setSelectedHand(selected);
-        handleStartBattle(selected); // Go directly to battle for all modes
+        setPhase('opponent-reveal');
     };
 
-    // NEW: Handle opponent reveal completion (not used anymore, but keeping for compatibility)
+    // NEW: Handle opponent reveal completion
     const handleRevealComplete = () => {
         if (!storyStage) return;
-        handleStartBattle(selectedHand);
+        setPhase('placement');
     };
 
-    // NEW: Handle placement completion (not used anymore, but keeping for compatibility)
+    // NEW: Handle placement completion
     const handlePlacementComplete = (placement: RoundPlacement) => {
+        if (!storyStage) return;
         setCardPlacement(placement);
-        handleStartBattle(selectedHand);
+
+        // Convert placement to ordered array for BattleArena
+        const orderedDeck: Card[] = [];
+        const orderIndices: number[] = [];
+
+        // Helper to find index in selectedHand
+        const getIdx = (card: any) => selectedHand.findIndex(c => c.id === card?.id);
+
+        if (storyStage.battleMode === 'double') {
+            // For DoubleBattleArena, we pass the full deck
+            setActiveBattleDeck(selectedHand);
+        } else {
+            // For BattleArena, we can pass the ordered deck or indices
+            // Let's pass the selectedHand as playerDeck and use initialPlacement
+            // But verify how BattleArena handles it. 
+            // Actually, BattleArena.tsx uses selectedOrder to index into playerDeck.
+            const rounds = [placement.round1, placement.round2, placement.round3, placement.round4, placement.round5].filter(Boolean);
+            const indices = rounds.map(r => getIdx(r.main));
+
+            setActiveBattleDeck(selectedHand);
+            // We'll pass indices via a state or directly to BattleArena props
+        }
+
+        setPhase('battle');
     };
 
 
@@ -211,7 +236,7 @@ export default function StageBattlePage() {
             {/* Background */}
             <div className="fixed inset-0 z-0">
                 <div className="absolute inset-0 bg-gradient-to-br from-gray-900 to-black" />
-                <div className="absolute inset-0 opacity-20 bg-[url('/assets/grid.png')] bg-center bg-repeat" />
+                <div className="absolute inset-0 opacity-20 bg-[url('/grid-pattern.svg')] bg-center bg-repeat" />
                 <BackgroundBeams className="opacity-35" />
             </div>
 
@@ -257,12 +282,17 @@ export default function StageBattlePage() {
                         dialogues={(() => {
                             const d = storyStage.enemy.dialogue;
                             const isKo = language === 'ko';
-                            return [
+                            const raw = [
                                 isKo ? d.intro_ko : d.intro,
                                 isKo ? d.appearance_ko : d.appearance,
                                 isKo ? d.quote_ko : d.quote,
                                 isKo ? d.start_ko : d.start
                             ].filter((text): text is string => !!text && text.trim().length > 0);
+
+                            // Split by newline or literal \n string to handle consolidated lines
+                            return raw.flatMap(text => text.split(/\\n|\n/))
+                                .map(line => line.trim())
+                                .filter(line => line.length > 0);
                         })()}
                         speakerName={language === 'ko' ? storyStage.enemy.name_ko : storyStage.enemy.name}
                         characterImage={storyStage.enemy.image}
@@ -281,21 +311,69 @@ export default function StageBattlePage() {
                     />
                 )}
 
-                {/* 4. Battle Animation (Unified BattleArena) */}
-                {phase === 'battle' && (
-                    <BattleArena
-                        playerDeck={activeBattleDeck}
-                        enemyDeck={enemies}
-                        opponent={{
-                            name: language === 'ko' ? storyStage.enemy.name_ko : storyStage.enemy.name,
-                            level: storyStage.step
-                        }}
-                        onFinish={handleBattleFinish}
-                        title={language === 'ko' ? storyStage.title_ko : storyStage.title}
-                        battleMode={storyStage.battleMode as any}
-                        enemySelectionMode={storyStage.battleMode === 'strategy' ? 'random' : 'ordered'}
-                        autoStartBattle={true}
+                {/* 3. Opponent Reveal */}
+                {phase === 'opponent-reveal' && (
+                    <OpponentDeckReveal
+                        opponentDeck={enemies}
+                        opponentName={language === 'ko' ? storyStage.enemy.name_ko : storyStage.enemy.name}
+                        opponentLevel={storyStage.step}
+                        timer={revealTimer}
+                        onTimerEnd={handleRevealComplete}
+                        onBattleStart={handleRevealComplete}
                     />
+                )}
+
+                {/* 4. Card Placement */}
+                {phase === 'placement' && (
+                    <CardPlacementBoard
+                        selectedCards={selectedHand}
+                        opponentDeck={enemies}
+                        battleMode={storyStage.battleMode as any}
+                        onPlacementComplete={handlePlacementComplete}
+                        onCancel={() => setPhase('deck-select')}
+                    />
+                )}
+
+                {/* 5. Battle Animation (Unified BattleArena) */}
+                {phase === 'battle' && (
+                    storyStage.battleMode === 'double' ? (
+                        <DoubleBattleArena
+                            playerDeck={selectedHand}
+                            enemyDeck={enemies}
+                            onFinish={(res) => handleBattleFinish({
+                                isWin: res.isWin,
+                                playerWins: res.playerWins,
+                                enemyWins: res.enemyWins,
+                                rounds: res.rounds
+                            })}
+                        />
+                    ) : (
+                        <BattleArena
+                            playerDeck={selectedHand}
+                            enemyDeck={enemies}
+                            opponent={{
+                                name: language === 'ko' ? storyStage.enemy.name_ko : storyStage.enemy.name,
+                                level: storyStage.step
+                            }}
+                            onFinish={handleBattleFinish}
+                            title={language === 'ko' ? storyStage.title_ko : storyStage.title}
+                            battleMode={storyStage.battleMode as any}
+                            enemySelectionMode={storyStage.battleMode === 'strategy' ? 'random' : 'ordered'}
+                            autoStartBattle={true}
+                            initialPlacement={(() => {
+                                if (!cardPlacement) return undefined;
+                                const getIdx = (card: any) => selectedHand.findIndex(c => c.id === card?.id);
+                                const rounds = [
+                                    cardPlacement.round1.main,
+                                    cardPlacement.round2.main,
+                                    cardPlacement.round3.main,
+                                    cardPlacement.round4.main,
+                                    cardPlacement.round5.main
+                                ].filter(Boolean).map(getIdx);
+                                return rounds;
+                            })()}
+                        />
+                    )
                 )}
 
 

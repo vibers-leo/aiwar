@@ -139,3 +139,51 @@ export function getTypeAdvantageDescription(attackerType: AIType | undefined, de
     const key = `${attackerType}-${defenderType}`;
     return descriptions[key] || null;
 }
+/**
+ * Shared Battle Resolution Logic (Winner Takes All)
+ * Priority: Type > Specific Stat > Total Power > Rarity
+ */
+export function resolveBattleResult(card1: any, card2: any): {
+    winner: 'player1' | 'player2' | 'draw',
+    reason: 'TYPE' | 'STAT' | 'POWER' | 'RARITY' | 'DRAW'
+} {
+    if (!card1 || !card2) return { winner: 'draw', reason: 'DRAW' };
+
+    const type1 = card1.type || 'EFFICIENCY';
+    const type2 = card2.type || 'EFFICIENCY';
+
+    // 1. Type Advantage (Instant Win)
+    if (hasTypeAdvantage(type1, type2)) return { winner: 'player1', reason: 'TYPE' };
+    if (hasTypeAdvantage(type2, type1)) return { winner: 'player2', reason: 'TYPE' };
+
+    // 2. Specific Stat (If same type)
+    if (type1 === type2) {
+        const getStat = (card: any, type: string) => {
+            if (type === 'EFFICIENCY') return card.stats?.efficiency || 0;
+            if (type === 'CREATIVITY') return card.stats?.creativity || 0;
+            if (type === 'FUNCTION') return card.stats?.function || 0;
+            return 0;
+        };
+        const s1 = getStat(card1, type1);
+        const s2 = getStat(card2, type2);
+        if (s1 > s2) return { winner: 'player1', reason: 'STAT' };
+        if (s2 > s1) return { winner: 'player2', reason: 'STAT' };
+    }
+
+    // 3. Total Power
+    const p1 = card1.stats?.totalPower || 0;
+    const p2 = card2.stats?.totalPower || 0;
+    if (p1 > p2) return { winner: 'player1', reason: 'POWER' };
+    if (p2 > p1) return { winner: 'player2', reason: 'POWER' };
+
+    // 4. Rarity Weight
+    const rarityWeight: Record<string, number> = {
+        'commander': 6, 'unique': 5, 'legendary': 4, 'epic': 3, 'rare': 2, 'common': 1
+    };
+    const r1 = rarityWeight[card1.rarity?.toLowerCase() || 'common'] || 1;
+    const r2 = rarityWeight[card2.rarity?.toLowerCase() || 'common'] || 1;
+    if (r1 > r2) return { winner: 'player1', reason: 'RARITY' };
+    if (r2 > r1) return { winner: 'player2', reason: 'RARITY' };
+
+    return { winner: 'draw', reason: 'DRAW' };
+}

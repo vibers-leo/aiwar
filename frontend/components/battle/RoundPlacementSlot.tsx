@@ -247,19 +247,7 @@ function RoundPlacementSlot({
                         {/* Hover Overlay */}
                         <div className="absolute inset-0 bg-white/0 hover:bg-white/5 transition-colors pointer-events-none" />
 
-                        {/* Type Advantage Indicator */}
-                        {advantageStatus && (
-                            <div className={cn(
-                                "absolute -bottom-2 left-1/2 -translate-x-1/2 px-3 py-1 rounded-full text-[10px] font-black shadow-xl border-2 z-30 pointer-events-none whitespace-nowrap",
-                                advantageStatus === 'advantage' ? "bg-green-500 text-white border-green-300" :
-                                    advantageStatus === 'disadvantage' ? "bg-red-500 text-white border-red-300" :
-                                        "bg-gray-500 text-white border-gray-300"
-                            )}>
-                                {advantageStatus === 'advantage' ? '✓ 유리' :
-                                    advantageStatus === 'disadvantage' ? '✗ 불리' :
-                                        '= 동등'}
-                            </div>
-                        )}
+
                     </>
                 ) : (
                     <div className="absolute inset-0 flex flex-col items-center justify-center text-white/10 pointer-events-none group-hover:text-cyan-400/20 transition-colors">

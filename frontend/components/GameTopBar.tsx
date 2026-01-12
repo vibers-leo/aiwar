@@ -10,6 +10,7 @@ import { useAlert } from '@/context/AlertContext';
 import { useNotification } from '@/context/NotificationContext';
 import { useUserProfile } from '@/hooks/useUserProfile';
 import NotificationPanel from '@/components/NotificationPanel';
+import { calculateRechargeParams } from '@/lib/token-system';
 
 interface GameTopBarProps {
     sidebarCollapsed?: boolean;
@@ -25,10 +26,13 @@ export default function GameTopBar({ sidebarCollapsed = false }: GameTopBarProps
         tokens: userTokens,
         coins: userCoins,
         level: userLevel,
-        experience: userExp
+        experience: userExp,
+        maxTokens, // [NEW] From Context
+        subscriptions // [NEW] For calculating rates
     } = useUser();
 
     const { profile } = useUserProfile();
+    const params = calculateRechargeParams(subscriptions as any, userLevel);
 
     // Required Exp Calculation
     const requiredExp = userLevel * 100;
@@ -148,15 +152,102 @@ export default function GameTopBar({ sidebarCollapsed = false }: GameTopBarProps
                         </div>
                     </div>
 
-                    {/* Tokens */}
-                    <div className="flex items-center gap-2 bg-black/40 backdrop-blur-sm px-3 py-1.5 rounded-lg border border-purple-500/20">
-                        <div className="w-6 h-6 rounded-full bg-gradient-to-br from-purple-400 to-pink-600 flex items-center justify-center text-xs shadow-md">
-                            💎
+                    {/* Tokens with Tooltip */}
+                    <div className="relative group z-[100]">
+                        {/* Token Badge */}
+                        <div className="flex items-center gap-3 bg-black/60 backdrop-blur-md px-4 py-2 rounded-xl border border-purple-500/20 group-hover:border-purple-500/50 group-hover:bg-purple-900/10 transition-all duration-300 cursor-help">
+                            <div className="relative">
+                                <div className="w-8 h-8 rounded-full bg-gradient-to-br from-purple-500 to-indigo-600 flex items-center justify-center text-sm shadow-[0_0_10px_rgba(168,85,247,0.4)] group-hover:scale-110 transition-transform duration-300">
+                                    💎
+                                </div>
+                                <div className="absolute -bottom-1 -right-1 w-3 h-3 bg-green-500 border-2 border-black rounded-full animate-pulse" />
+                            </div>
+
+                            <div className="flex flex-col items-end">
+                                <div className="text-[9px] text-purple-300/80 font-bold tracking-wider uppercase mb-0.5 group-hover:text-purple-300 transition-colors">
+                                    Token Balance
+                                </div>
+                                <div className="flex items-baseline gap-1.5 font-orbitron">
+                                    <span className="text-sm font-black text-white group-hover:text-purple-100 transition-colors">
+                                        {userTokens.toLocaleString()}
+                                    </span>
+                                    <span className="text-[10px] text-white/40 font-bold">
+                                        / <span className="text-purple-400">{maxTokens.toLocaleString()}</span>
+                                    </span>
+                                </div>
+                            </div>
                         </div>
-                        <div className="flex flex-col items-end">
-                            <div className="text-[8px] text-purple-400/60 font-mono uppercase">Tokens</div>
-                            <div className="text-xs font-black orbitron text-purple-400">
-                                {userTokens.toLocaleString()}
+
+                        {/* Enhanced HUD Tooltip */}
+                        <div className="absolute top-full right-0 mt-3 w-80 opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all duration-300 transform group-hover:translate-y-0 translate-y-2 z-[1000]">
+                            <div className="relative bg-[#0F0F13] border border-purple-500/30 rounded-2xl p-5 shadow-[0_0_40px_rgba(0,0,0,0.8)] backdrop-blur-xl">
+                                {/* Decorator Line */}
+                                <div className="absolute top-0 left-6 right-6 h-[1px] bg-gradient-to-r from-transparent via-purple-500/50 to-transparent" />
+
+                                {/* Header */}
+                                <div className="flex items-center justify-between mb-4">
+                                    <h4 className="text-xs font-black text-purple-400 tracking-widest uppercase flex items-center gap-2">
+                                        <span className="w-1.5 h-1.5 bg-purple-500 rounded-full animate-pulse" />
+                                        Resource Monitor
+                                    </h4>
+                                    <span className="px-2 py-0.5 rounded text-[9px] font-bold bg-green-500/10 text-green-400 border border-green-500/20">
+                                        ACTIVE
+                                    </span>
+                                </div>
+
+                                {/* Main Gauge */}
+                                <div className="mb-5">
+                                    <div className="flex justify-between text-xs mb-1.5">
+                                        <span className="text-white/60">Capacity Usage</span>
+                                        <span className="text-purple-300 font-mono">{Math.round((userTokens / maxTokens) * 100)}%</span>
+                                    </div>
+                                    <div className="h-2 w-full bg-black/50 rounded-full overflow-hidden border border-white/5">
+                                        <div
+                                            className="h-full bg-gradient-to-r from-purple-600 to-pink-500 shadow-[0_0_10px_rgba(168,85,247,0.5)] transition-all duration-1000"
+                                            style={{ width: `${Math.min(100, (userTokens / maxTokens) * 100)}%` }}
+                                        />
+                                    </div>
+                                </div>
+
+                                {/* Stats Grid */}
+                                <div className="grid grid-cols-2 gap-3 mb-4">
+                                    <div className="bg-white/5 rounded-xl p-3 border border-white/5 flex flex-col items-center">
+                                        <span className="text-[10px] text-white/40 uppercase tracking-wider mb-1">Recharge Rate</span>
+                                        <div className="flex items-end gap-1">
+                                            <span className="text-xl font-black text-white font-orbitron">+{params.rateAmount}</span>
+                                            <span className="text-[10px] text-purple-400 mb-1">Tokens</span>
+                                        </div>
+                                    </div>
+                                    <div className="bg-white/5 rounded-xl p-3 border border-white/5 flex flex-col items-center">
+                                        <span className="text-[10px] text-white/40 uppercase tracking-wider mb-1">Interval</span>
+                                        <div className="flex items-end gap-1">
+                                            <span className="text-xl font-black text-white font-orbitron">{params.intervalMin}</span>
+                                            <span className="text-[10px] text-purple-400 mb-1">Min</span>
+                                        </div>
+                                    </div>
+                                </div>
+
+                                {/* Detailed Breakdown */}
+                                <div className="space-y-2 bg-black/20 rounded-xl p-3 border border-white/5">
+                                    <p className="text-[10px] font-bold text-white/30 uppercase tracking-widest pl-1">Bonus Breakdown</p>
+
+                                    <div className="flex justify-between items-center text-[11px] px-1">
+                                        <span className="text-white/60">Base Rate</span>
+                                        <span className="font-mono text-white/40">50 / 10min</span>
+                                    </div>
+
+                                    <div className="flex justify-between items-center text-[11px] px-1">
+                                        <span className="text-white/60">Level Bonus (Lv.{userLevel})</span>
+                                        <span className="font-mono text-green-400">+{((userLevel - 1) * 100).toLocaleString()} Cap</span>
+                                    </div>
+
+                                    {subscriptions.length > 0 && (
+                                        <div className="flex justify-between items-center text-[11px] px-1 pt-1 border-t border-white/5 mt-1">
+                                            <span className="text-purple-300">Faction Boosts</span>
+                                            <span className="font-mono text-purple-300">{subscriptions.length} Active</span>
+                                        </div>
+                                    )}
+                                </div>
                             </div>
                         </div>
                     </div>

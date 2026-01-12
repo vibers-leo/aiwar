@@ -482,19 +482,26 @@ export async function saveUserProfile(profile: Partial<UserProfile>, uid?: strin
         await setDoc(userRef, updates, { merge: true });
 
         // 2. Sync Key Stats to Root Document (For Leaderboard Query)
-        // We only update if these specific fields are present to avoid overwriting with nulls if partial update
-        const rootUpdates: any = { lastLogin: serverTimestamp(), userId };
-        if (profile.nickname) rootUpdates.nickname = profile.nickname;
-        if (profile.avatarUrl) rootUpdates.avatarUrl = profile.avatarUrl;
-        if (profile.rating !== undefined) rootUpdates.rating = profile.rating;
-        if (profile.wins !== undefined) rootUpdates.wins = profile.wins;
-        if (profile.losses !== undefined) rootUpdates.losses = profile.losses;
-        if (profile.rank !== undefined) rootUpdates.rank = profile.rank;
+        // [Jung-Gong-Beop] Wrap in try-catch so permission errors on root doc don't fail the whole save
+        try {
+            const rootUpdates: any = { lastLogin: serverTimestamp(), userId };
+            if (profile.nickname) rootUpdates.nickname = profile.nickname;
+            if (profile.avatarUrl) rootUpdates.avatarUrl = profile.avatarUrl;
+            if (profile.rating !== undefined) rootUpdates.rating = profile.rating;
+            if (profile.level !== undefined) rootUpdates.level = profile.level;
+            if (profile.wins !== undefined) rootUpdates.wins = profile.wins;
+            if (profile.losses !== undefined) rootUpdates.losses = profile.losses;
+            if (profile.rank !== undefined) rootUpdates.rank = profile.rank;
 
-        // Ensure we don't wipe out existing root data
-        await setDoc(rootUserRef, rootUpdates, { merge: true });
+            rootUpdates.updatedAt = serverTimestamp();
 
-        console.log('✅ Firebase 프로필 저장 성공 (Synced to Root):', profile);
+            // Ensure we don't wipe out existing root data
+            await setDoc(rootUserRef, rootUpdates, { merge: true });
+            console.log('✅ Firebase 프로필 저장 성공 (Synced to Root):', profile);
+        } catch (syncError: any) {
+            console.warn('⚠️ Leaderboard sync failed (Root doc permission?):', syncError.message);
+            // Do NOT throw here, as the main profile update (Step 1) succeeded.
+        }
     } catch (error) {
         console.error('❌ 프로필 저장 실패:', error);
         throw error;
@@ -620,9 +627,15 @@ export async function checkNicknameUnique(nickname: string, currentUid?: string)
         }
 
         return true;
-    } catch (error) {
+    } catch (error: any) {
         console.error('❌ 닉네임 중복 체크 실패:', error);
-        return false; // 에러 발생 시 보수적으로 "중복임"을 반환하여 덮어쓰기 방지
+
+        // [Permissions] 명확한 권한 오류는 상위로 전파하여 "중복" 메시지와 구분함
+        if (error?.code === 'permission-denied') {
+            throw new Error('PERMISSION_DENIED');
+        }
+
+        return false; // 그 외 오류는 보수적으로 "중복임"을 반환
     }
 }
 
@@ -845,13 +858,19 @@ export async function updateExpAndLevel(exp: number, level: number, uid?: string
     try {
         const userId = uid || await getUserId();
         const userRef = doc(db, 'users', userId, 'profile', 'data');
+        // [Jung-Gong-Beop] Root document for Leaderboard sync
+        const rootRef = doc(db, 'users', userId);
 
         await updateDoc(userRef, {
             exp,
             level
         });
 
-        console.log(`✅ 경험치/레벨 업데이트: Lv.${level}, ${exp} XP`);
+        // Sync level to root doc (fire and forget acceptable, but cleaner to await or catch)
+        await setDoc(rootRef, { level, updatedAt: serverTimestamp() }, { merge: true })
+            .catch(err => console.warn(`[Sync] Failed to sync level to root:`, err));
+
+        console.log(`✅ 경험치/레벨 업데이트: Lv.${level}, ${exp} XP (Synced to Root)`);
     } catch (error) {
         console.error('❌ 경험치/레벨 업데이트 실패:', error);
         throw error;
@@ -1409,31 +1428,79 @@ export async function getLeaderboardData(limitCount = 100): Promise<UserProfile[
     try {
         const usersRef = collection(db, 'users');
 
-        // rating만으로 정렬 (단일 필드 인덱스는 자동 생성됨)
+        // [FIX] 기존에는 rating 필드가 있는 유저만 가져왔으나(orderBy),
+        // 초기 유저나 마이그레이션이 안 된 유저는 rating 필드가 없을 수 있음.
+        // 따라서 일단 가져와서 메모리에서 정렬함.
         const q = query(
             usersRef,
-            orderBy('rating', 'desc'),
             limit(limitCount)
         );
 
         const snapshot = await getDocs(q);
-        const users = snapshot.docs.map(doc => {
-            const data = doc.data();
-            return {
-                uid: doc.id,
-                ...data
+        console.log(`[Leaderboard] Fetched ${snapshot.size} raw documents (Unsorted)`);
+
+        let users = await Promise.all(snapshot.docs.map(async (docSnapshot) => {
+            const data = docSnapshot.data();
+            let userProfile = {
+                uid: docSnapshot.id,
+                nickname: data.nickname, // Try root doc first
+                level: data.level || 1,
+                avatarUrl: data.avatarUrl,
+                rating: data.rating !== undefined ? data.rating : 1000, // Default to 1000
+                rank: data.rank,
+                wins: data.wins || 0,
+                losses: data.losses || 0,
             } as UserProfile;
-        });
 
-        // 클라이언트 측에서 추가 정렬 (rating 동점 시 level로 정렬)
-        users.sort((a, b) => {
-            if (b.rating !== a.rating) {
-                return (b.rating || 0) - (a.rating || 0);
+            // [Fallback] If nickname missing in root, fetch from subcollection
+            if (!userProfile.nickname) {
+                try {
+                    const subProfileRef = doc(db!, 'users', docSnapshot.id, 'profile', 'data');
+                    const subSnap = await getDoc(subProfileRef);
+
+                    if (subSnap.exists()) {
+                        const subData = subSnap.data();
+                        userProfile.nickname = subData.nickname;
+                        userProfile.level = subData.level !== undefined ? subData.level : userProfile.level;
+                        userProfile.avatarUrl = subData.avatarUrl || userProfile.avatarUrl;
+                        // Subprofile might have stats too?
+                        if (subData.rating !== undefined) userProfile.rating = subData.rating;
+
+                        // [Self-Healing] Sync found data to root for next time
+                        if (userProfile.nickname) {
+                            const rootRef = doc(db!, 'users', docSnapshot.id);
+                            setDoc(rootRef, {
+                                nickname: userProfile.nickname,
+                                level: userProfile.level,
+                                avatarUrl: userProfile.avatarUrl || '',
+                                rating: userProfile.rating,
+                                updatedAt: serverTimestamp()
+                            }, { merge: true });
+                        }
+                    }
+                } catch (err) {
+                    console.error(`[Leaderboard] Failed to fetch subprofile for ${docSnapshot.id}`, err);
+                }
             }
-            return (b.level || 0) - (a.level || 0);
+
+            // 닉네임이 없어도 표시 (프론트엔드에서 Player_XXXX 처리)
+            return userProfile;
+        }));
+
+        // null 제거 (혹시 모를 오류 대비)
+        const validUsers = users.filter((u): u is UserProfile => u !== null);
+
+        // [Memory Sort] Rating 내림차순 정렬
+        validUsers.sort((a, b) => (b.rating || 1000) - (a.rating || 1000));
+
+        // [Rank Assignment] 순위 부여
+        validUsers.forEach((u, index) => {
+            u.rank = index + 1;
         });
 
-        return users;
+        console.log(`[Leaderboard] Processed ${validUsers.length} valid rankings`);
+        return validUsers;
+
     } catch (error) {
         console.error('❌ 리더보드 로드 실패:', error);
         return [];

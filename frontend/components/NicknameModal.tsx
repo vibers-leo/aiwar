@@ -46,8 +46,13 @@ export default function NicknameModal({ onComplete }: NicknameModalProps) {
             // Artificial delay for futuristic feel
             await new Promise(resolve => setTimeout(resolve, 800));
             onComplete(nickname);
-        } catch (err) {
-            setError('닉네임 확인 중 오류가 발생했습니다.');
+        } catch (err: any) {
+            console.error("Nickname Check Error:", err);
+            if (err.message === 'PERMISSION_DENIED') {
+                setError('시스템 권한 오류 (Firestore Rules 미설정)');
+            } else {
+                setError('닉네임 확인 중 오류가 발생했습니다.');
+            }
             setIsSubmitting(false);
             setIsChecking(false);
         }

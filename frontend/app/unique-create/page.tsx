@@ -196,33 +196,37 @@ export default function UniqueCreatePage() {
                         {/* 입력 폼 */}
                         <div className="bg-white/5 border border-white/10 rounded-lg p-6 mb-6">
                             <h3 className="text-xl font-bold mb-4 text-white">{t('unique.form.title')}</h3>
-                            <div className="grid grid-cols-2 gap-6">
-                                <div className="space-y-4">
+                            <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
+                                {/* Left Column: Inputs */}
+                                <div className="space-y-6">
                                     <div>
-                                        <label className="block text-sm text-gray-400 mb-1">{t('unique.form.name')}</label>
+                                        <label className="block text-sm font-bold text-gray-300 mb-2">{t('unique.form.name')}</label>
                                         <Input
                                             value={appName}
                                             onChange={(e) => setAppName(e.target.value)}
                                             placeholder={t('unique.form.namePlaceholder')}
-                                            className="bg-gray-800 border-gray-700"
+                                            className="bg-gray-800 border-gray-700 h-12 text-lg"
+                                        />
+                                    </div>
+                                    <div className="flex-1">
+                                        <label className="block text-sm font-bold text-gray-300 mb-2">{t('unique.form.desc')}</label>
+                                        <Textarea
+                                            value={appDesc}
+                                            onChange={(e) => setAppDesc(e.target.value)}
+                                            placeholder={t('unique.form.descPlaceholder')}
+                                            className="bg-gray-800 border-gray-700 h-64 resize-none text-base leading-relaxed"
                                         />
                                     </div>
                                 </div>
-                                <div>
-                                    <label className="block text-sm text-gray-400 mb-1">{t('unique.form.desc')}</label>
-                                    <Textarea
-                                        value={appDesc}
-                                        onChange={(e) => setAppDesc(e.target.value)}
-                                        placeholder={t('unique.form.descPlaceholder')}
-                                        className="bg-gray-800 border-gray-700 h-32"
+
+                                {/* Right Column: Image */}
+                                <div className="h-full">
+                                    <ImageUpload
+                                        onImageChange={setAppImage}
+                                        currentImage={appImage || undefined}
+                                        className="h-full"
                                     />
                                 </div>
-                            </div>
-                            <div>
-                                <ImageUpload
-                                    onImageChange={setAppImage}
-                                    currentImage={appImage || undefined}
-                                />
                             </div>
                         </div>
 
@@ -347,7 +351,8 @@ export default function UniqueCreatePage() {
                         ))
                     )}
                 </div>
-            )}
+            )
+            }
         </CyberPageLayout >
     );
 }

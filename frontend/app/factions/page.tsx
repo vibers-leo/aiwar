@@ -85,7 +85,7 @@ export default function FactionsPage() {
 
         showConfirm({
             title: `${config.name} 티어 구독`,
-            message: `${factionId} 군단을 ${config.name} 티어로 구독하시겠습니까?\n\n⚠️ 주의: 이 티어는 매일 ${config.cost.toLocaleString()} 코인이 자동 차감되는 Recurring Billing(정기 결제) 방식입니다.`,
+            message: `${factionId} 군단을 ${config.name} 티어로 구독하시겠습니까?\n\n⚠️ 매일 자정에 ${config.cost.toLocaleString()} 코인이 차감되는 정기 구독 상품입니다.`,
             onConfirm: () => {
                 const result = subscribeFaction(factionId, tier, userId);
                 if (result.success) {
@@ -207,11 +207,11 @@ export default function FactionsPage() {
                             <div className="grid grid-cols-3 gap-3 text-xs">
                                 <div className="bg-gray-500/10 border border-gray-500/20 rounded p-2">
                                     <p className="font-bold text-gray-400 mb-1">Free</p>
-                                    <p className="text-white/60">무료 • 30분 • 5회/일</p>
+                                    <p className="text-white/60">비용 0 • 30분 • 일 5회</p>
                                 </div>
                                 <div className="bg-blue-500/10 border border-blue-500/20 rounded p-2">
                                     <p className="font-bold text-blue-400 mb-1">Pro</p>
-                                    <p className="text-white/60">40코인 • 20회/일</p>
+                                    <p className="text-white/60">40코인 • 일 20회</p>
                                     <p className="text-green-400 font-bold mt-1">+충전 속도 UP</p>
                                 </div>
                                 <div className="bg-purple-500/10 border border-purple-500/20 rounded p-2">
@@ -227,7 +227,7 @@ export default function FactionsPage() {
                     <div className="mt-4 p-3 bg-amber-900/20 border border-amber-500/30 rounded-lg animate-pulse">
                         <p className="text-sm text-amber-300 flex items-center gap-2">
                             <Zap size={16} className="text-amber-400" />
-                            <strong>시장 경제 알림:</strong> 구독 중인 군단은 접속 여부와 관계없이 매일 유지비가 차감됩니다. <strong>게임을 종료하기 전 반드시 구독 해지를 검토하세요!</strong>
+                            <strong>구독 알림:</strong> 접속하지 않아도 매일 구독료가 발생합니다. 장기간 미접속 시 구독 상태를 확인하세요.
                         </p>
                     </div>
                 </div>

@@ -9,10 +9,12 @@ export const EncryptedText = ({
     text,
     className,
     duration = 2000,
+    onComplete,
 }: {
     text: string;
     className?: string;
     duration?: number;
+    onComplete?: () => void;
 }) => {
     const [displayText, setDisplayText] = useState(text);
     const [isDecrypting, setIsDecrypting] = useState(true);
@@ -27,6 +29,7 @@ export const EncryptedText = ({
                 setDisplayText(text);
                 setIsDecrypting(false);
                 clearInterval(interval);
+                onComplete?.();
                 return;
             }
 

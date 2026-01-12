@@ -5,7 +5,7 @@ import { updateGameState } from './game-state'; // Local state update
 import { updateTokens } from './firebase-db';   // Server state update (if distinct)
 
 // 기본 설정
-const BASE_RECHARGE_RATE = 10; // 10 Tokens
+const BASE_RECHARGE_RATE = 50; // 50 Tokens (Updated request)
 const BASE_RECHARGE_INTERVAL_MIN = 10; // 10 Minutes
 const BASE_MAX_TOKENS = 1000;
 

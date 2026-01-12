@@ -44,8 +44,13 @@ export default function MainLayout({ children }: { children: React.ReactNode }) 
     const { state: footerState } = useFooter();
 
     // Pages that should be 100% full page without any layout
-    const noLayoutPages = ['/login', '/signup', '/'];
-    const isNoLayout = noLayoutPages.includes(pathname || '');
+    const isNoLayout = !pathname ||
+        ['/login', '/signup', '/'].includes(pathname) ||
+        pathname.startsWith('/battle');
+
+    // Pages that should have header but NO sidebar
+    // const hideSidebar = pathname?.startsWith('/story'); // Reverted based on user feedback
+    const hideSidebar = false;
 
     if (isNoLayout) {
         return <div className="h-screen w-screen overflow-hidden bg-black">{children}</div>;
@@ -57,8 +62,10 @@ export default function MainLayout({ children }: { children: React.ReactNode }) 
         >
             {/* 메인 영역 */}
             <div
-                className="flex-1 flex flex-col transition-all duration-300 ease-out md:mr-[240px] mr-0" // md:mr 적용
-            // style={{ marginRight: 'var(--sidebar-width)' }} // REMOVED inline style force
+                className={cn(
+                    "flex-1 flex flex-col transition-all duration-300 ease-out relative z-30",
+                    !hideSidebar && "md:mr-[240px] mr-0"
+                )}
             >
                 {/* 상단 바 */}
                 <GameTopBar sidebarCollapsed={false} />
@@ -89,9 +96,11 @@ export default function MainLayout({ children }: { children: React.ReactNode }) 
             </div>
 
             {/* 사이드바 (우측 고정) - 데스크탑 전용 */}
-            <div className="hidden md:block">
-                <GameSidebar />
-            </div>
+            {!hideSidebar && (
+                <div className="hidden md:block relative z-40">
+                    <GameSidebar />
+                </div>
+            )}
         </div>
     );
 }

@@ -13,9 +13,11 @@ interface CardRewardModalProps {
     cards: CardType[];
     title?: string;
     previousStats?: CardType['stats'];
+    cardScale?: number;
+    bonusReward?: { type: 'token' | 'coin'; value: number; label: string };
 }
 
-export default function CardRewardModal({ isOpen, onClose, cards, title = "카드 획득!", previousStats }: CardRewardModalProps) {
+export default function CardRewardModal({ isOpen, onClose, cards, title = "카드 획득!", previousStats, cardScale = 1, bonusReward }: CardRewardModalProps) {
     const [showCards, setShowCards] = useState(false);
 
     useEffect(() => {
@@ -61,7 +63,10 @@ export default function CardRewardModal({ isOpen, onClose, cards, title = "카�
                         <p className="text-white/60 mt-2">인벤토리에 추가되었습니다</p>
                     </motion.div>
 
-                    <div className="flex justify-center gap-4 flex-wrap">
+                    <div
+                        className="flex justify-center gap-4 flex-wrap"
+                        style={{ transform: `scale(${cardScale})`, margin: cardScale > 1 ? '2rem 0' : '0' }}
+                    >
                         {showCards && cards.map((card, index) => (
                             <motion.div
                                 key={card.id}
@@ -76,7 +81,7 @@ export default function CardRewardModal({ isOpen, onClose, cards, title = "카�
                                 className="relative"
                             >
                                 <div className="absolute -inset-4 bg-green-500/30 rounded-full blur-xl animate-pulse" />
-                                <GameCard card={card} isHolographic={['legendary', 'unique'].includes(card.rarity || '')} />
+                                <GameCard card={card} isHolographic={['legendary', 'unique', 'commander'].includes(card.rarity || '') || (card as any).isCommanderCard} />
 
                                 {/* Sparkle Effects around card */}
                                 <motion.div
@@ -90,12 +95,34 @@ export default function CardRewardModal({ isOpen, onClose, cards, title = "카�
                         ))}
                     </div>
 
+                    {/* Bonus Reward Display */}
+                    {bonusReward && (
+                        <motion.div
+                            initial={{ y: 20, opacity: 0 }}
+                            animate={{ y: 0, opacity: 1 }}
+                            transition={{ delay: 0.6 }}
+                            className="mt-12 flex items-center gap-3 bg-purple-500/20 border border-purple-500/50 rounded-xl px-6 py-3 shadow-[0_0_15px_rgba(168,85,247,0.3)] backdrop-blur-sm"
+                        >
+                            <div className="w-10 h-10 rounded-full bg-gradient-to-br from-purple-400 to-pink-500 flex items-center justify-center shadow-lg">
+                                <span className="text-xl">
+                                    {bonusReward.type === 'token' ? '💎' : '💰'}
+                                </span>
+                            </div>
+                            <div className="flex flex-col">
+                                <span className="text-[10px] text-purple-300 font-bold tracking-widest uppercase">{bonusReward.label}</span>
+                                <span className="text-2xl font-black text-white orbitron">
+                                    +{bonusReward.value.toLocaleString()}
+                                </span>
+                            </div>
+                        </motion.div>
+                    )}
+
                     <motion.button
                         initial={{ y: 20, opacity: 0 }}
                         animate={{ y: 0, opacity: 1 }}
                         transition={{ delay: 0.8 }}
                         onClick={onClose}
-                        className="mt-12 px-8 py-3 bg-white text-black font-bold rounded-full hover:bg-green-400 hover:scale-105 transition-all shadow-[0_0_20px_rgba(255,255,255,0.3)]"
+                        className="mt-8 px-8 py-3 bg-white text-black font-bold rounded-full hover:bg-green-400 hover:scale-105 transition-all shadow-[0_0_20px_rgba(255,255,255,0.3)]"
                     >
                         확인
                     </motion.button>

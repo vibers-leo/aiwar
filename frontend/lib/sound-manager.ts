@@ -12,6 +12,17 @@ class SoundManager {
     private constructor() {
         if (typeof window !== 'undefined') {
             this.audioContext = new (window.AudioContext || (window as any).webkitAudioContext)();
+
+            // Resume context on first user interaction if suspended
+            const resumeContext = () => {
+                if (this.audioContext?.state === 'suspended') {
+                    this.audioContext.resume();
+                }
+                window.removeEventListener('click', resumeContext);
+                window.removeEventListener('keydown', resumeContext);
+            };
+            window.addEventListener('click', resumeContext);
+            window.addEventListener('keydown', resumeContext);
         }
     }
 
@@ -36,7 +47,21 @@ class SoundManager {
         }
     }
 
+    private currentBgmUrl: string | null = null;
+    private activeBgmRequestId: number = 0;
+
     public async playBGM(url: string) {
+        console.log(`[SoundManager] playBGM: ${url}`);
+
+        // Prevent restarting the same BGM
+        if (this.currentBgmUrl === url && this.bgmAudio && !this.bgmAudio.paused) {
+            console.log(`[SoundManager] BGM already playing: ${url}`);
+            return;
+        }
+
+        const requestId = Date.now();
+        this.activeBgmRequestId = requestId;
+
         if (this.missingFiles.has(url)) {
             console.debug(`[SoundManager] Skipping missing BGM: ${url}`);
             return;
@@ -46,24 +71,29 @@ class SoundManager {
         try {
             const response = await fetch(url, { method: 'HEAD' });
             if (!response.ok) {
-                console.debug(`[SoundManager] BGM file not found: ${url}`);
+                console.warn(`[SoundManager] BGM file not found: ${url}`);
                 this.missingFiles.add(url);
                 return;
             }
-        } catch {
-            console.debug(`[SoundManager] Could not check BGM file: ${url}`);
+        } catch (e) {
+            console.warn(`[SoundManager] Could not check BGM file: ${url}`, e);
             this.missingFiles.add(url);
             return;
         }
 
-        if (this.bgmAudio) {
-            this.bgmAudio.pause();
+        // Check cancellation (if stopBGM called or new playBGM called)
+        if (this.activeBgmRequestId !== requestId) {
+            console.log(`[SoundManager] BGM request cancelled: ${url}`);
+            return;
         }
+
+        this.stopBGM(); // Properly stop previous
 
         this.bgmAudio = new Audio(url);
         this.bgmAudio.loop = true;
         this.bgmAudio.volume = this.volume;
         this.bgmAudio.muted = this.isMuted;
+        this.currentBgmUrl = url;
 
         this.bgmAudio.play().catch(e => {
             console.warn('BGM play failed (autoplay policy?):', e);
@@ -72,6 +102,10 @@ class SoundManager {
 
 
     public stopBGM() {
+        // Cancel any pending async BGM starts
+        this.activeBgmRequestId = 0;
+        this.currentBgmUrl = null;
+
         if (this.bgmAudio) {
             this.bgmAudio.pause();
             this.bgmAudio.currentTime = 0;
@@ -80,8 +114,10 @@ class SoundManager {
     }
 
     public playSFX(url: string, fallbackType?: 'click' | 'attack' | 'success' | 'error') {
+        console.log(`[SoundManager] playSFX: ${url}`);
         if (this.isMuted) return;
         if (this.missingFiles.has(url)) {
+            console.debug(`[SoundManager] Skipping missing SFX (was 404): ${url}`);
             if (fallbackType) this.playSynthSound(fallbackType);
             return;
         }
@@ -89,12 +125,16 @@ class SoundManager {
         const audio = new Audio(url);
         audio.volume = this.volume;
 
-        audio.play().catch(() => {
+        audio.play().then(() => {
+            console.log(`[SoundManager] Playing: ${url}`);
+        }).catch((e) => {
+            console.warn(`[SoundManager] SFX play failed: ${url}`, e);
             // File not found or playback error -> Fallback to synth
             // Mark as missing to assume 404 (or format issue) and skip next time to save network
             this.missingFiles.add(url);
 
             if (fallbackType) {
+                console.log(`[SoundManager] Falling back to synth: ${fallbackType}`);
                 this.playSynthSound(fallbackType);
             }
         });

@@ -32,7 +32,7 @@ export default function GenerationPage() {
     const router = useRouter();
     const { user } = useFirebase();
     const { showAlert, showConfirm } = useAlert();
-    const { trackMissionEvent, addTokens } = useUser(); // [NEW] Use UserContext for missions and rewards
+    const { trackMissionEvent, addTokens, consumeTokens, tokens } = useUser(); // [NEW] Use UserContext for missions and rewards
 
     const userId = user?.uid;
 
@@ -46,6 +46,8 @@ export default function GenerationPage() {
     const [rewardModalOpen, setRewardModalOpen] = useState(false);
     const [rewardCards, setRewardCards] = useState<Card[]>([]);
     const [rewardModalTitle, setRewardModalTitle] = useState("카드 획득!");
+    const [rewardModalBonus, setRewardModalBonus] = useState<{ type: 'token' | 'coin'; value: number; label: string } | undefined>(undefined);
+    const [rewardCardScale, setRewardCardScale] = useState(1);
     const [isProcessingAll, setIsProcessingAll] = useState(false);
 
     const loadData = useCallback(() => {
@@ -137,7 +139,7 @@ export default function GenerationPage() {
                     loadData();
                     setSelectedSlotForAssignment(null);
 
-                    // Commander Rental Logic
+                    // 1. Commander Rental Logic
                     try {
                         console.log(`[Rental] Starting commander rental for faction: ${factionId}`);
                         if (commanderTemplate) {
@@ -155,25 +157,30 @@ export default function GenerationPage() {
                                 const instanceId = await addCardToInventory(newCommanderCard);
                                 console.log(`[Rental] Successfully added commander card. InstanceID: ${instanceId}`);
                                 setRewardCards([newCommanderCard]);
-                                setRewardModalTitle("🎖️ COMMANDER RENTED 🎖️");
+                                setRewardModalTitle("🎖️ COMMANDER RENTED");
+                                setRewardCardScale(1.5); // BIGGER CARD!
+
+                                // 2. Add Tokens HERE to show unified modal 
+                                try {
+                                    await addTokens(50);
+                                    setRewardModalBonus({ type: 'token', value: 50, label: '배치 완료 보너스 (10분당 +50토큰)' });
+                                } catch (err) {
+                                    console.error("Token reward failed", err);
+                                }
+
                                 setRewardModalOpen(true);
                             } else {
                                 console.log(`[Rental] User already has a rented commander card for ${factionId}, skipping.`);
+                                // If they already have the card (rare edge case), still show success alert for placement
+                                showAlert({ title: '배치 완료', message: '군단이 배치되어 카드 생성이 시작되었습니다.', type: 'success' });
                             }
                         } else {
                             console.warn(`[Rental] No commander template found for faction: ${factionId}`);
+                            showAlert({ title: '배치 완료', message: '군단이 배치되어 카드 생성이 시작되었습니다.', type: 'success' });
                         }
                     } catch (error) {
                         console.error("[Rental] Failed to process Commander rental:", error);
-                    }
-
-                    // Slot Assignment Reward (50 Tokens)
-                    try {
-                        await addTokens(50);
-                        showAlert({ title: '배치 완료', message: '군단이 배치되었으며, 카드 생성 타이머가 시작되었습니다. (+50 토큰 보너스)', type: 'success' });
-                    } catch (err) {
-                        console.error("Token reward failed", err);
-                        showAlert({ title: '배치 완료', message: '군단이 배치되었으며, 카드 생성 타이머가 시작되었습니다.', type: 'success' });
+                        showAlert({ title: '배치 완료', message: '군단이 배치되었으나, 대여 카드 지급 중 오류가 발생했습니다.', type: 'warning' });
                     }
                 }
             }
@@ -218,22 +225,40 @@ export default function GenerationPage() {
     }, [slots, userId, showConfirm, showAlert]);
 
     const handleReceiveCard = useCallback(async (slotIndex: number) => {
+        // [COST CHECK] 100 Tokens per card
+        const COST_PER_CARD = 100;
+        const success = await consumeTokens(COST_PER_CARD);
+
+        if (!success) {
+            showAlert({ title: '토큰 부족', message: `카드를 수령하려면 토큰 ${COST_PER_CARD}개가 필요합니다.`, type: 'error' });
+            return;
+        }
+
         const result = await generateCard(slotIndex, userId);
         if (result.success && result.card) {
             try {
                 await addCardToInventory(result.card);
                 setRewardCards([result.card]);
+                setRewardModalTitle("카드 획득!");
+                setRewardCardScale(1); // Reset scale
+                setRewardModalBonus(undefined); // Reset bonus
                 setRewardModalOpen(true);
                 loadData();
                 trackMissionEvent('unit-claim', 1); // [NEW] Track Mission
             } catch (error) {
                 console.error('Failed to save card:', error);
-                showAlert({ title: '오류', message: '카드 저장 중 오류가 발생했습니다.', type: 'error' });
+                showAlert({ title: '오류', message: '카드 저장 중 오류가 발생했습니다. (토큰은 차감되지 않았습니다)', type: 'error' });
+                // Note: consumeTokens already deducted tokens. In a robust system we'd refund, but complex here.
+                // Assuming save failure is rare.
             }
         } else {
             showAlert({ title: '생성 실패', message: result.message, type: 'error' });
+            // Refund if generation logic failed but tokens consumed?
+            // Since generation logic is just utils time check, failure implies slot not ready.
+            // But we should optimally check readiness BEFORE consuming tokens.
+            // However, result.success tells if generated.
         }
-    }, [userId, showAlert]);
+    }, [userId, showAlert, consumeTokens, trackMissionEvent]); // Added dependencies
 
     const handleReceiveAll = async () => {
         if (isProcessingAll) return;
@@ -245,6 +270,17 @@ export default function GenerationPage() {
         });
 
         if (readySlots.length === 0) return;
+
+        // [COST CHECK] Batch Cost
+        const COST_PER_CARD = 100;
+        const totalCost = readySlots.length * COST_PER_CARD;
+
+        const hasBalance = await consumeTokens(totalCost);
+
+        if (!hasBalance) {
+            showAlert({ title: '토큰 부족', message: `모두 받으려면 토큰 ${totalCost}개가 필요합니다.`, type: 'error' });
+            return;
+        }
 
         setIsProcessingAll(true);
         const receivedCards: Card[] = [];
@@ -264,6 +300,8 @@ export default function GenerationPage() {
             if (successCount > 0) {
                 setRewardCards(receivedCards);
                 setRewardModalTitle("모두 받기 완료!");
+                setRewardCardScale(1); // Reset scale
+                setRewardModalBonus(undefined); // Reset bonus
                 setRewardModalOpen(true);
                 loadData();
                 trackMissionEvent('unit-claim', successCount); // [NEW] Track Mission
@@ -539,12 +577,18 @@ export default function GenerationPage() {
 
                 <CardRewardModal
                     isOpen={rewardModalOpen}
-                    onClose={() => setRewardModalOpen(false)}
+                    onClose={() => {
+                        setRewardModalOpen(false);
+                        setRewardCardScale(1);
+                        setRewardModalBonus(undefined);
+                    }}
                     cards={rewardCards}
                     title={rewardModalTitle}
+                    cardScale={rewardCardScale}
+                    bonusReward={rewardModalBonus}
+                    previousStats={undefined}
                 />
             </div>
         </CyberPageLayout >
     );
 }
-

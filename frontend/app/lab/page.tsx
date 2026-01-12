@@ -239,7 +239,10 @@ export default function LabPage() {
                     const REQUIRED_LEVELS = [1, 3, 5, 7, 10, 13, 16, 19, 22];
                     const requiredCommanderLevel = REQUIRED_LEVELS[nextLevel - 1] || 99;
 
-                    const isLocked = level < requiredCommanderLevel || stat.requiredLevel > level;
+                    const isBaseLocked = currentLevel === 0 && stat.requiredLevel > level;
+                    const isTierLocked = level < requiredCommanderLevel;
+                    const isLocked = isBaseLocked || isTierLocked;
+
                     const isResearching = progress?.isResearching;
                     const canComplete = progress && isResearchComplete(progress);
                     const remainingTime = progress ? getRemainingResearchTime(progress) : 0;
@@ -318,7 +321,10 @@ export default function LabPage() {
                                     {/* 버튼 */}
                                     {isLocked && !isMaxLevel ? (
                                         <div className="text-center text-sm text-white/40 py-2">
-                                            지휘관 Lv.{requiredCommanderLevel} 필요
+                                            {isBaseLocked
+                                                ? `지휘관 Lv.${stat.requiredLevel} 필요`
+                                                : `지휘관 Lv.${requiredCommanderLevel} 필요`
+                                            }
                                         </div>
                                     ) : canComplete ? (
                                         <Button

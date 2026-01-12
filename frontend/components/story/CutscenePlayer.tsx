@@ -6,6 +6,8 @@ import { Button } from '@/components/ui/custom/Button';
 import { cn } from '@/lib/utils';
 import { Play, FastForward, SkipForward, X } from 'lucide-react';
 import Image from 'next/image';
+import { useTTS } from '@/hooks/useTTS';
+import { useGameSound } from '@/hooks/useGameSound';
 
 // 스토리 데이터 타입 정의
 export interface Dialogue {
@@ -46,10 +48,13 @@ export default function CutscenePlayer({ cutscene, characters, onComplete, onSki
     const [currentSceneIndex, setCurrentSceneIndex] = useState(0);
     const [displayedText, setDisplayedText] = useState('');
     const [isTyping, setIsTyping] = useState(false);
+    const { speak, stop: stopTTS } = useTTS();
+    const { playSound, stopBGM } = useGameSound();
     const typingSpeed = 30; // ms per char
 
     const currentScene = cutscene.scenes[currentSceneIndex];
     const fullText = currentScene.dialogue ? currentScene.dialogue.text : currentScene.narration || '';
+    const currentSpeaker = currentScene.dialogue ? currentScene.dialogue.speaker : 'SYSTEM';
 
     // 텍스트 타이핑 효과
     useEffect(() => {
@@ -72,6 +77,27 @@ export default function CutscenePlayer({ cutscene, characters, onComplete, onSki
         return () => clearInterval(timer);
     }, [currentSceneIndex, fullText]);
 
+    // TTS 발화 효과
+    useEffect(() => {
+        if (!fullText) return;
+
+        // 대화나 내레이션이 시작될 때 TTS 실행
+        speak(fullText, currentSpeaker);
+
+        return () => stopTTS();
+    }, [currentSceneIndex, fullText, currentSpeaker, speak, stopTTS]);
+
+    // BGM 시작 및 종료
+    useEffect(() => {
+        // 컷신 시작 시 배경음악 재생
+        playSound('bgm_story', 'bgm');
+
+        return () => {
+            stopBGM();
+            stopTTS();
+        };
+    }, [playSound, stopBGM, stopTTS]);
+
     const handleNext = () => {
         if (isTyping) {
             // 타이핑 중이면 즉시 완료
@@ -79,6 +105,7 @@ export default function CutscenePlayer({ cutscene, characters, onComplete, onSki
             setIsTyping(false);
         } else {
             // 다음 장면으로
+            stopTTS(); // 오디오 중지
             if (currentSceneIndex < cutscene.scenes.length - 1) {
                 setCurrentSceneIndex(prev => prev + 1);
             } else {
@@ -141,7 +168,7 @@ export default function CutscenePlayer({ cutscene, characters, onComplete, onSki
             </div>
 
             {/* 중앙 콘텐츠: 캐릭터 등 */}
-            <div className="flex-1 w-full relative z-10 flex items-end justify-center pb-[30vh]">
+            <div className="flex-1 w-full relative z-10 flex items-end justify-center pb-0">
                 <AnimatePresence mode="wait">
                     {currentScene.character && (
                         <motion.div
@@ -149,10 +176,19 @@ export default function CutscenePlayer({ cutscene, characters, onComplete, onSki
                             initial={{ opacity: 0, x: 50, y: 20 }}
                             animate={{ opacity: 1, x: 0, y: 0 }}
                             exit={{ opacity: 0, x: -50 }}
-                            className="relative h-[60vh] w-auto aspect-[3/4]"
+                            className="relative h-full w-auto aspect-[3/4]"
                         >
-                            {/* 캐릭터 이미지 (임시로 이름 표시) */}
-                            {getCharacterPortrait(currentScene.character)?.startsWith('/') ? (
+                            {/* 캐릭터 이미지/영상 */}
+                            {getCharacterPortrait(currentScene.character)?.endsWith('.mp4') ? (
+                                <video
+                                    src={getCharacterPortrait(currentScene.character)!}
+                                    autoPlay
+                                    loop
+                                    muted
+                                    playsInline
+                                    className="h-full w-full object-contain drop-shadow-[0_0_50px_rgba(0,0,0,0.8)]"
+                                />
+                            ) : getCharacterPortrait(currentScene.character)?.startsWith('/') ? (
                                 <img
                                     src={getCharacterPortrait(currentScene.character)!}
                                     alt={currentScene.character}

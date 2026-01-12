@@ -62,7 +62,7 @@ export default function BattleDeckSelection({
     };
 
     return (
-        <div className="fixed inset-0 z-50 flex flex-col bg-black/95 backdrop-blur-md">
+        <div className="fixed inset-0 z-[100] flex flex-col bg-black/95 backdrop-blur-md">
             {/* Background Effect */}
             <div className="absolute inset-0 z-0 opacity-20 pointer-events-none">
                 <div className="absolute inset-0 bg-gradient-to-b from-cyan-900/20 via-black to-black" />

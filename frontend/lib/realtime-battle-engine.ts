@@ -47,75 +47,16 @@ export async function executeRound(
     return { winner, player1Card, player2Card };
 }
 
+import { hasTypeAdvantage, resolveBattleResult } from './type-system';
+
 /**
  * 전투 판정 (가위바위보 + 스탯)
  */
 function resolveBattle(card1: Card, card2: Card): 'player1' | 'player2' | 'draw' {
-    const type1 = card1.type || 'EFFICIENCY';
-    const type2 = card2.type || 'EFFICIENCY';
-
-    // 1. 타입 상성 체크
-    const typeResult = checkTypeAdvantage(type1, type2);
-    if (typeResult !== 'draw') {
-        return typeResult;
-    }
-
-    // 2. 동일 타입: 해당 타입 스탯 비교
-    const stat1 = getStatForType(card1, type1);
-    const stat2 = getStatForType(card2, type2);
-
-    if (stat1 > stat2) return 'player1';
-    if (stat2 > stat1) return 'player2';
-
-    // 3. 스탯도 동일: 총 전투력 비교
-    const power1 = card1.stats.totalPower;
-    const power2 = card2.stats.totalPower;
-
-    if (power1 > power2) return 'player1';
-    if (power2 > power1) return 'player2';
-
-    return 'draw';
+    const res = resolveBattleResult(card1, card2);
+    return res.winner;
 }
 
-/**
- * 타입 상성 체크
- */
-function checkTypeAdvantage(
-    type1: AIType,
-    type2: AIType
-): 'player1' | 'player2' | 'draw' {
-    if (type1 === type2) return 'draw';
-
-    // EFFICIENCY > CREATIVITY
-    if (type1 === 'EFFICIENCY' && type2 === 'CREATIVITY') return 'player1';
-    if (type1 === 'CREATIVITY' && type2 === 'EFFICIENCY') return 'player2';
-
-    // CREATIVITY > FUNCTION
-    if (type1 === 'CREATIVITY' && type2 === 'FUNCTION') return 'player1';
-    if (type1 === 'FUNCTION' && type2 === 'CREATIVITY') return 'player2';
-
-    // FUNCTION > EFFICIENCY
-    if (type1 === 'FUNCTION' && type2 === 'EFFICIENCY') return 'player1';
-    if (type1 === 'EFFICIENCY' && type2 === 'FUNCTION') return 'player2';
-
-    return 'draw';
-}
-
-/**
- * 타입별 스탯 가져오기
- */
-function getStatForType(card: Card, type: AIType): number {
-    switch (type) {
-        case 'EFFICIENCY':
-            return card.stats.efficiency || 0;
-        case 'CREATIVITY':
-            return card.stats.creativity || 0;
-        case 'FUNCTION':
-            return card.stats.function || 0;
-        default:
-            return 0;
-    }
-}
 
 /**
  * 최종 승리 조건 확인

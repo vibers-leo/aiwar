@@ -9,7 +9,7 @@ interface ImageUploadProps {
     currentImage?: string;
 }
 
-export default function ImageUpload({ onImageChange, currentImage }: ImageUploadProps) {
+export default function ImageUpload({ onImageChange, currentImage, className }: ImageUploadProps & { className?: string }) {
     const [isDragging, setIsDragging] = useState(false);
     const [preview, setPreview] = useState<string | null>(currentImage || null);
     const [error, setError] = useState<string | null>(null);
@@ -76,65 +76,67 @@ export default function ImageUpload({ onImageChange, currentImage }: ImageUpload
     }, [onImageChange]);
 
     return (
-        <div className="space-y-2">
+        <div className={cn("space-y-2 h-full flex flex-col", className)}>
             <label className="block text-sm text-gray-400">카드 이미지</label>
 
-            {preview ? (
-                <div className="relative group">
-                    <div className="w-full h-48 bg-black/40 rounded-lg border-2 border-white/10 overflow-hidden">
-                        <img
-                            src={preview}
-                            alt="Preview"
-                            className="w-full h-full object-contain"
-                        />
+            <div className="flex-1 min-h-0 relative">
+                {preview ? (
+                    <div className="relative group w-full h-full">
+                        <div className="w-full h-full bg-black/40 rounded-lg border-2 border-white/10 overflow-hidden">
+                            <img
+                                src={preview}
+                                alt="Preview"
+                                className="w-full h-full object-contain bg-center"
+                            />
+                        </div>
+                        <button
+                            onClick={handleRemove}
+                            className="absolute top-2 right-2 p-2 bg-red-500 hover:bg-red-400 rounded-full transition-colors shadow-lg z-10"
+                        >
+                            <X size={16} className="text-white" />
+                        </button>
                     </div>
-                    <button
-                        onClick={handleRemove}
-                        className="absolute top-2 right-2 p-2 bg-red-500 hover:bg-red-400 rounded-full transition-colors shadow-lg"
-                    >
-                        <X size={16} className="text-white" />
-                    </button>
-                </div>
-            ) : (
-                <div
-                    onDragOver={handleDragOver}
-                    onDragLeave={handleDragLeave}
-                    onDrop={handleDrop}
-                    className={cn(
-                        "relative w-full h-48 border-2 border-dashed rounded-lg transition-all cursor-pointer",
-                        isDragging
-                            ? "border-cyan-500 bg-cyan-500/10"
-                            : "border-white/20 bg-white/5 hover:border-cyan-500/50 hover:bg-white/10"
-                    )}
-                >
-                    <input
-                        type="file"
-                        accept="image/png,image/jpeg,image/webp"
-                        onChange={handleFileInput}
-                        className="absolute inset-0 w-full h-full opacity-0 cursor-pointer"
-                    />
-                    <div className="absolute inset-0 flex flex-col items-center justify-center gap-3 pointer-events-none">
-                        {isDragging ? (
-                            <>
-                                <Upload size={40} className="text-cyan-400 animate-bounce" />
-                                <p className="text-cyan-400 font-medium">이미지를 놓으세요</p>
-                            </>
-                        ) : (
-                            <>
-                                <ImageIcon size={40} className="text-white/40" />
-                                <div className="text-center">
-                                    <p className="text-white/60 font-medium mb-1">
-                                        이미지를 드래그하거나 클릭하여 업로드
-                                    </p>
-                                    <p className="text-white/40 text-xs">
-                                        PNG, JPEG, WEBP (최대 5MB)
-                                    </p>
-                                </div>
-                            </>
+                ) : (
+                    <div
+                        onDragOver={handleDragOver}
+                        onDragLeave={handleDragLeave}
+                        onDrop={handleDrop}
+                        className={cn(
+                            "relative w-full h-full border-2 border-dashed rounded-lg transition-all cursor-pointer flex flex-col items-center justify-center",
+                            isDragging
+                                ? "border-cyan-500 bg-cyan-500/10"
+                                : "border-white/20 bg-white/5 hover:border-cyan-500/50 hover:bg-white/10"
                         )}
+                    >
+                        <input
+                            type="file"
+                            accept="image/png,image/jpeg,image/webp"
+                            onChange={handleFileInput}
+                            className="absolute inset-0 w-full h-full opacity-0 cursor-pointer z-10"
+                        />
+                        <div className="flex flex-col items-center justify-center gap-3 pointer-events-none">
+                            {isDragging ? (
+                                <>
+                                    <Upload size={40} className="text-cyan-400 animate-bounce" />
+                                    <p className="text-cyan-400 font-medium">이미지를 놓으세요</p>
+                                </>
+                            ) : (
+                                <>
+                                    <ImageIcon size={40} className="text-white/40" />
+                                    <div className="text-center">
+                                        <p className="text-white/60 font-medium mb-1">
+                                            이미지를 드래그하거나 클릭하여 업로드
+                                        </p>
+                                        <p className="text-white/40 text-xs">
+                                            PNG, JPEG, WEBP (최대 5MB)
+                                        </p>
+                                    </div>
+                                </>
+                            )}
+                        </div>
                     </div>
-                </div>
-            )}
+                )}
+            </div>
 
             {error && (
                 <p className="text-red-400 text-xs">{error}</p>

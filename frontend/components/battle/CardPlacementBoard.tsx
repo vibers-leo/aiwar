@@ -433,34 +433,34 @@ export default function CardPlacementBoard({ selectedCards, onPlacementComplete,
 
                 {/* 1. TOP: Opponent Intel */}
                 {opponentDeck && opponentDeck.length > 0 && (
-                    <div className="w-full max-w-5xl flex items-center justify-center gap-3 bg-gradient-to-r from-transparent via-red-950/30 to-transparent border-y border-red-500/20 py-2 mb-2 backdrop-blur-sm">
-                        <div className="text-center shrink-0">
-                            <span className="text-2xl drop-shadow-[0_0_10px_rgba(255,0,0,0.5)]">😈</span>
-                            <div className="text-[9px] font-black text-red-500 tracking-widest mt-0.5">ENEMY</div>
+                    <div className="w-full max-w-5xl flex flex-col items-center justify-center bg-gradient-to-b from-red-950/20 to-transparent pt-4 pb-2 mb-2 rounded-b-3xl">
+
+                        {/* Title & Warning */}
+                        <div className="flex flex-col items-center mb-4 gap-1">
+                            <div className="flex items-center gap-2">
+                                <span className="text-3xl drop-shadow-[0_0_15px_rgba(220,38,38,0.5)]">😈</span>
+                                <span className="text-lg font-black text-red-500 tracking-[0.2em] orbitron">ENEMY DECK</span>
+                            </div>
+                            <div className="flex items-center gap-2 bg-red-950/40 border border-red-500/30 px-4 py-1.5 rounded-full shadow-[0_0_20px_rgba(220,38,38,0.2)]">
+                                <AlertTriangle size={14} className="text-red-500 animate-pulse" />
+                                <span className="text-sm text-red-100 font-bold">
+                                    적은 5장의 카드 중 <span className="text-red-400">랜덤하게</span> 냅니다
+                                </span>
+                            </div>
                         </div>
-                        <div className="flex justify-center gap-2">
+
+                        {/* Cards Display */}
+                        <div className="flex justify-center gap-3">
                             {opponentDeck.map((card, idx) => (
-                                <div key={idx} className="relative w-12 h-16 rounded-lg border border-red-500/30 overflow-hidden opacity-90 shadow-lg shadow-red-950/20">
+                                <div key={idx} className="relative w-16 h-24 rounded-xl border border-red-500/40 overflow-hidden shadow-[0_8px_20px_rgba(0,0,0,0.6)] group">
                                     <div
-                                        className="absolute inset-0 bg-cover bg-center transition-transform hover:scale-110"
+                                        className="absolute inset-0 bg-cover bg-center transition-all duration-300 group-hover:scale-110 grayscale-[0.3] group-hover:grayscale-0"
                                         style={{ backgroundImage: `url(${getCardImage(card)})` }}
                                     />
-                                    {/* Obscure opponent cards slightly */}
-                                    <div className="absolute inset-0 bg-red-900/40" />
-                                    {/* Type Hint */}
-                                    {card.type && (
-                                        <div className="absolute top-1 right-1 w-4 h-4 bg-black/80 rounded flex items-center justify-center text-[10px] text-white border border-white/10">
-                                            {getTypeIcon(card.type)}
-                                        </div>
-                                    )}
+                                    {/* Dark Overlay for Mystery */}
+                                    <div className="absolute inset-0 bg-gradient-to-t from-red-950/80 via-transparent to-transparent opacity-80" />
                                 </div>
                             ))}
-                        </div>
-                        <div className="absolute top-full mt-1 left-1/2 -translate-x-1/2 whitespace-nowrap z-20">
-                            <div className="text-[9px] text-red-400 flex items-center gap-1 bg-black/70 px-2 py-0.5 rounded-full border border-red-500/30 shadow-lg backdrop-blur-md animate-pulse">
-                                <AlertTriangle size={10} className="text-red-500" />
-                                <span>적은 5장의 카드 중 <span className="text-red-300 font-bold">랜덤하게</span> 냅니다</span>
-                            </div>
                         </div>
                     </div>
                 )}
@@ -468,7 +468,7 @@ export default function CardPlacementBoard({ selectedCards, onPlacementComplete,
                 {/* 2. CENTER: Battle Board Slots */}
                 <div className="flex-1 w-full max-w-5xl flex flex-col justify-center relative">
                     {/* Background Grid */}
-                    <div className="absolute inset-0 bg-[url('/assets/grid.svg')] opacity-5 pointer-events-none" />
+                    <div className="absolute inset-0 bg-[url('/grid-pattern.svg')] opacity-5 pointer-events-none" />
 
                     <div className="flex justify-center items-end gap-3 flex-wrap z-10 mb-2">
                         {/* Round 1 */}

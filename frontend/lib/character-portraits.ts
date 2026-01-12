@@ -18,13 +18,13 @@ export interface CharacterInfo {
  * 캐릭터 초상화 경로
  */
 export const characterPortraits = {
-    gemini: '/images/characters/gemini.png',
-    chip: '/images/characters/chip.png',
-    pichai: '/images/characters/pichai.png',
-    hassabis: '/images/characters/hassabis.png',
-    glitchEnemy1: '/images/characters/glitch-enemy-1.png',
-    glitchEnemy2: '/images/characters/glitch-enemy-2.png',
-    glitchEntity: '/images/characters/glitch-entity.png',
+    gemini: '/assets/cards/gemini-character.png',
+    chip: '/assets/cards/chip-character.png',
+    pichai: '/assets/cards/cmdr-pichai.png',
+    hassabis: '/assets/cards/cmdr-hassabis.png',
+    glitchEnemy1: '/assets/characters/glitch-enemy-1.png',
+    glitchEnemy2: '/assets/characters/glitch-enemy-2.png',
+    glitchEntity: '/assets/characters/glitch-entity.png',
 } as const;
 
 /**
