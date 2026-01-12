@@ -11,6 +11,7 @@ import UnitFrame from '@/components/battle/UnitFrame';
 import { getCardName } from '@/data/card-translations';
 import { BackgroundBeams } from '@/components/ui/aceternity/background-beams';
 import { getCardCharacterImage } from '@/lib/card-images';
+import { useGameSound } from '@/hooks/useGameSound';
 
 interface BattleRound {
     playerCard: any;
@@ -68,6 +69,10 @@ export function BattleArena({
     const { t, language } = useTranslation();
     const lang = (language as 'ko' | 'en') || 'ko';
 
+    // [NEW] Use Game Sound Hook (Fixed: playSfx is an alias)
+    const { playSound } = useGameSound();
+    const playSfx = useCallback((name: string) => playSound(name, 'sfx'), [playSound]);
+
     // Game State
     const [status, setStatus] = useState<'strategy' | 'battling' | 'finished'>('strategy');
     const [timer, setTimer] = useState(strategyTime);
@@ -87,8 +92,11 @@ export function BattleArena({
 
     // [NEW] Battle Phase State
     const [battlePhase, setBattlePhase] = useState<'standby' | 'clash' | 'reveal'>('standby');
+    // [NEW] Result Overlay State
+    const [showResult, setShowResult] = useState(false);
+    const [battleResultData, setBattleResultData] = useState<{ isWin: boolean; playerWins: number; enemyWins: number; rounds: BattleRound[] } | null>(null);
 
-    // 카드 상태
+    // [RESTORED] Card & Battle Logic States
     const [alivePlayerCards, setAlivePlayerCards] = useState<boolean[]>(() =>
         new Array(playerDeck.length).fill(true)
     );
@@ -97,7 +105,7 @@ export function BattleArena({
     );
     const [currentBattleCards, setCurrentBattleCards] = useState<{ player: number, enemy: number } | null>(null);
 
-    // 로그 추가 함수
+    // [RESTORED] Battle Log & Timer Logic
     const addBattleLog = useCallback((message: string, type: BattleLog['type'] = 'system') => {
         const id = Math.random().toString(36).substring(2, 9);
         setBattleLogs(prev => [...prev, { id, message, type }]);
@@ -107,11 +115,9 @@ export function BattleArena({
         }, 6000);
     }, []);
 
-    // 타이머
     useEffect(() => {
         if (status !== 'strategy') return;
 
-        // [NEW] Auto-start battle if requested (skips strategy phase)
         if (autoStartBattle) {
             startBattle();
             return;
@@ -144,22 +150,13 @@ export function BattleArena({
         setSelectedOrder(newOrder);
     };
 
+
     const determineWinner = (playerCard: any, enemyCard: any) => {
         const res = resolveBattleResult(playerCard, enemyCard);
-
-        // Map resolveBattleResult output to BattleArena expectations
         const winner = (res.winner === 'player1' ? 'player' : res.winner === 'player2' ? 'enemy' : 'draw') as 'player' | 'enemy' | 'draw';
-
-        // pFinal and eFinal for animation logs
         const pFinal = playerCard.stats?.totalPower || 0;
         const eFinal = enemyCard.stats?.totalPower || 0;
-
-        return {
-            winner,
-            reason: res.reason,
-            pFinal,
-            eFinal
-        };
+        return { winner, reason: res.reason, pFinal, eFinal };
     };
 
     const startBattle = async () => {
@@ -170,18 +167,16 @@ export function BattleArena({
             ? [...enemyDeck].sort(() => Math.random() - 0.5)
             : [...enemyDeck];
 
-        // [NEW] 전략 전투(ambush) 특수 로직: 6번째 카드를 3라운드 히든으로 배치
         if (battleMode === 'strategy' && orderedPlayerDeck.length >= 6) {
-            const hiddenCard = orderedPlayerDeck[5]; // 6번째 카드
+            const hiddenCard = orderedPlayerDeck[5];
             const otherCards = orderedPlayerDeck.slice(0, 5);
             orderedPlayerDeck = [otherCards[0], otherCards[1], hiddenCard, otherCards[2], otherCards[3]];
         } else if (battleMode === 'double' && orderedPlayerDeck.length >= 6) {
-            // [NEW] 복식 전투: 2장씩 합산 승부인데, 여기서는 일단 대표로 1/3/5번째 카드만 3회 대결 (간소화)
             orderedPlayerDeck = [orderedPlayerDeck[0], orderedPlayerDeck[2], orderedPlayerDeck[4]];
         }
 
         if (battleMode === 'strategy' && actualEnemyDeck.length >= 6) {
-            const hiddenCard = actualEnemyDeck[5]; // 6번째 카드
+            const hiddenCard = actualEnemyDeck[5];
             const otherCards = actualEnemyDeck.slice(0, 5);
             actualEnemyDeck = [otherCards[0], otherCards[1], hiddenCard, otherCards[2], otherCards[3]];
         } else if (battleMode === 'double' && actualEnemyDeck.length >= 6) {
@@ -189,9 +184,9 @@ export function BattleArena({
         }
 
         const battleRounds: BattleRound[] = [];
-        let pPts = 0;
+        let pPts = 0; // Points
         let ePts = 0;
-        let pW = 0;
+        let pW = 0; // Wins count
         let eW = 0;
 
         for (let i = 0; i < maxRounds; i++) {
@@ -203,7 +198,6 @@ export function BattleArena({
             const roundData: BattleRound = { playerCard, enemyCard, winner, reason, playerPower: pFinal, enemyPower: eFinal };
             battleRounds.push(roundData);
 
-            // 점수 계산
             const roundPoints = (battleMode === 'strategy' && i === 2) ? 2 : 1;
             if (winner === 'player') {
                 pPts += roundPoints;
@@ -213,8 +207,6 @@ export function BattleArena({
                 eW++;
             }
 
-            // 실시간 애니메이션을 위해 먼저 할당 (애니메이션 루프에서 상태 업데이트)
-            // 승리 조건 체크 (조기 종료)
             if (pPts >= winsNeeded || ePts >= winsNeeded) break;
         }
 
@@ -239,7 +231,22 @@ export function BattleArena({
         const isWin = finalPPts > finalEPts;
 
         setStatus('finished');
-        onFinish({ isWin, playerWins: pW, enemyWins: eW, rounds: battleRounds });
+
+        // [NEW] Show Result Overlay & Play Sound
+        const resultData = { isWin, playerWins: pW, enemyWins: eW, rounds: battleRounds };
+        setBattleResultData(resultData);
+        setShowResult(true);
+
+        if (isWin) {
+            playSfx('victory');
+        } else {
+            playSfx('defeat');
+        }
+
+        // Delay finish to show the overlay
+        setTimeout(() => {
+            onFinish(resultData);
+        }, 4000);
     };
 
     const playRoundAnimation = async (roundIndex: number, round: BattleRound) => {
@@ -254,12 +261,23 @@ export function BattleArena({
             // 1. Clash Phase Start (0.8s)
             setTimeout(() => {
                 setBattlePhase('clash');
-                // During clash, we don't know power yet
+                // [SFX] Clash Impact - Sync with animation hits (approx 0.3s and 0.8s into the clash)
+                setTimeout(() => playSfx('attack'), 300);
+                setTimeout(() => playSfx('attack'), 800);
             }, 800);
 
             // 2. Reveal Phase (Clash finishes at 2.5s)
             setTimeout(() => {
                 setBattlePhase('reveal');
+
+                // [SFX] Result Sound
+                if (round.winner === 'player') {
+                    playSfx('success'); // or 'victory'
+                } else if (round.winner === 'enemy') {
+                    playSfx('error'); // or 'defeat'
+                } else {
+                    playSfx('click'); // draw sound
+                }
 
                 if (round.reason === 'ADVANTAGE') {
                     const advName = (round.winner === 'player' ? round.playerCard.name : round.enemyCard.name) || 'Unknown Unit';
@@ -301,7 +319,6 @@ export function BattleArena({
         });
     };
 
-    // Animation Variants
     const playerCardVariants = {
         standby: { x: 0, rotate: 0, scale: 1 },
         clash: {
@@ -694,6 +711,80 @@ export function BattleArena({
                     </>
                 )}
             </div>
+
+            {/* [NEW] Result Overlay */}
+            <AnimatePresence>
+                {showResult && battleResultData && (
+                    <motion.div
+                        initial={{ opacity: 0 }}
+                        animate={{ opacity: 1 }}
+                        exit={{ opacity: 0 }}
+                        className="absolute inset-0 z-50 flex items-center justify-center bg-black/90 backdrop-blur-md"
+                    >
+                        <div className="text-center relative">
+                            {/* Background Glow */}
+                            <motion.div
+                                initial={{ scale: 0, opacity: 0 }}
+                                animate={{ scale: 1.5, opacity: 0.3 }}
+                                transition={{ duration: 1, ease: "easeOut" }}
+                                className={cn(
+                                    "absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-96 h-96 rounded-full blur-[100px]",
+                                    battleResultData.isWin ? "bg-blue-500" : "bg-red-500"
+                                )}
+                            />
+
+                            {/* Main Title */}
+                            <motion.h1
+                                initial={{ scale: 0.5, y: 50, opacity: 0 }}
+                                animate={{ scale: 1, y: 0, opacity: 1 }}
+                                transition={{ type: "spring", bounce: 0.5 }}
+                                className={cn(
+                                    "text-8xl md:text-9xl font-black italic tracking-tighter mb-4 orbitron",
+                                    battleResultData.isWin
+                                        ? "text-transparent bg-clip-text bg-gradient-to-b from-blue-300 to-blue-600 drop-shadow-[0_0_30px_rgba(59,130,246,0.6)]"
+                                        : "text-transparent bg-clip-text bg-gradient-to-b from-red-300 to-red-600 drop-shadow-[0_0_30px_rgba(239,68,68,0.6)]"
+                                )}
+                            >
+                                {battleResultData.isWin ? "VICTORY" : "DEFEAT"}
+                            </motion.h1>
+
+                            {/* Score */}
+                            <motion.div
+                                initial={{ opacity: 0, y: 20 }}
+                                animate={{ opacity: 1, y: 0 }}
+                                transition={{ delay: 0.5 }}
+                                className="flex items-center justify-center gap-8 mb-8"
+                            >
+                                <div className="text-center">
+                                    <div className="text-sm text-gray-500 font-bold orbitron tracking-widest mb-1">PLAYER</div>
+                                    <div className="text-4xl font-black text-white orbitron">{battleResultData.playerWins}</div>
+                                </div>
+                                <div className="text-2xl font-black text-gray-600 orbitron">-</div>
+                                <div className="text-center">
+                                    <div className="text-sm text-gray-500 font-bold orbitron tracking-widest mb-1">ENEMY</div>
+                                    <div className="text-4xl font-black text-white orbitron">{battleResultData.enemyWins}</div>
+                                </div>
+                            </motion.div>
+
+                            {/* Reward Text (Optional placeholder) */}
+                            {battleResultData.isWin && (
+                                <motion.div
+                                    initial={{ opacity: 0, scale: 0.8 }}
+                                    animate={{ opacity: 1, scale: 1 }}
+                                    transition={{ delay: 0.8, type: "spring" }}
+                                    className="bg-gradient-to-r from-yellow-500/20 to-yellow-600/20 border border-yellow-500/30 px-8 py-3 rounded-full inline-block"
+                                >
+                                    <span className="text-yellow-400 font-bold orbitron tracking-widest text-sm flex items-center gap-2">
+                                        <Trophy size={16} /> BATTLE COMPLETE
+                                    </span>
+                                </motion.div>
+                            )}
+                        </div>
+                    </motion.div>
+                )}
+            </AnimatePresence>
         </div>
     );
 }
+
+
