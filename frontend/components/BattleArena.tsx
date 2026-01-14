@@ -7,6 +7,7 @@ import { Button } from '@/components/ui/custom/Button';
 import { cn } from '@/lib/utils';
 import { useTranslation } from '@/context/LanguageContext';
 import { hasTypeAdvantage, TYPE_ADVANTAGE_MULTIPLIER, resolveBattleResult } from '@/lib/type-system';
+import { Card } from '@/lib/types';
 import UnitFrame from '@/components/battle/UnitFrame';
 import { getCardName } from '@/data/card-translations';
 import { BackgroundBeams } from '@/components/ui/aceternity/background-beams';
@@ -14,8 +15,8 @@ import { getCardCharacterImage } from '@/lib/card-images';
 import { useGameSound } from '@/hooks/useGameSound';
 
 interface BattleRound {
-    playerCard: any;
-    enemyCard: any;
+    playerCard: Card;
+    enemyCard: Card;
     winner: 'player' | 'enemy' | 'draw';
     reason: string;
     playerPower: number;
@@ -29,8 +30,8 @@ interface BattleLog {
 }
 
 interface BattleArenaProps {
-    playerDeck: any[];
-    enemyDeck: any[];
+    playerDeck: Card[];
+    enemyDeck: Card[];
     opponent: {
         name: string;
         level: number;
@@ -108,7 +109,12 @@ export function BattleArena({
     // [RESTORED] Battle Log & Timer Logic
     const addBattleLog = useCallback((message: string, type: BattleLog['type'] = 'system') => {
         const id = Math.random().toString(36).substring(2, 9);
-        setBattleLogs(prev => [...prev, { id, message, type }]);
+        // Limit logs to last 8 to prevent overflow
+        setBattleLogs(prev => {
+            const newLogs = [...prev, { id, message, type }];
+            if (newLogs.length > 8) return newLogs.slice(newLogs.length - 8);
+            return newLogs;
+        });
 
         setTimeout(() => {
             setBattleLogs(prev => prev.filter(log => log.id !== id));
@@ -151,7 +157,7 @@ export function BattleArena({
     };
 
 
-    const determineWinner = (playerCard: any, enemyCard: any) => {
+    const determineWinner = (playerCard: Card, enemyCard: Card) => {
         const res = resolveBattleResult(playerCard, enemyCard);
         const winner = (res.winner === 'player1' ? 'player' : res.winner === 'player2' ? 'enemy' : 'draw') as 'player' | 'enemy' | 'draw';
         const pFinal = playerCard.stats?.totalPower || 0;
