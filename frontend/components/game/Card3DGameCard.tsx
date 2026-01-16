@@ -1,7 +1,7 @@
 'use client';
 
 import { Card as CardType } from '@/lib/types';
-import { Card3D, CardBody, CardItem } from '@/components/ui/aceternity/3d-card';
+import { CardContainer, CardBody, CardItem } from '@/components/ui/aceternity/3d-card';
 import { motion } from 'framer-motion';
 import { useState } from 'react';
 
@@ -56,7 +56,7 @@ export default function Card3DGameCard({
         (card.stats.creativity || 0);
 
     return (
-        <Card3D
+        <CardContainer
             className={`w-72 ${className}`}
             containerClassName="py-8"
         >
@@ -163,6 +163,6 @@ export default function Card3DGameCard({
                     </CardItem>
                 )}
             </CardBody>
-        </Card3D>
+        </CardContainer>
     );
 }

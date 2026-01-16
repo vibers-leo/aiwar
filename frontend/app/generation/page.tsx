@@ -358,7 +358,7 @@ export default function GenerationPage() {
                             카드 생성 기능을 사용하려면 먼저 로그인해 주세요.
                         </p>
                         <button
-                            onClick={() => router.push('/auth')}
+                            onClick={() => router.push('/login')}
                             className="px-6 py-3 bg-green-500 hover:bg-green-600 text-white rounded-lg font-medium transition-colors"
                         >
                             로그인하기

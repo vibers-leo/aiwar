@@ -3,7 +3,7 @@
 import { motion, AnimatePresence } from 'framer-motion';
 import { InventoryCard } from '@/lib/inventory-system';
 import { cn } from '@/lib/utils';
-import { Card3D, CardBody, CardItem } from '@/components/ui/aceternity/3d-card';
+import { CardContainer, CardBody, CardItem } from '@/components/ui/aceternity/3d-card';
 import { Lock, Sparkles, Zap, Play } from 'lucide-react';
 import { getCardName } from '@/data/card-translations';
 import { useTranslation } from '@/context/LanguageContext';
@@ -169,13 +169,13 @@ export default function InventoryCardDetail({ card, onClose, onEnhance, onFuse, 
                 onClick={(e) => e.stopPropagation()}
             >
                 {isHighTier ? (
-                    <Card3D containerClassName="w-[300px] h-[420px] sm:w-[350px] sm:h-[490px] md:w-[400px] md:h-[560px]">
+                    <CardContainer containerClassName="w-[300px] h-[420px] sm:w-[350px] sm:h-[490px] md:w-[400px] md:h-[560px]">
                         <CardBody className="bg-transparent relative group/card dark:hover:shadow-2xl dark:hover:shadow-emerald-500/[0.1] dark:bg-black dark:border-white/[0.2] border-black/[0.1] w-full h-full rounded-xl p-0 border">
                             <CardItem translateZ="50" className="w-full h-full">
                                 {renderCardContent()}
                             </CardItem>
                         </CardBody>
-                    </Card3D>
+                    </CardContainer>
                 ) : (
                     <motion.div
                         initial={{ scale: 0.8, y: 20 }}

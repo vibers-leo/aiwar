@@ -101,36 +101,9 @@ export default function StageBattlePage() {
 
     }, [params.stageId, router, language, inventory, userLoading]);
 
-    // --- Actions ---
     // --- UI Helpers & Battle Logic ---
+    // handleResultConfirm removed - now handled directly in handleBattleFinish
 
-
-
-
-    const handleResultConfirm = async () => {
-        if (battleResult?.winner === 'player') {
-            if (storyStage) {
-                // Pass manual rewards to bypass PVP "practice mode" penalties
-                const manualRewards = {
-                    coins: storyStage.rewards.coins,
-                    experience: storyStage.rewards.experience
-                };
-                await applyBattleResult(battleResult, activeBattleDeck, enemies, false, false, false, manualRewards);
-                await completeStage(storyStage.id.split('-')[1] === '1' ? 'chapter-1' : storyStage.id.split('-')[1] === '2' ? 'chapter-2' : 'chapter-3', storyStage.id, user?.uid);
-
-                // [NEW] Track Mission Event
-                trackMissionEvent('battle-win', 1);
-            }
-            const chapterNum = storyStage?.id.split('-')[1] || '1';
-            router.push(`/story/chapter-${chapterNum}`);
-        } else {
-            setPhase('intro');
-            setBattleResult(null);
-            // setCardPlacement(null); // Removed
-            setSelectedHand([]);
-            setActiveBattleDeck([]);
-        }
-    };
 
     const handleBattleFinish = async (result: {
         isWin: boolean;
@@ -141,35 +114,59 @@ export default function StageBattlePage() {
         if (!storyStage) return;
         const { isWin, playerWins: pWins, enemyWins: eWins } = result;
 
-        const res: BattleResult = {
-            winner: isWin ? 'player' : 'opponent',
-            rounds: result.rounds.map(r => ({
-                round: r.round,
-                winner: r.winner === 'player' ? 'player' : r.winner === 'enemy' ? 'opponent' : 'draw',
-                playerCard: r.playerCard,
-                opponentCard: r.enemyCard,
-                playerPower: r.playerPower,
-                opponentPower: r.enemyPower,
-                playerType: (r.playerCard.type || 'EFFICIENCY').toLowerCase() as any,
-                opponentType: (r.enemyCard.type || 'EFFICIENCY').toLowerCase() as any,
-                reason: r.reason
-            })),
-            playerWins: pWins,
-            opponentWins: eWins,
-            rewards: {
-                coins: isWin ? storyStage.rewards.coins : 0,
-                experience: isWin ? storyStage.rewards.experience : 10,
-                ratingChange: 0
-            }
-        };
-
-        setBattleResult(res);
-        setPhase('result');
-
         if (isWin) {
+            // Construct minimal BattleResult for applyBattleResult utility
+            const res: BattleResult = {
+                winner: 'player',
+                rounds: result.rounds.map(r => ({
+                    round: r.round,
+                    winner: r.winner === 'player' ? 'player' : r.winner === 'enemy' ? 'opponent' : 'draw',
+                    playerCard: r.playerCard,
+                    opponentCard: r.enemyCard,
+                    playerPower: r.playerPower,
+                    opponentPower: r.enemyPower,
+                    playerType: (r.playerCard.type || 'EFFICIENCY').toLowerCase() as any,
+                    opponentType: (r.enemyCard.type || 'EFFICIENCY').toLowerCase() as any,
+                    reason: r.reason
+                })),
+                playerWins: pWins,
+                opponentWins: eWins,
+                rewards: {
+                    coins: storyStage.rewards.coins,
+                    experience: storyStage.rewards.experience,
+                    ratingChange: 0
+                }
+            };
+
+            // Apply rewards
+            const manualRewards = {
+                coins: storyStage.rewards.coins,
+                experience: storyStage.rewards.experience
+            };
+            await applyBattleResult(res, activeBattleDeck, enemies, false, false, false, manualRewards);
+
+            // Mark stage as complete
+            const chapterId = storyStage.id.startsWith('1-') ? 'chapter-1' :
+                storyStage.id.startsWith('2-') ? 'chapter-2' :
+                    storyStage.id.startsWith('3-') ? 'chapter-3' :
+                        storyStage.id.startsWith('4-') ? 'chapter-4' : 'chapter-5';
+            await completeStage(chapterId, storyStage.id, user?.uid);
+
+            // Track mission
             trackMissionEvent('battle-win', 1);
+
+            // Navigate back to chapter map
+            const chapterNum = storyStage.id.split('-')[0] || '1';
+            router.push(`/story/chapter-${chapterNum}`);
+        } else {
+            // Defeat: Reset to intro to allow retry
+            setPhase('intro');
+            setBattleResult(null);
+            setSelectedHand([]);
+            setActiveBattleDeck([]);
         }
     };
+
 
     // --- Actions ---
 
