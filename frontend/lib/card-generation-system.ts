@@ -354,21 +354,22 @@ export function rerollCardStats(card: Card): Card {
     const types: ('EFFICIENCY' | 'CREATIVITY' | 'FUNCTION')[] = ['EFFICIENCY', 'CREATIVITY', 'FUNCTION'];
     const mainType = types[Math.floor(Math.random() * types.length)];
 
-    let efficiency = 0, creativity = 0, func = 0;
+    let efficiency = 5, creativity = 5, func = 5;
 
     if (mainType === 'EFFICIENCY') {
-        efficiency = mainStatValue;
-        creativity = subStat1;
-        func = subStat2;
+        efficiency = Math.max(5, mainStatValue);
+        creativity = Math.max(5, subStat1);
+        func = Math.max(5, subStat2);
     } else if (mainType === 'CREATIVITY') {
-        creativity = mainStatValue;
-        efficiency = subStat1;
-        func = subStat2;
+        creativity = Math.max(5, mainStatValue);
+        efficiency = Math.max(5, subStat1);
+        func = Math.max(5, subStat2);
     } else {
-        func = mainStatValue;
-        efficiency = subStat1;
-        creativity = subStat2;
+        func = Math.max(5, mainStatValue);
+        efficiency = Math.max(5, subStat1);
+        creativity = Math.max(5, subStat2);
     }
+
 
     return {
         ...card,
