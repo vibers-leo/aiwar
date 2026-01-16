@@ -451,6 +451,16 @@ export default function PVPArenaPage() {
             const { determineRoundWinner } = require('@/lib/pvp-battle-system'); // Lazy import helper
             const winner = determineRoundWinner(playerSel, aiSelection);
 
+            // Build round record for history
+            const roundRecord = {
+                round: prev.round,
+                playerCard: playerSel,
+                opponentCard: aiSelection,
+                winner: winner,
+                playerPower: playerSel?.stats?.totalPower || 0,
+                opponentPower: aiSelection?.stats?.totalPower || 0
+            };
+
             // Update State for Clash Phase
             return {
                 ...prev,
@@ -460,6 +470,7 @@ export default function PVPArenaPage() {
                 phase: 'clash',
                 playerWins: prev.playerWins + (winner === 'player' ? 1 : 0),
                 opponentWins: prev.opponentWins + (winner === 'opponent' ? 1 : 0),
+                history: [...prev.history, roundRecord]
             };
         });
 
@@ -508,9 +519,21 @@ export default function PVPArenaPage() {
         // 3승 전승 보너스
         const perfectBonus = finalState.playerWins === 3 ? 100 : 0;
 
+        // Map history to RoundResult format
+        const mappedRounds = (finalState.history || []).map((h: any) => ({
+            round: h.round,
+            playerCard: h.playerCard,
+            opponentCard: h.opponentCard,
+            winner: h.winner,
+            playerType: (h.playerCard?.type || 'EFFICIENCY').toLowerCase(),
+            opponentType: (h.opponentCard?.type || 'EFFICIENCY').toLowerCase(),
+            playerPower: h.playerPower,
+            opponentPower: h.opponentPower
+        }));
+
         const result: BattleResult = {
             winner: finalWinner,
-            rounds: [], // TODO: Fill with history if needed
+            rounds: mappedRounds,
             playerWins: finalState.playerWins,
             opponentWins: finalState.opponentWins,
             rewards: {
