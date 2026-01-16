@@ -521,7 +521,7 @@ export default function CommanderProfileModal({ isOpen, onClose }: CommanderProf
                                                 <div className={cn("w-10 h-10 rounded-lg flex items-center justify-center text-xl bg-gradient-to-br", stat.gradient)}>
                                                     {stat.icon}
                                                 </div>
-                                                <div>
+                                                <div className="flex-1">
                                                     <p className="text-[10px] text-gray-400 font-bold uppercase">{stat.name}</p>
                                                     <div className="flex items-center gap-2">
                                                         <span className={cn(
@@ -534,6 +534,17 @@ export default function CommanderProfileModal({ isOpen, onClose }: CommanderProf
                                                             <span className="text-[10px] text-yellow-500 font-bold px-1.5 py-0.5 bg-yellow-500/10 rounded border border-yellow-500/20">MAX</span>
                                                         )}
                                                     </div>
+                                                    {/* [NEW] Show active bonus effect */}
+                                                    {bonus > 0 && (
+                                                        <p className="text-[10px] text-green-400 font-medium mt-0.5">
+                                                            {stat.id === 'insight' && `고등급 확률 +${bonus}%`}
+                                                            {stat.id === 'efficiency' && `시간 -${bonus}%`}
+                                                            {stat.id === 'negotiation' && `비용 -${bonus}%`}
+                                                            {stat.id === 'leadership' && `전투력 +${bonus}%`}
+                                                            {stat.id === 'mastery' && `+3 확률 ${bonus}%`}
+                                                            {stat.id === 'fortune' && `보상 +${bonus}%`}
+                                                        </p>
+                                                    )}
                                                 </div>
                                             </div>
                                         );
