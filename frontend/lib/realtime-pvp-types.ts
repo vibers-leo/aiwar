@@ -7,6 +7,7 @@ export type RealtimeBattleMode = 'sudden-death' | 'tactics' | 'strategy' | 'doub
 
 export type BattlePhase =
     | 'waiting'      // 상대 대기 중
+    | 'vs-matchup'   // VS 인트로 화면
     | 'selection'    // 카드 선택
     | 'reveal'       // 카드 공개 (타이머)
     | 'ordering'     // 순서 배치

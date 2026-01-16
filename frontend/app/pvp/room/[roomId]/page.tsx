@@ -133,29 +133,34 @@ export default function RealtimeBattleRoomPage() {
 
                     if (!opponentData.connected && localPhase !== 'loading' && localPhase !== 'waiting' && !updatedRoom.finished) {
                         console.warn('Opponent disconnected');
-                        // Optional: Show a warning or handle as forfeit
+                    }
+
+                    // [FIX] 'waiting' 상태에서 양쪽 연결 시 'vs-matchup'으로 전환
+                    if (updatedRoom.phase === 'waiting' && updatedRoom.player1.connected && updatedRoom.player2.connected) {
+                        console.log('[Flow] Both players connected! Transitioning to vs-matchup...');
+                        // Player1만 phase 업데이트 (중복 방지)
+                        if (isPlayer1) {
+                            await updateBattleRoom(roomId, { phase: 'vs-matchup' as BattlePhase });
+                        }
+                        setLocalPhase('vs-matchup');
+                        return;
                     }
 
                     // [FIX] Auto-transition to battle when both players are ready
                     if (updatedRoom.phase === 'deck-select' && myData.ready && opponentData.ready) {
                         console.log('[Flow] Both players ready detected in listener, transitioning to battle...');
-                        await updateBattleRoom(roomId, { phase: 'battle' });
-                        return; // Early return to prevent duplicate phase updates
+                        if (isPlayer1) {
+                            await updateBattleRoom(roomId, { phase: 'battle' });
+                        }
+                        return;
                     }
 
                     // [FIX] Phase synchronization logic
-                    // We map the server room.phase to our localPhase.
-                    // Priority: If the room.phase is set, we follow it.
                     const roomPhase = updatedRoom.phase as LocalPhase;
 
                     if (roomPhase && roomPhase !== localPhase) {
                         console.log(`[Flow] Phase synchronized: ${localPhase} -> ${roomPhase}`);
                         setLocalPhase(roomPhase);
-
-                        // Special triggers based on phase
-                        if (roomPhase === 'vs-matchup' && vsCountdown === 5) {
-                            // The vsCountdown timer is already handled by a useEffect dependent on localPhase
-                        }
                     }
                 });
                 listenerRef.current = unsubscribe;

@@ -215,7 +215,7 @@ export async function findMatch(
             const ghostRoomData: BattleRoom & { isGhost: boolean } = {
                 roomId,
                 battleMode,
-                phase: 'deck-select',
+                phase: 'deck-select', // Ghost AI is pre-ready, skip to deck-select directly
                 player1: {
                     playerId: myPlayerId,
                     playerName: myQueueData?.playerName || 'Player',
@@ -320,7 +320,7 @@ async function createBattleRoom(
     const room: BattleRoom = {
         roomId,
         battleMode,
-        phase: 'deck-select',
+        phase: 'waiting', // [FIX] Start with 'waiting' so VS matchup can play
         player1: createEmptyPlayerState(
             player1Id,
             player1Data?.playerName || state.nickname || 'Player 1',

@@ -256,7 +256,7 @@ export default function RealtimeMatchingModal({
             await set(newRoomRef, {
                 roomId,
                 battleMode: waitingRoom.battleMode,
-                phase: 'deck-select',
+                phase: 'waiting', // [FIX] Start with 'waiting' for VS matchup
                 player1: {
                     playerId: waitingRoom.hostId,
                     playerName: waitingRoom.hostName,
@@ -284,6 +284,8 @@ export default function RealtimeMatchingModal({
                 currentRound: 0,
                 maxRounds: waitingRoom.battleMode === 'sudden-death' ? 5 : (waitingRoom.battleMode === 'tactics' ? 5 : (waitingRoom.battleMode === 'strategy' ? 5 : 3)),
                 winsNeeded: waitingRoom.battleMode === 'sudden-death' ? 1 : (waitingRoom.battleMode === 'tactics' ? 3 : (waitingRoom.battleMode === 'strategy' ? 3 : 2)),
+                phaseStartedAt: Date.now(), // [FIX] Add missing field
+                phaseTimeout: 60, // [FIX] Add missing field
                 finished: false,
                 createdAt: Date.now(),
                 updatedAt: Date.now()
