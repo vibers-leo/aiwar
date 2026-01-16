@@ -115,6 +115,42 @@ export default function SessionLogPage() {
                     </ul>
                 </motion.div>
 
+                {/* New Log Entry: 2026-01-17 (2) */}
+                <motion.div
+                    initial={{ opacity: 0, y: 20 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    className="bg-black/40 border border-purple-500/30 p-6 rounded-xl relative overflow-hidden"
+                >
+                    <div className="absolute top-0 right-0 p-2 text-xs text-purple-400 border-l border-b border-purple-500/30 bg-black/40 font-mono">
+                        2026-01-17 (2)
+                    </div>
+                    <h2 className="text-xl font-bold text-purple-400 mb-4 flex items-center gap-2">
+                        <span>🃏</span> 카드 시스템 종합 점검 및 AI 군단 기획
+                    </h2>
+                    <ul className="list-disc list-inside text-gray-300 space-y-2 ml-2">
+                        <li>
+                            <strong className="text-white">카드 시스템 점검 완료:</strong>
+                            <ul className="list-disc list-inside ml-6 mt-1 text-sm text-gray-400">
+                                <li>도감(`Encyclopedia`) 연동 및 군단장 카드 분리 로직 확인.</li>
+                                <li>`rerollCardStats` 함수 버그 수정 (최소 스탯 5 보장).</li>
+                                <li>가위바위보 상성 및 전투 판정 로직(`checkTypeAdvantage`) 검증 완료.</li>
+                            </ul>
+                        </li>
+                        <li>
+                            <strong className="text-white">경제 시스템 밸런스 진단:</strong>
+                            <ul className="list-disc list-inside ml-6 mt-1 text-sm text-gray-400">
+                                <li><strong>상점:</strong> 구매 프로세스, 확률 표시, 재화 차감 로직 정상.</li>
+                                <li><strong>유니크 제작:</strong> 비용(10,000코인+2,000토큰) 및 재료(전설 5장) 조건 확인.</li>
+                                <li><strong>강화/합성:</strong> 연구 보너스 연동 및 비용 산정 로직(`enhance-utils`, `fusion-utils`) 정상.</li>
+                            </ul>
+                        </li>
+                        <li>
+                            <strong className="text-white">AI 군단 기능 기획:</strong>
+                            <span className="text-sm ml-2">16개 군단별 아이덴티티를 살린 패시브/액티브 스킬 초안 수립.</span>
+                        </li>
+                    </ul>
+                </motion.div>
+
                 {/* 1. 미션 시스템 */}
                 <motion.div
                     initial={{ opacity: 0, y: 20 }}
