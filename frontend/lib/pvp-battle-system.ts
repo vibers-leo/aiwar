@@ -420,15 +420,50 @@ export async function checkPVPRequirements(
 
 /**
  * AI 연습 모드 및 스토리 모드용 상대 덱 생성
+ * @param playerLevel 플레이어 레벨
+ * @param cardPool 카드 풀 (옵션)
+ * @param targetSize 덱 크기
+ * @param pattern 타입 패턴 (옵션)
+ * @param isBoss 보스 여부
+ * @param playerRating 플레이어 레이팅 (AI 난이도 스케일링용)
  */
 export function generateOpponentDeck(
     playerLevel: number,
     cardPool?: Card[],
     targetSize: number = 5,
     pattern?: { function: number; creativity: number; efficiency: number },
-    isBoss: boolean = false
+    isBoss: boolean = false,
+    playerRating: number = 1000 // [NEW] Rating-based difficulty
 ): BattleParticipant {
-    const isEasy = playerLevel < 4;
+    // [NEW] 레이팅 기반 난이도 계산
+    // 브론즈(< 1100): Easy, 실버(1100-1299): Normal, 골드(1300-1499): Hard
+    // 플래티넘(1500-1699): Expert, 다이아+(1700+): Master
+    let difficulty: 'easy' | 'normal' | 'hard' | 'expert' | 'master' = 'easy';
+    let statBonus = 0;
+    let rarityBoost = 0; // 0-1 사이, 높을수록 고등급 카드 확률 증가
+
+    if (playerRating >= 1700) {
+        difficulty = 'master';
+        statBonus = 15;
+        rarityBoost = 0.4;
+    } else if (playerRating >= 1500) {
+        difficulty = 'expert';
+        statBonus = 10;
+        rarityBoost = 0.3;
+    } else if (playerRating >= 1300) {
+        difficulty = 'hard';
+        statBonus = 5;
+        rarityBoost = 0.2;
+    } else if (playerRating >= 1100) {
+        difficulty = 'normal';
+        statBonus = 0;
+        rarityBoost = 0.1;
+    } else {
+        difficulty = 'easy';
+        statBonus = -5; // Easy mode: AI가 약간 약함
+        rarityBoost = 0;
+    }
+
     const styles = [
         { name: '맹장형', type: 'EFFICIENCY', desc: '공격적인 성향' },
         { name: '지장형', type: 'CREATIVITY', desc: '창의적인 전술' },
@@ -455,35 +490,57 @@ export function generateOpponentDeck(
         let rarity: Rarity = 'common';
         const roll = Math.random();
 
-        if (isBoss) rarity = 'rare'; // 보스는 최소 레어
-        else if (isEasy) rarity = roll > 0.8 ? 'rare' : 'common';
-        else rarity = roll > 0.7 ? 'epic' : roll > 0.3 ? 'rare' : 'common';
+        // [NEW] 레이팅 기반 레어도 결정
+        if (isBoss) {
+            rarity = 'rare'; // 보스는 최소 레어
+        } else {
+            // 기본 확률 + 레이팅 부스트
+            const boostedRoll = roll + rarityBoost;
+            if (boostedRoll > 0.95) rarity = 'legendary';
+            else if (boostedRoll > 0.8) rarity = 'epic';
+            else if (boostedRoll > 0.5) rarity = 'rare';
+            else rarity = 'common';
+        }
 
         // 특정 타입 강제 또는 전체 랜덤
         const forcedType = typesToGenerate[i];
         const card = generateRandomCard(rarity, 0, undefined, undefined, forcedType);
 
         card.id = `ai-gen-${Date.now()}-${i}`;
-        card.level = Math.max(1, playerLevel + (isBoss ? 1 : isEasy ? -1 : 1));
 
-        // [BOSS BOOST] 비겼을 때를 대비해 스탯 상향 조정
-        if (isBoss && card.stats) {
-            card.stats.efficiency = (card.stats.efficiency || 0) + 5;
-            card.stats.creativity = (card.stats.creativity || 0) + 5;
-            card.stats.function = (card.stats.function || 0) + 5;
-            card.stats.totalPower = (card.stats.totalPower || 0) + 5;
+        // [NEW] 레이팅 기반 레벨 조정
+        const levelAdjust = difficulty === 'master' ? 2 : difficulty === 'expert' ? 1 : difficulty === 'hard' ? 0 : difficulty === 'normal' ? -1 : -2;
+        card.level = Math.max(1, playerLevel + levelAdjust + (isBoss ? 1 : 0));
+
+        // [NEW] 레이팅 기반 스탯 조정
+        if (card.stats) {
+            const bonus = statBonus + (isBoss ? 5 : 0);
+            card.stats.efficiency = Math.max(1, (card.stats.efficiency || 0) + bonus);
+            card.stats.creativity = Math.max(1, (card.stats.creativity || 0) + bonus);
+            card.stats.function = Math.max(1, (card.stats.function || 0) + bonus);
+            card.stats.totalPower = (card.stats.efficiency || 0) + (card.stats.creativity || 0) + (card.stats.function || 0);
         }
 
         return card;
     });
 
+    // [NEW] 난이도를 이름에 표시
+    const difficultyLabel = {
+        'easy': '🟢 초보',
+        'normal': '🔵 일반',
+        'hard': '🟠 고수',
+        'expert': '🔴 전문가',
+        'master': '⚫ 마스터'
+    }[difficulty];
+
     return {
-        name: isBoss ? `[BOSS]` : `[AI] ${style.name}`,
+        name: isBoss ? `[BOSS]` : `[AI ${difficultyLabel}] ${style.name}`,
         level: playerLevel,
         deck: aiCards,
-        style: isBoss ? '챕터 최종 보스' : style.desc
+        style: isBoss ? '챕터 최종 보스' : `${style.desc} (Rating: ${playerRating})`
     };
 }
+
 
 /**
  * 전투 시뮬레이션 (연습 모드용)

@@ -329,7 +329,9 @@ export default function PVPArenaPage() {
             setSelectedMatchType(type);
             // AI 훈련: AI 덱 생성 및 애니메이션화
             const targetSize = (selectedMode === 'strategy' || selectedMode === 'double') ? 6 : 5;
-            const aiOpponent = generateOpponentDeck(state.level, [], targetSize);
+            // [NEW] 레이팅 기반 AI 난이도 적용
+            const pvpStats = getPVPStats();
+            const aiOpponent = generateOpponentDeck(state.level, [], targetSize, undefined, false, pvpStats.rating);
             setOpponentDeck(aiOpponent.deck);
             setRevealTimer(20); // 타이머 초기화
             setPhase('deck-reveal');
