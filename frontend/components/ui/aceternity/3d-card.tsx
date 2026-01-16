@@ -3,7 +3,7 @@
 import { useMotionValue, useSpring, useTransform, motion } from "framer-motion";
 import React, { useState, useRef } from "react";
 
-export const Card3D = ({
+export const CardContainer = ({
     children,
     className,
     containerClassName,

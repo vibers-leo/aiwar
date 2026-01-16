@@ -378,69 +378,7 @@ export default function StageBattlePage() {
 
 
                 {/* 5. Result (PVP Sync Aesthetic) */}
-                {phase === 'result' && battleResult && (
-                    <motion.div
-                        key="result"
-                        initial={{ opacity: 0, scale: 0.9 }}
-                        animate={{ opacity: 1, scale: 1 }}
-                        exit={{ opacity: 0, scale: 0.9 }}
-                        className="fixed inset-0 z-[100] flex items-center justify-center bg-black p-4 overflow-hidden"
-                    >
-                        <BackgroundBeams className="opacity-35" />
-                        <div className="relative z-10 w-full max-w-md text-center">
-                            <motion.div
-                                animate={{ scale: [1, 1.05, 1], rotate: [0, 3, -3, 0] }}
-                                transition={{ repeat: 3, duration: 0.8 }}
-                                className="mb-6"
-                            >
-                                {battleResult.winner === 'player' ? (
-                                    <div className="relative inline-block">
-                                        <span className="text-8xl block mb-2">🏆</span>
-                                        <motion.div animate={{ opacity: [0, 1, 0] }} transition={{ repeat: Infinity, duration: 1 }} className="absolute inset-0 bg-yellow-500/20 blur-3xl rounded-full" />
-                                    </div>
-                                ) : (
-                                    <span className="text-8xl block mb-2 opacity-60">😢</span>
-                                )}
-                            </motion.div>
-
-                            <h1 className={cn(
-                                "text-5xl font-black orbitron italic mb-2 tracking-[0.1em]",
-                                battleResult.winner === 'player' ? 'text-white' : 'text-red-500/60'
-                            )}>
-                                {battleResult.winner === 'player' ? t('pvp.battle.victory') : t('pvp.battle.defeat')}
-                            </h1>
-                            <p className="text-[10px] font-black orbitron text-gray-500 tracking-[0.4em] mb-8">MISSION_SEQUENCE_COMPLETE</p>
-
-                            <div className="text-3xl text-white orbitron font-black mb-8 p-4 bg-white/5 rounded-2xl border border-white/10 inline-block px-12">
-                                {battleResult.playerWins} <span className="text-gray-600 px-3">-</span> {battleResult.opponentWins}
-                            </div>
-
-                            {battleResult.winner === 'player' && (
-                                <div className="grid grid-cols-2 gap-4 mb-10">
-                                    <div className="bg-white/5 backdrop-blur-xl rounded-2xl p-5 border border-white/10">
-                                        <div className="text-[10px] text-gray-500 orbitron uppercase mb-1">Coins</div>
-                                        <div className="text-2xl font-black orbitron text-yellow-400">+{battleResult.rewards.coins}</div>
-                                    </div>
-                                    <div className="bg-white/5 backdrop-blur-xl rounded-2xl p-5 border border-white/10">
-                                        <div className="text-[10px] text-gray-500 orbitron uppercase mb-1">EXP</div>
-                                        <div className="text-2xl font-black orbitron text-cyan-400">+{battleResult.rewards.experience}</div>
-                                    </div>
-                                </div>
-                            )}
-
-                            <Button
-                                size="lg"
-                                onPress={handleResultConfirm}
-                                className={cn(
-                                    "w-full h-16 font-black orbitron text-lg rounded-2xl shadow-2xl transition-all",
-                                    battleResult.winner === 'player' ? "bg-white text-black hover:bg-gray-200" : "bg-white/10 text-white hover:bg-white/20"
-                                )}
-                            >
-                                {battleResult.winner === 'player' ? t('battle.common.nextStage').toUpperCase() : t('battle.common.retryMission').toUpperCase()}
-                            </Button>
-                        </div>
-                    </motion.div>
-                )}
+                {/* REMOVED: Custom Result Overlay. Using BattleArena's internal manual result instead. */}
             </div>
 
             {/* Tactics Tutorial Overlay */}

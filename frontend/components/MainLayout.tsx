@@ -45,7 +45,7 @@ export default function MainLayout({ children }: { children: React.ReactNode }) 
 
     // Pages that should be 100% full page without any layout
     const isNoLayout = !pathname ||
-        ['/login', '/signup', '/'].includes(pathname) ||
+        ['/login', '/signup', '/', '/start'].includes(pathname) ||
         pathname.startsWith('/battle');
 
     // Pages that should have header but NO sidebar

@@ -50,6 +50,10 @@ interface BattleArenaProps {
     battleMode?: 'sudden-death' | 'tactics' | 'strategy' | 'double';
     autoStartBattle?: boolean;
     initialPlacement?: number[];
+    // [NEW] Result Screen Props
+    manualResult?: boolean; // If true, overlay won't auto-dismiss
+    rewards?: { coins: number; exp: number };
+    nextLabel?: string;
 }
 
 export function BattleArena({
@@ -63,7 +67,10 @@ export function BattleArena({
     enemySelectionMode = 'ordered',
     battleMode = 'tactics',
     autoStartBattle = false,
-    initialPlacement
+    initialPlacement,
+    manualResult = false,
+    rewards,
+    nextLabel
 }: BattleArenaProps) {
     const maxRounds = (battleMode === 'strategy' || battleMode === 'tactics' || battleMode === 'sudden-death') ? 5 : (battleMode === 'double' ? 3 : maxRoundsProp);
     const winsNeeded = battleMode === 'sudden-death' ? 1 : (battleMode === 'tactics' ? 3 : (battleMode === 'strategy' ? 3 : 2));
@@ -250,9 +257,14 @@ export function BattleArena({
         }
 
         // Delay finish to show the overlay
-        setTimeout(() => {
-            onFinish(resultData);
-        }, 4000);
+        // [MODIFIED] If manualResult is true, we WAIT for user interaction.
+        const delay = manualResult ? 999999999 : 4000;
+
+        if (!manualResult) {
+            setTimeout(() => {
+                onFinish(resultData);
+            }, delay);
+        }
     };
 
     const playRoundAnimation = async (roundIndex: number, round: BattleRound) => {
@@ -718,71 +730,110 @@ export function BattleArena({
                 )}
             </div>
 
-            {/* [NEW] Result Overlay */}
+            {/* [NEW] Enhanced Result Overlay */}
             <AnimatePresence>
                 {showResult && battleResultData && (
                     <motion.div
                         initial={{ opacity: 0 }}
                         animate={{ opacity: 1 }}
                         exit={{ opacity: 0 }}
-                        className="absolute inset-0 z-50 flex items-center justify-center bg-black/90 backdrop-blur-md"
+                        className="absolute inset-0 z-50 flex items-center justify-center bg-black/95 backdrop-blur-xl"
                     >
-                        <div className="text-center relative">
-                            {/* Background Glow */}
+                        <div className="text-center relative w-full max-w-lg px-4">
+                            {/* Animated Background */}
                             <motion.div
-                                initial={{ scale: 0, opacity: 0 }}
-                                animate={{ scale: 1.5, opacity: 0.3 }}
-                                transition={{ duration: 1, ease: "easeOut" }}
+                                initial={{ scale: 0.5, opacity: 0 }}
+                                animate={{ scale: 1.2, opacity: 0.2 }}
+                                transition={{ duration: 1.5, repeat: Infinity, repeatType: "reverse" }}
                                 className={cn(
-                                    "absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-96 h-96 rounded-full blur-[100px]",
-                                    battleResultData.isWin ? "bg-blue-500" : "bg-red-500"
+                                    "absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[500px] h-[500px] rounded-full blur-[100px]",
+                                    battleResultData.isWin ? "bg-blue-600" : "bg-red-600"
                                 )}
                             />
 
-                            {/* Main Title */}
-                            <motion.h1
-                                initial={{ scale: 0.5, y: 50, opacity: 0 }}
-                                animate={{ scale: 1, y: 0, opacity: 1 }}
-                                transition={{ type: "spring", bounce: 0.5 }}
-                                className={cn(
-                                    "text-8xl md:text-9xl font-black italic tracking-tighter mb-4 orbitron",
-                                    battleResultData.isWin
-                                        ? "text-transparent bg-clip-text bg-gradient-to-b from-blue-300 to-blue-600 drop-shadow-[0_0_30px_rgba(59,130,246,0.6)]"
-                                        : "text-transparent bg-clip-text bg-gradient-to-b from-red-300 to-red-600 drop-shadow-[0_0_30px_rgba(239,68,68,0.6)]"
-                                )}
-                            >
-                                {battleResultData.isWin ? "VICTORY" : "DEFEAT"}
-                            </motion.h1>
-
-                            {/* Score */}
+                            {/* Main Title with Icon */}
                             <motion.div
-                                initial={{ opacity: 0, y: 20 }}
-                                animate={{ opacity: 1, y: 0 }}
-                                transition={{ delay: 0.5 }}
-                                className="flex items-center justify-center gap-8 mb-8"
+                                initial={{ scale: 0.8, y: -20, opacity: 0 }}
+                                animate={{ scale: 1, y: 0, opacity: 1 }}
+                                transition={{ type: "spring", bounce: 0.6 }}
+                                className="mb-8 relative"
                             >
-                                <div className="text-center">
-                                    <div className="text-sm text-gray-500 font-bold orbitron tracking-widest mb-1">PLAYER</div>
-                                    <div className="text-4xl font-black text-white orbitron">{battleResultData.playerWins}</div>
+                                <div className="flex justify-center mb-4">
+                                    {battleResultData.isWin ? (
+                                        <Trophy size={80} className="text-yellow-400 drop-shadow-[0_0_15px_rgba(250,204,21,0.5)]" />
+                                    ) : (
+                                        <XCircle size={80} className="text-red-500 opacity-80" />
+                                    )}
                                 </div>
-                                <div className="text-2xl font-black text-gray-600 orbitron">-</div>
-                                <div className="text-center">
-                                    <div className="text-sm text-gray-500 font-bold orbitron tracking-widest mb-1">ENEMY</div>
-                                    <div className="text-4xl font-black text-white orbitron">{battleResultData.enemyWins}</div>
+                                <h1 className={cn(
+                                    "text-6xl md:text-7xl font-black italic tracking-tighter orbitron",
+                                    battleResultData.isWin
+                                        ? "text-transparent bg-clip-text bg-gradient-to-b from-white to-blue-400 drop-shadow-[0_0_30px_rgba(59,130,246,0.6)]"
+                                        : "text-transparent bg-clip-text bg-gradient-to-b from-red-100 to-red-600 drop-shadow-[0_0_30px_rgba(239,68,68,0.6)]"
+                                )}>
+                                    {battleResultData.isWin ? t('pvp.battle.victory') : t('pvp.battle.defeat')}
+                                </h1>
+                                <p className="text-xs font-bold text-gray-500 orbitron tracking-[0.5em] mt-2">
+                                    {battleResultData.isWin ? 'MISSION ACCOMPLISHED' : 'MISSION FAILED'}
+                                </p>
+                            </motion.div>
+
+                            {/* Score Box */}
+                            <motion.div
+                                initial={{ opacity: 0, y: 30 }}
+                                animate={{ opacity: 1, y: 0 }}
+                                transition={{ delay: 0.3 }}
+                                className="bg-white/5 border border-white/10 rounded-3xl p-6 mb-8 backdrop-blur-md"
+                            >
+                                <div className="flex items-center justify-center gap-12">
+                                    <div className="text-center">
+                                        <div className="text-xs text-blue-400 font-bold orbitron tracking-widest mb-2">PLAYER</div>
+                                        <div className="text-5xl font-black text-white orbitron shadow-blue-500/20">{battleResultData.playerWins}</div>
+                                    </div>
+                                    <div className="h-12 w-px bg-white/10 transform rotate-12" />
+                                    <div className="text-center">
+                                        <div className="text-xs text-red-400 font-bold orbitron tracking-widest mb-2">ENEMY</div>
+                                        <div className="text-5xl font-black text-white orbitron shadow-red-500/20">{battleResultData.enemyWins}</div>
+                                    </div>
                                 </div>
                             </motion.div>
 
-                            {/* Reward Text (Optional placeholder) */}
-                            {battleResultData.isWin && (
+                            {/* Rewards Section (If manual and passed via parent) */}
+                            {rewards && (
                                 <motion.div
-                                    initial={{ opacity: 0, scale: 0.8 }}
-                                    animate={{ opacity: 1, scale: 1 }}
-                                    transition={{ delay: 0.8, type: "spring" }}
-                                    className="bg-gradient-to-r from-yellow-500/20 to-yellow-600/20 border border-yellow-500/30 px-8 py-3 rounded-full inline-block"
+                                    initial={{ opacity: 0 }}
+                                    animate={{ opacity: 1 }}
+                                    transition={{ delay: 0.5 }}
+                                    className="grid grid-cols-2 gap-4 mb-8"
                                 >
-                                    <span className="text-yellow-400 font-bold orbitron tracking-widest text-sm flex items-center gap-2">
-                                        <Trophy size={16} /> BATTLE COMPLETE
-                                    </span>
+                                    <div className="bg-black/40 p-4 rounded-xl border border-yellow-500/20">
+                                        <div className="text-[10px] text-yellow-500 orbitron uppercase mb-1">COINS</div>
+                                        <div className="text-xl font-black text-white orbitron">+{rewards.coins}</div>
+                                    </div>
+                                    <div className="bg-black/40 p-4 rounded-xl border border-purple-500/20">
+                                        <div className="text-[10px] text-purple-500 orbitron uppercase mb-1">EXP</div>
+                                        <div className="text-xl font-black text-white orbitron">+{rewards.exp}</div>
+                                    </div>
+                                </motion.div>
+                            )}
+
+                            {/* Action Button */}
+                            {manualResult && (
+                                <motion.div
+                                    initial={{ opacity: 0, y: 20 }}
+                                    animate={{ opacity: 1, y: 0 }}
+                                    transition={{ delay: 0.6 }}
+                                >
+                                    <Button
+                                        size="lg"
+                                        onPress={() => onFinish(battleResultData)}
+                                        className={cn(
+                                            "w-full h-14 font-black orbitron text-sm rounded-xl shadow-xl transition-all hover:scale-105 active:scale-95",
+                                            battleResultData.isWin ? "bg-white text-black hover:bg-gray-200" : "bg-white/10 text-white hover:bg-white/20"
+                                        )}
+                                    >
+                                        {nextLabel || (battleResultData.isWin ? "PROCEED" : "RETRY")}
+                                    </Button>
                                 </motion.div>
                             )}
                         </div>

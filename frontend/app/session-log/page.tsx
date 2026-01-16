@@ -88,6 +88,32 @@ export default function SessionLogPage() {
                     </div>
                 </motion.div>
 
+                {/* New Log Entry: 2026-01-17 */}
+                <motion.div
+                    initial={{ opacity: 0, y: 20 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    className="bg-black/40 border border-cyan-500/30 p-6 rounded-xl relative overflow-hidden"
+                >
+                    <div className="absolute top-0 right-0 p-2 text-xs text-cyan-400 border-l border-b border-cyan-500/30 bg-black/40 font-mono">
+                        2026-01-17
+                    </div>
+                    <h2 className="text-xl font-bold text-cyan-400 mb-4 flex items-center gap-2">
+                        <span>🚀</span> 랜딩 페이지 개선 및 PVP 아레나 UI 통합
+                    </h2>
+                    <ul className="list-disc list-inside text-gray-300 space-y-2 ml-2">
+                        <li>
+                            <strong className="text-white">랜딩 페이지 강화:</strong> <code>/star</code> → <code>/start</code> 라우팅 변경 및 Aceternity UI 기반의 고퀄리티 디자인 적용 완료.
+                        </li>
+                        <li>
+                            <strong className="text-white">전투 UI 통합 (Battle UI Sync):</strong>
+                            <ul className="list-disc list-inside ml-6 mt-1 text-sm text-gray-400">
+                                <li><code>BattleArena</code> 엔진 업그레이드: <code>manualResult</code> 모드 지원으로 결과 화면을 외부에서 제어 가능하도록 개선.</li>
+                                <li><strong>스토리 모드 UI 대격변:</strong> 중복된 결과 화면을 제거하고, PVP 아레나의 결과 오버레이를 그대로 사용하도록 통합.</li>
+                                <li>유지보수 효율성 증대: 이제 하나의 UI 엔진으로 모든 전투 모드 대응 가능.</li>
+                            </ul>
+                        </li>
+                    </ul>
+                </motion.div>
 
                 {/* 1. 미션 시스템 */}
                 <motion.div

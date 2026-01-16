@@ -7,7 +7,7 @@ import { motion, AnimatePresence } from 'framer-motion';
 import { useGameSound } from '@/hooks/useGameSound';
 import { BackgroundBeams } from "@/components/ui/aceternity/background-beams";
 import { SparklesCore } from "@/components/ui/aceternity/effects";
-import { CardBody, Card3D as CardContainer, CardItem } from "@/components/ui/aceternity/3d-card";
+import { CardBody, CardContainer, CardItem } from "@/components/ui/aceternity/3d-card";
 import { useUser } from '@/context/UserContext';
 import Season1EndingModal from '@/components/Season1EndingModal';
 import { hasCompletedSeason1, hasWatchedEnding, resetEndingWatched } from '@/data/season1-ending';
