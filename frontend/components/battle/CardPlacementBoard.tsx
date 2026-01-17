@@ -423,7 +423,10 @@ export default function CardPlacementBoard({ selectedCards, onPlacementComplete,
                 <h2 className="text-2xl font-black text-white italic tracking-tighter flex items-center justify-center gap-2">
                     <span className="text-cyan-500">TACTICAL</span> DEPLOYMENT
                     <span className="text-[10px] font-normal text-gray-500 bg-black/50 px-2 py-1 rounded-full border border-white/10 ml-2 backdrop-blur-md">
-                        {battleMode === 'strategy' ? '전략 승부 (6장)' : battleMode === 'double' ? '두장 승부 (6장)' : '전술 승부 (5장)'}
+                        {battleMode === 'strategy' ? '전략 승부 (6장)' :
+                            battleMode === 'double' ? '두장 승부 (6장)' :
+                                battleMode === 'sudden-death' ? '단판 승부 (5장)' :
+                                    '전술 승부 (5장)'}
                     </span>
                 </h2>
             </div>

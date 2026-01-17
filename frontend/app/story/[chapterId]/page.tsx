@@ -298,9 +298,9 @@ export default function ChapterDetailPage() {
                                                         {selectedStage.battleMode === 'sudden-death' && (
                                                             <>
                                                                 <p className="font-bold text-red-400 text-lg mb-3">⚡ 단판 승부 (Sudden Death)</p>
-                                                                <p className="flex items-center gap-2"><span className="w-1 h-1 bg-red-500 rounded-full" /> 상호 간에 5장의 카드를 모두 공개합니다.</p>
-                                                                <p className="flex items-center gap-2"><span className="w-1 h-1 bg-red-500 rounded-full" /> 그 중 단 1장의 카드로 승부를 결정합니다.</p>
-                                                                <p className="flex items-center gap-2"><span className="w-1 h-1 bg-red-500 rounded-full" /> 단판으로 전투가 즉시 종료되는 방식입니다.</p>
+                                                                <p className="flex items-center gap-2"><span className="w-1 h-1 bg-red-500 rounded-full" /> 5장의 카드를 배치하여 5라운드를 진행합니다.</p>
+                                                                <p className="flex items-center gap-2"><span className="w-1 h-1 bg-red-500 rounded-full" /> 먼저 3승을 달성하는 쪽이 승리합니다.</p>
+                                                                <p className="flex items-center gap-2"><span className="w-1 h-1 bg-red-500 rounded-full" /> 보스전에서는 신중한 배치가 중요합니다.</p>
                                                             </>
                                                         )}
                                                         {selectedStage.battleMode === 'tactics' && (
