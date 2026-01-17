@@ -250,9 +250,22 @@ const ENEMY_NAMES = [
  */
 export function generateEnemies(stageConfig: StageConfig, playerAvgPower: number, stageId?: string): Enemy[] {
     const enemies: Enemy[] = [];
-    // 초반 스테이지는 적 파워를 낮게 설정
-    const chapterMultiplier = stageConfig.chapter === 1 ? 0.5 : 1;
-    const basePower = playerAvgPower * (1 + stageConfig.enemyPowerBonus / 100) * chapterMultiplier;
+
+    // [FIX] 완만한 난이도 곡선: 챕터별 점진적 상승
+    // Chapter 1: 0.5x, Chapter 2: 0.7x, Chapter 3: 0.85x, Chapter 4+: 1.0x
+    const chapterMultipliers: Record<number, number> = {
+        1: 0.5,
+        2: 0.7,
+        3: 0.85,
+        4: 0.95,
+        5: 1.0
+    };
+    const chapterMultiplier = chapterMultipliers[stageConfig.chapter] ?? 1.0;
+
+    // 스테이지 내 점진적 상승도 추가 (1-10 내에서 +0% ~ +20%)
+    const stageInChapterBonus = (stageConfig.stageInChapter - 1) * 0.02; // 2% per stage
+
+    const basePower = playerAvgPower * (1 + stageConfig.enemyPowerBonus / 100) * chapterMultiplier * (1 + stageInChapterBonus);
 
     // 스테이지별 고정 덱 패턴 사용
     const fixedDeck = stageId ? getStageEnemyDeck(stageId) : null;

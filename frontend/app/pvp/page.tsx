@@ -77,9 +77,9 @@ export default function PVPArenaPage() {
         const { checkAndResetDailyStats } = require('@/lib/game-state');
         const currentState = checkAndResetDailyStats();
 
-        // [NEW] AI 대전 시작 시 토큰 소모 (계단식: 50, 100, 150...)
+        // [FIX] AI 대전 고정 토큰 비용 (50 토큰)
         const aiMatchesToday = currentState.dailyStats?.aiMatchesToday || 0;
-        const tokenCost = (aiMatchesToday + 1) * 50;
+        const tokenCost = 50; // 고정 비용
 
         setIsStarting(true); // Lock
 
@@ -88,7 +88,7 @@ export default function PVPArenaPage() {
             if (tokens < tokenCost) {
                 showAlert({
                     title: '토큰 부족',
-                    message: `이번 대전을 시작하려면 ${tokenCost} 토큰이 필요합니다. (오늘 ${aiMatchesToday}회 진행됨)`,
+                    message: `AI 대전을 시작하려면 ${tokenCost} 토큰이 필요합니다.`,
                     type: 'error'
                 });
                 setIsStarting(false);
