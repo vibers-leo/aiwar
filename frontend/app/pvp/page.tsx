@@ -193,7 +193,7 @@ export default function PVPArenaPage() {
             id: 'double' as BattleMode,
             name: '두장 승부',
             nameEn: 'Two-Card Battle',
-            description: '6장 덱 - 2장씩 출전, 2선승제',
+            description: '6장 덱 - 5초 안에 1장 선택! 순발력 2선승제',
             icon: Users,
             color: 'from-indigo-500 to-violet-500',
             rounds: '2선승',

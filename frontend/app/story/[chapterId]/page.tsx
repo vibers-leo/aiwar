@@ -314,9 +314,9 @@ export default function ChapterDetailPage() {
                                                         {selectedStage.battleMode === 'double' && (
                                                             <>
                                                                 <p className="font-bold text-purple-400 text-lg mb-3">🎴 두장 승부 (Two-Card Battle)</p>
-                                                                <p className="flex items-center gap-2"><span className="w-1 h-1 bg-purple-500 rounded-full" /> 6장의 카드를 선택, 라운드마다 2장씩 출전합니다.</p>
-                                                                <p className="flex items-center gap-2"><span className="w-1 h-1 bg-purple-500 rounded-full" /> <b>2선승제</b>: 먼저 2승을 달성하면 승리!</p>
-                                                                <p className="flex items-center gap-2"><span className="w-1 h-1 bg-purple-500 rounded-full" /> 2장 조합의 시너지가 중요합니다.</p>
+                                                                <p className="flex items-center gap-2"><span className="w-1 h-1 bg-purple-500 rounded-full" /> 6장 선택 후 라운드마다 2장씩 출전합니다.</p>
+                                                                <p className="flex items-center gap-2"><span className="w-1 h-1 bg-purple-500 rounded-full" /> <b>⏱️ 5초 안에 1장을 선택</b>하여 최종 승부!</p>
+                                                                <p className="flex items-center gap-2"><span className="w-1 h-1 bg-purple-500 rounded-full" /> <b>2선승제</b>: 순발력 + 심리전의 조합</p>
                                                             </>
                                                         )}
                                                         {selectedStage.battleMode === 'strategy' && (
