@@ -104,6 +104,23 @@ export default function DialogueOverlay({
         };
     }, [isOpen, playSound, stopBGM]);
 
+    // Effect: ESC key to cancel
+    useEffect(() => {
+        if (!isOpen || !onCancel) return;
+
+        const handleKeyDown = (e: KeyboardEvent) => {
+            if (e.key === 'Escape') {
+                e.preventDefault();
+                playSound('click');
+                stopBGM();
+                onCancel();
+            }
+        };
+
+        window.addEventListener('keydown', handleKeyDown);
+        return () => window.removeEventListener('keydown', handleKeyDown);
+    }, [isOpen, onCancel, playSound, stopBGM]);
+
     // Effect 2: Typewriter Logic (No TTS)
     useEffect(() => {
         if (!isOpen) {
