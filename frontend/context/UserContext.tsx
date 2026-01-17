@@ -134,41 +134,33 @@ export function UserProvider({ children }: { children: React.ReactNode }) {
             return;
         }
 
-        console.log("🚀 [Auth] Initiating Secure Sign Out...");
+        console.log("🚀 [Auth] Initiating Fast Sign Out...");
         setIsLoggingOut(true); // Show overlay
         setShowSubscriptionWarning(false); // Hide warning modal
 
-        // [Secure Sync] Force save critical data before scorching earth
+        // [OPTIMIZED] Quick essential sync with SHORT timeout (800ms max)
         if (user?.uid) {
             try {
-                console.log("[Auth] Saving final state with timeout...");
+                console.log("[Auth] Quick sync before logout...");
                 const { saveQuestsToFirebase } = await import('@/lib/quest-system');
-                const { saveResearchToFirestore, saveStageProgressToFirestore } = await import('@/lib/firebase-db');
 
-                const syncPromise = Promise.all([
-                    saveQuestsToFirebase(user.uid, quests),
-                    research ? saveResearchToFirestore(research, user.uid) : Promise.resolve(),
-                    stageProgress ? saveStageProgressToFirestore(stageProgress, user.uid) : Promise.resolve()
-                ]);
-
-                // Max 1.5s for Context-level sync
+                // Only save quests (most critical) with very short timeout
                 await Promise.race([
-                    syncPromise,
-                    new Promise((_, reject) => setTimeout(() => reject(new Error('CONTEXT_SYNC_TIMEOUT')), 1500))
+                    saveQuestsToFirebase(user.uid, quests),
+                    new Promise((_, reject) => setTimeout(() => reject(new Error('QUICK_SYNC_TIMEOUT')), 800))
                 ]);
+                console.log("[Auth] Quick sync done");
             } catch (e: any) {
-                console.warn("[Auth] Pre-logout sync skipped or timed out:", e.message);
+                // Non-critical - proceed with logout
+                console.warn("[Auth] Quick sync skipped:", e.message);
             }
         }
 
-        // Use the shared "Scorched Earth" utility
+        // Use optimized logout utility (skips duplicate sync)
         const { performSecureLogout } = await import('@/lib/secure-logout');
+        await performSecureLogout(user?.uid, true); // skipDataSync = true
 
-        await performSecureLogout(user?.uid);
-
-        // The utility handles the redirect, but just in case logic falls through or utility fails silently (unlikely)
-        // we can force a backup redirect here if the utility promise resolves (which it shouldn't if it redirects)
-    }, [user?.uid, quests, research, stageProgress, subscriptions, showSubscriptionWarning]);
+    }, [user?.uid, quests, subscriptions, showSubscriptionWarning]);
 
 
     const initialSyncDone = useRef(false);

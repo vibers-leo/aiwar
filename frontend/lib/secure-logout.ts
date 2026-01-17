@@ -1,131 +1,166 @@
-
-import { saveUserProfile } from '@/lib/firebase-db'; // Ensure this matches user's actual import
-import { signOut } from 'firebase/auth'; // Direct Firebase Auth
-import { auth } from '@/lib/firebase'; // Direct Firebase Auth Instance
-
 /**
- * SCORCHED EARTH LOGOUT UTILITY
- * -----------------------------
- * This utility guarantees a complete, non-recoverable cleanup of the user session.
- * It follows a "Sync-Then-Destroy" protocol.
+ * FAST SECURE LOGOUT UTILITY
+ * --------------------------
+ * Optimized for speed: Redirect first, cleanup later.
+ * User sees instant logout, heavy cleanup happens in background.
  */
 
-// 1. Storage Nuke Helper
-async function nukeAllStorage() {
+import { signOut } from 'firebase/auth';
+import { auth } from '@/lib/firebase';
+
+// ============================================
+// FAST CLEANUP (Essential only - Blocking)
+// ============================================
+function fastCleanup() {
     if (typeof window === 'undefined') return;
 
-    console.log("🔥 [Scorched Earth] Initiating Storage Nuke...");
+    console.log("⚡ [Logout] Fast Cleanup...");
 
-    // A. Clear Local & Session Storage
+    // Clear critical session data only
+    localStorage.removeItem('auth-session');
     localStorage.removeItem('last_known_uid');
-    localStorage.clear();
+    localStorage.removeItem('gameState');
+    localStorage.removeItem('userProfile');
     sessionStorage.clear();
-    console.log("✅ Local/Session Storage Cleared (including UID metadata)");
 
-    // B. Clear Cookies
-    document.cookie.split(";").forEach((c) => {
-        document.cookie = c
-            .replace(/^ +/, "")
-            .replace(/=.*/, "=;expires=" + new Date().toUTCString() + ";path=/");
-    });
-    console.log("✅ Cookies Expired");
-
-    // C. Unregister Service Workers & Clear CacheStorage
-    if ('serviceWorker' in navigator) {
-        const registrations = await navigator.serviceWorker.getRegistrations();
-        for (const registration of registrations) {
-            await registration.unregister();
+    // Clear all game-related keys efficiently
+    const keysToRemove: string[] = [];
+    for (let i = 0; i < localStorage.length; i++) {
+        const key = localStorage.key(i);
+        if (key && (
+            key.startsWith('tutorial_') ||
+            key.startsWith('quest_') ||
+            key.startsWith('stage_') ||
+            key.startsWith('deck_') ||
+            key.startsWith('inventory_')
+        )) {
+            keysToRemove.push(key);
         }
-        if (registrations.length > 0) console.log("✅ Service Workers Unregistered");
     }
+    keysToRemove.forEach(key => localStorage.removeItem(key));
 
-    const cleanupTasks: Promise<any>[] = [];
-
-    if ('caches' in window) {
-        cleanupTasks.push((async () => {
-            try {
-                const keys = await caches.keys();
-                await Promise.all(keys.map(key => caches.delete(key)));
-                console.log(`✅ CacheStorage Cleared (${keys.length} caches)`);
-            } catch (e) {
-                console.warn("⚠️ CacheStorage cleanup failed:", e);
-            }
-        })());
-    }
-
-    // D. Delete IndexedDB (Firebase Persistence)
-    if (window.indexedDB && window.indexedDB.databases) {
-        cleanupTasks.push((async () => {
-            try {
-                const dbs = await window.indexedDB.databases();
-                for (const db of dbs) {
-                    if (db.name) {
-                        window.indexedDB.deleteDatabase(db.name);
-                        console.log(`🗑️ Deleted IndexedDB: ${db.name}`);
-                    }
-                }
-            } catch (e) {
-                console.warn("⚠️ IndexedDB cleanup failed (browser may block it):", e);
-            }
-        })());
-    }
-
-    await Promise.all(cleanupTasks);
+    console.log("✅ [Logout] Fast Cleanup Done");
 }
 
-// 2. The Main Logout Function
+// ============================================
+// DEFERRED CLEANUP (Heavy tasks - Non-blocking)
+// ============================================
+async function deferredCleanup() {
+    if (typeof window === 'undefined') return;
+
+    console.log("🧹 [Logout] Starting Deferred Cleanup...");
+
+    try {
+        // Clear cookies
+        document.cookie.split(";").forEach((c) => {
+            document.cookie = c
+                .replace(/^ +/, "")
+                .replace(/=.*/, "=;expires=" + new Date().toUTCString() + ";path=/");
+        });
+
+        // Unregister Service Workers (fire-and-forget)
+        if ('serviceWorker' in navigator) {
+            navigator.serviceWorker.getRegistrations().then(registrations => {
+                registrations.forEach(reg => reg.unregister());
+            }).catch(() => { });
+        }
+
+        // Clear CacheStorage (fire-and-forget)
+        if ('caches' in window) {
+            caches.keys().then(keys => {
+                keys.forEach(key => caches.delete(key));
+            }).catch(() => { });
+        }
+
+        // Delete IndexedDB - Optional, can be slow
+        // Only delete if user explicitly wants clean slate
+        // Commenting out for speed - Firebase handles its own cleanup on next login
+        /*
+        if (window.indexedDB?.databases) {
+            const dbs = await window.indexedDB.databases();
+            dbs.forEach(db => {
+                if (db.name) window.indexedDB.deleteDatabase(db.name);
+            });
+        }
+        */
+
+        console.log("✅ [Logout] Deferred Cleanup Complete");
+    } catch (e) {
+        console.warn("⚠️ [Logout] Deferred Cleanup Warning:", e);
+    }
+}
+
+// ============================================
+// MAIN LOGOUT FUNCTION (Optimized)
+// ============================================
 export async function performSecureLogout(
     userId?: string,
-    userState?: any // Optional: Pass current coin/exp state if Context isn't trusted
+    skipDataSync: boolean = false // If true, skip DB write (already done by caller)
 ) {
-    console.log("🚨 [Security] SECURE LOGOUT SEQUENCE STARTED");
+    console.log("🚀 [Logout] FAST SECURE LOGOUT STARTED");
+    const startTime = Date.now();
 
-    // Set a flag immediately so we know we are in a dying session
+    // STEP 1: Set pending logout flag immediately
     if (typeof window !== 'undefined') {
         localStorage.setItem('pending_logout', 'true');
     }
 
-    // STEP 1: LAST-GASP SYNC & API & FIREBASE (PARALLEL)
-    console.log("⚡ [Security] Initiating parallel logout sequence...");
-
-    // Timeout wrapper for sync
-    const syncWithTimeout = async () => {
-        if (!userId) return;
-        return Promise.race([
-            saveUserProfile({ lastLogoutAt: new Date() }, userId),
-            new Promise((_, reject) => setTimeout(() => reject(new Error('SYNC_TIMEOUT')), 1500))
-        ]).then(() => {
-            console.log("✅ [Security] Final Sync Response: OK");
-        }).catch(e => {
-            console.warn("⚠️ [Security] Final Sync skipped or timed out:", e.message);
-        });
-    };
-
+    // STEP 2: Firebase SignOut + API Logout (Parallel, max 500ms)
     const logoutTasks: Promise<any>[] = [
-        syncWithTimeout(),
-        fetch('/api/auth/logout', { method: 'POST' }).catch(() => { }), // API Logout
+        // Firebase SignOut
         (async () => {
             try {
                 if (auth) await signOut(auth);
-                console.log("✅ [Security] Firebase SignOut: OK");
+                console.log("✅ [Logout] Firebase SignOut OK");
             } catch (e) {
-                console.warn("Firebase SignOut Warning:", e);
+                console.warn("⚠️ [Logout] Firebase SignOut Warning:", e);
             }
-        })()
+        })(),
+        // API Logout (non-critical, fire and forget with timeout)
+        Promise.race([
+            fetch('/api/auth/logout', { method: 'POST' }).catch(() => { }),
+            new Promise(resolve => setTimeout(resolve, 500))
+        ])
     ];
 
     await Promise.all(logoutTasks);
 
-    // STEP 4: NUKE LOCAL DATA
-    localStorage.removeItem('auth-session');
-    localStorage.removeItem('last_known_uid');
-    await nukeAllStorage();
+    // STEP 3: Fast Cleanup (Essential only)
+    fastCleanup();
 
-    // [CRITICAL] Set the flag AFTER nukeAllStorage so it survives the clear()
+    // STEP 4: Set flag again after cleanup (survives localStorage.clear)
     localStorage.setItem('pending_logout', 'true');
 
-    // STEP 5: HARD REDIRECT
-    console.log("👋 [Security] Goodbye. Redirecting to Root...");
-    // Force hard refresh with href to clear memory cache
+    console.log(`⏱️ [Logout] Total Time: ${Date.now() - startTime}ms`);
+    console.log("👋 [Logout] Redirecting...");
+
+    // STEP 5: Redirect IMMEDIATELY
     window.location.href = '/?logout=success&t=' + Date.now();
+
+    // STEP 6: Deferred cleanup runs after redirect starts (non-blocking)
+    // This runs in the background while the page is unloading
+    setTimeout(() => deferredCleanup(), 0);
+}
+
+// ============================================
+// ULTRA-FAST LOGOUT (For button click - minimal)
+// ============================================
+export function performQuickLogout() {
+    console.log("⚡ [Logout] QUICK LOGOUT");
+
+    // Set flag
+    localStorage.setItem('pending_logout', 'true');
+
+    // Clear critical data synchronously
+    localStorage.removeItem('auth-session');
+    localStorage.removeItem('last_known_uid');
+    sessionStorage.clear();
+
+    // Firebase signout (fire and forget)
+    if (auth) {
+        signOut(auth).catch(() => { });
+    }
+
+    // Redirect immediately
+    window.location.href = '/';
 }

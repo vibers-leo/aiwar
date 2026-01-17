@@ -19,13 +19,8 @@ export default function SecureLogoutButton({ className, showText = true }: Secur
 
         setIsLoggingOut(true);
 
-        // Pass user ID to secure logout for final sync
-        await performSecureLogout(user?.uid, {
-            coins: profile?.coins,
-            tokens: profile?.tokens,
-            level: profile?.level
-            // Add other critical state if needed for the manual sync fallback in secure-logout
-        });
+        // Pass user ID to secure logout (skipDataSync = true since we don't have critical state here)
+        await performSecureLogout(user?.uid, true);
     };
 
     return (
