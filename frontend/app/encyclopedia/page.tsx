@@ -75,22 +75,34 @@ export default function EncyclopediaPage() {
         if (!userLoading && inventory) {
             const ownedIds = new Set<string>();
             inventory.forEach(card => {
-                // Add templateId
+                // Add templateId (primary match - same as CARD_DATABASE.id)
                 if (card.templateId) {
                     ownedIds.add(card.templateId);
+                    // Also add lowercase version for case-insensitive matching
+                    ownedIds.add(card.templateId.toLowerCase());
                 }
                 // Also add card.id in case templateId differs
                 if (card.id) {
+                    // Extract base templateId from instance IDs like "chatgpt-1_user_123456"
+                    const baseId = card.id.split('_')[0];
+                    ownedIds.add(baseId);
+                    ownedIds.add(baseId.toLowerCase());
                     ownedIds.add(card.id);
+                }
+                // For cards with aiFactionId
+                if ((card as any).aiFactionId) {
+                    ownedIds.add((card as any).aiFactionId);
+                    ownedIds.add((card as any).aiFactionId.toLowerCase());
                 }
                 // For commander cards, also check the name-based ID
                 if (card.name) {
                     const nameId = card.name.toLowerCase().replace(/\s+/g, '-');
                     ownedIds.add(nameId);
+                    ownedIds.add(card.name.toLowerCase());
                 }
             });
             setOwnedCardIds(ownedIds);
-            console.log('[Encyclopedia] Loaded owned cards:', ownedIds.size, 'from inventory of', inventory.length);
+            console.log('[Encyclopedia] Loaded owned card IDs:', ownedIds.size, 'from inventory of', inventory.length);
         }
     }, [inventory, userLoading]);
 
