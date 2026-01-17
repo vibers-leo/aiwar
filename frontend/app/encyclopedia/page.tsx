@@ -11,6 +11,7 @@ import { getCardName, getCardDescription } from '@/data/card-translations';
 import { cn } from '@/lib/utils';
 import { Lock, Play } from 'lucide-react';
 import { useTranslation } from '@/context/LanguageContext';
+import { useUser } from '@/context/UserContext';
 import FactionLoreModal from '@/components/FactionLoreModal';
 import { FACTION_LORE_DATA, FactionLore } from '@/lib/faction-lore';
 import { getFactionSubscription, SubscriptionTier } from '@/lib/faction-subscription-utils';
@@ -24,6 +25,7 @@ type SelectedItem =
 
 export default function EncyclopediaPage() {
     const { language } = useTranslation();
+    const { inventory, loading: userLoading } = useUser(); // [NEW] Use inventory from context
     const [activeTab, setActiveTab] = useState<Tab>('UNITS');
     const [ownedCardIds, setOwnedCardIds] = useState<Set<string>>(new Set());
     const [selectedItem, setSelectedItem] = useState<SelectedItem | null>(null);
@@ -69,11 +71,28 @@ export default function EncyclopediaPage() {
     const tr = translations[language as keyof typeof translations] || translations.ko;
 
     useEffect(() => {
-        // Load owned cards
-        const userCards = storage.get<CardType[]>('userCards', []);
-        const ownedIds = new Set(userCards.map(c => c.templateId));
-        setOwnedCardIds(ownedIds);
-    }, []);
+        // [UPDATED] Use inventory from UserContext instead of local storage
+        if (!userLoading && inventory) {
+            const ownedIds = new Set<string>();
+            inventory.forEach(card => {
+                // Add templateId
+                if (card.templateId) {
+                    ownedIds.add(card.templateId);
+                }
+                // Also add card.id in case templateId differs
+                if (card.id) {
+                    ownedIds.add(card.id);
+                }
+                // For commander cards, also check the name-based ID
+                if (card.name) {
+                    const nameId = card.name.toLowerCase().replace(/\s+/g, '-');
+                    ownedIds.add(nameId);
+                }
+            });
+            setOwnedCardIds(ownedIds);
+            console.log('[Encyclopedia] Loaded owned cards:', ownedIds.size, 'from inventory of', inventory.length);
+        }
+    }, [inventory, userLoading]);
 
     // 유닛 탭에서는 commander 카드 제외
     const unitCards = CARD_DATABASE.filter(card => card.rarity !== 'commander');
