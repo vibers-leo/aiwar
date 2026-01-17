@@ -276,6 +276,11 @@ export default function StageBattlePage() {
                     <DialogueOverlay
                         isOpen={phase === 'intro'}
                         onClose={startDeckSelection}
+                        onCancel={() => {
+                            // Navigate back to chapter map
+                            const chapterNum = storyStage.id.split('-')[0] || '1';
+                            router.push(`/story/chapter-${chapterNum}`);
+                        }}
                         dialogues={(() => {
                             const d = storyStage.enemy.dialogue;
                             const isKo = language === 'ko';

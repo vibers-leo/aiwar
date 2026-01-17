@@ -3,7 +3,7 @@
 
 import { useState, useEffect, useCallback, useRef } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { Shield, ChevronRight } from 'lucide-react';
+import { ChevronRight, X } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import Image from 'next/image';
 import { useGameSound } from '@/hooks/useGameSound';
@@ -12,6 +12,7 @@ import { EncryptedText } from '@/components/ui/aceternity/encrypted-text';
 interface DialogueOverlayProps {
     isOpen: boolean;
     onClose: () => void;
+    onCancel?: () => void; // NEW: Cancel/Back handler
     dialogues: string[];
     speakerName: string;
     characterImage?: string;
@@ -21,6 +22,7 @@ interface DialogueOverlayProps {
 export default function DialogueOverlay({
     isOpen,
     onClose,
+    onCancel,
     dialogues,
     speakerName,
     characterImage,
@@ -187,6 +189,16 @@ export default function DialogueOverlay({
                                     ? commanderImages.grok
                                     : characterImage;
 
+    // Handle cancel/back
+    const handleCancel = useCallback((e: React.MouseEvent) => {
+        e.stopPropagation();
+        playSound('click');
+        stopBGM();
+        if (onCancel) {
+            onCancel();
+        }
+    }, [onCancel, playSound, stopBGM]);
+
     return (
         <AnimatePresence>
             {isOpen && (
@@ -200,6 +212,20 @@ export default function DialogueOverlay({
                         exit={{ opacity: 0 }}
                         className="absolute inset-0 bg-black/60 backdrop-blur-sm"
                     />
+
+                    {/* Cancel/Back Button */}
+                    {onCancel && (
+                        <motion.button
+                            initial={{ opacity: 0, y: -20 }}
+                            animate={{ opacity: 1, y: 0 }}
+                            exit={{ opacity: 0, y: -20 }}
+                            onClick={handleCancel}
+                            className="absolute top-6 left-6 z-50 flex items-center gap-2 px-4 py-2 bg-black/60 hover:bg-red-500/20 border border-white/20 hover:border-red-500/50 rounded-lg text-white/70 hover:text-white transition-all group"
+                        >
+                            <X size={18} className="group-hover:text-red-400" />
+                            <span className="text-sm font-medium">나가기</span>
+                        </motion.button>
+                    )}
 
                     <div className="absolute inset-0 flex items-center justify-center overflow-hidden pointer-events-none">
                         <AnimatePresence mode="wait">
