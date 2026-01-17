@@ -515,11 +515,11 @@ export default function StageBattlePage() {
                                 </div>
                                 <div className="bg-white/5 p-4 rounded-2xl border border-white/10">
                                     <div className="text-cyan-400 font-bold mb-1 text-sm">RULE 02</div>
-                                    <div className="text-gray-200">배치가 끝나면 수정할 수 없으며, 순서대로 자동 대결이 진행됩니다.</div>
+                                    <div className="text-gray-200"><b className="text-cyan-300">3선승제</b>: 먼저 3승을 달성하는 쪽이 승리합니다.</div>
                                 </div>
                                 <div className="bg-white/5 p-4 rounded-2xl border border-white/10">
                                     <div className="text-cyan-400 font-bold mb-1 text-sm">RULE 03</div>
-                                    <div className="text-gray-200 text-sm opacity-80 italic">상대의 타입을 미리 읽고 유리한 상성을 배치하는 것이 핵심 승리 전략입니다.</div>
+                                    <div className="text-gray-200 text-sm opacity-80 italic">상대의 타입을 미리 읽고 유리한 상성을 배치하는 것이 핵심 전략입니다.</div>
                                 </div>
                             </div>
 

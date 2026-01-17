@@ -298,33 +298,33 @@ export default function ChapterDetailPage() {
                                                         {selectedStage.battleMode === 'sudden-death' && (
                                                             <>
                                                                 <p className="font-bold text-red-400 text-lg mb-3">⚡ 단판 승부 (Sudden Death)</p>
-                                                                <p className="flex items-center gap-2"><span className="w-1 h-1 bg-red-500 rounded-full" /> 5장의 카드를 배치하여 5라운드를 진행합니다.</p>
-                                                                <p className="flex items-center gap-2"><span className="w-1 h-1 bg-red-500 rounded-full" /> 먼저 3승을 달성하는 쪽이 승리합니다.</p>
-                                                                <p className="flex items-center gap-2"><span className="w-1 h-1 bg-red-500 rounded-full" /> 보스전에서는 신중한 배치가 중요합니다.</p>
+                                                                <p className="flex items-center gap-2"><span className="w-1 h-1 bg-red-500 rounded-full" /> 5장의 카드를 선택하고 출전 순서를 배치합니다.</p>
+                                                                <p className="flex items-center gap-2"><span className="w-1 h-1 bg-red-500 rounded-full" /> <b>1선승제</b>: 먼저 1승을 달성하면 즉시 승리!</p>
+                                                                <p className="flex items-center gap-2"><span className="w-1 h-1 bg-red-500 rounded-full" /> 첫 라운드 배치가 승패를 결정합니다.</p>
                                                             </>
                                                         )}
                                                         {selectedStage.battleMode === 'tactics' && (
                                                             <>
                                                                 <p className="font-bold text-blue-400 text-lg mb-3">🎯 전술 승부 (Tactical Duel)</p>
-                                                                <p className="flex items-center gap-2"><span className="w-1 h-1 bg-blue-500 rounded-full" /> 5장의 카드를 미리 1~5라운드에 배치합니다.</p>
-                                                                <p className="flex items-center gap-2"><span className="w-1 h-1 bg-blue-500 rounded-full" /> 배치 완료 후 수정이 불가능합니다.</p>
-                                                                <p className="flex items-center gap-2"><span className="w-1 h-1 bg-blue-500 rounded-full" /> 순서대로 자동 대결이 진행됩니다.</p>
+                                                                <p className="flex items-center gap-2"><span className="w-1 h-1 bg-blue-500 rounded-full" /> 5장의 카드를 1~5라운드에 미리 배치합니다.</p>
+                                                                <p className="flex items-center gap-2"><span className="w-1 h-1 bg-blue-500 rounded-full" /> <b>3선승제</b>: 먼저 3승을 달성하면 승리!</p>
+                                                                <p className="flex items-center gap-2"><span className="w-1 h-1 bg-blue-500 rounded-full" /> 상대 덱을 읽고 상성 배치가 핵심입니다.</p>
                                                             </>
                                                         )}
                                                         {selectedStage.battleMode === 'double' && (
                                                             <>
-                                                                <p className="font-bold text-purple-400 text-lg mb-3">🎴 2장 대결 (Two-Card Battle)</p>
-                                                                <p className="flex items-center gap-2"><span className="w-1 h-1 bg-purple-500 rounded-full" /> 한 라운드에 2장씩 동시에 카드를 선택합니다.</p>
-                                                                <p className="flex items-center gap-2"><span className="w-1 h-1 bg-purple-500 rounded-full" /> 총 6장의 카드로 3라운드가 진행됩니다.</p>
-                                                                <p className="flex items-center gap-2"><span className="w-1 h-1 bg-purple-500 rounded-full" /> 각 라운드의 합산 파워로 승부를 겨룹니다.</p>
+                                                                <p className="font-bold text-purple-400 text-lg mb-3">🎴 두장 승부 (Two-Card Battle)</p>
+                                                                <p className="flex items-center gap-2"><span className="w-1 h-1 bg-purple-500 rounded-full" /> 6장의 카드를 선택, 라운드마다 2장씩 출전합니다.</p>
+                                                                <p className="flex items-center gap-2"><span className="w-1 h-1 bg-purple-500 rounded-full" /> <b>2선승제</b>: 먼저 2승을 달성하면 승리!</p>
+                                                                <p className="flex items-center gap-2"><span className="w-1 h-1 bg-purple-500 rounded-full" /> 2장 조합의 시너지가 중요합니다.</p>
                                                             </>
                                                         )}
                                                         {selectedStage.battleMode === 'strategy' && (
                                                             <>
-                                                                <p className="font-bold text-orange-400 text-lg mb-3">🌪️ 전략 전투 (Strategy Battle)</p>
-                                                                <p className="flex items-center gap-2"><span className="w-1 h-1 bg-orange-500 rounded-full" /> 6장의 카드를 미리 배치합니다.</p>
-                                                                <p className="flex items-center gap-2"><span className="w-1 h-1 bg-orange-500 rounded-full" /> 적은 무작위 순서로 카드를 출전시킵니다.</p>
-                                                                <p className="flex items-center gap-2"><span className="w-1 h-1 bg-orange-500 rounded-full" /> 예측 불가능한 전투 흐름이 이어집니다.</p>
+                                                                <p className="font-bold text-orange-400 text-lg mb-3">🌪️ 전략 승부 (Strategy Battle)</p>
+                                                                <p className="flex items-center gap-2"><span className="w-1 h-1 bg-orange-500 rounded-full" /> 6장 (5장 + 히든카드 1장)을 배치합니다.</p>
+                                                                <p className="flex items-center gap-2"><span className="w-1 h-1 bg-orange-500 rounded-full" /> <b>승점 3점 선취</b>: 3라운드에서 2점 획득 가능!</p>
+                                                                <p className="flex items-center gap-2"><span className="w-1 h-1 bg-orange-500 rounded-full" /> 히든카드로 3라운드 역전을 노리세요.</p>
                                                             </>
                                                         )}
                                                     </div>
