@@ -160,11 +160,24 @@ export default function StageBattlePage() {
             const chapterNum = storyStage.id.split('-')[0] || '1';
             router.push(`/story/chapter-${chapterNum}`);
         } else {
-            // Defeat: Reset to intro to allow retry
-            setPhase('intro');
-            setBattleResult(null);
-            setSelectedHand([]);
-            setActiveBattleDeck([]);
+            // Defeat: Show result screen before retry
+            setBattleResult({
+                winner: 'opponent',
+                rounds: result.rounds.map(r => ({
+                    round: r.round,
+                    winner: r.winner === 'player' ? 'player' : r.winner === 'enemy' ? 'opponent' : 'draw',
+                    playerCard: r.playerCard,
+                    opponentCard: r.enemyCard || r.opponentCard,
+                    playerPower: r.playerPower,
+                    opponentPower: r.enemyPower || r.opponentPower,
+                    playerType: (r.playerCard?.type || 'EFFICIENCY').toLowerCase() as any,
+                    opponentType: ((r.enemyCard || r.opponentCard)?.type || 'EFFICIENCY').toLowerCase() as any,
+                })),
+                playerWins: pWins,
+                opponentWins: eWins,
+                rewards: { coins: 0, experience: 0, ratingChange: 0 }
+            });
+            setPhase('result'); // Show defeat result screen
         }
     };
 
@@ -394,8 +407,92 @@ export default function StageBattlePage() {
                 )}
 
 
-                {/* 5. Result (PVP Sync Aesthetic) */}
-                {/* REMOVED: Custom Result Overlay. Using BattleArena's internal manual result instead. */}
+                {/* 6. Result Screen (Defeat) */}
+                {phase === 'result' && battleResult && (
+                    <motion.div
+                        initial={{ opacity: 0, scale: 0.9 }}
+                        animate={{ opacity: 1, scale: 1 }}
+                        className="min-h-screen flex flex-col items-center justify-center py-12"
+                    >
+                        <div className="max-w-lg w-full bg-zinc-900/90 border border-red-500/50 rounded-3xl p-8 shadow-[0_0_50px_rgba(239,68,68,0.2)] text-center">
+                            {/* Defeat Title */}
+                            <motion.div
+                                initial={{ y: -20, opacity: 0 }}
+                                animate={{ y: 0, opacity: 1 }}
+                                transition={{ delay: 0.2 }}
+                            >
+                                <div className="text-red-400 text-xs font-black orbitron tracking-[0.3em] mb-2 uppercase">
+                                    MISSION FAILED
+                                </div>
+                                <h2 className="text-4xl font-black text-red-500 mb-4 orbitron">
+                                    패배
+                                </h2>
+                            </motion.div>
+
+                            {/* Score */}
+                            <motion.div
+                                initial={{ scale: 0 }}
+                                animate={{ scale: 1 }}
+                                transition={{ delay: 0.4, type: 'spring' }}
+                                className="flex items-center justify-center gap-8 my-8"
+                            >
+                                <div className="text-center">
+                                    <div className="text-5xl font-black text-cyan-400">{battleResult.playerWins}</div>
+                                    <div className="text-sm text-gray-400 mt-1">승리</div>
+                                </div>
+                                <div className="text-3xl text-gray-600 font-bold">vs</div>
+                                <div className="text-center">
+                                    <div className="text-5xl font-black text-red-500">{battleResult.opponentWins}</div>
+                                    <div className="text-sm text-gray-400 mt-1">패배</div>
+                                </div>
+                            </motion.div>
+
+                            {/* Enemy Quote */}
+                            <motion.div
+                                initial={{ opacity: 0 }}
+                                animate={{ opacity: 1 }}
+                                transition={{ delay: 0.6 }}
+                                className="bg-red-500/10 border border-red-500/30 rounded-xl p-4 mb-8"
+                            >
+                                <p className="text-gray-300 italic">
+                                    "{language === 'ko' ? storyStage?.enemy.dialogue.win_ko : storyStage?.enemy.dialogue.win}"
+                                </p>
+                            </motion.div>
+
+                            {/* Action Buttons */}
+                            <motion.div
+                                initial={{ y: 20, opacity: 0 }}
+                                animate={{ y: 0, opacity: 1 }}
+                                transition={{ delay: 0.8 }}
+                                className="flex gap-4 justify-center"
+                            >
+                                <Button
+                                    onClick={() => {
+                                        setPhase('intro');
+                                        setBattleResult(null);
+                                        setSelectedHand([]);
+                                        setActiveBattleDeck([]);
+                                        setBattleRounds([]);
+                                    }}
+                                    className="px-8 py-3 bg-cyan-500 hover:bg-cyan-400 text-black font-bold rounded-xl"
+                                >
+                                    <ArrowLeft className="w-4 h-4 mr-2" />
+                                    재도전
+                                </Button>
+                                <Button
+                                    onClick={() => {
+                                        const chapterNum = storyStage?.id.split('-')[0] || '1';
+                                        router.push(`/story/chapter-${chapterNum}`);
+                                    }}
+                                    variant="ghost"
+                                    className="px-8 py-3 border border-gray-600 text-gray-400 hover:text-white hover:border-gray-400 rounded-xl"
+                                >
+                                    포기
+                                </Button>
+                            </motion.div>
+                        </div>
+                    </motion.div>
+                )}
             </div>
 
             {/* Tactics Tutorial Overlay */}
