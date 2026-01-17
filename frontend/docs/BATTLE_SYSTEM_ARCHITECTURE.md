@@ -1,7 +1,7 @@
 # AI War 전투 시스템 아키텍처
 
 > **최종 업데이트**: 2026-01-17  
-> **상태**: ✅ 동기화 완료
+> **상태**: ✅ 동기화 완료 (PVP 스타일 통합)
 
 ## 📊 전투 UI 통합 현황
 
@@ -9,8 +9,9 @@
 
 | 컴포넌트 | 경로 | 역할 | 사용처 |
 |---------|------|-----|-------|
-| **BattleArena** | `components/BattleArena.tsx` | 메인 전투 엔진 | 스토리, PVP, 실시간 PVP |
+| **UnifiedBattleScene** ⭐ | `components/battle/UnifiedBattleScene.tsx` | PVP 스타일 통합 전투 엔진 | 스토리 모드, PVP |
 | **DoubleBattleArena** | `components/battle/DoubleBattleArena.tsx` | 2장 대결 모드 | 스토리 (double 모드) |
+| **BattleArena** | `components/BattleArena.tsx` | 레거시 전투 엔진 | 실시간 PVP (추후 통합 예정) |
 
 ---
 

@@ -8,14 +8,14 @@ import { InventoryCard } from '@/lib/inventory-system';
 import { StoryStage, getStoryStage, completeStage } from '@/lib/story-system';
 import { generateEnemies, StageConfig } from '@/lib/stage-system';
 import { Button } from '@/components/ui/custom/Button';
-import { applyBattleResult, BattleResult, BattleParticipant, generateOpponentDeck } from '@/lib/pvp-battle-system';
+import { applyBattleResult, BattleResult, BattleParticipant, generateOpponentDeck, simulateBattle } from '@/lib/pvp-battle-system';
 import { useTranslation } from '@/context/LanguageContext';
 import BattleDeckSelection from '@/components/battle/BattleDeckSelection';
 import { useUser } from '@/context/UserContext';
 import { Shield, ArrowLeft } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { BackgroundBeams } from '@/components/ui/aceternity/background-beams';
-import { BattleArena } from '@/components/BattleArena';
+import UnifiedBattleScene, { BattleRoundData } from '@/components/battle/UnifiedBattleScene';
 import DialogueOverlay from '@/components/story/DialogueOverlay';
 import OpponentDeckReveal from '@/components/battle/OpponentDeckReveal';
 import CardPlacementBoard, { RoundPlacement } from '@/components/battle/CardPlacementBoard';
@@ -54,6 +54,7 @@ export default function StageBattlePage() {
     const [battleResult, setBattleResult] = useState<BattleResult | null>(null);
     const [activeBattleDeck, setActiveBattleDeck] = useState<Card[]>([]);
     const [showTacticsTutorial, setShowTacticsTutorial] = useState(false);
+    const [battleRounds, setBattleRounds] = useState<BattleRoundData[]>([]); // NEW: Pre-calculated battle rounds
 
 
     useEffect(() => {
@@ -191,34 +192,53 @@ export default function StageBattlePage() {
         setPhase('placement');
     };
 
-    // NEW: Handle placement completion
+    // NEW: Handle placement completion - Now pre-calculates battle results
     const handlePlacementComplete = (placement: RoundPlacement) => {
         if (!storyStage) return;
         setCardPlacement(placement);
 
-        // Convert placement to ordered array for BattleArena
-        const orderedDeck: Card[] = [];
-        const orderIndices: number[] = [];
-
-        // Helper to find index in selectedHand
+        // Get card order from placement
         const getIdx = (card: any) => selectedHand.findIndex(c => c.id === card?.id);
+        const placementRounds = [placement.round1, placement.round2, placement.round3, placement.round4, placement.round5].filter(Boolean);
+        const playerOrder = placementRounds.map(r => getIdx(r.main)).filter(idx => idx !== -1);
 
         if (storyStage.battleMode === 'double') {
             // For DoubleBattleArena, we pass the full deck
             setActiveBattleDeck(selectedHand);
+            setPhase('battle');
         } else {
-            // For BattleArena, we can pass the ordered deck or indices
-            // Let's pass the selectedHand as playerDeck and use initialPlacement
-            // But verify how BattleArena handles it. 
-            // Actually, BattleArena.tsx uses selectedOrder to index into playerDeck.
-            const rounds = [placement.round1, placement.round2, placement.round3, placement.round4, placement.round5].filter(Boolean);
-            const indices = rounds.map(r => getIdx(r.main));
+            // NEW: Pre-calculate battle using simulateBattle
+            const player: BattleParticipant = {
+                name: '플레이어',
+                level: level || 1,
+                deck: selectedHand,
+                cardOrder: playerOrder.length > 0 ? playerOrder : [0, 1, 2, 3, 4]
+            };
 
+            const opponent: BattleParticipant = {
+                name: language === 'ko' ? storyStage.enemy.name_ko : storyStage.enemy.name,
+                level: storyStage.step,
+                deck: enemies,
+                cardOrder: [0, 1, 2, 3, 4] // Enemy uses default order
+            };
+
+            const result = simulateBattle(player, opponent, storyStage.battleMode as any || 'tactics');
+
+            // Convert to BattleRoundData format
+            const rounds: BattleRoundData[] = result.rounds.map(r => ({
+                round: typeof r.round === 'string' ? parseInt(r.round) : r.round,
+                playerCard: r.playerCard,
+                opponentCard: r.opponentCard,
+                winner: r.winner,
+                playerPower: r.playerPower || r.playerCard.stats?.totalPower || 0,
+                opponentPower: r.opponentPower || r.opponentCard.stats?.totalPower || 0,
+                reason: undefined
+            }));
+
+            setBattleRounds(rounds);
             setActiveBattleDeck(selectedHand);
-            // We'll pass indices via a state or directly to BattleArena props
+            setPhase('battle');
         }
-
-        setPhase('battle');
     };
 
 
@@ -336,7 +356,7 @@ export default function StageBattlePage() {
                     />
                 )}
 
-                {/* 5. Battle Animation (Unified BattleArena) */}
+                {/* 5. Battle Animation (Unified PVP Style) */}
                 {phase === 'battle' && (
                     storyStage.battleMode === 'double' ? (
                         <DoubleBattleArena
@@ -350,30 +370,25 @@ export default function StageBattlePage() {
                             })}
                         />
                     ) : (
-                        <BattleArena
-                            playerDeck={selectedHand}
-                            enemyDeck={enemies}
-                            opponent={{
-                                name: language === 'ko' ? storyStage.enemy.name_ko : storyStage.enemy.name,
-                                level: storyStage.step
-                            }}
-                            onFinish={handleBattleFinish}
-                            title={language === 'ko' ? storyStage.title_ko : storyStage.title}
-                            battleMode={storyStage.battleMode as any}
-                            enemySelectionMode={storyStage.battleMode === 'strategy' ? 'random' : 'ordered'}
-                            autoStartBattle={true}
-                            initialPlacement={(() => {
-                                if (!cardPlacement) return undefined;
-                                const getIdx = (card: any) => selectedHand.findIndex(c => c.id === card?.id);
-                                const rounds = [
-                                    cardPlacement.round1.main,
-                                    cardPlacement.round2.main,
-                                    cardPlacement.round3.main,
-                                    cardPlacement.round4.main,
-                                    cardPlacement.round5.main
-                                ].filter(Boolean).map(getIdx);
-                                return rounds;
-                            })()}
+                        <UnifiedBattleScene
+                            rounds={battleRounds}
+                            onBattleComplete={(res) => handleBattleFinish({
+                                isWin: res.isWin,
+                                playerWins: res.playerWins,
+                                enemyWins: res.enemyWins,
+                                rounds: res.rounds.map(r => ({
+                                    round: r.round,
+                                    playerCard: r.playerCard,
+                                    enemyCard: r.opponentCard,
+                                    winner: r.winner === 'player' ? 'player' : r.winner === 'opponent' ? 'enemy' : 'draw',
+                                    playerPower: r.playerPower,
+                                    enemyPower: r.opponentPower,
+                                    reason: r.reason || ''
+                                }))
+                            })}
+                            playerLabel="내 카드"
+                            opponentLabel={language === 'ko' ? storyStage.enemy.name_ko : storyStage.enemy.name}
+                            autoStart={true}
                         />
                     )
                 )}
