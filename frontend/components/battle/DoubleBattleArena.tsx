@@ -47,7 +47,35 @@ export default function DoubleBattleArena({
     const [selectedEnemyCard, setSelectedEnemyCard] = useState<Card | null>(null);
     const [roundWinner, setRoundWinner] = useState<'player' | 'enemy' | 'draw' | null>(null);
 
+    // [NEW] 5초 타이머 (순발력 요소)
+    const [selectionTimer, setSelectionTimer] = useState(5);
+    const SELECTION_TIME_LIMIT = 5; // 5초 제한
+
     const roundCards = getRoundCards(currentRound);
+
+    // [NEW] 5초 타이머 효과
+    useEffect(() => {
+        if (phase !== 'selection') {
+            setSelectionTimer(SELECTION_TIME_LIMIT);
+            return;
+        }
+
+        if (selectionTimer <= 0) {
+            // 시간 초과 - 랜덤 카드 자동 선택
+            const randomIndex = Math.floor(Math.random() * 2);
+            const autoSelectedCard = roundCards.player[randomIndex];
+            if (autoSelectedCard) {
+                handleCardSelect(autoSelectedCard);
+            }
+            return;
+        }
+
+        const timer = setInterval(() => {
+            setSelectionTimer(prev => prev - 1);
+        }, 1000);
+
+        return () => clearInterval(timer);
+    }, [phase, selectionTimer, roundCards]);
 
     // 카드 선택 처리
     const handleCardSelect = (card: Card) => {
@@ -137,10 +165,34 @@ export default function DoubleBattleArena({
                     className="w-full max-w-4xl"
                 >
                     <div className="bg-white/5 border border-cyan-500/30 rounded-2xl p-8 mb-8">
-                        <h2 className="text-xl font-bold text-cyan-400 mb-4 flex items-center gap-2">
-                            <Swords size={20} />
-                            출전 카드를 선택하세요 (2장 중 1장)
-                        </h2>
+                        {/* 5초 타이머 UI */}
+                        <div className="flex items-center justify-between mb-6">
+                            <h2 className="text-xl font-bold text-cyan-400 flex items-center gap-2">
+                                <Swords size={20} />
+                                출전 카드를 선택하세요!
+                            </h2>
+                            <motion.div
+                                animate={{
+                                    scale: selectionTimer <= 2 ? [1, 1.2, 1] : 1,
+                                    color: selectionTimer <= 2 ? '#ef4444' : selectionTimer <= 3 ? '#f59e0b' : '#22d3ee'
+                                }}
+                                transition={{ repeat: selectionTimer <= 2 ? Infinity : 0, duration: 0.5 }}
+                                className="flex items-center gap-2 text-3xl font-black orbitron"
+                            >
+                                <span className="text-sm text-gray-400">⏱️</span>
+                                <span>{selectionTimer}초</span>
+                            </motion.div>
+                        </div>
+                        {/* 진행 바 */}
+                        <div className="w-full h-2 bg-gray-800 rounded-full mb-6 overflow-hidden">
+                            <motion.div
+                                initial={{ width: '100%' }}
+                                animate={{ width: `${(selectionTimer / SELECTION_TIME_LIMIT) * 100}%` }}
+                                className={`h-full rounded-full ${selectionTimer <= 2 ? 'bg-red-500' :
+                                        selectionTimer <= 3 ? 'bg-amber-500' : 'bg-cyan-500'
+                                    }`}
+                            />
+                        </div>
                         <div className="grid grid-cols-2 gap-6">
                             {roundCards.player.map((card, index) => (
                                 <motion.div
