@@ -1,12 +1,15 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, useEffect, useCallback, useRef } from 'react';
 import { motion } from 'framer-motion';
 import { cn } from '@/lib/utils';
 import RoundPlacementSlot from './RoundPlacementSlot';
 import { BattleMode } from '@/lib/pvp-battle-system';
 import { getTypeIcon, getTypeColor } from '@/lib/type-system';
-import { RefreshCcw, Wand2, Trash2, Swords, ArrowRight, AlertTriangle } from 'lucide-react';
+import { RefreshCcw, Wand2, Trash2, Swords, ArrowRight, AlertTriangle, Clock } from 'lucide-react';
+
+// 배치 제한 시간 (초)
+const PLACEMENT_TIME_LIMIT = 15;
 
 interface CardPlacementBoardProps {
     selectedCards: any[];
@@ -26,6 +29,11 @@ export interface RoundPlacement {
 
 export default function CardPlacementBoard({ selectedCards, onPlacementComplete, onCancel, battleMode = 'tactics', opponentDeck = [] }: CardPlacementBoardProps) {
     const hasHiddenSlots = battleMode === 'strategy';
+
+    // ⏱️ Timer State (15초 카운트다운)
+    const [timeRemaining, setTimeRemaining] = useState(PLACEMENT_TIME_LIMIT);
+    const [isTimerExpired, setIsTimerExpired] = useState(false);
+    const hasAutoCompletedRef = useRef(false);
 
     const [placement, setPlacement] = useState<{
         round1: any | null;
@@ -58,6 +66,95 @@ export default function CardPlacementBoard({ selectedCards, onPlacementComplete,
     });
 
     const [draggingCard, setDraggingCard] = useState<any | null>(null);
+
+    // ⏱️ Countdown Timer Effect
+    useEffect(() => {
+        if (timeRemaining <= 0 || isTimerExpired) return;
+
+        const timer = setInterval(() => {
+            setTimeRemaining(prev => {
+                if (prev <= 1) {
+                    clearInterval(timer);
+                    setIsTimerExpired(true);
+                    return 0;
+                }
+                return prev - 1;
+            });
+        }, 1000);
+
+        return () => clearInterval(timer);
+    }, [timeRemaining, isTimerExpired]);
+
+    // ⏱️ Auto-Complete when timer expires
+    useEffect(() => {
+        if (isTimerExpired && !hasAutoCompletedRef.current) {
+            hasAutoCompletedRef.current = true;
+
+            // 자동 배치 후 배틀 시작
+            setTimeout(() => {
+                handleAutoFillAndStart();
+            }, 500);
+        }
+    }, [isTimerExpired]);
+
+    // ⏱️ Auto-fill remaining slots and start battle
+    const handleAutoFillAndStart = useCallback(() => {
+        // 먼저 자동 배치
+        handleAutoFill();
+
+        // 잠시 후 배틀 시작 (애니메이션 시간 고려)
+        setTimeout(() => {
+            // 배치 완료 여부와 관계없이 강제 시작 (빈 슬롯은 자동 채움)
+            forceCompleteAndStart();
+        }, 800);
+    }, [placement, selectedCards]);
+
+    // 강제 완료 및 시작 (타임아웃 시)
+    const forceCompleteAndStart = () => {
+        // 현재 배치 상태에서 빈 슬롯 채우기
+        const available = getAvailableCards();
+        const shuffled = [...available].sort(() => Math.random() - 0.5);
+
+        let finalPlacement = { ...placement };
+        let shuffleIdx = 0;
+
+        // 빈 메인 슬롯 채우기
+        const mainSlots = battleMode === 'double'
+            ? ['round1', 'round2Main', 'round3Main']
+            : ['round1', 'round2Main', 'round3Main', 'round4Main', 'round5'];
+
+        mainSlots.forEach(slot => {
+            if (!finalPlacement[slot as keyof typeof placement] && shuffled[shuffleIdx]) {
+                finalPlacement[slot as keyof typeof placement] = shuffled[shuffleIdx++];
+            }
+        });
+
+        // 히든 슬롯 채우기 (필요시)
+        if (battleMode === 'double') {
+            ['round1Hidden', 'round2Hidden', 'round3Hidden'].forEach(slot => {
+                if (!finalPlacement[slot as keyof typeof placement] && shuffled[shuffleIdx]) {
+                    finalPlacement[slot as keyof typeof placement] = shuffled[shuffleIdx++];
+                }
+            });
+        } else if (battleMode === 'strategy' && !finalPlacement.round3Hidden) {
+            // Ambush 모드: 가장 강한 카드를 히든으로
+            const strongest = selectedCards.reduce((prev, curr) =>
+                (prev.stats?.totalPower || 0) > (curr.stats?.totalPower || 0) ? prev : curr
+            );
+            finalPlacement.round3Hidden = strongest;
+        }
+
+        // 최종 배치 생성 및 시작
+        const result: RoundPlacement = {
+            round1: { main: finalPlacement.round1 || selectedCards[0], hidden: finalPlacement.round1Hidden || undefined },
+            round2: { main: finalPlacement.round2Main || selectedCards[1], hidden: finalPlacement.round2Hidden || undefined },
+            round3: { main: finalPlacement.round3Main || selectedCards[2], hidden: finalPlacement.round3Hidden || undefined },
+            round4: { main: finalPlacement.round4Main || selectedCards[3], hidden: undefined },
+            round5: { main: finalPlacement.round5 || selectedCards[4], hidden: undefined },
+        };
+
+        onPlacementComplete(result);
+    };
 
     // Get cards that are still available in the pool
     const getAvailableCards = () => {
@@ -416,8 +513,86 @@ export default function CardPlacementBoard({ selectedCards, onPlacementComplete,
 
     const availableCards = getAvailableCards();
 
+    // 타이머 색상 (시간에 따라 변화)
+    const getTimerColor = () => {
+        if (timeRemaining <= 3) return 'text-red-500';
+        if (timeRemaining <= 7) return 'text-amber-400';
+        return 'text-cyan-400';
+    };
+
+    const timerProgress = (timeRemaining / PLACEMENT_TIME_LIMIT) * 100;
+
     return (
         <div className="w-full h-[calc(100vh-80px)] flex flex-col overflow-hidden relative">
+            {/* ⏱️ Timer Overlay - 화면 우측 상단 */}
+            <motion.div
+                className="absolute top-4 right-4 z-50 flex items-center gap-3 bg-black/80 backdrop-blur-xl border border-white/20 rounded-2xl px-4 py-2 shadow-2xl"
+                initial={{ opacity: 0, x: 50 }}
+                animate={{ opacity: 1, x: 0 }}
+                transition={{ delay: 0.3 }}
+            >
+                {/* Circular Progress */}
+                <div className="relative w-12 h-12">
+                    <svg className="w-12 h-12 transform -rotate-90">
+                        {/* Background Circle */}
+                        <circle
+                            cx="24"
+                            cy="24"
+                            r="20"
+                            stroke="currentColor"
+                            strokeWidth="3"
+                            fill="none"
+                            className="text-gray-700"
+                        />
+                        {/* Progress Circle */}
+                        <motion.circle
+                            cx="24"
+                            cy="24"
+                            r="20"
+                            stroke="currentColor"
+                            strokeWidth="3"
+                            fill="none"
+                            className={getTimerColor()}
+                            strokeDasharray={125.6}
+                            strokeDashoffset={125.6 - (125.6 * timerProgress / 100)}
+                            strokeLinecap="round"
+                            animate={{
+                                strokeDashoffset: 125.6 - (125.6 * timerProgress / 100)
+                            }}
+                            transition={{ duration: 0.3 }}
+                        />
+                    </svg>
+                    {/* Center Time */}
+                    <div className="absolute inset-0 flex items-center justify-center">
+                        <motion.span
+                            className={cn("text-lg font-black orbitron", getTimerColor())}
+                            animate={timeRemaining <= 5 ? { scale: [1, 1.2, 1] } : {}}
+                            transition={{ repeat: Infinity, duration: 0.5 }}
+                        >
+                            {timeRemaining}
+                        </motion.span>
+                    </div>
+                </div>
+
+                {/* Timer Label */}
+                <div className="flex flex-col">
+                    <span className="text-[10px] text-gray-400 font-mono uppercase tracking-wider">배치 시간</span>
+                    <span className={cn("text-xs font-bold", timeRemaining <= 5 ? 'text-red-400 animate-pulse' : 'text-white/60')}>
+                        {timeRemaining <= 5 ? '서두르세요!' : '남은 시간'}
+                    </span>
+                </div>
+
+                {/* Clock Icon with Pulse */}
+                {timeRemaining <= 5 && (
+                    <motion.div
+                        animate={{ scale: [1, 1.3, 1], opacity: [1, 0.5, 1] }}
+                        transition={{ repeat: Infinity, duration: 0.5 }}
+                    >
+                        <Clock className="text-red-500" size={20} />
+                    </motion.div>
+                )}
+            </motion.div>
+
             {/* Compact Header */}
             <div className="shrink-0 pt-3 pb-1 text-center relative z-10">
                 <h2 className="text-2xl font-black text-white italic tracking-tighter flex items-center justify-center gap-2">
@@ -430,6 +605,29 @@ export default function CardPlacementBoard({ selectedCards, onPlacementComplete,
                     </span>
                 </h2>
             </div>
+
+            {/* ⏱️ Time Expired Overlay */}
+            {isTimerExpired && (
+                <motion.div
+                    initial={{ opacity: 0 }}
+                    animate={{ opacity: 1 }}
+                    className="absolute inset-0 z-[100] bg-black/90 flex items-center justify-center"
+                >
+                    <motion.div
+                        initial={{ scale: 0.5, opacity: 0 }}
+                        animate={{ scale: 1, opacity: 1 }}
+                        className="text-center"
+                    >
+                        <motion.div
+                            animate={{ rotate: 360 }}
+                            transition={{ repeat: Infinity, duration: 2, ease: 'linear' }}
+                            className="w-16 h-16 mx-auto mb-4 border-4 border-cyan-500/30 border-t-cyan-500 rounded-full"
+                        />
+                        <div className="text-2xl font-black text-white orbitron">자동 배치 중...</div>
+                        <div className="text-sm text-gray-400 mt-2">시간이 만료되어 자동으로 카드를 배치합니다</div>
+                    </motion.div>
+                </motion.div>
+            )}
 
             {/* Main Content Area */}
             <div className="flex-1 flex flex-col justify-center items-center gap-1 min-h-0 px-4 py-2">
