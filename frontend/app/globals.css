@@ -3,6 +3,71 @@
 @tailwind components;
 @tailwind utilities;
 
+/* ================= 🚀 Performance & Accessibility Optimizations ================= */
+
+/* Color Scheme - tells browser we prefer dark mode */
+:root {
+  color-scheme: dark;
+}
+
+/* 🎯 Reduced Motion - Respect user's motion preferences */
+@media (prefers-reduced-motion: reduce) {
+
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+    scroll-behavior: auto !important;
+  }
+}
+
+/* 🎯 Focus States - Clear keyboard navigation */
+:focus {
+  outline: none;
+}
+
+:focus-visible {
+  outline: 2px solid var(--primary-blue, #00D9FF);
+  outline-offset: 2px;
+  border-radius: 4px;
+}
+
+/* Interactive elements focus */
+button:focus-visible,
+a:focus-visible,
+input:focus-visible,
+select:focus-visible,
+textarea:focus-visible,
+[role="button"]:focus-visible {
+  outline: 2px solid var(--primary-blue, #00D9FF);
+  outline-offset: 2px;
+  box-shadow: 0 0 0 4px rgba(0, 217, 255, 0.2);
+}
+
+/* 🎯 Content Visibility - Virtualization for long lists */
+.content-visibility-auto {
+  content-visibility: auto;
+  contain-intrinsic-size: 0 200px;
+}
+
+.card-list-item {
+  content-visibility: auto;
+  contain-intrinsic-size: 0 240px;
+}
+
+/* 🎯 GPU Acceleration - Will-change for animated elements */
+.will-change-transform {
+  will-change: transform;
+}
+
+.will-change-opacity {
+  will-change: opacity;
+}
+
+/* ================= Global Styles ================= */
+
 /* 전역 스타일 */
 html,
 body {

@@ -26,6 +26,20 @@ const geistMono = Geist_Mono({
 export const metadata: Metadata = {
   title: "AI WAR : 전쟁의 서막 | 시즌1",
   description: "2030년의 미래를 바꿀 AI 카드 전략 게임 AI WAR. 20개 AI 군단을 모아 최강의 시너지로 전쟁의 서막을 열어보세요!",
+  keywords: "AI, 카드게임, 전략게임, AI WAR, 턴제, GPT, Gemini, Claude",
+  openGraph: {
+    title: "AI WAR : 전쟁의 서막",
+    description: "20개 AI 군단으로 펼치는 전략 카드 배틀",
+    type: "website",
+  },
+  // Preconnect hints for faster resource loading
+  other: {
+    "link": [
+      { rel: "preconnect", href: "https://firebasestorage.googleapis.com" },
+      { rel: "preconnect", href: "https://firestore.googleapis.com" },
+      { rel: "dns-prefetch", href: "https://firebasestorage.googleapis.com" },
+    ].map(l => `<${l.href}>; rel=${l.rel}`).join(", ")
+  }
 };
 
 export const viewport = {
@@ -33,6 +47,7 @@ export const viewport = {
   initialScale: 1,
   maximumScale: 1,
   userScalable: false,
+  themeColor: '#0a0a0a', // [NEW] Theme color for mobile browser
 }; // [NEW] Mobile optimization
 
 export default function RootLayout({

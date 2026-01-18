@@ -325,8 +325,8 @@ export default function MyCardsPage() {
                             key={card.instanceId}
                             initial={{ opacity: 0, y: 20 }}
                             animate={{ opacity: 1, y: 0 }}
-                            transition={{ delay: i * 0.02 }}
-                            className="cursor-pointer"
+                            transition={{ delay: Math.min(i * 0.02, 0.3) }} // Cap delay for large lists
+                            className="cursor-pointer card-list-item" // Added content-visibility class
                             onClick={() => {
                                 if (isManageMode) {
                                     const isSelected = tempMainDeck.find(c => c.instanceId === card.instanceId);
