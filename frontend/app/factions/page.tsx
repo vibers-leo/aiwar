@@ -7,12 +7,13 @@ import aiFactionsData from '@/data/ai-factions.json';
 import { cn } from '@/lib/utils';
 import { useUserProfile } from '@/hooks/useUserProfile';
 import { useAlert } from '@/context/AlertContext';
-import { Info, X, Check, Crown, Zap, Clock, Infinity, Shield, Battery } from 'lucide-react';
+import { Info, X, Check, Crown, Zap, Clock, Infinity, Shield, Battery, Coins, Sparkles, ChevronDown, ChevronUp } from 'lucide-react';
 import FactionLoreModal from '@/components/FactionLoreModal';
 import { FACTION_LORE_DATA, FactionLore } from '@/lib/faction-lore';
 import { getCardCharacterImage } from '@/lib/card-images';
 import { useFirebase } from '@/components/FirebaseProvider';
-import SubscriptionStatusPanel from '@/components/SubscriptionStatusPanel';
+import { useUser } from '@/context/UserContext';
+import { motion, AnimatePresence } from 'framer-motion';
 import {
     getSubscribedFactions,
     subscribeFaction,
@@ -22,22 +23,25 @@ import {
     TIER_CONFIG,
     SubscriptionTier
 } from '@/lib/faction-subscription-utils';
+import { calculateRechargeParams } from '@/lib/token-system';
 import FactionCard from '@/components/FactionCard';
 
 export default function FactionsPage() {
     const { profile, reload: refreshProfile } = useUserProfile();
     const { user } = useFirebase();
+    const { coins: userCoins, tokens: userTokens, maxTokens, level: userLevel } = useUser();
     const { showAlert, showConfirm } = useAlert();
 
-    // Derived state for easier access
-    const coins = profile?.coins || 0;
-    const level = profile?.level || 1;
+    // Use real-time user context values for display
+    const coins = userCoins || profile?.coins || 0;
+    const level = userLevel || profile?.level || 1;
     const userId = user?.uid;
 
     const [factions, setFactions] = useState<AIFaction[]>([]);
     const [totalCost, setTotalCost] = useState(0);
     const [selectedFaction, setSelectedFaction] = useState<AIFaction | null>(null);
     const [selectedTier, setSelectedTier] = useState<SubscriptionTier>('free');
+    const [showDetails, setShowDetails] = useState(false);
 
     // Lore Modal State
     const [selectedLoreFaction, setSelectedLoreFaction] = useState<FactionLore | null>(null);
@@ -51,6 +55,16 @@ export default function FactionsPage() {
 
     // Memoize subscriptions to prevent unnecessary re-renders of the grid
     const subscriptions = useMemo(() => getSubscribedFactions(userId), [userId]);
+
+    // Calculate recharge params for display
+    const rechargeParams = useMemo(() => calculateRechargeParams(subscriptions, level), [subscriptions, level]);
+
+    // Calculate bonuses
+    const activeBonuses = useMemo(() => ({
+        rate: rechargeParams.rateAmount - 10,
+        interval: 10 - rechargeParams.intervalMin,
+        cap: rechargeParams.maxCap - (1000 + (level - 1) * 100)
+    }), [rechargeParams, level]);
 
     useEffect(() => {
         // Load factions data
@@ -169,76 +183,155 @@ export default function FactionsPage() {
             color="purple"
             leftSidebarIcon={<Shield size={32} className="text-purple-400" />}
             leftSidebarTips={[
-                "군단 구독은 매일 자동으로 코인이 차감되는 정기 결제 방식입니다.",
-                "Pro 티어는 토큰 충전 속도가 빨라지고, Ultra 티어는 최대 토큰이 증가합니다.",
-                "구독 해지 시 환불 정책이 적용됩니다. 첫 해지는 50% 환불, 이후는 24시간 내 전액 환불입니다.",
-                "각 군단마다 고유한 특성과 스토리가 있습니다. 정보 버튼을 눌러 확인하세요!",
+                "💎 티어별 혜택:",
+                "Free: 비용 0 • 30분 주기 • 일 5회",
+                "Pro (Lv.10+): 40코인/일 • 일 20회 • 토큰 충전속도 UP",
+                "Ultra (Lv.30+): 200코인/일 • 무제한 • 최대 토큰 UP",
+                "━━━━━━━━━━━━━━━━━━",
+                "📌 구독은 매일 자정에 자동 결제됩니다.",
+                "📌 첫 해지 시 50% 환불, 이후 24시간 내 전액 환불.",
+                "📌 각 군단의 정보 버튼으로 상세 스토리를 확인하세요!",
             ]}
         >
-            <div className="flex flex-col">
-                {/* Subscription Status Panel (New) */}
-                <div className="mb-6">
-                    <SubscriptionStatusPanel />
-                </div>
-
-                {/* Subscription Info & Market Economy Warning */}
-                <div className="mb-6 bg-gradient-to-r from-purple-500/10 to-cyan-500/10 border border-purple-500/20 rounded-lg p-6 flex-shrink-0">
-                    <div className="flex items-start justify-between mb-4">
-                        <div>
-                            <h3 className="text-xl font-bold text-white mb-2 flex items-center gap-2">
-                                <Crown className="text-yellow-400" size={24} />
-                                일간 구독 비용
-                            </h3>
-                            <p className="text-3xl font-black text-yellow-400">
-                                {totalCost.toLocaleString()} <span className="text-lg text-white/60">코인/일</span>
-                            </p>
+            <div className="flex flex-col gap-4">
+                {/* ===== 상단: 통합 대시보드 ===== */}
+                <div className="grid grid-cols-1 lg:grid-cols-3 gap-4">
+                    {/* 1. 일간 구독 비용 & 현재 코인 */}
+                    <motion.div
+                        initial={{ opacity: 0, y: 10 }}
+                        animate={{ opacity: 1, y: 0 }}
+                        className="bg-gradient-to-br from-amber-900/30 to-amber-950/20 border border-amber-500/30 rounded-2xl p-5"
+                    >
+                        <div className="flex items-center gap-2 mb-3">
+                            <Crown className="text-amber-400" size={20} />
+                            <h3 className="text-sm font-bold text-amber-400 uppercase tracking-wider">일간 구독</h3>
                         </div>
-                        <div className="text-right">
-                            <p className="text-sm text-white/60">구독 중인 군단</p>
-                            <p className="text-2xl font-bold text-cyan-400">{subscriptions.length}</p>
-                        </div>
-                    </div>
-
-                    {/* Tier Benefits Summary */}
-                    <div className="bg-black/30 rounded-lg p-4 flex items-start gap-3">
-                        <Info className="text-cyan-400 flex-shrink-0 mt-0.5" size={20} />
-                        <div className="text-sm text-white/80 w-full">
-                            <p className="font-bold mb-2">💎 티어별 혜택</p>
-                            <div className="grid grid-cols-3 gap-3 text-xs">
-                                <div className="bg-gray-500/10 border border-gray-500/20 rounded p-2">
-                                    <p className="font-bold text-gray-400 mb-1">Free</p>
-                                    <p className="text-white/60">비용 0 • 30분 • 일 5회</p>
+                        <div className="flex items-end justify-between">
+                            <div>
+                                <p className="text-3xl font-black text-white orbitron">
+                                    {totalCost.toLocaleString()}
+                                </p>
+                                <p className="text-xs text-white/50">코인/일</p>
+                            </div>
+                            <div className="text-right">
+                                <div className="flex items-center gap-1 text-amber-400">
+                                    <Coins size={14} />
+                                    <span className="text-lg font-bold">{coins.toLocaleString()}</span>
                                 </div>
-                                <div className="bg-blue-500/10 border border-blue-500/20 rounded p-2">
-                                    <p className="font-bold text-blue-400 mb-1">Pro</p>
-                                    <p className="text-white/60">40코인 • 일 20회</p>
-                                    <p className="text-green-400 font-bold mt-1">+충전 속도 UP</p>
-                                </div>
-                                <div className="bg-purple-500/10 border border-purple-500/20 rounded p-2">
-                                    <p className="font-bold text-purple-400 mb-1">Ultra</p>
-                                    <p className="text-white/60">200코인 • 무제한</p>
-                                    <p className="text-green-400 font-bold mt-1">+최대 토큰 UP</p>
-                                </div>
+                                <p className="text-[10px] text-white/40">보유 코인</p>
                             </div>
                         </div>
-                    </div>
+                    </motion.div>
 
-                    {/* Market Economy Reminder */}
-                    <div className="mt-4 p-3 bg-amber-900/20 border border-amber-500/30 rounded-lg animate-pulse">
-                        <p className="text-sm text-amber-300 flex items-center gap-2">
-                            <Zap size={16} className="text-amber-400" />
-                            <strong>구독 알림:</strong> 접속하지 않아도 매일 구독료가 발생합니다. 장기간 미접속 시 구독 상태를 확인하세요.
-                        </p>
-                    </div>
+                    {/* 2. 토큰 충전 보너스 (실제 값 동기화) */}
+                    <motion.div
+                        initial={{ opacity: 0, y: 10 }}
+                        animate={{ opacity: 1, y: 0 }}
+                        transition={{ delay: 0.1 }}
+                        className="bg-gradient-to-br from-cyan-900/30 to-cyan-950/20 border border-cyan-500/30 rounded-2xl p-5"
+                    >
+                        <div className="flex items-center gap-2 mb-3">
+                            <Battery className="text-cyan-400" size={20} />
+                            <h3 className="text-sm font-bold text-cyan-400 uppercase tracking-wider">토큰 부스트</h3>
+                        </div>
+                        <div className="grid grid-cols-3 gap-2 text-center">
+                            <div>
+                                <p className={cn("text-xl font-black", activeBonuses.rate > 0 ? "text-green-400" : "text-white/30")}>
+                                    {activeBonuses.rate > 0 ? `+${activeBonuses.rate}` : '-'}
+                                </p>
+                                <p className="text-[10px] text-white/40">충전량</p>
+                            </div>
+                            <div>
+                                <p className={cn("text-xl font-black", activeBonuses.interval > 0 ? "text-yellow-400" : "text-white/30")}>
+                                    {activeBonuses.interval > 0 ? `-${activeBonuses.interval}분` : '-'}
+                                </p>
+                                <p className="text-[10px] text-white/40">주기 단축</p>
+                            </div>
+                            <div>
+                                <p className={cn("text-xl font-black", activeBonuses.cap > 0 ? "text-blue-400" : "text-white/30")}>
+                                    {activeBonuses.cap > 0 ? `+${activeBonuses.cap}` : '-'}
+                                </p>
+                                <p className="text-[10px] text-white/40">최대 용량</p>
+                            </div>
+                        </div>
+                        {/* 현재 토큰 상태 표시 */}
+                        <div className="mt-3 pt-3 border-t border-cyan-500/20">
+                            <div className="flex items-center justify-between text-xs">
+                                <span className="text-white/50">현재 토큰</span>
+                                <span className="text-cyan-400 font-bold">{userTokens?.toLocaleString() || 0} / {maxTokens?.toLocaleString() || 1000}</span>
+                            </div>
+                        </div>
+                    </motion.div>
+
+                    {/* 3. 구독 중인 군단 */}
+                    <motion.div
+                        initial={{ opacity: 0, y: 10 }}
+                        animate={{ opacity: 1, y: 0 }}
+                        transition={{ delay: 0.2 }}
+                        className="bg-gradient-to-br from-purple-900/30 to-purple-950/20 border border-purple-500/30 rounded-2xl p-5"
+                    >
+                        <div className="flex items-center justify-between mb-3">
+                            <div className="flex items-center gap-2">
+                                <Sparkles className="text-purple-400" size={20} />
+                                <h3 className="text-sm font-bold text-purple-400 uppercase tracking-wider">활성 구독</h3>
+                            </div>
+                            <span className="text-2xl font-black text-white">{subscriptions.length}</span>
+                        </div>
+
+                        {subscriptions.length > 0 ? (
+                            <div className="space-y-1.5 max-h-[80px] overflow-y-auto custom-scrollbar">
+                                {subscriptions.slice(0, 4).map(sub => (
+                                    <div key={sub.factionId} className="flex items-center justify-between bg-white/5 rounded-lg px-2.5 py-1.5">
+                                        <span className="text-xs text-white capitalize">{sub.factionId}</span>
+                                        <span className={cn(
+                                            "text-[10px] px-1.5 py-0.5 rounded font-bold",
+                                            sub.tier === 'ultra' ? 'bg-purple-500/30 text-purple-300' :
+                                                sub.tier === 'pro' ? 'bg-blue-500/30 text-blue-300' :
+                                                    'bg-gray-500/30 text-gray-300'
+                                        )}>{sub.tier.toUpperCase()}</span>
+                                    </div>
+                                ))}
+                                {subscriptions.length > 4 && (
+                                    <p className="text-[10px] text-white/40 text-center">+{subscriptions.length - 4}개 더...</p>
+                                )}
+                            </div>
+                        ) : (
+                            <p className="text-xs text-white/40 text-center py-4">구독 중인 군단이 없습니다</p>
+                        )}
+                    </motion.div>
                 </div>
 
-                {/* Factions Grid - Scrollable Container */}
-                <div className="flex-1 pb-4">
-                    <h2 className="text-xl font-bold text-white mb-4">
-                        전체 AI 군단 ({factions.length})
-                    </h2>
+                {/* 구독 알림 배너 */}
+                {totalCost > 0 && (
+                    <motion.div
+                        initial={{ opacity: 0 }}
+                        animate={{ opacity: 1 }}
+                        className="bg-amber-900/20 border border-amber-500/30 rounded-xl px-4 py-2.5 flex items-center justify-between"
+                    >
+                        <p className="text-sm text-amber-300 flex items-center gap-2">
+                            <Zap size={14} className="text-amber-400" />
+                            <span>매일 자정 <strong>{totalCost.toLocaleString()}</strong> 코인이 자동 차감됩니다</span>
+                        </p>
+                        <button
+                            onClick={() => setShowDetails(!showDetails)}
+                            className="text-xs text-amber-400 hover:text-amber-300 flex items-center gap-1"
+                        >
+                            상세 {showDetails ? <ChevronUp size={12} /> : <ChevronDown size={12} />}
+                        </button>
+                    </motion.div>
+                )}
 
-                    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4 pb-4">
+                {/* ===== 군단 그리드 ===== */}
+                <div className="flex-1">
+                    <div className="flex items-center justify-between mb-4">
+                        <h2 className="text-xl font-bold text-white flex items-center gap-2">
+                            <Shield className="text-purple-400" size={20} />
+                            전체 AI 군단
+                            <span className="text-sm text-white/40 font-normal">({factions.length})</span>
+                        </h2>
+                    </div>
+
+                    <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4 pb-8">
                         {factions.map(faction => {
                             const subscription = getFactionSubscription(faction.id, userId);
                             const loreData = FACTION_LORE_DATA[faction.id];
@@ -263,7 +356,11 @@ export default function FactionsPage() {
                 {/* Tier Selection Modal */}
                 {selectedFaction && (
                     <div className="fixed inset-0 z-50 bg-black/80 flex items-center justify-center p-4">
-                        <div className="bg-zinc-900 border border-white/20 w-full max-w-2xl rounded-2xl overflow-hidden relative">
+                        <motion.div
+                            initial={{ opacity: 0, scale: 0.95 }}
+                            animate={{ opacity: 1, scale: 1 }}
+                            className="bg-zinc-900 border border-white/20 w-full max-w-2xl rounded-2xl overflow-hidden relative"
+                        >
                             <button
                                 onClick={() => setSelectedFaction(null)}
                                 className="absolute right-4 top-4 text-white/50 hover:text-white z-10"
@@ -366,7 +463,7 @@ export default function FactionsPage() {
                                         : `${TIER_CONFIG[selectedTier].name} 티어로 구독하기`}
                                 </button>
                             </div>
-                        </div>
+                        </motion.div>
                     </div>
                 )}
 
