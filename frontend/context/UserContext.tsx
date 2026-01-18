@@ -298,7 +298,43 @@ export function UserProvider({ children }: { children: React.ReactNode }) {
                         }
                     }
 
-                    const finalInventory = [...formattedCards, ...rentalCommanders] as InventoryCard[];
+                    // [MIGRATION] Clean up stale commander cards from old subscription-based rule
+                    // Only keep commander cards for factions that are currently in a generation slot
+                    const { removeCardFromInventory } = await import('@/lib/inventory-system');
+                    const staleCommanderCards = formattedCards.filter(card => {
+                        // Check if this is a commander/rental card
+                        const isCommanderType = card.isCommanderCard || card.isRentalCard || card.rarity === 'commander';
+                        if (!isCommanderType) return false;
+
+                        // Check if the faction is still in a slot
+                        const cardFactionId = card.aiFactionId ||
+                            COMMANDERS.find(c => c.id === card.templateId || c.id === card.id)?.aiFactionId;
+
+                        if (!cardFactionId) return false;
+
+                        // If faction is not in a slot, this card is stale and should be removed
+                        return !slottedFactionIds.includes(cardFactionId);
+                    });
+
+                    if (staleCommanderCards.length > 0) {
+                        console.log(`[Migration] Cleaning up ${staleCommanderCards.length} stale commander cards...`);
+                        for (const staleCard of staleCommanderCards) {
+                            try {
+                                await removeCardFromInventory(staleCard.instanceId, user.uid);
+                                console.log(`[Migration] ✅ Removed stale commander: ${staleCard.name} (${staleCard.instanceId})`);
+                            } catch (err) {
+                                console.error(`[Migration] ❌ Failed to remove: ${staleCard.name}`, err);
+                            }
+                        }
+                    }
+
+                    // Filter out stale cards from the display list
+                    const cleanedFormattedCards = formattedCards.filter(card => {
+                        const staleIds = staleCommanderCards.map(s => s.instanceId);
+                        return !staleIds.includes(card.instanceId);
+                    });
+
+                    const finalInventory = [...cleanedFormattedCards, ...rentalCommanders] as InventoryCard[];
                     setInventory(finalInventory);
                     setSubscriptions(subs);
 
