@@ -147,17 +147,15 @@ export default function StageBattlePage() {
             await applyBattleResult(res, activeBattleDeck, enemies, false, false, false, manualRewards);
 
             // Mark stage as complete
-            const chapterId = storyStage.id.startsWith('1-') ? 'chapter-1' :
-                storyStage.id.startsWith('2-') ? 'chapter-2' :
-                    storyStage.id.startsWith('3-') ? 'chapter-3' :
-                        storyStage.id.startsWith('4-') ? 'chapter-4' : 'chapter-5';
+            // Stage ID format: 'stage-X-Y' where X is chapter number
+            const chapterNum = storyStage.id.split('-')[1] || '1';
+            const chapterId = `chapter-${chapterNum}`;
             await completeStage(chapterId, storyStage.id, user?.uid);
 
             // Track mission
             trackMissionEvent('battle-win', 1);
 
-            // Navigate back to chapter map
-            const chapterNum = storyStage.id.split('-')[0] || '1';
+            // Navigate back to chapter map (reuse chapterNum from above)
             router.push(`/story/chapter-${chapterNum}`);
         } else {
             // Defeat: Show result screen before retry
@@ -311,7 +309,8 @@ export default function StageBattlePage() {
                         onClose={startDeckSelection}
                         onCancel={() => {
                             // Navigate back to chapter map
-                            const chapterNum = storyStage.id.split('-')[0] || '1';
+                            // Stage ID format: 'stage-X-Y'
+                            const chapterNum = storyStage.id.split('-')[1] || '1';
                             router.push(`/story/chapter-${chapterNum}`);
                         }}
                         dialogues={(() => {
@@ -481,7 +480,8 @@ export default function StageBattlePage() {
                                 </Button>
                                 <Button
                                     onClick={() => {
-                                        const chapterNum = storyStage?.id.split('-')[0] || '1';
+                                        // Stage ID format: 'stage-X-Y'
+                                        const chapterNum = storyStage?.id.split('-')[1] || '1';
                                         router.push(`/story/chapter-${chapterNum}`);
                                     }}
                                     variant="ghost"
