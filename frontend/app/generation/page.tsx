@@ -32,7 +32,7 @@ export default function GenerationPage() {
     const router = useRouter();
     const { user } = useFirebase();
     const { showAlert, showConfirm } = useAlert();
-    const { trackMissionEvent, addTokens, consumeTokens, tokens, refreshInventory } = useUser(); // [NEW] Use UserContext for missions and rewards
+    const { trackMissionEvent, addTokens, consumeTokens, tokens, refreshInventory, level } = useUser(); // [NEW] Use UserContext for missions and rewards
 
     const userId = user?.uid;
 
@@ -104,33 +104,116 @@ export default function GenerationPage() {
         const faction = factions.find(f => f.id === factionId);
         const commanderTemplate = COMMANDERS.find(c => c.aiFactionId === factionId);
 
-        // [FIX] 안내 모달 추가: 배치 시 군단장 카드 대여 알림
+        // [FIX] 안내 모달 추가: 배치 시 군단장 카드 대여 알림 + 토큰 부스트 정보
         const tempCard = commanderTemplate ? { ...createCardFromTemplate(commanderTemplate), isRented: true } : null;
+
+        // 현재 구독 + 새로 배치하는 군단의 토큰 부스트 계산
+        const { calculateRechargeParams } = require('@/lib/token-system');
+        const { FACTION_CATEGORY_MAP, CATEGORY_TOKEN_BONUS } = require('@/lib/token-constants');
+
+        // 현재 슬롯에 있는 군단들의 구독 정보
+        const currentSlottedSubs = slots
+            .filter(s => s.factionId)
+            .map(s => subscriptions.find(sub => sub.factionId === s.factionId))
+            .filter(Boolean);
+
+        // 새로 추가될 군단의 구독 정보
+        const newFactionSub = subscriptions.find(s => s.factionId === factionId);
+
+        // Before & After 계산
+        const beforeParams = calculateRechargeParams(currentSlottedSubs, level || 1);
+        const afterSubs = [...currentSlottedSubs, newFactionSub].filter(Boolean);
+        const afterParams = calculateRechargeParams(afterSubs, level || 1);
+
+        // 새 군단의 카테고리와 보너스 타입
+        const newFactionCategory = FACTION_CATEGORY_MAP[factionId];
+        const newFactionBonus = newFactionCategory ? CATEGORY_TOKEN_BONUS[newFactionCategory] : null;
+
+        const getBonusTypeLabel = (type: string) => {
+            switch (type) {
+                case 'recharge_amount': return '⚡ 충전량 증가';
+                case 'recharge_speed': return '⏱️ 충전 속도 증가';
+                case 'max_capacity': return '🔋 최대 용량 증가';
+                default: return '✨ 보너스';
+            }
+        };
 
         showConfirm({
             title: '군단 배치 및 카드 대여',
             message: '', // Using content instead
             content: (
-                <div className="flex flex-col items-center gap-6 py-2">
+                <div className="flex flex-col items-center gap-4 py-2">
                     <p className="text-gray-300 text-sm font-medium leading-relaxed text-center">
-                        <span className="text-cyan-400 font-bold">[{faction?.displayName || factionId}]</span> 군단을 배치하시겠습니까?<br />
-                        배치된 동안 전용 군단장 카드를 대여하여 <br />전투에서 사용할 수 있습니다.
+                        <span className="text-cyan-400 font-bold">[{faction?.displayName || factionId}]</span> 군단을 배치하시겠습니까?
                     </p>
+
+                    {/* 군단장 카드 미리보기 */}
                     {tempCard && (
-                        <div className="relative transform hover:scale-105 transition-transform duration-300">
+                        <div className="relative transform hover:scale-105 transition-transform duration-300 my-2">
                             <div className="absolute -inset-4 bg-cyan-500/20 blur-xl rounded-full" />
                             <GameCard
                                 card={tempCard}
                                 isHolographic
-
                             />
                             <div className="absolute -bottom-6 left-0 right-0 text-center">
                                 <span className="text-[10px] text-cyan-400 font-bold uppercase tracking-widest bg-black/80 px-3 py-1 rounded-full border border-cyan-500/30">
-                                    RENTAL CARD
+                                    ⚔️ 전투에서 사용 가능
                                 </span>
                             </div>
                         </div>
                     )}
+
+                    {/* 토큰 부스트 정보 */}
+                    <div className="w-full mt-4 bg-gradient-to-r from-green-900/30 to-cyan-900/30 border border-green-500/30 rounded-xl p-4">
+                        <h4 className="text-xs font-bold text-green-400 uppercase tracking-wider mb-3 flex items-center gap-2">
+                            <Zap size={14} />
+                            토큰 부스트 효과
+                        </h4>
+
+                        {/* 새 군단의 보너스 타입 */}
+                        {newFactionBonus && (
+                            <div className="mb-3 px-3 py-2 bg-black/30 rounded-lg border border-white/10">
+                                <p className="text-xs text-white/70">
+                                    {faction?.displayName} 특성: <span className="text-green-400 font-bold">{getBonusTypeLabel(newFactionBonus.type)}</span>
+                                </p>
+                            </div>
+                        )}
+
+                        {/* Before → After 비교 */}
+                        <div className="grid grid-cols-3 gap-2 text-center text-xs">
+                            <div className="space-y-1">
+                                <p className="text-white/50">충전량</p>
+                                <p className="text-white font-bold">
+                                    {beforeParams.rateAmount} → <span className={afterParams.rateAmount > beforeParams.rateAmount ? 'text-green-400' : 'text-white'}>{afterParams.rateAmount}</span>
+                                </p>
+                                {afterParams.rateAmount > beforeParams.rateAmount && (
+                                    <p className="text-[10px] text-green-400">+{afterParams.rateAmount - beforeParams.rateAmount}</p>
+                                )}
+                            </div>
+                            <div className="space-y-1">
+                                <p className="text-white/50">충전 주기</p>
+                                <p className="text-white font-bold">
+                                    {beforeParams.intervalMin}분 → <span className={afterParams.intervalMin < beforeParams.intervalMin ? 'text-yellow-400' : 'text-white'}>{afterParams.intervalMin}분</span>
+                                </p>
+                                {afterParams.intervalMin < beforeParams.intervalMin && (
+                                    <p className="text-[10px] text-yellow-400">-{beforeParams.intervalMin - afterParams.intervalMin}분</p>
+                                )}
+                            </div>
+                            <div className="space-y-1">
+                                <p className="text-white/50">최대 용량</p>
+                                <p className="text-white font-bold">
+                                    {beforeParams.maxCap.toLocaleString()} → <span className={afterParams.maxCap > beforeParams.maxCap ? 'text-blue-400' : 'text-white'}>{afterParams.maxCap.toLocaleString()}</span>
+                                </p>
+                                {afterParams.maxCap > beforeParams.maxCap && (
+                                    <p className="text-[10px] text-blue-400">+{(afterParams.maxCap - beforeParams.maxCap).toLocaleString()}</p>
+                                )}
+                            </div>
+                        </div>
+                    </div>
+
+                    <p className="text-[10px] text-white/40 text-center">
+                        ⚠️ 슬롯에서 제거 시 군단장 카드는 회수됩니다
+                    </p>
                 </div>
             ),
             onConfirm: async () => {
@@ -139,45 +222,40 @@ export default function GenerationPage() {
                     loadData();
                     setSelectedSlotForAssignment(null);
 
-                    // 1. Commander Rental Logic
+                    // 1. Commander Rental Logic - UserContext가 처리하므로 별도 저장 불필요
                     try {
-                        console.log(`[Rental] Starting commander rental for faction: ${factionId}`);
+                        console.log(`[Rental] Faction placed in slot: ${factionId}`);
+
+                        // Refresh inventory to sync rental commander status
+                        await refreshInventory();
+
                         if (commanderTemplate) {
-                            // Fetch fresh inventory to double check
-                            const currentInventory = await loadInventory(userId);
-                            const alreadyHasCommander = currentInventory.some(c => c.templateId === commanderTemplate.id && c.isRented);
+                            // Show reward modal
+                            const newCommanderCard = {
+                                ...createCardFromTemplate(commanderTemplate),
+                                isRented: true,
+                                isRentalCard: true,
+                                ownerId: userId as string
+                            };
+                            setRewardCards([newCommanderCard]);
+                            setRewardModalTitle("🎖️ COMMANDER RENTED");
+                            setRewardCardScale(1.5);
 
-                            if (!alreadyHasCommander) {
-                                console.log(`[Rental] Commander card not found in inventory, adding rental card: ${commanderTemplate.name}`);
-                                const newCommanderCard = {
-                                    ...createCardFromTemplate(commanderTemplate),
-                                    isRented: true,
-                                    ownerId: userId as string
-                                };
-                                const instanceId = await addCardToInventory(newCommanderCard);
-                                console.log(`[Rental] Successfully added commander card. InstanceID: ${instanceId}`);
-                                setRewardCards([newCommanderCard]);
-                                setRewardModalTitle("🎖️ COMMANDER RENTED");
-                                setRewardCardScale(1.5); // BIGGER CARD!
+                            // 토큰 보너스 정보 표시
+                            const boostLabel = newFactionBonus
+                                ? getBonusTypeLabel(newFactionBonus.type)
+                                : '토큰 충전 보너스';
+                            setRewardModalBonus({ type: 'token', value: 50, label: `배치 완료! ${boostLabel}` });
 
-                                // 2. Add Tokens HERE to show unified modal 
-                                try {
-                                    await addTokens(50);
-                                    setRewardModalBonus({ type: 'token', value: 50, label: '배치 완료 보너스 (10분당 +50토큰)' });
-                                } catch (err) {
-                                    console.error("Token reward failed", err);
-                                }
-
-                                setRewardModalOpen(true);
-                            } else {
-                                console.log(`[Rental] User already has a rented commander card for ${factionId}, skipping.`);
-                                // If they already have the card (rare edge case), still show success alert for placement
-                                showAlert({ title: '배치 완료', message: '군단이 배치되어 카드 생성이 시작되었습니다.', type: 'success' });
+                            // Add bonus tokens
+                            try {
+                                await addTokens(50);
+                            } catch (err) {
+                                console.error("Token reward failed", err);
                             }
-                            // [NEW] Refresh inventory to sync rental commander status
-                            await refreshInventory();
+
+                            setRewardModalOpen(true);
                         } else {
-                            console.warn(`[Rental] No commander template found for faction: ${factionId}`);
                             showAlert({ title: '배치 완료', message: '군단이 배치되어 카드 생성이 시작되었습니다.', type: 'success' });
                         }
                     } catch (error) {
