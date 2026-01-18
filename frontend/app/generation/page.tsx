@@ -32,7 +32,7 @@ export default function GenerationPage() {
     const router = useRouter();
     const { user } = useFirebase();
     const { showAlert, showConfirm } = useAlert();
-    const { trackMissionEvent, addTokens, consumeTokens, tokens } = useUser(); // [NEW] Use UserContext for missions and rewards
+    const { trackMissionEvent, addTokens, consumeTokens, tokens, refreshInventory } = useUser(); // [NEW] Use UserContext for missions and rewards
 
     const userId = user?.uid;
 
@@ -174,6 +174,8 @@ export default function GenerationPage() {
                                 // If they already have the card (rare edge case), still show success alert for placement
                                 showAlert({ title: '배치 완료', message: '군단이 배치되어 카드 생성이 시작되었습니다.', type: 'success' });
                             }
+                            // [NEW] Refresh inventory to sync rental commander status
+                            await refreshInventory();
                         } else {
                             console.warn(`[Rental] No commander template found for faction: ${factionId}`);
                             showAlert({ title: '배치 완료', message: '군단이 배치되어 카드 생성이 시작되었습니다.', type: 'success' });
@@ -217,6 +219,8 @@ export default function GenerationPage() {
                 if (result.success) {
                     showAlert({ title: '제거 완료', message: '군단이 제거되었으며, 군단장 카드가 회수되었습니다.', type: 'success' });
                     loadData();
+                    // [NEW] Refresh inventory to remove rental commander card
+                    await refreshInventory();
                 } else {
                     showAlert({ title: '제거 실패', message: result.message, type: 'error' });
                 }

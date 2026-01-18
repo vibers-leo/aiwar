@@ -73,6 +73,8 @@ interface UserContextType {
     // [NEW] Main Deck
     mainDeck: InventoryCard[];
     updateMainDeck: (deck: InventoryCard[]) => Promise<void>;
+    // [NEW] Refresh inventory (for slot changes)
+    refreshInventory: () => Promise<void>;
 }
 
 const UserContext = createContext<UserContextType | undefined>(undefined);
@@ -252,35 +254,46 @@ export function UserProvider({ children }: { children: React.ReactNode }) {
                     })) as InventoryCard[];
 
                     const { COMMANDERS } = await import('@/data/card-database');
+                    const { getGenerationSlots } = await import('@/lib/generation-utils');
                     const rentalCommanders: InventoryCard[] = [];
 
-                    for (const sub of subs) {
-                        // [Policy Change] All active subscribers get Commander access (Free included)
-                        if (sub.status === 'active') {
-                            const cmdTemplate = COMMANDERS.find(c => c.aiFactionId === sub.factionId);
-                            if (cmdTemplate) {
-                                const alreadyExists = formattedCards.some(c => c.templateId === cmdTemplate.id || c.id === cmdTemplate.id);
-                                if (!alreadyExists) {
-                                    rentalCommanders.push({
-                                        id: `commander-${cmdTemplate.id}`,
-                                        instanceId: `commander-${cmdTemplate.id}-${user.uid}`,
-                                        templateId: cmdTemplate.id,
-                                        ownerId: user.uid,
-                                        name: cmdTemplate.name,
-                                        rarity: 'commander',
-                                        type: 'EFFICIENCY',
-                                        level: 1,
-                                        experience: 0,
-                                        imageUrl: cmdTemplate.imageUrl,
-                                        aiFactionId: cmdTemplate.aiFactionId,
-                                        description: cmdTemplate.description,
-                                        stats: { efficiency: 95, creativity: 95, function: 95, totalPower: 285 },
-                                        acquiredAt: new Date(),
-                                        isCommanderCard: true,
-                                        isLocked: false,
-                                        specialty: cmdTemplate.specialty
-                                    });
-                                }
+                    // [Policy Change] Commander cards are ONLY granted when faction is in a GENERATION SLOT
+                    // Not just subscribed - must be actively placed in a slot
+                    // Maximum 5 cards (5 slots)
+                    const generationSlots = getGenerationSlots(user.uid);
+                    const slottedFactionIds = generationSlots
+                        .filter(slot => slot.factionId)
+                        .map(slot => slot.factionId!);
+
+                    for (const factionId of slottedFactionIds) {
+                        // Verify subscription is still active
+                        const sub = subs.find(s => s.factionId === factionId && s.status === 'active');
+                        if (!sub) continue;
+
+                        const cmdTemplate = COMMANDERS.find(c => c.aiFactionId === factionId);
+                        if (cmdTemplate) {
+                            const alreadyExists = formattedCards.some(c => c.templateId === cmdTemplate.id || c.id === cmdTemplate.id);
+                            if (!alreadyExists) {
+                                rentalCommanders.push({
+                                    id: `commander-${cmdTemplate.id}`,
+                                    instanceId: `commander-${cmdTemplate.id}-${user.uid}`,
+                                    templateId: cmdTemplate.id,
+                                    ownerId: user.uid,
+                                    name: cmdTemplate.name,
+                                    rarity: 'commander',
+                                    type: 'EFFICIENCY',
+                                    level: 1,
+                                    experience: 0,
+                                    imageUrl: cmdTemplate.imageUrl,
+                                    aiFactionId: cmdTemplate.aiFactionId,
+                                    description: cmdTemplate.description,
+                                    stats: { efficiency: 95, creativity: 95, function: 95, totalPower: 285 },
+                                    acquiredAt: new Date(),
+                                    isCommanderCard: true,
+                                    isRentalCard: true, // [NEW] Mark as rental for filtering
+                                    isLocked: true, // [NEW] Locked to prevent accidental use in fusion
+                                    specialty: cmdTemplate.specialty
+                                });
                             }
                         }
                     }
@@ -835,6 +848,72 @@ export function UserProvider({ children }: { children: React.ReactNode }) {
         }
     }, [user?.uid]);
 
+    // [NEW] Refresh inventory (especially for slot-based commander rentals)
+    const refreshInventory = useCallback(async () => {
+        if (!user?.uid) return;
+        try {
+            const { loadInventory } = await import('@/lib/inventory-system');
+            const { fetchUserSubscriptions } = await import('@/lib/firebase-db');
+            const { getGenerationSlots } = await import('@/lib/generation-utils');
+            const { COMMANDERS } = await import('@/data/card-database');
+
+            const cards = await loadInventory(user.uid);
+            const subs = await fetchUserSubscriptions(user.uid);
+            const generationSlots = getGenerationSlots(user.uid);
+
+            const formattedCards = cards.map(c => ({
+                ...c,
+                acquiredAt: (c.acquiredAt && 'toDate' in (c.acquiredAt as any))
+                    ? (c.acquiredAt as any).toDate()
+                    : new Date(c.acquiredAt as any)
+            })) as InventoryCard[];
+
+            // Get rental commanders from SLOTTED factions only
+            const slottedFactionIds = generationSlots
+                .filter(slot => slot.factionId)
+                .map(slot => slot.factionId!);
+
+            const rentalCommanders: InventoryCard[] = [];
+            for (const factionId of slottedFactionIds) {
+                const sub = subs.find(s => s.factionId === factionId && s.status === 'active');
+                if (!sub) continue;
+
+                const cmdTemplate = COMMANDERS.find(c => c.aiFactionId === factionId);
+                if (cmdTemplate) {
+                    const alreadyExists = formattedCards.some(c => c.templateId === cmdTemplate.id || c.id === cmdTemplate.id);
+                    if (!alreadyExists) {
+                        rentalCommanders.push({
+                            id: `commander-${cmdTemplate.id}`,
+                            instanceId: `commander-${cmdTemplate.id}-${user.uid}`,
+                            templateId: cmdTemplate.id,
+                            ownerId: user.uid,
+                            name: cmdTemplate.name,
+                            rarity: 'commander',
+                            type: 'EFFICIENCY',
+                            level: 1,
+                            experience: 0,
+                            imageUrl: cmdTemplate.imageUrl,
+                            aiFactionId: cmdTemplate.aiFactionId,
+                            description: cmdTemplate.description,
+                            stats: { efficiency: 95, creativity: 95, function: 95, totalPower: 285 },
+                            acquiredAt: new Date(),
+                            isCommanderCard: true,
+                            isRentalCard: true,
+                            isLocked: true,
+                            specialty: cmdTemplate.specialty
+                        });
+                    }
+                }
+            }
+
+            const finalInventory = [...formattedCards, ...rentalCommanders] as InventoryCard[];
+            setInventory(finalInventory);
+            console.log(`[RefreshInventory] Updated with ${rentalCommanders.length} rental commanders`);
+        } catch (error) {
+            console.error('Failed to refresh inventory:', error);
+        }
+    }, [user?.uid]);
+
     return (
         <UserContext.Provider
             value={{
@@ -854,7 +933,8 @@ export function UserProvider({ children }: { children: React.ReactNode }) {
                 research,          // [NEW]
                 stageProgress,     // [NEW]
                 mainDeck,          // [NEW]
-                updateMainDeck     // [NEW]
+                updateMainDeck,    // [NEW]
+                refreshInventory   // [NEW] For slot-based commander rentals
             }}
         >
             {/* Subscription Warning Modal */}

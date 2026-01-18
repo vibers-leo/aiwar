@@ -43,6 +43,7 @@ export interface InventoryCard extends Omit<Card, 'acquiredAt'> {
     power?: number;
     affinity?: number;
     isCommanderCard?: boolean;
+    isRentalCard?: boolean; // [NEW] True for temporary slot-based commander rentals
 }
 
 export type CardFilter = {
