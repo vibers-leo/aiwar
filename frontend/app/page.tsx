@@ -62,7 +62,7 @@ export default function IntroPage() {
             'QUANTUM_CORE::ACTIVATED',
             'FACTION_DATABASE::SYNCHRONIZED',
             'COMBAT_PROTOCOLS::LOADED',
-            'AI_WAR_NETWORK::ONLINE',
+            'AGI_WAR_NETWORK::ONLINE',
         ];
 
         let index = 0;
@@ -258,7 +258,7 @@ export default function IntroPage() {
 
                     {/* Main Title - Using Optimized TextHoverEffect */}
                     <div className="relative z-20 select-none">
-                        <TextHoverEffect text="AI WAR" className="text-[100px] md:text-[150px] lg:text-[180px]" />
+                        <TextHoverEffect text="AGI WAR" className="text-[100px] md:text-[150px] lg:text-[180px]" />
                     </div>
 
                     {/* Subtitle */}

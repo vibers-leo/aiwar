@@ -24,7 +24,7 @@ export default function GameFooter() {
 
                 {/* 중앙 - 버전 정보 */}
                 <div className="text-gray-500 text-xs">
-                    AI War v1.0.0 | Made with Next.js 16
+                    AGI WAR v1.0.0 | Made with Next.js 16
                 </div>
 
                 {/* 오른쪽 - 소셜 */}

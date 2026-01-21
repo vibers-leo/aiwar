@@ -119,7 +119,7 @@ export default function CardGacha({ cards, onComplete }: CardGachaProps) {
                                     <Zap size={40} className="text-purple-400 animate-pulse" />
                                 </div>
 
-                                <div className="orbitron font-black text-white text-xl tracking-widest italic mb-2">AI WAR</div>
+                                <div className="orbitron font-black text-white text-xl tracking-widest italic mb-2">AGI WAR</div>
                                 <div className="orbitron text-[10px] text-purple-400 font-bold uppercase tracking-[0.5em] mb-12">Neural Core</div>
 
                                 <div className="absolute bottom-10 flex flex-col items-center gap-2">

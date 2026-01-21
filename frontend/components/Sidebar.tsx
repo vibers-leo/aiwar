@@ -272,7 +272,7 @@ export default function Sidebar({ isOpen, onToggle }: SidebarProps) {
                         </Button>
                         {isOpen && (
                             <div className="text-center pt-2">
-                                <span className="text-[8px] text-gray-600 font-bold orbitron">AI WAR v1.2.0-PREMIUM</span>
+                                <span className="text-[8px] text-gray-600 font-bold orbitron">AGI WAR v1.2.0-PREMIUM</span>
                             </div>
                         )}
                     </div>

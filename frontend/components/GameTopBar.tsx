@@ -88,7 +88,7 @@ export default function GameTopBar({ sidebarCollapsed = false }: GameTopBarProps
                 <div className="flex items-center gap-4">
                     <Link href="/main" className="group flex items-center gap-2">
                         <span className="text-2xl font-black italic text-transparent bg-clip-text bg-gradient-to-r from-cyan-400 to-purple-500 group-hover:scale-105 transition-transform font-orbitron">
-                            AI WAR
+                            AGI WAR
                         </span>
                         <div className="w-1.5 h-1.5 bg-green-500 rounded-full animate-pulse shadow-[0_0_5px_#22c55e]" />
                     </Link>

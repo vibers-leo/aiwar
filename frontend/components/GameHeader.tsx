@@ -25,7 +25,7 @@ export default function GameHeader() {
             <div className="h-full px-6 flex items-center justify-between">
                 {/* 로고 */}
                 <Link href="/" className="flex items-center gap-3 hover:scale-105 transition-transform">
-                    <div className="text-3xl font-bold text-gradient">AI WAR</div>
+                    <div className="text-3xl font-bold text-gradient">AGI WAR</div>
                     <div className="text-sm text-gray-400">전쟁의 서막</div>
                 </Link>
 
