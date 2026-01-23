@@ -34,7 +34,7 @@ export interface GameCard {
     description_ko: string;
     category: string;
     factionId: string;
-    rarity: 'common' | 'rare' | 'epic' | 'legendary' | 'unique';
+    rarity: 'common' | 'rare' | 'epic' | 'legendary' | 'mythic';
     cardType: 'efficiency' | 'creativity' | 'function';
     imageUrl: string;
     hoverVideoUrl?: string;

@@ -11,7 +11,7 @@ export function generateRandomCard(ownerId: string, forcedRarity?: Rarity, insig
         rare: 25,
         epic: 10,
         legendary: 4,
-        unique: 0.9,
+        mythic: 0.9,
         commander: 0.1
     };
 
@@ -60,7 +60,7 @@ export function generateRandomCard(ownerId: string, forcedRarity?: Rarity, insig
         rare: { min: 50, max: 70 },
         epic: { min: 60, max: 80 },
         legendary: { min: 70, max: 90 },
-        unique: { min: 80, max: 100 },
+        mythic: { min: 80, max: 100 },
         commander: { min: 80, max: 100 }
     };
     const range = statRanges[rarity];
@@ -89,6 +89,6 @@ export function generateRandomCard(ownerId: string, forcedRarity?: Rarity, insig
         stats,
         rarity,
         acquiredAt: new Date(),
-        isLocked: rarity === 'legendary'
+        isLocked: ['legendary', 'mythic', 'commander'].includes(rarity)
     };
 }

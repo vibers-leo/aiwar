@@ -38,8 +38,8 @@ export const LEVEL_REWARDS_TABLE: LevelRewardExtended[] = [
     { level: 11, coins: 700, tokens: 0, description: '베테랑 군단장!' },
     { level: 12, coins: 750, tokens: 0, description: '강화 시스템 해금!', unlock: { type: 'feature', id: 'enhance', name: '카드 강화' } },
     { level: 13, coins: 800, tokens: 0, description: '전술의 대가!' },
-    { level: 14, coins: 900, tokens: 0, description: '전설로 향하는 길!' },
-    { level: 15, coins: 1500, tokens: 3, description: '15레벨 마일스톤!', isMilestone: true, cardPack: { type: 'epic', count: 1 }, unlock: { type: 'feature', id: 'unique-create', name: '유니크 카드 생성' } },
+    { level: 14, coins: 900, tokens: 0, description: '전설로 향하는 길!', unlock: { type: 'feature', id: 'mythic', name: '신화 제작 기능' } },
+    { level: 15, coins: 1500, tokens: 3, description: '15레벨 마일스톤!', isMilestone: true, cardPack: { type: 'epic', count: 1 }, unlock: { type: 'feature', id: 'unique-create', name: '유니크 스튜디오 해금' } },
 
     // 마스터 (16-20): 엘리트 보상
     { level: 16, coins: 1000, tokens: 0, description: '엘리트 군단장!' },

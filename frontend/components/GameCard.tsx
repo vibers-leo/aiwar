@@ -51,7 +51,7 @@ const RARITY_CONFIG: Record<Rarity, { border: string; glow: string; badge: strin
         bgGradient: 'from-amber-900/40 to-gray-900/50',
         glowColor: 'rgba(245,158,11,0.7)'
     },
-    unique: {
+    mythic: {
         border: 'border-red-500/60',
         glow: 'shadow-[0_0_35px_rgba(239,68,68,0.6)]',
         badge: 'bg-gradient-to-r from-red-500 to-pink-500 text-white',
@@ -73,7 +73,7 @@ const RARITY_NAMES: Record<Rarity, Record<'ko' | 'en', string>> = {
     rare: { ko: '희귀', en: 'Rare' },
     epic: { ko: '영웅', en: 'Epic' },
     legendary: { ko: '전설', en: 'Legendary' },
-    unique: { ko: '유니크', en: 'Unique' },
+    mythic: { ko: '신화', en: 'Mythic' },
     commander: { ko: '군단장', en: 'Commander' }
 };
 
@@ -90,7 +90,7 @@ const RARITY_STARS: Record<Rarity, number> = {
     rare: 2,
     epic: 3,
     legendary: 4,
-    unique: 5,
+    mythic: 5,
     commander: 5
 };
 
@@ -127,14 +127,20 @@ function GameCard({
     const rarity: Rarity = card.rarity || 'common';
     const config = RARITY_CONFIG[rarity];
 
-    // 카드 이미지/영상 가져오기
-    const characterImage = card.imageUrl || getCardCharacterImage(card.templateId, card.name, rarity);
+    // [REFACTOR] Handle Unique Customization (isUnique flag)
+    const isUnique = 'isUnique' in card && !!card.isUnique;
+    const customData = isUnique ? card.customData : null;
+
+    // 카드 이미지/영상 가져오기 (CustomData override)
+    const characterImage = customData?.customImage || card.imageUrl || getCardCharacterImage(card.templateId, card.name, rarity);
     const factionIcon = card.templateId ? getFactionIcon(card.templateId.split('-')[0]) : null;
 
-    // [FIX] 호버 비디오 우선순위: hoverVideo > videoUrl > getCardCharacterVideo
-    const characterVideo = card.hoverVideo || card.videoUrl || getCardCharacterVideo(card.templateId, rarity);
-    const hoverSound = card.hoverSound;
+    // [FIX] 호버 비디오 우선순위: customVideo > hoverVideo > videoUrl > getCardCharacterVideo
+    const characterVideo = customData?.customVideo || card.hoverVideo || card.videoUrl || getCardCharacterVideo(card.templateId, rarity);
+    const hoverSound = customData?.customSound || card.hoverSound;
     const audioRef = useRef<HTMLAudioElement | null>(null);
+
+    const cardName = customData?.customName || getCardName(card.templateId || card.id || "", card.name || "", lang);
 
     // 호버 시 영상 재생 제어
     useEffect(() => {
@@ -172,15 +178,15 @@ function GameCard({
         };
     }, [isHovered, hoverSound]);
 
-    // 전설/유니크는 상시 영상 표시 가능, 또는 호버 비디오가 있을 때 호버 시 표시
-    const shouldShowVideo = characterVideo && (isHovered || (rarity === 'unique' && !card.hoverVideo));
-    const isHighRarity = rarity === 'legendary' || rarity === 'unique' || rarity === 'commander';
+    // 전설/신화는 상시 영상 표시 가능, 또는 호버 비디오가 있을 때 호버 시 표시
+    const shouldShowVideo = characterVideo && (isHovered || (rarity === 'mythic' && !card.hoverVideo));
+    const isHighRarity = rarity === 'legendary' || rarity === 'mythic' || rarity === 'commander';
 
     return (
         <motion.div
             className={cn(
                 "relative transition-all duration-300 rounded-xl overflow-hidden border-2",
-                config.border,
+                isUnique ? "border-transparent" : config.border,
                 isHighRarity && config.glow,
                 isSelected && "scale-105 ring-2 ring-cyan-400",
                 !isSelected && !isDisabled && "hover:scale-110 hover:z-10",
@@ -207,6 +213,32 @@ function GameCard({
                 </div>
             )}
 
+            {/* Prismatic Border for Unique Cards */}
+            {isUnique && (
+                <div className="absolute inset-0 z-40 pointer-events-none">
+                    <div className="absolute inset-0 border-[2px] border-transparent rounded-xl"
+                        style={{
+                            background: "linear-gradient(var(--angle), #ff0000, #ff7f00, #ffff00, #00ff00, #0000ff, #4b0082, #8b00ff) border-box",
+                            WebkitMask: "linear-gradient(#fff 0 0) padding-box, linear-gradient(#fff 0 0)",
+                            WebkitMaskComposite: "destination-out",
+                            maskComposite: "exclude",
+                            animation: "rotate-gradient 3s linear infinite"
+                        } as any}
+                    />
+                    <style jsx>{`
+                        @keyframes rotate-gradient {
+                            0% { --angle: 0deg; }
+                            100% { --angle: 360deg; }
+                        }
+                        @property --angle {
+                            syntax: '<angle>';
+                            initial-value: 0deg;
+                            inherits: false;
+                        }
+                    `}</style>
+                </div>
+            )}
+
             {/* 고급 등급 글로우 이펙트 - Enhanced with breathing animation */}
             {!isFlipped && isHighRarity && (
                 <motion.div
@@ -229,13 +261,24 @@ function GameCard({
             )}
 
             {/* Holographic Overlay */}
-            {(isHolographic || rarity === 'unique') && (
+            {(isHolographic || rarity === 'mythic' || isUnique) && (
                 <motion.div
-                    className="absolute inset-0 z-30 pointer-events-none"
+                    className={cn(
+                        "absolute inset-0 z-30 pointer-events-none",
+                        isUnique ? "opacity-40" : "opacity-20"
+                    )}
                     animate={{
-                        background: isHovered
-                            ? 'linear-gradient(135deg, transparent 0%, rgba(255,255,255,0.2) 50%, transparent 100%)'
-                            : 'linear-gradient(135deg, transparent 0%, rgba(255,255,255,0.1) 50%, transparent 100%)'
+                        background: [
+                            "linear-gradient(135deg, transparent 0%, rgba(255,255,255,0.2) 50%, transparent 100%)",
+                            "linear-gradient(135deg, transparent 50%, rgba(255,255,255,0.2) 100%, transparent 150%)",
+                            "linear-gradient(135deg, transparent 0%, rgba(255,255,255,0.2) 50%, transparent 100%)"
+                        ],
+                        filter: isUnique ? "hue-rotate(360deg)" : "none"
+                    }}
+                    transition={{
+                        duration: isUnique ? 3 : 5,
+                        repeat: Infinity,
+                        ease: "linear"
                     }}
                 />
             )}
@@ -325,6 +368,18 @@ function GameCard({
                         {RARITY_NAMES[rarity][lang]}
                     </motion.div>
 
+                    {/* [NEW] 유니크(커스텀) 배지 */}
+                    {isUnique && (
+                        <motion.div
+                            initial={{ scale: 0.8, opacity: 0 }}
+                            animate={{ scale: 1, opacity: 1 }}
+                            className="px-2 py-0.5 rounded text-[8px] font-black uppercase tracking-widest bg-white text-black border border-white shadow-[0_0_10px_rgba(255,255,255,0.8)] flex items-center gap-1"
+                        >
+                            <span className="animate-pulse">💎</span>
+                            UNIQUE
+                        </motion.div>
+                    )}
+
                     {/* [NEW] 대여 카드 표시 */}
                     {('isRented' in card && card.isRented) && (
                         <motion.div
@@ -382,7 +437,7 @@ function GameCard({
             {showDetails && (
                 <div className="relative h-[45%] p-2.5 flex flex-col bg-black/60 z-10">
                     <h3 className="text-xs font-bold text-white truncate orbitron mb-1">
-                        {getCardName(card.templateId || card.id || "", card.name || "", lang) || `AI 유닛 #${card.id?.slice(0, 5) || '???'}`}
+                        {cardName || `AI 유닛 #${card.id?.slice(0, 5) || '???'}`}
                     </h3>
 
                     {/* 등급 별 표시 */}

@@ -24,7 +24,7 @@ export default function InventoryCardDetail({ card, onClose, onEnhance, onFuse, 
     const { language } = useTranslation();
     const { showAlert } = useAlert();
     const [localCard, setLocalCard] = useState(card);
-    const isHighTier = ['legendary', 'unique', 'commander'].includes(localCard.rarity || '');
+    const isHighTier = ['legendary', 'mythic', 'commander'].includes(localCard.rarity || '');
     const hasVideo = !!localCard.videoUrl;
     const [isVideoPlaying, setIsVideoPlaying] = useState(false);
     const videoRef = useRef<HTMLVideoElement>(null);
@@ -111,7 +111,7 @@ export default function InventoryCardDetail({ card, onClose, onEnhance, onFuse, 
                 <div className={cn(
                     "px-3 py-1 rounded-full text-xs font-bold uppercase tracking-wider backdrop-blur-md border shadow-lg",
                     card.rarity === 'commander' ? "bg-red-500/20 text-red-400 border-red-500/50" :
-                        card.rarity === 'unique' ? "bg-pink-500/20 text-pink-400 border-pink-500/50" :
+                        card.rarity === 'mythic' ? "bg-pink-500/20 text-pink-400 border-pink-500/50" :
                             card.rarity === 'legendary' ? "bg-amber-500/20 text-amber-400 border-amber-500/50" :
                                 card.rarity === 'epic' ? "bg-purple-500/20 text-purple-400 border-purple-500/50" :
                                     card.rarity === 'rare' ? "bg-blue-500/20 text-blue-400 border-blue-500/50" :

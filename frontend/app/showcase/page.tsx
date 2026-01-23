@@ -7,7 +7,7 @@ import CyberPageLayout from '@/components/CyberPageLayout';
 import { motion } from 'framer-motion';
 
 export default function ShowcasePage() {
-    const rarities = ['commander', 'unique', 'legendary', 'epic', 'rare', 'common'];
+    const rarities = ['commander', 'mythic', 'legendary', 'epic', 'rare', 'common'];
 
     return (
         <CyberPageLayout
@@ -26,7 +26,7 @@ export default function ShowcasePage() {
                             <h2 className="text-2xl font-bold uppercase mb-6 flex items-center gap-3 border-b border-white/10 pb-2">
                                 <span className={`w-3 h-3 rounded-full 
                                     ${rarity === 'commander' ? 'bg-yellow-400' :
-                                        rarity === 'unique' ? 'bg-green-500 shadow-[0_0_10px_#22c55e]' :
+                                        rarity === 'mythic' ? 'bg-red-500 shadow-[0_0_10px_#ef4444]' :
                                             rarity === 'legendary' ? 'bg-amber-500 shadow-[0_0_10px_#f59e0b]' :
                                                 rarity === 'epic' ? 'bg-purple-500' :
                                                     rarity === 'rare' ? 'bg-blue-500' : 'bg-gray-500'
@@ -40,7 +40,7 @@ export default function ShowcasePage() {
                                         <div className={`
                                             relative bg-black rounded-xl overflow-hidden border transition-all duration-300 transform group-hover:-translate-y-2 group-hover:rotate-x-2
                                             ${rarity === 'legendary' ? 'border-amber-500/50 shadow-[0_0_30px_rgba(245,158,11,0.2)]' :
-                                                rarity === 'unique' ? 'border-green-500/50 shadow-[0_0_30px_rgba(34,197,94,0.2)]' :
+                                                rarity === 'mythic' ? 'border-red-500/50 shadow-[0_0_30px_rgba(239,68,68,0.2)]' :
                                                     rarity === 'epic' ? 'border-purple-500/50' : 'border-white/10'}
                                         `}>
                                             {/* Card Image */}

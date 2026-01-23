@@ -155,18 +155,18 @@ export default function TutorialManager() {
             const rareCard = generateCardByRarity('rare', user.uid);
             const epicCard = generateCardByRarity('epic', user.uid);
             const legendaryCard = generateCardByRarity('legendary', user.uid);
-            const uniqueCard = generateCardByRarity('unique', user.uid);
+            const mythicCard = generateCardByRarity('mythic', user.uid);
 
-            // Customize Unique Card with Nickname
-            uniqueCard.name = `지휘관 ${profile.nickname}`; // [Fixed] Unified with UserContext
-            uniqueCard.description = "전장에 새롭게 합류한 지휘관의 전용 유닉입니다."; // [Fixed] typo
+            // Customize Mythic Card with Nickname
+            mythicCard.name = `지휘관 ${profile.nickname}`; // [Fixed] Unified with UserContext
+            mythicCard.description = "전장에 새롭게 합류한 지휘관의 전용 신화 유닛입니다.";
 
             const starterPack = [
                 commonCard,
                 rareCard,
                 epicCard,
                 legendaryCard,
-                uniqueCard
+                mythicCard
             ];
 
             // [ATOMIC TRANSACTION] This ensures cards + coins + flag are set together

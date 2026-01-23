@@ -41,7 +41,7 @@ interface FactionData extends AssetItem {
 interface CardData extends AssetItem {
     type: 'card';
     templateId: string;
-    rarity: 'common' | 'rare' | 'epic' | 'legendary' | 'unique';
+    rarity: 'common' | 'rare' | 'epic' | 'legendary' | 'mythic';
     cardType: 'efficiency' | 'creativity' | 'function';
     factionId: string;
 }
@@ -103,7 +103,7 @@ const RARITIES = [
     { id: 'rare', name: 'Rare', color: 'text-blue-400 bg-blue-900/50' },
     { id: 'epic', name: 'Epic', color: 'text-purple-400 bg-purple-900/50' },
     { id: 'legendary', name: 'Legendary', color: 'text-amber-400 bg-amber-900/50' },
-    { id: 'unique', name: 'Unique', color: 'text-pink-400 bg-pink-900/50' },
+    { id: 'mythic', name: 'Mythic', color: 'text-pink-400 bg-pink-900/50' },
 ];
 
 const CARD_TYPES = [

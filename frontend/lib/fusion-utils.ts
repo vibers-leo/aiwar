@@ -5,9 +5,9 @@ import { generateId } from './utils';
 
 /**
  * 등급 진행 순서
- * common → rare → epic → legendary → unique → commander
+ * common → rare → epic → legendary → mythic → commander
  */
-const RARITY_PROGRESSION: Rarity[] = ['common', 'rare', 'epic', 'legendary', 'unique', 'commander'];
+const RARITY_PROGRESSION: Rarity[] = ['common', 'rare', 'epic', 'legendary', 'mythic', 'commander'];
 
 /**
  * 다음 등급 가져오기
@@ -28,8 +28,8 @@ export function getFusionCost(rarity: Rarity, discountPercentage: number = 0): n
         common: 500,
         rare: 2000,
         epic: 5000,
-        legendary: 9900, // Max Cost for getting Unique
-        unique: 0, // Cannot fuse Unique
+        legendary: 10000, // Cost for Legendary -> Mythic
+        mythic: 0, // Cannot fuse Mythic
         commander: 0 // 군단장은 합성 불가
     };
     const baseCost = costs[rarity] || 0;
@@ -62,9 +62,9 @@ export function canFuse(
         return { canFuse: false, reason: '같은 등급의 카드만 합성할 수 있습니다.' };
     }
 
-    // 유니크/군단장 등급은 합성 불가
-    if (firstRarity === 'unique' || firstRarity === 'commander') {
-        return { canFuse: false, reason: '유니크/군단장 등급은 합성 재료로 사용할 수 없습니다.' };
+    // 신화/군단장 등급은 합성 불가
+    if (firstRarity === 'mythic' || firstRarity === 'commander') {
+        return { canFuse: false, reason: '신화/군단장 등급은 합성 재료로 사용할 수 없습니다.' };
     }
 
     // 다음 등급 확인
@@ -73,11 +73,11 @@ export function canFuse(
         return { canFuse: false, reason: '이미 최고 등급입니다.' };
     }
 
-    // 합성 제한: 전설 등급까지만 생성 가능 (결과물이 유니크 이상이면 불가)
-    if (nextRarity === 'unique' || nextRarity === 'commander') {
+    // 합성 제한: 군단장은 합성 불가
+    if (nextRarity === 'commander') {
         return {
             canFuse: false,
-            reason: '합성으로는 전설 등급까지만 획득 가능합니다. 유니크 제작은 [유니크 생성] 메뉴를 이용해주세요.'
+            reason: '군단장 등급은 합성으로 획득할 수 없습니다.'
         };
     }
 
@@ -154,7 +154,7 @@ export function fuseCards(
         rare: { min: 15, max: 35 },
         epic: { min: 30, max: 55 },
         legendary: { min: 50, max: 80 },
-        unique: { min: 70, max: 100 },
+        mythic: { min: 70, max: 100 },
         commander: { min: 90, max: 120 }
     };
 
@@ -274,7 +274,7 @@ export function getRarityName(rarity: Rarity): string {
         rare: '희귀',
         epic: '영웅',
         legendary: '전설',
-        unique: '유니크',
+        mythic: '신화',
         commander: '군단장'
     };
     return names[rarity] || rarity;
@@ -289,7 +289,7 @@ export function getRarityColor(rarity: Rarity): string {
         rare: '#3B82F6', // blue
         epic: '#A855F7', // purple
         legendary: '#F59E0B', // amber
-        unique: '#EF4444', // red
+        mythic: '#EF4444', // red
         commander: '#10B981' // emerald
     };
     return colors[rarity] || '#9CA3AF';

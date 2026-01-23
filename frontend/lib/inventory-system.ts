@@ -333,7 +333,7 @@ export function filterCards(cards: InventoryCard[], filters: CardFilter): Invent
  */
 export function getMainCards(cards: InventoryCard[]): InventoryCard[] {
     const mainCards: Record<string, InventoryCard> = {};
-    const rarities = ['commander', 'unique', 'legendary', 'epic', 'rare', 'common'];
+    const rarities = ['commander', 'mythic', 'legendary', 'epic', 'rare', 'common'];
 
     cards.forEach(card => {
         const rarity = card.rarity || 'common';
@@ -363,7 +363,7 @@ export function getMainCards(cards: InventoryCard[]): InventoryCard[] {
         }
     });
 
-    // Return in the specific order: Commander -> Unique -> Legendary -> Epic -> Rare -> Common
+    // Return in the specific order: Commander -> Mythic -> Legendary -> Epic -> Rare -> Common
     return rarities.map(r => mainCards[r]).filter(Boolean);
 }
 
@@ -387,7 +387,7 @@ export function sortCards(
 
         // Sort mains by rarity descending (Commander first)
         const sortedMains = [...mains].sort((a, b) => {
-            const rarityOrder = { 'common': 1, 'rare': 2, 'epic': 3, 'legendary': 4, 'unique': 5, 'commander': 6 };
+            const rarityOrder = { 'common': 1, 'rare': 2, 'epic': 3, 'legendary': 4, 'mythic': 5, 'commander': 6 };
             return (rarityOrder[b.rarity as keyof typeof rarityOrder] || 0) -
                 (rarityOrder[a.rarity as keyof typeof rarityOrder] || 0);
         });
@@ -424,7 +424,7 @@ function sortInner(cards: InventoryCard[], sortBy: CardSortBy, ascending: boolea
                 comparison = dateA.getTime() - dateB.getTime();
                 break;
             case 'rarity':
-                const rarityOrder = { 'common': 1, 'rare': 2, 'epic': 3, 'legendary': 4, 'unique': 5, 'commander': 6 };
+                const rarityOrder = { 'common': 1, 'rare': 2, 'epic': 3, 'legendary': 4, 'mythic': 5, 'commander': 6 };
                 comparison = (rarityOrder[a.rarity as keyof typeof rarityOrder] || 0) -
                     (rarityOrder[b.rarity as keyof typeof rarityOrder] || 0);
                 break;
@@ -500,7 +500,7 @@ export async function distributeStarterPack(uid?: string, nickname?: string): Pr
         const rareCard = generateCardByRarity('rare', uid);
         const epicCard = generateCardByRarity('epic', uid);
         const legendaryCard = generateCardByRarity('legendary', uid);
-        const uniqueCard = generateCardByRarity('unique', uid);
+        const uniqueCard = generateCardByRarity('mythic', uid);
 
         // Customize Unique Card with Nickname
         if (nickname) {

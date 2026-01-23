@@ -356,7 +356,7 @@ export function UserProvider({ children }: { children: React.ReactNode }) {
 
                     // [SELF-HEALING] Avatar Sync
                     // If user has a commander card but no custom avatar (or default), sync it.
-                    const commanderCard = finalInventory.find(c => c.rarity === 'unique' || c.isCommanderCard);
+                    const commanderCard = finalInventory.find(c => c.rarity === 'mythic' || c.isCommanderCard);
                     const isDefaultAvatar = !profile.avatarUrl || profile.avatarUrl.includes('default') || profile.avatarUrl.includes('emoji');
 
                     if (commanderCard && isDefaultAvatar && commanderCard.imageUrl) {
@@ -703,7 +703,7 @@ export function UserProvider({ children }: { children: React.ReactNode }) {
         try {
             const uid = user.uid;
             const { generateCardByRarity: gen } = await import('@/lib/card-generation-system');
-            const starterCards = [gen('common', uid), gen('rare', uid), gen('epic', uid), gen('legendary', uid), gen('unique', uid)];
+            const starterCards = [gen('common', uid), gen('rare', uid), gen('epic', uid), gen('legendary', uid), gen('mythic', uid)];
             starterCards[4].name = `지휘관 ${nickname}`;
             starterCards[4].description = "전장에 새롭게 합류한 지휘관의 전용 유닉입니다.";
 

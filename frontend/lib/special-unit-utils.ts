@@ -1,4 +1,4 @@
-// 유니크 유닛 시스템 유틸리티
+// 특수 유닛 시스템 유틸리티
 
 import { Card } from './types';
 import { AICategory } from './faction-types';
@@ -6,13 +6,18 @@ import { getGameState, saveGameState } from './game-state';
 import { calculateSynergy } from './slot-utils';
 import uniqueUnitsData from '@/data/unique-units.json';
 
-export interface UniqueUnitData {
+export interface SpecialUnitData {
     id: string;
     name: string;
     category: AICategory;
     description: string;
     basePower: number;
     powerMultiplier: number;
+    stats: {
+        power: number;
+        defense: number;
+        speed: number;
+    };
     specialSkill: {
         name: string;
         description: string;
@@ -20,21 +25,54 @@ export interface UniqueUnitData {
     };
     rarity: 'epic' | 'legendary';
     iconEmoji: string;
+    imageUrl?: string;
+    faction?: string;
+    progress: number;
+    isClaimed: boolean;
 }
 
 /**
- * 모든 유니크 유닛 데이터 가져오기
+ * 모든 특수 유닛 데이터 가져오기
  */
-export function getAllUniqueUnits(): UniqueUnitData[] {
-    return uniqueUnitsData.uniqueUnits as UniqueUnitData[];
+export function getAllSpecialUnits(): SpecialUnitData[] {
+    return uniqueUnitsData.uniqueUnits.map(u => ({
+        ...u,
+        stats: {
+            power: u.basePower,
+            defense: Math.floor(u.basePower * 0.8),
+            speed: Math.floor(u.basePower * 1.2)
+        },
+        progress: 0,
+        isClaimed: false
+    })) as SpecialUnitData[];
 }
 
 /**
- * 카테고리별 유니크 유닛 가져오기
+ * 카테고리별 특수 유닛 가져오기
  */
-export function getUniqueUnitByCategory(category: AICategory): UniqueUnitData | null {
-    const units = getAllUniqueUnits();
+export function getSpecialUnitByCategory(category: AICategory): SpecialUnitData | null {
+    const units = getAllSpecialUnits();
     return units.find(u => u.category === category) || null;
+}
+
+/**
+ * 현재 활성화된 특수 유닛 데이터 및 진행도 가져오기 (Page에서 요구하는 형태)
+ */
+export async function getSpecialUnitData(): Promise<SpecialUnitData | null> {
+    const progress = getSpecialUnitProgress();
+    if (!progress.isGenerating && !progress.unitData) {
+        // 기본값으로 첫 번째 유닛 반환 또는 null
+        const all = getAllSpecialUnits();
+        return all[0] || null;
+    }
+
+    if (!progress.unitData) return null;
+
+    return {
+        ...progress.unitData,
+        progress: progress.progress,
+        isClaimed: progress.isClaimed
+    };
 }
 
 /**
@@ -49,9 +87,9 @@ export function calculateGenerationTime(): number {
 }
 
 /**
- * 유니크 유닛 생성 시작
+ * 특수 유닛 생성 시작
  */
-export function startUniqueUnitGeneration(): {
+export function startSpecialUnitGeneration(): {
     success: boolean;
     message: string;
 } {
@@ -61,7 +99,7 @@ export function startUniqueUnitGeneration(): {
     if (state.uniqueUnit?.isGenerating && !state.uniqueUnit.claimed) {
         return {
             success: false,
-            message: '이미 유니크 유닛을 생성 중입니다.'
+            message: '이미 특수 유닛을 생성 중입니다.'
         };
     }
 
@@ -109,20 +147,21 @@ export function startUniqueUnitGeneration(): {
 
     return {
         success: true,
-        message: `유니크 유닛 생성을 시작했습니다! (${formatTime(generationTime)})`
+        message: `특수 유닛 생성을 시작했습니다! (${formatTime(generationTime)})`
     };
 }
 
 /**
- * 유니크 유닛 생성 진행도
+ * 특수 유닛 생성 진행도
  */
-export function getUniqueUnitProgress(): {
+export function getSpecialUnitProgress(): {
     isGenerating: boolean;
     isComplete: boolean;
     progress: number; // 0-100
     remainingTime: number; // 초
     category: AICategory | null;
-    unitData: UniqueUnitData | null;
+    unitData: SpecialUnitData | null;
+    isClaimed: boolean;
 } {
     const state = getGameState();
 
@@ -133,7 +172,8 @@ export function getUniqueUnitProgress(): {
             progress: 0,
             remainingTime: 0,
             category: null,
-            unitData: null
+            unitData: null,
+            isClaimed: false
         };
     }
 
@@ -146,22 +186,23 @@ export function getUniqueUnitProgress(): {
     const isComplete = remaining === 0;
 
     const category = state.uniqueUnit.category as AICategory;
-    const unitData = category ? getUniqueUnitByCategory(category) : null;
+    const unitData = category ? getSpecialUnitByCategory(category) : null;
 
     return {
         isGenerating: true,
         isComplete,
-        progress,
+        progress: progress,
         remainingTime: Math.floor(remaining / 1000),
         category,
-        unitData
+        unitData,
+        isClaimed: !!state.uniqueUnit.claimed
     };
 }
 
 /**
- * 유니크 유닛 수령
+ * 특수 유닛 수령
  */
-export function claimUniqueUnit(): {
+export function claimSpecialUnit(): {
     success: boolean;
     message: string;
     card?: Card;
@@ -171,11 +212,11 @@ export function claimUniqueUnit(): {
     if (!state.uniqueUnit || !state.uniqueUnit.isGenerating) {
         return {
             success: false,
-            message: '생성 중인 유니크 유닛이 없습니다.'
+            message: '생성 중인 특수 유닛이 없습니다.'
         };
     }
 
-    const progress = getUniqueUnitProgress();
+    const progress = getSpecialUnitProgress();
 
     if (!progress.isComplete) {
         return {
@@ -201,10 +242,10 @@ export function claimUniqueUnit(): {
     }
 
     const card: Card = {
-        id: `unique-${Date.now()}`,
-        instanceId: `unique-${Date.now()}-${Math.random().toString(36).substr(2, 9)}`,
+        id: `special-${Date.now()}`,
+        instanceId: `special-${Date.now()}-${Math.random().toString(36).substr(2, 9)}`,
         templateId: unitData.id,
-        ownerId: state.userId,
+        ownerId: state.userId || 'player',
         level: 1,
         experience: 0,
         stats: {
@@ -223,6 +264,7 @@ export function claimUniqueUnit(): {
     };
 
     // 인벤토리에 추가
+    if (!state.inventory) state.inventory = [];
     state.inventory.push(card);
 
     // 수령 완료 표시

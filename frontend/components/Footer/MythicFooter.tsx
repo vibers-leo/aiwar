@@ -3,8 +3,9 @@ import { Card } from '@/lib/types';
 import { cn } from '@/lib/utils';
 import FooterSlot from './FooterSlot';
 import { Sparkles } from 'lucide-react';
+import { useTranslation } from '@/context/LanguageContext';
 
-interface UniqueFooterProps {
+interface MythicFooterProps {
     materialSlots: (Card | InventoryCard | null)[];
     onMaterialDrop: (card: Card | InventoryCard, index: number) => void;
     onMaterialRemove: (index: number) => void;
@@ -12,9 +13,11 @@ interface UniqueFooterProps {
     onAutoSelect: () => void;
     onSubmit: () => void;
     canSubmit: boolean;
+    label?: string;
+    submitLabel?: string;
 }
 
-export default function UniqueFooter({
+export default function MythicFooter({
     materialSlots,
     onMaterialDrop,
     onMaterialRemove,
@@ -22,7 +25,10 @@ export default function UniqueFooter({
     onAutoSelect,
     onSubmit,
     canSubmit,
-}: UniqueFooterProps) {
+    label,
+    submitLabel,
+}: MythicFooterProps) {
+    const { t, language } = useTranslation();
     const filledCount = materialSlots.filter(c => c !== null).length;
 
     return (
@@ -38,7 +44,7 @@ export default function UniqueFooter({
                     <div className="flex items-center gap-3 overflow-x-auto flex-1 no-scrollbar pr-4">
                         <div className="flex flex-col justify-center min-w-max">
                             <p className="text-[10px] font-mono text-red-500 uppercase whitespace-nowrap mb-1">
-                                Legendary Materials ({filledCount}/5)
+                                {label || (language === 'ko' ? '신화 재료' : 'Mythic Materials')} ({filledCount}/{materialSlots.length})
                             </p>
                             <div className="flex gap-2">
                                 {materialSlots.map((card, index) => (
@@ -63,7 +69,7 @@ export default function UniqueFooter({
                             onClick={onClear}
                             className="hidden md:block px-4 py-2.5 bg-white/10 hover:bg-white/20 text-white/80 hover:text-white rounded-lg transition-colors text-sm"
                         >
-                            초기화
+                            {language === 'ko' ? '초기화' : 'Clear'}
                         </button>
 
                         {/* 자동선택 버튼 */}
@@ -72,7 +78,7 @@ export default function UniqueFooter({
                             className="px-3 md:px-5 py-2 md:py-2.5 bg-cyan-500/30 hover:bg-cyan-500/50 text-cyan-300 rounded-lg transition-all text-xs md:text-sm font-medium border border-cyan-400/50 whitespace-nowrap"
                         >
                             <span className="md:hidden">Auto</span>
-                            <span className="hidden md:inline">자동선택</span>
+                            <span className="hidden md:inline">{language === 'ko' ? '자동선택' : 'Auto Select'}</span>
                         </button>
 
                         {/* 제출 버튼 */}
@@ -87,7 +93,7 @@ export default function UniqueFooter({
                             )}
                         >
                             <Sparkles size={16} />
-                            <span>유니크</span>
+                            <span>{submitLabel || t('menu.uniqueGeneration')}</span>
                         </button>
                     </div>
                 </div>

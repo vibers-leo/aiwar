@@ -23,7 +23,7 @@ const RARITY_EFFECTS = {
     rare: { color: 'blue', duration: 0.5, particles: 10 },
     epic: { color: 'purple', duration: 0.8, particles: 20 },
     legendary: { color: 'amber', duration: 1.2, particles: 30 },
-    unique: { color: 'red', duration: 1.5, particles: 40 },
+    mythic: { color: 'red', duration: 1.5, particles: 40 },
     commander: { color: 'emerald', duration: 1.5, particles: 40 }
 };
 
@@ -33,7 +33,7 @@ const RARITY_GRADIENTS = {
     rare: 'from-blue-900 via-blue-800 to-blue-900',
     epic: 'from-purple-900 via-purple-800 to-purple-900',
     legendary: 'from-amber-900 via-orange-800 to-amber-900',
-    unique: 'from-red-900 via-pink-800 to-red-900',
+    mythic: 'from-red-900 via-pink-800 to-red-900',
     commander: 'from-emerald-900 via-teal-800 to-emerald-900'
 };
 
@@ -46,7 +46,7 @@ export default function GachaRevealModal({ isOpen, onClose, cards, packType, bon
 
     // 최고 등급 찾기
     const highestRarity = cards.reduce<Rarity>((highest, card) => {
-        const rarityOrder: Rarity[] = ['common', 'rare', 'epic', 'legendary', 'unique', 'commander'];
+        const rarityOrder: Rarity[] = ['common', 'rare', 'epic', 'legendary', 'mythic', 'commander'];
         const cardRarity = card.rarity || 'common';
         return rarityOrder.indexOf(cardRarity) > rarityOrder.indexOf(highest) ? cardRarity : highest;
     }, 'common');
@@ -172,7 +172,7 @@ export default function GachaRevealModal({ isOpen, onClose, cards, packType, bon
                                     animate={{ opacity: 1, scale: 1, y: 0 }}
                                     transition={{ delay: i * 0.1 }}
                                 >
-                                    <GameCard card={card} isHolographic={card.rarity === 'legendary' || card.rarity === 'unique'} />
+                                    <GameCard card={card} isHolographic={card.rarity === 'legendary' || card.rarity === 'mythic'} />
                                 </motion.div>
                             ))}
                         </div>
@@ -226,7 +226,7 @@ export default function GachaRevealModal({ isOpen, onClose, cards, packType, bon
 function CardRevealAnimation({ card, index, onComplete }: { card: CardType; index: number; onComplete: () => void }) {
     const rarity = card.rarity || 'common';
     const effect = RARITY_EFFECTS[rarity];
-    const isHighRarity = rarity === 'legendary' || rarity === 'unique' || rarity === 'epic';
+    const isHighRarity = rarity === 'legendary' || rarity === 'mythic' || rarity === 'epic';
 
     return (
         <motion.div
@@ -262,13 +262,13 @@ function CardRevealAnimation({ card, index, onComplete }: { card: CardType; inde
                 <p className={cn(
                     "text-lg font-black orbitron uppercase",
                     rarity === 'legendary' && "text-amber-400",
-                    rarity === 'unique' && "text-red-400",
+                    rarity === 'mythic' && "text-red-400",
                     rarity === 'epic' && "text-purple-400",
                     rarity === 'rare' && "text-blue-400",
                     rarity === 'common' && "text-gray-400"
                 )}>
                     {rarity === 'legendary' && '⭐ LEGENDARY! ⭐'}
-                    {rarity === 'unique' && '🔥 UNIQUE!! 🔥'}
+                    {rarity === 'mythic' && '🔥 MYTHIC!! 🔥'}
                     {rarity === 'epic' && '✨ EPIC! ✨'}
                     {rarity === 'rare' && 'RARE'}
                     {rarity === 'common' && 'COMMON'}
@@ -309,7 +309,7 @@ function ParticleEffect({ rarity, isActive }: { rarity: Rarity; isActive: boolea
                     className={cn(
                         "absolute w-2 h-2 rounded-full",
                         rarity === 'legendary' && "bg-amber-400",
-                        rarity === 'unique' && "bg-red-400",
+                        rarity === 'mythic' && "bg-red-400",
                         rarity === 'epic' && "bg-purple-400",
                         rarity === 'rare' && "bg-blue-400",
                         rarity === 'common' && "bg-gray-400"

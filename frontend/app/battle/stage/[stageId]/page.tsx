@@ -12,7 +12,7 @@ import { applyBattleResult, BattleResult, BattleParticipant, generateOpponentDec
 import { useTranslation } from '@/context/LanguageContext';
 import BattleDeckSelection from '@/components/battle/BattleDeckSelection';
 import { useUser } from '@/context/UserContext';
-import { Shield, ArrowLeft } from 'lucide-react';
+import { Shield, ArrowLeft, Trophy, Home, RotateCcw, CheckCircle } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { BackgroundBeams } from '@/components/ui/aceternity/background-beams';
 import UnifiedBattleScene, { BattleRoundData } from '@/components/battle/UnifiedBattleScene';
@@ -116,20 +116,10 @@ export default function StageBattlePage() {
         const { isWin, playerWins: pWins, enemyWins: eWins } = result;
 
         if (isWin) {
-            // Construct minimal BattleResult for applyBattleResult utility
+            // Apply rewards & API calls
             const res: BattleResult = {
                 winner: 'player',
-                rounds: result.rounds.map(r => ({
-                    round: r.round,
-                    winner: r.winner === 'player' ? 'player' : r.winner === 'enemy' ? 'opponent' : 'draw',
-                    playerCard: r.playerCard,
-                    opponentCard: r.enemyCard,
-                    playerPower: r.playerPower,
-                    opponentPower: r.enemyPower,
-                    playerType: (r.playerCard.type || 'EFFICIENCY').toLowerCase() as any,
-                    opponentType: (r.enemyCard.type || 'EFFICIENCY').toLowerCase() as any,
-                    reason: r.reason
-                })),
+                rounds: result.rounds,
                 playerWins: pWins,
                 opponentWins: eWins,
                 rewards: {
@@ -139,26 +129,40 @@ export default function StageBattlePage() {
                 }
             };
 
-            // Apply rewards
             const manualRewards = {
                 coins: storyStage.rewards.coins,
                 experience: storyStage.rewards.experience
             };
+
+            // Execute backend updates
             await applyBattleResult(res, activeBattleDeck, enemies, false, false, false, manualRewards);
 
-            // Mark stage as complete
-            // Stage ID format: 'stage-X-Y' where X is chapter number
             const chapterNum = storyStage.id.split('-')[1] || '1';
             const chapterId = `chapter-${chapterNum}`;
             await completeStage(chapterId, storyStage.id, user?.uid);
 
-            // Track mission
             trackMissionEvent('battle-win', 1);
 
-            // Navigate back to chapter map (reuse chapterNum from above)
-            router.push(`/story/chapter-${chapterNum}`);
+            // Show Result Screen instead of immediate redirect
+            setBattleResult({
+                ...res,
+                // Ensure we pass mapped rounds for display if needed, 
+                // but for the summary score, just counts are enough.
+                rounds: result.rounds.map(r => ({
+                    round: r.round,
+                    winner: r.winner === 'player' ? 'player' : r.winner === 'enemy' ? 'opponent' : 'draw',
+                    playerCard: r.playerCard,
+                    opponentCard: r.enemyCard,
+                    playerPower: r.playerPower,
+                    opponentPower: r.enemyPower,
+                    playerType: (r.playerCard.type || 'EFFICIENCY').toLowerCase() as any,
+                    opponentType: (r.enemyCard.type || 'EFFICIENCY').toLowerCase() as any,
+                }))
+            });
+            setPhase('result');
+
         } else {
-            // Defeat: Show result screen before retry
+            // Defeat
             setBattleResult({
                 winner: 'opponent',
                 rounds: result.rounds.map(r => ({
@@ -175,12 +179,12 @@ export default function StageBattlePage() {
                 opponentWins: eWins,
                 rewards: { coins: 0, experience: 0, ratingChange: 0 }
             });
-            setPhase('result'); // Show defeat result screen
+            setPhase('result');
         }
     };
 
 
-    // --- Actions ---
+    // ... (Actions omitted for brevity, logic remains same)
 
     const handleStartBattle = (preparedDeck: Card[]) => {
         if (!storyStage) return;
@@ -197,28 +201,23 @@ export default function StageBattlePage() {
         setPhase('opponent-reveal');
     };
 
-    // NEW: Handle opponent reveal completion
     const handleRevealComplete = () => {
         if (!storyStage) return;
         setPhase('placement');
     };
 
-    // NEW: Handle placement completion - Now pre-calculates battle results
     const handlePlacementComplete = (placement: RoundPlacement) => {
         if (!storyStage) return;
         setCardPlacement(placement);
 
-        // Get card order from placement
         const getIdx = (card: any) => selectedHand.findIndex(c => c.id === card?.id);
         const placementRounds = [placement.round1, placement.round2, placement.round3, placement.round4, placement.round5].filter(Boolean);
         const playerOrder = placementRounds.map(r => getIdx(r.main)).filter(idx => idx !== -1);
 
         if (storyStage.battleMode === 'double') {
-            // For DoubleBattleArena, we pass the full deck
             setActiveBattleDeck(selectedHand);
             setPhase('battle');
         } else {
-            // NEW: Pre-calculate battle using simulateBattle
             const player: BattleParticipant = {
                 name: '플레이어',
                 level: level || 1,
@@ -230,12 +229,10 @@ export default function StageBattlePage() {
                 name: language === 'ko' ? storyStage.enemy.name_ko : storyStage.enemy.name,
                 level: storyStage.step,
                 deck: enemies,
-                cardOrder: [0, 1, 2, 3, 4] // Enemy uses default order
+                cardOrder: [0, 1, 2, 3, 4]
             };
 
             const result = simulateBattle(player, opponent, storyStage.battleMode as any || 'tactics');
-
-            // Convert to BattleRoundData format
             const rounds: BattleRoundData[] = result.rounds.map(r => ({
                 round: typeof r.round === 'string' ? parseInt(r.round) : r.round,
                 playerCard: r.playerCard,
@@ -253,7 +250,6 @@ export default function StageBattlePage() {
     };
 
 
-
     if (!storyStage) return <div className="min-h-screen bg-black text-white flex items-center justify-center">{t('common.loading')}</div>;
 
     const maxSelect = (storyStage.battleMode === 'double' || storyStage.battleMode === 'strategy') ? 6 : 5;
@@ -269,8 +265,8 @@ export default function StageBattlePage() {
             </div>
 
 
-            {/* Header - Only layout for non-battle phases */}
-            {phase !== 'battle' && (
+            {/* Header - Only for non-result phases to clear screen */}
+            {phase !== 'battle' && phase !== 'result' && (
                 <div className="relative z-10 p-4 flex justify-between items-start shrink-0">
                     <Button variant="ghost" className="text-white hover:text-cyan-400 gap-2" onPress={() => router.back()} startContent={<ArrowLeft size={16} />}>
                         {t('battle.common.back')}
@@ -308,8 +304,6 @@ export default function StageBattlePage() {
                         isOpen={phase === 'intro'}
                         onClose={startDeckSelection}
                         onCancel={() => {
-                            // Navigate back to chapter map
-                            // Stage ID format: 'stage-X-Y'
                             const chapterNum = storyStage.id.split('-')[1] || '1';
                             router.push(`/story/chapter-${chapterNum}`);
                         }}
@@ -322,8 +316,6 @@ export default function StageBattlePage() {
                                 isKo ? d.quote_ko : d.quote,
                                 isKo ? d.start_ko : d.start
                             ].filter((text): text is string => !!text && text.trim().length > 0);
-
-                            // Split by newline or literal \n string to handle consolidated lines
                             return raw.flatMap(text => text.split(/\\n|\n/))
                                 .map(line => line.trim())
                                 .filter(line => line.length > 0);
@@ -368,7 +360,7 @@ export default function StageBattlePage() {
                     />
                 )}
 
-                {/* 5. Battle Animation (Unified PVP Style) */}
+                {/* 5. Battle Animation */}
                 {phase === 'battle' && (
                     storyStage.battleMode === 'double' ? (
                         <DoubleBattleArena
@@ -406,90 +398,153 @@ export default function StageBattlePage() {
                 )}
 
 
-                {/* 6. Result Screen (Defeat) */}
+                {/* 6. Result Screen (Victory & Defeat) */}
                 {phase === 'result' && battleResult && (
                     <motion.div
                         initial={{ opacity: 0, scale: 0.9 }}
                         animate={{ opacity: 1, scale: 1 }}
                         className="min-h-screen flex flex-col items-center justify-center py-12"
                     >
-                        <div className="max-w-lg w-full bg-zinc-900/90 border border-red-500/50 rounded-3xl p-8 shadow-[0_0_50px_rgba(239,68,68,0.2)] text-center">
-                            {/* Defeat Title */}
-                            <motion.div
-                                initial={{ y: -20, opacity: 0 }}
-                                animate={{ y: 0, opacity: 1 }}
-                                transition={{ delay: 0.2 }}
-                            >
-                                <div className="text-red-400 text-xs font-black orbitron tracking-[0.3em] mb-2 uppercase">
-                                    MISSION FAILED
-                                </div>
-                                <h2 className="text-4xl font-black text-red-500 mb-4 orbitron">
-                                    패배
-                                </h2>
-                            </motion.div>
+                        <div className={cn(
+                            "max-w-lg w-full rounded-3xl p-8 shadow-2xl text-center border relative overflow-hidden",
+                            battleResult.winner === 'player'
+                                ? "bg-zinc-900/90 border-cyan-500/50 shadow-[0_0_50px_rgba(6,182,212,0.3)]"
+                                : "bg-zinc-900/90 border-red-500/50 shadow-[0_0_50px_rgba(239,68,68,0.2)]"
+                        )}>
+                            {/* Decorative Background */}
+                            <div className={cn(
+                                "absolute tops-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[400px] h-[400px] rounded-full blur-[100px] opacity-30",
+                                battleResult.winner === 'player' ? "bg-cyan-500" : "bg-red-500"
+                            )} />
 
-                            {/* Score */}
-                            <motion.div
-                                initial={{ scale: 0 }}
-                                animate={{ scale: 1 }}
-                                transition={{ delay: 0.4, type: 'spring' }}
-                                className="flex items-center justify-center gap-8 my-8"
-                            >
-                                <div className="text-center">
-                                    <div className="text-5xl font-black text-cyan-400">{battleResult.playerWins}</div>
-                                    <div className="text-sm text-gray-400 mt-1">승리</div>
-                                </div>
-                                <div className="text-3xl text-gray-600 font-bold">vs</div>
-                                <div className="text-center">
-                                    <div className="text-5xl font-black text-red-500">{battleResult.opponentWins}</div>
-                                    <div className="text-sm text-gray-400 mt-1">패배</div>
-                                </div>
-                            </motion.div>
-
-                            {/* Enemy Quote */}
-                            <motion.div
-                                initial={{ opacity: 0 }}
-                                animate={{ opacity: 1 }}
-                                transition={{ delay: 0.6 }}
-                                className="bg-red-500/10 border border-red-500/30 rounded-xl p-4 mb-8"
-                            >
-                                <p className="text-gray-300 italic">
-                                    "{language === 'ko' ? storyStage?.enemy.dialogue.win_ko : storyStage?.enemy.dialogue.win}"
-                                </p>
-                            </motion.div>
-
-                            {/* Action Buttons */}
-                            <motion.div
-                                initial={{ y: 20, opacity: 0 }}
-                                animate={{ y: 0, opacity: 1 }}
-                                transition={{ delay: 0.8 }}
-                                className="flex gap-4 justify-center"
-                            >
-                                <Button
-                                    onClick={() => {
-                                        setPhase('intro');
-                                        setBattleResult(null);
-                                        setSelectedHand([]);
-                                        setActiveBattleDeck([]);
-                                        setBattleRounds([]);
-                                    }}
-                                    className="px-8 py-3 bg-cyan-500 hover:bg-cyan-400 text-black font-bold rounded-xl"
+                            <div className="relative z-10">
+                                {/* Title */}
+                                <motion.div
+                                    initial={{ y: -20, opacity: 0 }}
+                                    animate={{ y: 0, opacity: 1 }}
+                                    transition={{ delay: 0.2 }}
                                 >
-                                    <ArrowLeft className="w-4 h-4 mr-2" />
-                                    재도전
-                                </Button>
-                                <Button
-                                    onClick={() => {
-                                        // Stage ID format: 'stage-X-Y'
-                                        const chapterNum = storyStage?.id.split('-')[1] || '1';
-                                        router.push(`/story/chapter-${chapterNum}`);
-                                    }}
-                                    variant="ghost"
-                                    className="px-8 py-3 border border-gray-600 text-gray-400 hover:text-white hover:border-gray-400 rounded-xl"
+                                    <div className={cn(
+                                        "text-xs font-black orbitron tracking-[0.3em] mb-2 uppercase",
+                                        battleResult.winner === 'player' ? "text-cyan-400" : "text-red-400"
+                                    )}>
+                                        {battleResult.winner === 'player' ? "MISSION COMPLETE" : "MISSION FAILED"}
+                                    </div>
+                                    <h2 className={cn(
+                                        "text-4xl md:text-5xl font-black mb-6 orbitron italic",
+                                        battleResult.winner === 'player'
+                                            ? "text-transparent bg-clip-text bg-gradient-to-b from-white to-cyan-400 drop-shadow-lg"
+                                            : "text-red-500"
+                                    )}>
+                                        {battleResult.winner === 'player' ? (language === 'ko' ? "승리" : "VICTORY") : (language === 'ko' ? "패배" : "DEFEAT")}
+                                    </h2>
+                                </motion.div>
+
+                                {/* Score */}
+                                <motion.div
+                                    initial={{ scale: 0 }}
+                                    animate={{ scale: 1 }}
+                                    transition={{ delay: 0.4, type: 'spring' }}
+                                    className="flex items-center justify-center gap-8 my-8 bg-black/20 rounded-2xl py-4 border border-white/5"
                                 >
-                                    포기
-                                </Button>
-                            </motion.div>
+                                    <div className="text-center">
+                                        <div className="text-4xl font-black text-cyan-400">{battleResult.playerWins}</div>
+                                        <div className="text-[10px] text-gray-400 mt-1 uppercase tracking-widest">Player</div>
+                                    </div>
+                                    <div className="text-2xl text-gray-600 font-bold italic">VS</div>
+                                    <div className="text-center">
+                                        <div className="text-4xl font-black text-red-500">{battleResult.opponentWins}</div>
+                                        <div className="text-[10px] text-gray-400 mt-1 uppercase tracking-widest">Enemy</div>
+                                    </div>
+                                </motion.div>
+
+                                {/* Victory Rewards */}
+                                {battleResult.winner === 'player' && (
+                                    <motion.div
+                                        initial={{ opacity: 0, y: 10 }}
+                                        animate={{ opacity: 1, y: 0 }}
+                                        transition={{ delay: 0.6 }}
+                                        className="mb-8"
+                                    >
+                                        <div className="text-sm font-bold text-yellow-500 mb-3 flex items-center justify-center gap-2">
+                                            <Trophy size={16} /> REWARDS ACQUIRED
+                                        </div>
+                                        <div className="grid grid-cols-2 gap-3">
+                                            <div className="bg-white/5 border border-white/10 rounded-xl p-3 flex flex-col items-center">
+                                                <div className="text-xs text-gray-400 mb-1">COINS</div>
+                                                <div className="text-xl font-black text-yellow-400">+{battleResult.rewards?.coins || 0}</div>
+                                            </div>
+                                            <div className="bg-white/5 border border-white/10 rounded-xl p-3 flex flex-col items-center">
+                                                <div className="text-xs text-gray-400 mb-1">EXP</div>
+                                                <div className="text-xl font-black text-cyan-400">+{battleResult.rewards?.experience || 0}</div>
+                                            </div>
+                                        </div>
+                                    </motion.div>
+                                )}
+
+                                {/* Quote */}
+                                <motion.div
+                                    initial={{ opacity: 0 }}
+                                    animate={{ opacity: 1 }}
+                                    transition={{ delay: 0.8 }}
+                                    className={cn(
+                                        "border rounded-xl p-4 mb-8 text-sm italic",
+                                        battleResult.winner === 'player' ? "bg-cyan-500/10 border-cyan-500/30 text-cyan-100" : "bg-red-500/10 border-red-500/30 text-red-100"
+                                    )}
+                                >
+                                    "{battleResult.winner === 'player'
+                                        ? (language === 'ko' ? storyStage?.enemy.dialogue.lose_ko : storyStage?.enemy.dialogue.lose) // Player wins = Enemy defeat quote
+                                        : (language === 'ko' ? storyStage?.enemy.dialogue.win_ko : storyStage?.enemy.dialogue.win) // Player loses = Enemy win quote
+                                    }"
+                                </motion.div>
+
+                                {/* Action Buttons */}
+                                <motion.div
+                                    initial={{ y: 20, opacity: 0 }}
+                                    animate={{ y: 0, opacity: 1 }}
+                                    transition={{ delay: 1.0 }}
+                                    className="flex gap-4 justify-center"
+                                >
+                                    {battleResult.winner === 'player' ? (
+                                        <Button
+                                            onClick={() => {
+                                                const chapterNum = storyStage?.id.split('-')[1] || '1';
+                                                router.push(`/story/chapter-${chapterNum}`);
+                                            }}
+                                            className="w-full bg-cyan-500 hover:bg-cyan-400 text-black font-black rounded-xl py-6 text-lg shadow-lg shadow-cyan-500/20"
+                                        >
+                                            <CheckCircle className="w-5 h-5 mr-2" />
+                                            {language === 'ko' ? "작전 완료" : "COMPLETE"}
+                                        </Button>
+                                    ) : (
+                                        <>
+                                            <Button
+                                                onClick={() => {
+                                                    setPhase('intro');
+                                                    setBattleResult(null);
+                                                    setSelectedHand([]);
+                                                    setActiveBattleDeck([]);
+                                                    setBattleRounds([]);
+                                                }}
+                                                className="flex-1 bg-white hover:bg-gray-200 text-black font-bold rounded-xl"
+                                            >
+                                                <RotateCcw className="w-4 h-4 mr-2" />
+                                                재도전
+                                            </Button>
+                                            <Button
+                                                onClick={() => {
+                                                    const chapterNum = storyStage?.id.split('-')[1] || '1';
+                                                    router.push(`/story/chapter-${chapterNum}`);
+                                                }}
+                                                variant="ghost"
+                                                className="px-6 border border-gray-600 text-gray-400 hover:text-white rounded-xl"
+                                            >
+                                                <Home className="w-4 h-4" />
+                                            </Button>
+                                        </>
+                                    )}
+                                </motion.div>
+                            </div>
                         </div>
                     </motion.div>
                 )}

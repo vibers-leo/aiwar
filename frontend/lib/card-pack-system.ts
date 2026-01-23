@@ -14,7 +14,7 @@ export interface CardPack {
         rare: number;
         epic: number;
         legendary: number;
-        unique?: number;
+        mythic?: number;
     };
 }
 
@@ -32,7 +32,7 @@ export const CARD_PACKS: CardPack[] = [
             rare: 30,
             epic: 10,
             legendary: 0,
-            unique: 0
+            mythic: 0
         },
     },
     {
@@ -48,7 +48,7 @@ export const CARD_PACKS: CardPack[] = [
             rare: 40,
             epic: 15,
             legendary: 0,
-            unique: 5 // Unique chance added
+            mythic: 5 // Mythic chance added
         },
     },
     {
@@ -64,7 +64,7 @@ export const CARD_PACKS: CardPack[] = [
             rare: 25,
             epic: 5,
             legendary: 0,
-            unique: 0
+            mythic: 0
         },
     },
 ];

@@ -20,7 +20,7 @@ import { getCardName } from '@/data/card-translations';
 import { useCardModal } from '@/components/CardModalContext';
 
 type SortOption = 'power' | 'rarity' | 'name' | 'acquiredAt';
-type FilterOption = 'all' | 'common' | 'rare' | 'epic' | 'legendary' | 'unique' | 'commander';
+type FilterOption = 'all' | 'common' | 'rare' | 'epic' | 'legendary' | 'mythic' | 'commander';
 
 // Requested Order: Common -> Rare -> Hero(Epic) -> Legend -> Unique -> Commander
 const rarityOrder = {
@@ -28,7 +28,7 @@ const rarityOrder = {
     rare: 2,
     epic: 3,
     legendary: 4,
-    unique: 5,
+    mythic: 5,
     commander: 6
 };
 
@@ -94,7 +94,7 @@ export default function MyCardsPage() {
             leftSidebarTips={[
                 "보유 카드 관리 - 생성된 AI 유닛 인벤토리",
                 "대표 덱: 5-6장의 주력 카드를 설정하여 전투에 사용",
-                "등급별 필터: 일반 → 희귀 → 영웅 → 전설 → 유니크 → 군단장",
+                "등급별 필터: 일반 → 희귀 → 영웅 → 전설 → 신화 → 군단장",
                 "정렬 옵션: 등급, 전투력, 이름, 획득일로 정렬 가능",
                 "덱 관리 모드에서 카드를 클릭하여 대표 덱 구성",
             ]}
@@ -104,7 +104,7 @@ export default function MyCardsPage() {
                 {[
                     { label: '전체 보유량', value: statsOverview.total, color: 'text-white' },
                     { label: '군단장', value: statsOverview.byRarity['commander'] || 0, color: 'text-red-500' },
-                    { label: '유니크', value: statsOverview.byRarity['unique'] || 0, color: 'text-pink-500' },
+                    { label: '신화', value: statsOverview.byRarity['mythic'] || 0, color: 'text-red-500' },
                     { label: '전설', value: statsOverview.byRarity['legendary'] || 0, color: 'text-amber-400' },
                 ].map((stat, i) => (
                     <motion.div
@@ -194,7 +194,7 @@ export default function MyCardsPage() {
                                         {!isManageMode && (
                                             <div className="absolute -bottom-2 left-1/2 -translate-x-1/2 px-2 py-0.5 bg-black/80 border border-white/20 rounded text-[8px] font-bold text-white/60 whitespace-nowrap">
                                                 {rarity === 'commander' ? '군단장' :
-                                                    rarity === 'unique' ? '유니크' :
+                                                    rarity === 'mythic' ? '신화' :
                                                         rarity === 'legendary' ? '전설' :
                                                             rarity === 'epic' ? '영웅' :
                                                                 rarity === 'rare' ? '희귀' : '일반'}
@@ -254,14 +254,14 @@ export default function MyCardsPage() {
             {/* Filters */}
             <div className="flex flex-wrap gap-3 mb-6 bg-black/20 p-3 rounded-xl border border-white/5">
                 <div className="flex gap-2 overflow-x-auto pb-2 md:pb-0">
-                    {(['all', 'common', 'rare', 'epic', 'legendary', 'unique', 'commander'] as FilterOption[]).map(rarity => {
+                    {(['all', 'common', 'rare', 'epic', 'legendary', 'mythic', 'commander'] as FilterOption[]).map(rarity => {
                         const labelMap: Record<string, string> = {
                             all: '전체',
                             common: '일반',
                             rare: '희귀',
                             epic: '영웅',
                             legendary: '전설',
-                            unique: '유니크',
+                            mythic: '신화',
                             commander: '군단장'
                         };
                         return (

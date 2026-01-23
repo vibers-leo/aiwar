@@ -267,12 +267,12 @@ export const CARD_DATABASE: CardTemplate[] = [
         specialAbility: { name: 'Context Aware', description: '코드 정확도 10% 증가', type: 'passive' }
     },
 
-    // 2. UNIQUE TIER (The Singularities)
+    // 2. MYTHIC TIER (The Singularities)
     {
         id: 'real-uniq-01',
         name: 'The Glitch Entity',
         aiFactionId: 'rogue-ai',
-        rarity: 'unique',
+        rarity: 'mythic',
         specialty: 'code',
         cardType: 'normal',
         imageUrl: '/images/cards/real/unique-glitch-entity.png',
@@ -284,7 +284,7 @@ export const CARD_DATABASE: CardTemplate[] = [
         id: 'real-uniq-02',
         name: 'Shodan\'s Echo',
         aiFactionId: 'rogue-ai',
-        rarity: 'unique',
+        rarity: 'mythic',
         specialty: 'text',
         cardType: 'normal',
         imageUrl: '/assets/cards/shodan-echo.png',
@@ -296,7 +296,7 @@ export const CARD_DATABASE: CardTemplate[] = [
         id: 'real-uniq-03',
         name: 'Project 2501',
         aiFactionId: 'rogue-ai',
-        rarity: 'unique',
+        rarity: 'mythic',
         specialty: 'code',
         cardType: 'normal',
         imageUrl: '/images/cards/real/unique-project-2501.png',
@@ -484,7 +484,7 @@ export const CARD_DATABASE: CardTemplate[] = [
         id: 'custom-uniq-ent',
         name: 'The Singularity',
         aiFactionId: 'rogue-ai',
-        rarity: 'unique',
+        rarity: 'mythic',
         specialty: 'code',
         cardType: 'normal',
         imageUrl: '/assets/cards/unique-entity-character.png',

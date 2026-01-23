@@ -58,7 +58,7 @@ export default function AdminCardsPage() {
             case 'rare': return 'text-blue-400 border-blue-500/30 bg-blue-500/10';
             case 'epic': return 'text-purple-400 border-purple-500/30 bg-purple-500/10';
             case 'legendary': return 'text-yellow-400 border-yellow-500/30 bg-yellow-500/10';
-            case 'unique': return 'text-red-400 border-red-500/30 bg-red-500/10';
+            case 'mythic': return 'text-red-400 border-red-500/30 bg-red-500/10';
             case 'commander': return 'text-cyan-400 border-cyan-500/30 bg-cyan-500/10';
             default: return 'text-white border-white/20 bg-white/5';
         }
@@ -103,7 +103,7 @@ export default function AdminCardsPage() {
                                 <option value="rare">Rare</option>
                                 <option value="epic">Epic</option>
                                 <option value="legendary">Legendary</option>
-                                <option value="unique">Unique</option>
+                                <option value="mythic">Mythic</option>
                                 <option value="commander">Commander</option>
                             </select>
                         </div>

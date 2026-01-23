@@ -525,7 +525,7 @@ export default function GenerationPage() {
                             // 군단장(실제사진)보다는 군단의 대표 캐릭터(HERO/EPIC급 캐릭터) 이미지를 찾는 로직
                             const characterTemplate = CARD_DATABASE.find((c: any) =>
                                 c.aiFactionId === slot.factionId &&
-                                (c.rarity === 'legendary' || c.rarity === 'epic' || c.rarity === 'rare')
+                                (c.rarity === 'mythic' || c.rarity === 'legendary' || c.rarity === 'epic' || c.rarity === 'rare')
                             );
 
                             return (

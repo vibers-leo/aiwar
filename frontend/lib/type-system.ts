@@ -178,7 +178,7 @@ export function resolveBattleResult(card1: any, card2: any): {
 
     // 4. Rarity Weight
     const rarityWeight: Record<string, number> = {
-        'commander': 6, 'unique': 5, 'legendary': 4, 'epic': 3, 'rare': 2, 'common': 1
+        'commander': 6, 'mythic': 5, 'legendary': 4, 'epic': 3, 'rare': 2, 'common': 1
     };
     const r1 = rarityWeight[card1.rarity?.toLowerCase() || 'common'] || 1;
     const r2 = rarityWeight[card2.rarity?.toLowerCase() || 'common'] || 1;

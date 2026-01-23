@@ -1,6 +1,6 @@
 /**
  * 등급별 균형 잡힌 덱 선택 시스템
- * 각 등급(일반/희귀/영웅/전설/유니크/군단장)별로 1장씩 선택하여 균형 잡힌 덱 구성
+ * 각 등급(일반 / 희귀 / 영웅 / 전설 / 신화 / 군단장)별로 1장씩 선택하여 균형 잡힌 덱 구성
  */
 
 import { Card, Rarity } from './types';
@@ -15,7 +15,7 @@ export function groupCardsByRarity(cards: (Card | InventoryCard)[]): Record<Rari
         rare: [],
         epic: [],
         legendary: [],
-        unique: [],
+        mythic: [],
         commander: []
     };
 
@@ -33,7 +33,7 @@ export function groupCardsByRarity(cards: (Card | InventoryCard)[]): Record<Rari
 /**
  * 등급별로 1장씩 선택하여 균형 잡힌 덱 구성
  * 
- * 우선순위: 군단장 > 유니크 > 전설 > 영웅 > 희귀 > 일반
+ * 우선순위: 군단장 > 신화 > 전설 > 영웅 > 희귀 > 일반
  * 
  * @param cards 선택 가능한 카드 목록
  * @param deckSize 덱 크기 (기본 5장)
@@ -50,7 +50,7 @@ export function selectBalancedDeck(
     const selected: (Card | InventoryCard)[] = [];
 
     // 등급 우선순위 (높은 등급부터)
-    const rarityOrder: Rarity[] = ['commander', 'unique', 'legendary', 'epic', 'rare', 'common'];
+    const rarityOrder: Rarity[] = ['commander', 'mythic', 'legendary', 'epic', 'rare', 'common'];
 
     // 각 등급별로 세부 스텟(효율, 창의, 기능) 중 하나가 가장 높은 카드 1장씩 선택
     for (const rarity of rarityOrder) {
@@ -106,7 +106,7 @@ export function getRarityDistribution(cards: (Card | InventoryCard)[]): Record<R
         rare: 0,
         epic: 0,
         legendary: 0,
-        unique: 0,
+        mythic: 0,
         commander: 0
     };
 
@@ -134,7 +134,7 @@ export function isBalancedDeck(cards: (Card | InventoryCard)[]): boolean {
  */
 export function getMainCards(cards: (Card | InventoryCard)[]): (Card | InventoryCard)[] {
     const mainCardsMap: Record<string, Card | InventoryCard> = {};
-    const rarities: Rarity[] = ['commander', 'unique', 'legendary', 'epic', 'rare', 'common'];
+    const rarities: Rarity[] = ['commander', 'mythic', 'legendary', 'epic', 'rare', 'common'];
 
     cards.forEach(card => {
         const rarity = card.rarity || 'common';

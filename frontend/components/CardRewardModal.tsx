@@ -81,7 +81,7 @@ export default function CardRewardModal({ isOpen, onClose, cards, title = "ì¹´ë“
                                 className="relative"
                             >
                                 <div className="absolute -inset-4 bg-green-500/30 rounded-full blur-xl animate-pulse" />
-                                <GameCard card={card} isHolographic={['legendary', 'unique', 'commander'].includes(card.rarity || '') || (card as any).isCommanderCard} />
+                                <GameCard card={card} isHolographic={['legendary', 'mythic', 'commander'].includes(card.rarity || '') || (card as any).isCommanderCard} />
 
                                 {/* Sparkle Effects around card */}
                                 <motion.div

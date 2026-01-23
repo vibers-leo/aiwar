@@ -43,16 +43,19 @@ export interface GameState {
 
     // 신규 시스템 데이터
     subscriptions: { factionId: string; nextPaymentAt: number; isActive: boolean }[];
-    uniqueApplications: {
-        id: string;
-        name: string;
-        description: string;
-        imageUrl: string;
-        materialCardIds: string[];
-        status: 'pending' | 'approved' | 'rejected' | 'completed';
-        createdAt: number;
-        completedAt?: number;
-    }[];
+    studioApplications?: StudioApplication[];
+    uniqueApplications?: any[]; // Keep for migration if needed
+}
+
+export interface StudioApplication {
+    id: string;
+    name: string;
+    description: string;
+    imageUrl: string;
+    baseCardId: string;
+    status: 'pending' | 'approved' | 'rejected' | 'completed';
+    createdAt: number;
+    completedAt?: number;
 }
 
 /**
@@ -307,7 +310,7 @@ class UnifiedStorage {
             research: undefined,
             subscriptions: [],
             nickname: '군단장',
-            uniqueApplications: [],
+            studioApplications: [],
         };
 
         if (this.useFirebase) {

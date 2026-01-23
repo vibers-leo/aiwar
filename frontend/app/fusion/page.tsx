@@ -239,14 +239,14 @@ export default function FusionPage() {
 
                     {/* Rarity Filter Buttons */}
                     <div className="flex flex-wrap gap-2">
-                        {['all', 'common', 'rare', 'epic', 'legendary', 'unique'].map(rarity => {
+                        {['all', 'common', 'rare', 'epic', 'legendary', 'mythic'].map(rarity => {
                             const rarityMap: Record<string, string> = {
                                 all: '전체',
                                 common: '일반',
                                 rare: '희귀',
                                 epic: '영웅',
                                 legendary: '전설',
-                                unique: '유니크'
+                                mythic: '신화'
                             };
 
                             return (

@@ -189,7 +189,7 @@ export function checkBestOfFiveWinner(
 // 보상 계산
 // ============================================
 
-type Rarity = 'common' | 'rare' | 'epic' | 'legendary' | 'unique' | 'commander';
+type Rarity = 'common' | 'rare' | 'epic' | 'legendary' | 'mythic' | 'commander';
 
 import { gameStorage } from './game-storage';
 import { getResearchBonus } from './research-system';
@@ -224,7 +224,7 @@ export async function calculateBattleRewards(
         rare: 1.2,
         epic: 1.5,
         legendary: 2.0,
-        unique: 3.0,
+        mythic: 3.0,
         commander: 5.0,
     };
 

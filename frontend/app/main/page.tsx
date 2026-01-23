@@ -62,7 +62,7 @@ export default function MainPage() {
     { title: '생성', subtitle: 'GENERATION', path: '/generation', color: 'yellow', icon: '⚡' },
     { title: '강화', subtitle: 'ENHANCE', path: '/enhance', color: 'pink', icon: '✨' },
     { title: '합성', subtitle: 'FUSION', path: '/fusion', color: 'blue', icon: '🔮' },
-    { title: '유니크', subtitle: 'UNIQUE UNIT', path: '/unique-unit', color: 'rose', icon: '🧬' },
+    { title: '특수 유닛', subtitle: 'SPECIAL UNIT', path: '/special-unit', color: 'rose', icon: '🧬' },
   ];
 
   return (

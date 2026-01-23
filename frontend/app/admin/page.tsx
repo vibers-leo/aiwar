@@ -12,7 +12,7 @@ import { useUser } from '@/context/UserContext';
 export default function AdminPage() {
     const router = useRouter();
     const { user, isAdmin, loading: userLoading } = useUser();
-    const [activeTab, setActiveTab] = useState<'tickets' | 'unique'>('tickets');
+    const [activeTab, setActiveTab] = useState<'tickets' | 'requests'>('tickets');
     const [tickets, setTickets] = useState<SupportTicket[]>([]);
     const [requests, setRequests] = useState<UniqueRequest[]>([]);
     const [isLoading, setIsLoading] = useState(false);
@@ -100,13 +100,13 @@ export default function AdminPage() {
                         고객 문의 ({tickets.filter(t => t.status === 'open').length})
                     </button>
                     <button
-                        onClick={() => setActiveTab('unique')}
+                        onClick={() => setActiveTab('requests')}
                         className={cn(
                             "px-6 py-2 rounded-lg font-bold transition-all",
-                            activeTab === 'unique' ? "bg-purple-500 text-white" : "text-white/40 hover:bg-white/5"
+                            activeTab === 'requests' ? "bg-purple-500 text-white" : "text-white/40 hover:bg-white/5"
                         )}
                     >
-                        유니크 신청 ({requests.filter(r => r.status === 'pending').length})
+                        스튜디오 신청 ({requests.filter(r => r.status === 'pending').length})
                     </button>
 
                     {/* Quick Links */}
@@ -239,7 +239,7 @@ export default function AdminPage() {
                             ))
                         )}
 
-                        {((activeTab === 'tickets' && tickets.length === 0) || (activeTab === 'unique' && requests.length === 0)) && (
+                        {((activeTab === 'tickets' && tickets.length === 0) || (activeTab === 'requests' && requests.length === 0)) && (
                             <div className="py-20 text-center text-white/30">
                                 데이터가 없습니다.
                             </div>

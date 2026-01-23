@@ -1,6 +1,6 @@
 // 게임 타입 정의
 
-export type Rarity = 'common' | 'rare' | 'epic' | 'legendary' | 'unique' | 'commander';
+export type Rarity = 'common' | 'rare' | 'epic' | 'legendary' | 'mythic' | 'commander';
 export type Specialty = 'text' | 'image' | 'video' | 'music' | 'voice' | 'code';
 export type CardType = 'normal' | 'automated';
 export type AIType = 'EFFICIENCY' | 'CREATIVITY' | 'FUNCTION' | 'COST';
@@ -73,7 +73,15 @@ export interface Card {
     acquiredAt: Date | any;
     instanceId: string; // Unique instance identifier (required)
     isLocked: boolean;
-    isUnique?: boolean; // 유니크 유닛 여부
+    isUnique?: boolean; // 커스터마이징 유니크 상태 여부
+    customData?: {
+        customName?: string;
+        customDescription?: string;
+        customImage?: string;
+        customVideo?: string;
+        customSound?: string;
+        createdDate?: number;
+    };
     type?: AIType; // Rock-Paper-Scissors type
     imageUrl?: string; // Card image URL
     videoUrl?: string; // Card video URL

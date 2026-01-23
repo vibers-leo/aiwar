@@ -318,7 +318,7 @@ export default function EnhancePage() {
                     </div>
 
                     <div className="flex flex-wrap gap-2">
-                        {['all', 'common', 'rare', 'epic', 'legendary', 'unique'].map(rarity => (
+                        {['all', 'common', 'rare', 'epic', 'legendary', 'mythic'].map(rarity => (
                             <button
                                 key={rarity}
                                 onClick={() => setSelectedRarity(rarity)}

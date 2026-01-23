@@ -13,7 +13,7 @@ interface UniqueApplication {
 }
 
 /**
- * 승인된 신청서를 바탕으로 유니크 카드 생성 및 지급
+ * 승인된 신청서를 바탕으로 신화(Mythic) 카드 생성 및 지급
  */
 export async function createUniqueCardFromApplication(applicationId: string): Promise<boolean> {
     if (!db) return false;
@@ -68,21 +68,20 @@ export async function createUniqueCardFromApplication(applicationId: string): Pr
             (finalStats.speed || 0) + (finalStats.stability || 0) +
             (finalStats.ethics || 0);
 
-        // 3. 새 유니크 카드 객체 생성
-        const uniqueCardId = `unique-${Date.now()}`;
-        const uniqueInstanceId = `${uniqueCardId}-${Math.random().toString(36).substr(2, 9)}`;
+        // 3. 새 신화 카드 객체 생성
+        const mythicCardId = `mythic-${Date.now()}`;
+        const mythicInstanceId = `${mythicCardId}-${Math.random().toString(36).substr(2, 9)}`;
 
         const newCard: InventoryCard = {
-            id: uniqueCardId,
-            instanceId: uniqueInstanceId,
-            templateId: 'unique-custom', // 템플릿 ID 임의 지정
+            id: mythicCardId,
+            instanceId: mythicInstanceId,
+            templateId: 'mythic-custom', // 템플릿 ID 임의 지정
             name: appData.name,
             ownerId: appData.userId,
             description: appData.description,
             imageUrl: appData.imageUrl || '/card_placeholder.png',
-            rarity: 'unique',
-            // cardType property removed as it might not be in InventoryCard type
-            isLocked: true, // 유니크는 기본 잠금
+            rarity: 'mythic',
+            isLocked: true, // 신화는 기본 잠금
             stats: finalStats,
             level: 1,
             experience: 0,
@@ -91,10 +90,10 @@ export async function createUniqueCardFromApplication(applicationId: string): Pr
 
         // 4. 유저 인벤토리에 지급
         // users/{userId}/inventory/{uniqueInstanceId}
-        const userInventoryRef = doc(db, 'users', appData.userId, 'inventory', uniqueInstanceId);
+        const userInventoryRef = doc(db, 'users', appData.userId, 'inventory', mythicInstanceId);
         await setDoc(userInventoryRef, newCard);
 
-        console.log(`✅ 유니크 카드 지급 완료: ${newCard.name} -> ${appData.userId}`);
+        console.log(`✅ 신화 카드 지급 완료: ${newCard.name} -> ${appData.userId}`);
         return true;
 
     } catch (error) {

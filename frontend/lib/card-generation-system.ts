@@ -10,7 +10,7 @@ const BASE_RARITY_WEIGHTS: Record<Rarity, number> = {
     rare: 30,        // 30% (유지)
     epic: 9,         // 9% (하향)
     legendary: 1,    // 1% (대폭 하향)
-    unique: 0,       // 0% (이벤트 전용)
+    mythic: 0,       // 0% (이벤트 전용)
     commander: 0     // 0% (이벤트 전용)
 };
 
@@ -71,7 +71,7 @@ function calculateRarityWeights(tier: string, affinity: number = 0, insightLevel
         rare: BASE_RARITY_WEIGHTS.rare + insightRareBonus,
         epic: BASE_RARITY_WEIGHTS.epic + bonus.epic + masteryEpicBonus + insightEpicBonus,
         legendary: BASE_RARITY_WEIGHTS.legendary + bonus.legendary + masteryLegendaryBonus + insightLegendaryBonus,
-        unique: BASE_RARITY_WEIGHTS.unique,
+        mythic: BASE_RARITY_WEIGHTS.mythic,
         commander: BASE_RARITY_WEIGHTS.commander
     };
 }
@@ -80,7 +80,7 @@ function calculateRarityWeights(tier: string, affinity: number = 0, insightLevel
  * 가중치 기반 랜덤 등급 선택
  */
 function selectRandomRarity(weights: Record<Rarity, number>): Rarity {
-    const rarities: Rarity[] = ['common', 'rare', 'epic', 'legendary', 'unique', 'commander'];
+    const rarities: Rarity[] = ['common', 'rare', 'epic', 'legendary', 'mythic', 'commander'];
     const totalWeight = rarities.reduce((sum, rarity) => sum + weights[rarity], 0);
 
     let random = Math.random() * totalWeight;
@@ -123,7 +123,7 @@ const RARITY_POWER_RANGES: Record<string, { min: number, max: number }> = {
     rare: { min: 50, max: 70 },
     epic: { min: 60, max: 80 },
     legendary: { min: 70, max: 90 },
-    unique: { min: 80, max: 100 },
+    mythic: { min: 80, max: 100 },
     commander: { min: 80, max: 100 }
 };
 
@@ -319,7 +319,7 @@ export function getRarityProbabilities(tier: string = 'free', affinity: number =
         rare: (weights.rare / total) * 100,
         epic: (weights.epic / total) * 100,
         legendary: (weights.legendary / total) * 100,
-        unique: (weights.unique / total) * 100,
+        mythic: (weights.mythic / total) * 100,
         commander: (weights.commander / total) * 100
     };
 }

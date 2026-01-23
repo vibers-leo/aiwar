@@ -1,48 +1,49 @@
-// 유니크 카드 생성 유틸리티
-import { Card, Rarity } from './types';
+// 신화 카드 생성 유틸리티
+import { Card } from './types';
 import uniqueCardsData from '@/data/unique-cards.json';
 import { generateId } from './utils';
 
 /**
- * 전설급 카드 3장으로 유니크 카드 생성 가능 여부 확인
+ * 전설급 카드 3장으로 신화 카드 생성 가능 여부 확인
  */
-export function canCreateUniqueCard(cards: Card[]): boolean {
+export function canCreateMythicCard(cards: Card[]): boolean {
     if (cards.length !== 3) return false;
 
     // 모두 전설급이어야 함
     const allLegendary = cards.every(card => card.rarity === 'legendary');
     if (!allLegendary) return false;
 
-    // 모두 레벨 10이어야 함 (선택적 조건)
-    const allMaxLevel = cards.every(card => card.level >= 10);
+    // 레벨 조건 (선택적)
+    // const allMaxLevel = cards.every(card => card.level >= 10);
+    // return allMaxLevel;
 
-    return allMaxLevel;
+    return true;
 }
 
 /**
- * 유니크 카드 생성 비용 계산
+ * 신화 카드 생성 비용 계산
  */
-export function getUniqueCreationCost(): { tokens: number } {
+export function getMythicCreationCost(): { tokens: number } {
     return {
-        tokens: 1000 // 토큰 1000개 필요
+        tokens: 5000 // 제작에 필요한 위상이 상향되었습니다.
     };
 }
 
 /**
- * 유니크 카드 생성
+ * 신화 카드 생성
  */
-export function createUniqueCard(
+export function createMythicCard(
     materialCards: Card[],
     userId: string
 ): { success: boolean; card?: Card; message: string } {
-    if (!canCreateUniqueCard(materialCards)) {
+    if (!canCreateMythicCard(materialCards)) {
         return {
             success: false,
-            message: '전설급 카드 3장(레벨 10)이 필요합니다.'
+            message: '전설급 카드 3장이 필요합니다.'
         };
     }
 
-    // 랜덤하게 유니크 카드 템플릿 선택
+    // 랜덤하게 신화 카드 템플릿 선택
     const templates = uniqueCardsData.uniqueCards;
     const randomTemplate = templates[Math.floor(Math.random() * templates.length)];
 
@@ -55,7 +56,7 @@ export function createUniqueCard(
         ethics: Math.floor(materialCards.reduce((sum, c) => sum + (c.stats.ethics || 0), 0) / 3)
     };
 
-    // 유니크 카드 스탯 생성 (재료 카드 평균 + 템플릿 보너스)
+    // 신화 카드 스탯 생성 (재료 카드 평균 + 템플릿 보너스)
     const baseCreativity = Math.floor(
         (randomTemplate.baseStats.creativity.min + randomTemplate.baseStats.creativity.max) / 2
     );
@@ -80,7 +81,7 @@ export function createUniqueCard(
     const ethics = Math.floor(avgStats.ethics * 0.3 + baseEthics * 0.7);
     const totalPower = creativity + accuracy + speed + stability + ethics;
 
-    const uniqueCard: Card = {
+    const mythicCard: Card = {
         id: generateId(),
         instanceId: `${generateId()}-${Date.now()}`,
         templateId: randomTemplate.id,
@@ -96,7 +97,7 @@ export function createUniqueCard(
             ethics,
             totalPower
         },
-        rarity: 'unique',
+        rarity: 'mythic',
         acquiredAt: new Date(),
         isLocked: false,
         isUnique: true,
@@ -109,22 +110,22 @@ export function createUniqueCard(
 
     return {
         success: true,
-        card: uniqueCard,
+        card: mythicCard,
         message: `${randomTemplate.name} 생성 완료!`
     };
 }
 
 /**
- * 유니크 카드 목록 가져오기
+ * 신화 카드 목록 가져오기
  */
-export function getUniqueCardTemplates() {
+export function getMythicCardTemplates() {
     return uniqueCardsData.uniqueCards;
 }
 
 /**
- * 유니크 카드 생성 확률 계산 (재료 카드 품질에 따라)
+ * 신화 카드 생성 품질 계산 (재료 카드 품질에 따라)
  */
-export function calculateUniqueQuality(materialCards: Card[]): {
+export function calculateMythicQuality(materialCards: Card[]): {
     quality: 'low' | 'medium' | 'high' | 'perfect';
     bonusPercent: number;
 } {
