@@ -290,8 +290,8 @@ export default function DialogueOverlay({
                                             duration: 0.6
                                         }}
                                         className={cn(
-                                            "absolute bottom-0 h-full aspect-square max-w-[1000px]",
-                                            isAlly ? "left-0" : "right-0"
+                                            "absolute bottom-0 h-[60%] md:h-full aspect-square max-w-[1000px]",
+                                            isAlly ? "left-[-10%] md:left-0" : "right-[-10%] md:right-0"
                                         )}
                                     >
                                         <motion.div
@@ -359,10 +359,10 @@ export default function DialogueOverlay({
                         </div>
 
                         <div className={cn(
-                            "w-full bg-zinc-900/90 backdrop-blur-xl border-2 p-8 rounded-tr-3xl rounded-b-3xl shadow-2xl relative min-h-[160px]",
+                            "w-full bg-zinc-900/90 backdrop-blur-xl border-2 p-4 md:p-8 rounded-tr-3xl rounded-b-3xl shadow-2xl relative min-h-[140px] md:min-h-[160px]",
                             isAlly ? (isChip ? "border-yellow-500/50" : "border-cyan-500/50") : "border-red-500/50"
                         )}>
-                            <div className="text-xl md:text-2xl font-medium leading-relaxed pr-12 min-h-[4rem]">
+                            <div className="text-base md:text-2xl font-medium leading-relaxed pr-8 md:pr-12 min-h-[3rem] md:min-h-[4rem]">
                                 {isAlly ? (
                                     <p className={cn(
                                         "whitespace-pre-wrap",

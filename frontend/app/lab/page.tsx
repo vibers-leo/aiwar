@@ -24,6 +24,7 @@ import {
     ResearchProgress,
     CommanderResearch,
     getResearchCost,
+    getResearchTokenCost,
     getResearchTime,
     getResearchBonus,
     createInitialResearchState,
@@ -44,7 +45,7 @@ import { applyResearchStatBonus } from '@/lib/commander-system';
 export default function LabPage() {
     const router = useRouter();
     const { t, language } = useTranslation();
-    const { level, coins, refreshData, addCoins } = useUser();
+    const { level, coins, tokens, refreshData, addCoins, addTokens } = useUser();
     const { showAlert, showConfirm } = useAlert();
     const { state: footerState } = useFooter();
 
@@ -121,23 +122,40 @@ export default function LabPage() {
             return;
         }
 
-        const cost = getResearchCost(stat, targetLevel);
+        const coinCost = getResearchCost(stat, targetLevel);
+        const tokenCost = getResearchTokenCost(targetLevel);
         const baseTimeMinutes = getResearchTime(stat, targetLevel);
         const reducedTimeMinutes = Math.max(1, Math.floor(baseTimeMinutes * (1 - timeReduction)));
 
-        if (coins < cost) {
-            showAlert({ title: '코인 부족', message: `${cost.toLocaleString()} 코인이 필요합니다.`, type: 'error' });
+        // 코인 체크
+        if (coins < coinCost) {
+            showAlert({ title: '코인 부족', message: `${coinCost.toLocaleString()} 코인이 필요합니다.`, type: 'error' });
             return;
         }
 
+        // 토큰 체크
+        if (tokens < tokenCost) {
+            showAlert({ title: '토큰 부족', message: `${tokenCost.toLocaleString()} 토큰이 필요합니다.`, type: 'error' });
+            return;
+        }
+
+        const costMessage = tokenCost > 0
+            ? `비용: ${coinCost.toLocaleString()} 코인 + ${tokenCost.toLocaleString()} 토큰`
+            : `비용: ${coinCost.toLocaleString()} 코인`;
+
         showConfirm({
             title: `${stat.name} 연구`,
-            message: `Lv.${targetLevel} 연구를 시작하시겠습니까?\n비용: ${cost.toLocaleString()} 코인\n시간: ${reducedTimeMinutes}분${timeReduction > 0 ? ` (${Math.round(timeReduction * 100)}% 단축 적용)` : ''}`,
+            message: `Lv.${targetLevel} 연구를 시작하시겠습니까?\n${costMessage}\n시간: ${reducedTimeMinutes}분${timeReduction > 0 ? ` (${Math.round(timeReduction * 100)}% 단축 적용)` : ''}`,
             type: 'info',
             confirmText: '연구 시작',
             onConfirm: async () => {
                 // 코인 차감
-                await addCoins(-cost);
+                await addCoins(-coinCost);
+
+                // 토큰 차감
+                if (tokenCost > 0) {
+                    await addTokens(-tokenCost);
+                }
 
                 const newResearch: CommanderResearch = {
                     ...research,
@@ -248,9 +266,11 @@ export default function LabPage() {
                     const remainingTime = progress ? getRemainingResearchTime(progress) : 0;
 
                     const cost = getResearchCost(stat, nextLevel);
+                    const tokenCost = getResearchTokenCost(nextLevel);
                     const time = getResearchTime(stat, nextLevel);
                     const currentBonus = getResearchBonus(stat.id, currentLevel);
                     const isMaxLevel = currentLevel >= stat.maxLevel;
+                    const canAfford = coins >= cost && tokens >= tokenCost;
 
                     return (
                         <div key={stat.id}>
@@ -357,13 +377,26 @@ export default function LabPage() {
                                             color="primary"
                                             className="w-full"
                                             onPress={() => startResearch(stat.id)}
-                                            isDisabled={coins < cost}
+                                            isDisabled={!canAfford}
                                         >
-                                            <div className="flex items-center gap-2">
-                                                <span>Lv.{nextLevel} 연구</span>
-                                                <span className="text-xs opacity-70">
-                                                    ({cost.toLocaleString()} 코인 / {Math.max(1, Math.floor(time * (1 - timeReduction)))}분)
-                                                </span>
+                                            <div className="flex flex-col items-center gap-1 w-full">
+                                                <span className="text-sm font-bold">Lv.{nextLevel} 연구</span>
+                                                <div className="flex items-center gap-2 text-xs opacity-80">
+                                                    <span className={coins < cost ? 'text-red-400' : ''}>
+                                                        {cost.toLocaleString()} 코인
+                                                    </span>
+                                                    {tokenCost > 0 && (
+                                                        <>
+                                                            <span>+</span>
+                                                            <span className={tokens < tokenCost ? 'text-red-400' : ''}>
+                                                                {tokenCost.toLocaleString()} 토큰
+                                                            </span>
+                                                        </>
+                                                    )}
+                                                    <span className="text-white/50">
+                                                        / {Math.max(1, Math.floor(time * (1 - timeReduction)))}분
+                                                    </span>
+                                                </div>
                                             </div>
                                         </Button>
                                     )}

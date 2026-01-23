@@ -395,11 +395,11 @@ export function BattleArena({
     };
 
     return (
-        <div className="h-full w-full bg-[#050505] relative overflow-hidden flex flex-col">
+        <div className="h-full w-full bg-[#050505] relative overflow-hidden flex flex-col px-2 md:px-0">
             <BackgroundBeams className="opacity-35" />
 
             {/* Combat Log - Enhanced styling */}
-            <div className="fixed bottom-32 left-8 z-50 flex flex-col gap-2.5 max-w-md pointer-events-none">
+            <div className="fixed bottom-[35%] md:bottom-32 left-4 md:left-8 z-50 flex flex-col gap-2.5 max-w-[80vw] md:max-w-md pointer-events-none">
                 <AnimatePresence mode="popLayout">
                     {battleLogs.map((log) => (
                         <motion.div
@@ -424,13 +424,13 @@ export function BattleArena({
                 </AnimatePresence>
             </div>
 
-            <div className="max-w-6xl mx-auto w-full relative z-10 flex-1 flex flex-col pt-2">
+            <div className="max-w-6xl mx-auto w-full relative z-10 flex-1 flex flex-col pt-2 overflow-y-auto no-scrollbar">
                 {status === 'finished' ? null : status === 'strategy' ? (
                     <>
                         <div className="text-center mb-1">
                             <div className="flex items-center justify-center gap-2">
                                 <Clock size={20} className={timer <= 5 ? 'text-red-500 animate-pulse' : 'text-blue-400'} />
-                                <span className={`text-4xl font-black orbitron ${timer <= 5 ? 'text-red-500' : 'text-white'}`}>{timer}</span>
+                                <span className={`text-3xl md:text-4xl font-black orbitron ${timer <= 5 ? 'text-red-500' : 'text-white'}`}>{timer}</span>
                             </div>
                             <div>
                                 <h1 className="text-3xl font-black text-white orbitron italic tracking-widest leading-none">
@@ -445,7 +445,7 @@ export function BattleArena({
                                 <div className="w-1 h-3 bg-red-500"></div>
                                 <h2 className="text-[10px] font-black text-white orbitron tracking-tighter uppercase">{t('pvp.battle.enemyArchitecture')}</h2>
                             </div>
-                            <div className="grid grid-cols-6 gap-4">
+                            <div className="grid grid-cols-3 md:grid-cols-6 gap-2 md:gap-4">
                                 {enemyDeck.map((card, index) => (
                                     <motion.div
                                         key={card.id || index}
@@ -472,7 +472,7 @@ export function BattleArena({
                                     {t('pvp.battle.randomize')}
                                 </Button>
                             </div>
-                            <div className="grid grid-cols-6 gap-4">
+                            <div className="grid grid-cols-3 md:grid-cols-6 gap-2 md:gap-4">
                                 {selectedOrder.map((cardIndex, position) => {
                                     const card = playerDeck[cardIndex];
                                     return (
@@ -508,34 +508,34 @@ export function BattleArena({
                                 <motion.div
                                     initial={{ opacity: 0, y: -20 }}
                                     animate={{ opacity: 1, y: 0 }}
-                                    className="bg-black/60 backdrop-blur-2xl border border-white/10 px-10 py-5 rounded-[2.5rem] flex items-center gap-12 shadow-[0_0_50px_rgba(0,0,0,0.5)] border-t-white/20"
+                                    className="bg-black/60 backdrop-blur-2xl border border-white/10 px-4 md:px-10 py-3 md:py-5 rounded-[2rem] md:rounded-[2.5rem] flex items-center gap-4 md:gap-12 shadow-[0_0_50px_rgba(0,0,0,0.5)] border-t-white/20"
                                 >
                                     <div className="text-center">
-                                        <p className="text-[10px] text-blue-400 font-black orbitron tracking-[0.3em] mb-1">COMMANDER</p>
-                                        <div className="flex items-center gap-3">
-                                            <span className="text-4xl font-black text-white orbitron italic">{playerWins}</span>
+                                        <p className="text-[8px] md:text-[10px] text-blue-400 font-black orbitron tracking-[0.3em] mb-1">COMMANDER</p>
+                                        <div className="flex items-center gap-2 md:gap-3">
+                                            <span className="text-2xl md:text-4xl font-black text-white orbitron italic">{playerWins}</span>
                                             <div className="flex gap-1">
                                                 {Array.from({ length: winsNeeded }).map((_, i) => (
-                                                    <div key={`p-dot-${i}`} className={cn("w-2 h-2 rounded-full", i < playerWins ? "bg-blue-500 shadow-[0_0_10px_#3b82f6]" : "bg-white/10")} />
+                                                    <div key={`p-dot-${i}`} className={cn("w-1.5 h-1.5 md:w-2 md:h-2 rounded-full", i < playerWins ? "bg-blue-500 shadow-[0_0_10px_#3b82f6]" : "bg-white/10")} />
                                                 ))}
                                             </div>
                                         </div>
                                     </div>
 
                                     <div className="flex flex-col items-center">
-                                        <div className="text-[10px] text-gray-500 font-black orbitron tracking-[0.5em] mb-1">ROUND</div>
-                                        <div className="text-2xl font-black text-white orbitron italic opacity-50">{currentRound}<span className="text-xs ml-1">/{maxRounds}</span></div>
+                                        <div className="text-[8px] md:text-[10px] text-gray-500 font-black orbitron tracking-[0.5em] mb-1">ROUND</div>
+                                        <div className="text-lg md:text-2xl font-black text-white orbitron italic opacity-50">{currentRound}<span className="text-xs ml-1">/{maxRounds}</span></div>
                                     </div>
 
                                     <div className="text-center">
-                                        <p className="text-[10px] text-red-500 font-black orbitron tracking-[0.3em] mb-1">HOSTILE</p>
-                                        <div className="flex items-center gap-3">
+                                        <p className="text-[8px] md:text-[10px] text-red-500 font-black orbitron tracking-[0.3em] mb-1">HOSTILE</p>
+                                        <div className="flex items-center gap-2 md:gap-3">
                                             <div className="flex gap-1">
                                                 {Array.from({ length: winsNeeded }).map((_, i) => (
-                                                    <div key={`e-dot-${i}`} className={cn("w-2 h-2 rounded-full", i < enemyWins ? "bg-red-500 shadow-[0_0_10px_#ef4444]" : "bg-white/10")} />
+                                                    <div key={`e-dot-${i}`} className={cn("w-1.5 h-1.5 md:w-2 md:h-2 rounded-full", i < enemyWins ? "bg-red-500 shadow-[0_0_10px_#ef4444]" : "bg-white/10")} />
                                                 ))}
                                             </div>
-                                            <span className="text-4xl font-black text-white orbitron italic">{enemyWins}</span>
+                                            <span className="text-2xl md:text-4xl font-black text-white orbitron italic">{enemyWins}</span>
                                         </div>
                                     </div>
                                 </motion.div>
@@ -550,7 +550,7 @@ export function BattleArena({
                                             initial={{ opacity: 0, scale: 0.9, filter: 'blur(10px)' }}
                                             animate={{ opacity: 1, scale: 1, filter: 'blur(0px)' }}
                                             exit={{ opacity: 0, scale: 1.1, filter: 'blur(20px)' }}
-                                            className="flex items-center gap-4 md:gap-20 relative w-full justify-center"
+                                            className="flex items-center gap-2 md:gap-20 relative w-full justify-center"
                                         >
                                             {/* Player Cinematic Card */}
                                             <motion.div
@@ -558,7 +558,7 @@ export function BattleArena({
                                                 initial="standby"
                                                 animate={battlePhase}
                                                 className={cn(
-                                                    "relative w-48 h-72 rounded-[2rem] border-2 bg-black/80 backdrop-blur-3xl overflow-hidden shadow-2xl transition-all duration-300",
+                                                    "relative w-28 h-42 sm:w-32 sm:h-48 md:w-48 md:h-72 rounded-[1.5rem] md:rounded-[2rem] border-2 bg-black/80 backdrop-blur-3xl overflow-hidden shadow-2xl transition-all duration-300",
                                                     battlePhase === 'reveal' ? getTypeGlow(rounds[currentRound - 1].playerCard.type) : "border-white/10"
                                                 )}
                                             >
@@ -626,7 +626,7 @@ export function BattleArena({
                                                 initial="standby"
                                                 animate={battlePhase}
                                                 className={cn(
-                                                    "relative w-48 h-72 rounded-[2rem] border-2 bg-black/80 backdrop-blur-3xl overflow-hidden shadow-2xl transition-all duration-300",
+                                                    "relative w-28 h-42 sm:w-32 sm:h-48 md:w-48 md:h-72 rounded-[1.5rem] md:rounded-[2rem] border-2 bg-black/80 backdrop-blur-3xl overflow-hidden shadow-2xl transition-all duration-300",
                                                     battlePhase === 'reveal' ? getTypeGlow(rounds[currentRound - 1].enemyCard.type) : "border-red-500/20"
                                                 )}
                                             >
@@ -677,7 +677,7 @@ export function BattleArena({
                             </div>
 
                             {/* Formation Visualizers */}
-                            <div className="flex justify-between items-end px-10 pb-8">
+                            <div className="flex flex-col md:flex-row justify-between items-center md:items-end px-4 md:px-10 pb-4 md:pb-8 gap-4 overflow-x-auto no-scrollbar w-full">
                                 {/* Player Hand */}
                                 <div className="flex gap-2">
                                     {selectedOrder.map((cardIndex, i) => {
@@ -686,7 +686,7 @@ export function BattleArena({
                                         const isCurrent = currentBattleCards?.player === i;
                                         return (
                                             <div key={i} className={cn(
-                                                "w-14 h-20 rounded-xl border-2 transition-all duration-500 overflow-hidden relative",
+                                                "w-12 h-16 md:w-14 md:h-20 rounded-xl border-2 transition-all duration-500 overflow-hidden relative",
                                                 isCurrent ? "border-blue-500 scale-110 -translate-y-4 shadow-[0_0_20px_rgba(59,130,246,0.4)]" :
                                                     isDead ? "border-white/5 opacity-20 grayscale" : "border-white/10 bg-white/5"
                                             )}>
@@ -709,7 +709,7 @@ export function BattleArena({
                                         const isCurrent = currentBattleCards?.enemy === i;
                                         return (
                                             <div key={i} className={cn(
-                                                "w-14 h-20 rounded-xl border-2 transition-all duration-500 overflow-hidden relative",
+                                                "w-12 h-16 md:w-14 md:h-20 rounded-xl border-2 transition-all duration-500 overflow-hidden relative",
                                                 isCurrent ? "border-red-500 scale-110 -translate-y-4 shadow-[0_0_20px_rgba(239,68,68,0.4)]" :
                                                     isDead ? "border-white/5 opacity-20 grayscale" : "border-white/10 bg-white/5"
                                             )}>
@@ -766,7 +766,7 @@ export function BattleArena({
                                     )}
                                 </div>
                                 <h1 className={cn(
-                                    "text-6xl md:text-7xl font-black italic tracking-tighter orbitron",
+                                    "text-4xl md:text-7xl font-black italic tracking-tighter orbitron",
                                     battleResultData.isWin
                                         ? "text-transparent bg-clip-text bg-gradient-to-b from-white to-blue-400 drop-shadow-[0_0_30px_rgba(59,130,246,0.6)]"
                                         : "text-transparent bg-clip-text bg-gradient-to-b from-red-100 to-red-600 drop-shadow-[0_0_30px_rgba(239,68,68,0.6)]"

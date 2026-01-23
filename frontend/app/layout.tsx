@@ -39,7 +39,8 @@ export const metadata: Metadata = {
       { rel: "preconnect", href: "https://firestore.googleapis.com" },
       { rel: "dns-prefetch", href: "https://firebasestorage.googleapis.com" },
     ].map(l => `<${l.href}>; rel=${l.rel}`).join(", ")
-  }
+  },
+  manifest: '/manifest.json',
 };
 
 export const viewport = {

@@ -52,7 +52,7 @@ type Phase =
 export default function PVPArenaPage() {
     const router = useRouter();
     const { showAlert } = useAlert();
-    const { coins, tokens, level, trackMissionEvent } = useUser(); // [NEW] Use generic coins/level/trackMission from context
+    const { coins, tokens, level, trackMissionEvent, isAdmin } = useUser(); // [FIX] Added isAdmin to gate debug tools
 
     const [phase, setPhase] = useState<Phase>('stats');
     const { profile, loading: userLoading } = useUser();
@@ -684,6 +684,26 @@ export default function PVPArenaPage() {
                             animate={{ opacity: 1, y: 0 }}
                             exit={{ opacity: 0, y: -20 }}
                         >
+                            {/* [NEW] Beta Test & Debug Banner (Admin Only) */}
+                            {isAdmin && (
+                                <div className="mb-6 p-3 bg-blue-500/10 border border-blue-500/30 rounded-lg flex items-center justify-between">
+                                    <div className="flex items-center gap-3">
+                                        <div className="bg-blue-500/20 p-2 rounded-full">
+                                            <Users className="text-blue-400" size={16} />
+                                        </div>
+                                        <div>
+                                            <h4 className="text-sm font-bold text-blue-400">실시간 대전 베타 테스트 (관리자)</h4>
+                                            <p className="text-[10px] text-white/50">매칭이 원활하지 않을 경우 진단 도구를 사용해보세요.</p>
+                                        </div>
+                                    </div>
+                                    <button
+                                        onClick={() => router.push('/pvp/debug')}
+                                        className="px-4 py-2 bg-blue-500/20 hover:bg-blue-500/30 text-blue-400 text-xs font-bold rounded border border-blue-500/30 transition-colors"
+                                    >
+                                        진단 도구 실행
+                                    </button>
+                                </div>
+                            )}
                             {/* 전적 표시 */}
                             <div className="grid grid-cols-5 gap-4 mb-8">
                                 <div className="bg-gradient-to-br from-amber-500/10 to-yellow-500/10 border border-amber-500/30 rounded-xl p-6">

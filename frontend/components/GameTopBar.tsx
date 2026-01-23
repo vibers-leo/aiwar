@@ -94,8 +94,8 @@ export default function GameTopBar({ sidebarCollapsed = false }: GameTopBarProps
                     </Link>
                 </div>
 
-                {/* Middle - Navigation (wider spacing, bold italic) */}
-                <nav className="absolute left-[42%] -translate-x-1/2 flex items-center gap-8 h-full">
+                {/* Middle - Navigation (wider spacing, bold italic) - HIDDEN ON MOBILE */}
+                <nav className="absolute left-[42%] -translate-x-1/2 hidden md:flex items-center gap-8 h-full">
                     {navLinks.map((link) => {
                         const isActive = pathname.startsWith(link.path);
                         return (
@@ -145,7 +145,7 @@ export default function GameTopBar({ sidebarCollapsed = false }: GameTopBarProps
                             💰
                         </div>
                         <div className="flex flex-col items-end">
-                            <div className="text-[8px] text-amber-400/60 font-mono uppercase">Coins</div>
+                            <div className="text-[8px] text-amber-400/60 font-mono uppercase hidden md:block">Coins</div>
                             <div className="text-xs font-black orbitron text-amber-400">
                                 {userCoins.toLocaleString()}
                             </div>
@@ -164,14 +164,14 @@ export default function GameTopBar({ sidebarCollapsed = false }: GameTopBarProps
                             </div>
 
                             <div className="flex flex-col items-end">
-                                <div className="text-[9px] text-purple-300/80 font-bold tracking-wider uppercase mb-0.5 group-hover:text-purple-300 transition-colors">
+                                <div className="text-[9px] text-purple-300/80 font-bold tracking-wider uppercase mb-0.5 group-hover:text-purple-300 transition-colors hidden md:block">
                                     Token Balance
                                 </div>
                                 <div className="flex items-baseline gap-1.5 font-orbitron">
                                     <span className="text-sm font-black text-white group-hover:text-purple-100 transition-colors">
                                         {userTokens.toLocaleString()}
                                     </span>
-                                    <span className="text-[10px] text-white/40 font-bold">
+                                    <span className="text-[10px] text-white/40 font-bold hidden md:inline">
                                         / <span className="text-purple-400">{maxTokens.toLocaleString()}</span>
                                     </span>
                                 </div>

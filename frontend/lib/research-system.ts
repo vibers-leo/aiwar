@@ -302,10 +302,27 @@ export function getResearchTimeBuff(deck: Card[]): number {
 }
 
 /**
- * 연구 비용 계산
+ * 연구 코인 비용 계산
  */
 export function getResearchCost(stat: ResearchStat, targetLevel: number): number {
     return Math.floor(stat.baseCost * Math.pow(stat.costMultiplier, targetLevel - 1));
+}
+
+/**
+ * 연구 토큰 비용 계산
+ * Lv1: 0 토큰 (무료)
+ * Lv2: 50 토큰
+ * Lv3: 90 토큰 (50 * 1.8)
+ * Lv4: 162 토큰 (50 * 1.8^2)
+ * Lv5: 291 토큰 (50 * 1.8^3)
+ * Lv6: 524 토큰 (50 * 1.8^4)
+ * Lv7: 944 토큰 (50 * 1.8^5)
+ * Lv8: 1,699 토큰 (50 * 1.8^6)
+ * Lv9: 3,058 토큰 (50 * 1.8^7)
+ */
+export function getResearchTokenCost(targetLevel: number): number {
+    if (targetLevel <= 1) return 0;
+    return Math.floor(50 * Math.pow(1.8, targetLevel - 2));
 }
 
 /**
