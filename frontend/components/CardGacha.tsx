@@ -42,7 +42,7 @@ export default function CardGacha({ cards, onComplete }: CardGachaProps) {
         rare: '#3B82F6',
         epic: '#A855F7',
         legendary: '#F59E0B',
-        unique: '#EF4444',
+        mythic: '#EF4444',
         commander: '#10B981'
     };
 
