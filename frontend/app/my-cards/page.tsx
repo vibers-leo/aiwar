@@ -319,7 +319,7 @@ export default function MyCardsPage() {
                     </button>
                 </div>
             ) : (
-                <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-6 gap-4 pb-20">
+                <div className="grid grid-cols-3 md:grid-cols-4 lg:grid-cols-6 gap-4 pb-20">
                     {filteredAndSortedCards.map((card, i) => (
                         <motion.div
                             key={card.instanceId}

@@ -43,7 +43,7 @@ export default function DynamicFooter({ }: DynamicFooterProps) {
 
     return (
         <div className={cn(
-            "fixed bottom-0 left-0 right-0 h-[180px] z-60 transition-transform duration-300 ease-out",
+            "fixed bottom-16 md:bottom-0 left-0 right-0 h-[180px] z-60 transition-transform duration-300 ease-out",
             isMinimized ? "translate-y-[100%]" : "translate-y-0"
         )}>
             {/* Toggle Handle */}

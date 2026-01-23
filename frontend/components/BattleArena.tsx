@@ -445,13 +445,13 @@ export function BattleArena({
                                 <div className="w-1 h-3 bg-red-500"></div>
                                 <h2 className="text-[10px] font-black text-white orbitron tracking-tighter uppercase">{t('pvp.battle.enemyArchitecture')}</h2>
                             </div>
-                            <div className="grid grid-cols-3 md:grid-cols-6 gap-2 md:gap-4">
+                            <div className="flex flex-wrap justify-center gap-2 md:gap-4">
                                 {enemyDeck.map((card, index) => (
                                     <motion.div
                                         key={card.id || index}
                                         initial={{ opacity: 0, scale: 0.9 }}
                                         animate={{ opacity: 1, scale: 1 }}
-                                        className={cn("bg-black/40 border rounded-xl p-2 text-center transition-all duration-300", getTypeGlow(card.type))}
+                                        className={cn("bg-black/40 border rounded-xl p-2 text-center transition-all duration-300 w-[31%] md:w-[15%] max-w-[120px]", getTypeGlow(card.type))}
                                     >
                                         <div className="flex justify-center mb-1 drop-shadow-md">{getTypeIcon(card.type)}</div>
                                         <div className="text-[8px] font-bold text-gray-400 truncate mb-0.5">{getCardName(card.templateId || card.id || '', card.name || '', lang)}</div>
@@ -472,14 +472,14 @@ export function BattleArena({
                                     {t('pvp.battle.randomize')}
                                 </Button>
                             </div>
-                            <div className="grid grid-cols-3 md:grid-cols-6 gap-2 md:gap-4">
+                            <div className="flex flex-wrap justify-center gap-2 md:gap-4">
                                 {selectedOrder.map((cardIndex, position) => {
                                     const card = playerDeck[cardIndex];
                                     return (
                                         <motion.div
                                             key={card.id || cardIndex}
                                             layout
-                                            className={cn("bg-black/40 border rounded-xl p-2 text-center relative group overflow-hidden transition-all duration-300", getTypeGlow(card.type))}
+                                            className={cn("bg-black/40 border rounded-xl p-2 text-center relative group overflow-hidden transition-all duration-300 w-[31%] md:w-[15%] max-w-[120px]", getTypeGlow(card.type))}
                                         >
                                             <div className="absolute top-1 left-1 flex flex-col gap-0.5 z-20 opacity-0 group-hover:opacity-100 transition-opacity">
                                                 <button onClick={() => moveCardUp(position)} disabled={position === 0} className="w-5 h-5 bg-white/10 rounded text-white text-[9px] flex items-center justify-center disabled:opacity-20"><ChevronUp size={12} /></button>
