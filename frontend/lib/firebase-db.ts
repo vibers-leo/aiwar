@@ -20,7 +20,7 @@ import {
     writeBatch,
     documentId
 } from 'firebase/firestore';
-import { createUniqueCardFromApplication } from './unique-card-factory';
+import { createUniqueCardFromApplication } from './mythic-card-factory';
 import app, { db, isFirebaseConfigured } from './firebase';
 import { getAuth } from 'firebase/auth'; // [FIX] Added import
 import { getUserId } from './firebase-auth';
