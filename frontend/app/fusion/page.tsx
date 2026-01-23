@@ -193,7 +193,7 @@ export default function FusionPage() {
             color="purple"
         >
             {/* 메인 영역: 카드 목록 */}
-            <div className="p-6 pb-[140px] w-full mx-auto"> {/* 푸터 높이 120px + 여유 */}
+            <div className="p-6 pb-[280px] md:pb-[140px] w-full mx-auto"> {/* 푸터 높이 120px + 여유 */}
                 {/* Main Cards Section - 주력카드 */}
                 {allCards.length > 0 && (
                     <div className="mb-6">
@@ -267,7 +267,7 @@ export default function FusionPage() {
                     </div>
                 </div>
 
-                <div className="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-5 xl:grid-cols-6 gap-4">
+                <div className="grid grid-cols-3 md:grid-cols-4 lg:grid-cols-5 xl:grid-cols-6 gap-4">
                     {displayCards.map(card => {
                         const isSelected = materialSlots.some(s => s?.instanceId === card.instanceId);
 

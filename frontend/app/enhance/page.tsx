@@ -270,7 +270,8 @@ export default function EnhancePage() {
             color="amber"
         >
             {/* 메인 영역: 카드 목록 */}
-            <div className="p-6 pb-[160px] w-full mx-auto overflow-auto custom-scrollbar h-[calc(100vh-80px)]">
+            {/* 메인 영역: 카드 목록 */}
+            <div className="p-6 pb-[280px] md:pb-[160px] w-full mx-auto overflow-auto custom-scrollbar h-[calc(100vh-80px)]">
                 {/* Main Cards Section - 주력카드 */}
                 {allCards.length > 0 && (
                     <div className="mb-6">
@@ -335,7 +336,7 @@ export default function EnhancePage() {
                 </div>
 
                 {/* 카드 그리드 */}
-                <div className="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-5 xl:grid-cols-6 gap-4">
+                <div className="grid grid-cols-3 md:grid-cols-4 lg:grid-cols-5 xl:grid-cols-6 gap-4">
                     {displayCards.map(card => {
                         const isSelected =
                             card.instanceId === targetCard?.instanceId ||

@@ -192,7 +192,7 @@ export default function UniqueCreatePage() {
             {viewMode === 'create' ? (
                 <>
                     {/* 메인 영역: 폼 + 카드 목록 */}
-                    <div className="pb-[160px]">
+                    <div className="pb-[280px] md:pb-[160px]">
                         {/* 입력 폼 */}
                         <div className="bg-white/5 border border-white/10 rounded-lg p-6 mb-6">
                             <h3 className="text-xl font-bold mb-4 text-white">{t('unique.form.title')}</h3>
@@ -254,7 +254,7 @@ export default function UniqueCreatePage() {
                                 </p>
                             </div>
 
-                            <div className="grid grid-cols-5 gap-4">
+                            <div className="grid grid-cols-3 sm:grid-cols-4 md:grid-cols-5 gap-4">
                                 {legendaryCards.map(card => {
                                     const isSelected = materialSlots.some(s => s?.id === card.id);
                                     const isEligible = card.level <= 1; // 강화되지 않은 카드만

@@ -294,10 +294,10 @@ function GameCard({
                     </>
                 )}
 
-                {/* 타입 아이콘 (가위바위보) - 상단 우측 배치 및 크기 확대 */}
+                {/* 타입 아이콘 (가위바위보) - 모바일: 등급 아래(좌측), 데스크탑: 우측 상단 */}
                 {card.type && (
                     <div
-                        className="absolute top-1.5 right-1.5 w-10 h-10 rounded-full flex items-center justify-center text-xl border-2 border-white/50 z-50 shadow-2xl backdrop-blur-sm"
+                        className="absolute top-[24px] left-1.5 md:top-1.5 md:left-auto md:right-1.5 w-7 h-7 md:w-10 md:h-10 rounded-full flex items-center justify-center text-sm md:text-xl border md:border-2 border-white/50 z-50 shadow-2xl backdrop-blur-sm"
                         style={{ backgroundColor: getTypeColor(card.type) }}
                         title={card.type}
                     >
