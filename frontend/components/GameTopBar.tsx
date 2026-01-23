@@ -3,7 +3,8 @@
 import { useState, useEffect } from 'react';
 import Link from 'next/link';
 import { usePathname, useRouter } from 'next/navigation';
-import { Bell, LogOut, Settings } from 'lucide-react';
+import { AnimatePresence, motion } from 'framer-motion';
+import { Link as LinkIcon, Bell, LogOut, Settings, Menu, X, ChevronRight, Zap, Box, Users, HelpCircle } from 'lucide-react';
 import { useTranslation } from '@/context/LanguageContext';
 import { useUser } from '@/context/UserContext';
 import { useAlert } from '@/context/AlertContext';
@@ -76,6 +77,51 @@ export default function GameTopBar({ sidebarCollapsed = false }: GameTopBarProps
         });
     };
 
+    // [NEW] Mobile Menu State & Logic
+    const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
+
+    // Close menu when route changes
+    useEffect(() => {
+        setMobileMenuOpen(false);
+    }, [pathname]);
+
+    // Consolidated Mobile Menu Items
+    const mobileMenuItems = [
+        {
+            category: 'OPERATIONS',
+            items: [
+                { name: t('menu.story'), path: '/story', icon: '📖', color: 'cyan' },
+                { name: t('menu.pvp'), path: '/pvp', icon: '⚔️', color: 'red' },
+                { name: t('menu.aiFaction'), path: '/factions', icon: '🤖', color: 'green' },
+                { name: 'LAB', path: '/lab', icon: '⚗️', color: 'amber' },
+            ]
+        },
+        {
+            category: 'FACILITIES',
+            items: [
+                { name: t('menu.shop'), path: '/shop', icon: '🛒', color: 'yellow' },
+                { name: t('menu.generation'), path: '/generation', icon: '🎲', color: 'purple' },
+                { name: t('menu.enhance'), path: '/enhance', icon: '⚡', color: 'blue' },
+                { name: t('menu.fusion'), path: '/fusion', icon: '🔮', color: 'pink' },
+            ]
+        },
+        {
+            category: 'ARCHIVES',
+            items: [
+                { name: t('menu.encyclopedia'), path: '/encyclopedia', icon: '📘', color: 'cyan' },
+                { name: t('menu.myCards'), path: '/my-cards', icon: '📦', color: 'purple' },
+                { name: t('menu.ranking'), path: '/ranking', icon: '🏆', color: 'gold' },
+            ]
+        },
+        {
+            category: 'SYSTEM',
+            items: [
+                { name: '친구 목록', path: '/social', icon: '👥', color: 'pink' },
+                { name: '지원센터', path: '/support', icon: '🛠️', color: 'gray' },
+            ]
+        }
+    ];
+
     return (
         <>
             <div
@@ -84,8 +130,16 @@ export default function GameTopBar({ sidebarCollapsed = false }: GameTopBarProps
                 {/* Decorative top line */}
                 <div className="absolute top-0 left-0 right-0 h-px bg-gradient-to-r from-[var(--primary-blue)] via-transparent to-[var(--primary-purple)]" />
 
-                {/* Left - Logo */}
-                <div className="flex items-center gap-4">
+                {/* Left - Logo & Hamburger */}
+                <div className="flex items-center gap-3 md:gap-4">
+                    {/* [NEW] Hamburger Button */}
+                    <button
+                        onClick={() => setMobileMenuOpen(true)}
+                        className="md:hidden flex items-center justify-center w-8 h-8 rounded-lg bg-white/5 border border-white/10 text-white/70 hover:text-white hover:bg-white/10 transition-all active:scale-95"
+                    >
+                        <Menu size={20} />
+                    </button>
+
                     <Link href="/main" className="group flex items-center gap-2">
                         <span className="text-2xl font-black italic text-transparent bg-clip-text bg-gradient-to-r from-cyan-400 to-purple-500 group-hover:scale-105 transition-transform font-orbitron">
                             AGI WAR
@@ -285,6 +339,126 @@ export default function GameTopBar({ sidebarCollapsed = false }: GameTopBarProps
             </div>
 
             <NotificationPanel isOpen={isNotificationOpen} onClose={() => setIsNotificationOpen(false)} />
+
+            {/* [NEW] Mobile Side Menu Drawer (Cyberpunk Style) */}
+            <AnimatePresence>
+                {mobileMenuOpen && (
+                    <>
+                        {/* Backdrop */}
+                        <motion.div
+                            initial={{ opacity: 0 }}
+                            animate={{ opacity: 1 }}
+                            exit={{ opacity: 0 }}
+                            onClick={() => setMobileMenuOpen(false)}
+                            className="fixed inset-0 bg-black/80 backdrop-blur-sm z-[70] md:hidden"
+                        />
+
+                        {/* Drawer */}
+                        <motion.div
+                            initial={{ x: '-100%' }}
+                            animate={{ x: 0 }}
+                            exit={{ x: '-100%' }}
+                            transition={{ type: "spring", bounce: 0, duration: 0.4 }}
+                            className="fixed top-0 left-0 bottom-0 w-[280px] bg-[#050510] border-r border-cyan-500/30 z-[80] md:hidden flex flex-col shadow-[0_0_50px_rgba(0,0,0,0.8)]"
+                        >
+                            {/* Drawer Header */}
+                            <div className="p-5 border-b border-white/10 flex items-center justify-between bg-black/50">
+                                <div className="flex items-center gap-2">
+                                    <span className="text-xl font-black italic text-transparent bg-clip-text bg-gradient-to-r from-cyan-400 to-purple-500 font-orbitron">
+                                        AGI WAR
+                                    </span>
+                                    <div className="px-1.5 py-0.5 rounded bg-cyan-500/20 text-[10px] text-cyan-400 font-bold border border-cyan-500/30">
+                                        SYSTEM
+                                    </div>
+                                </div>
+                                <button
+                                    onClick={() => setMobileMenuOpen(false)}
+                                    className="p-1 text-white/50 hover:text-white transition-colors"
+                                >
+                                    <X size={24} />
+                                </button>
+                            </div>
+
+                            {/* User Info Summary */}
+                            <div className="p-4 bg-white/5 border-b border-white/5">
+                                <div className="flex items-center gap-3 mb-3">
+                                    <div className="w-10 h-10 rounded-full bg-gradient-to-br from-cyan-500 to-purple-600 p-[1px]">
+                                        <div className="w-full h-full rounded-full bg-black flex items-center justify-center overflow-hidden">
+                                            {profile?.avatarUrl ? (
+                                                <img src={profile.avatarUrl} alt="User" className="w-full h-full object-cover" />
+                                            ) : (
+                                                <div className="text-xs">CMD</div>
+                                            )}
+                                        </div>
+                                    </div>
+                                    <div>
+                                        <div className="text-sm font-bold text-white font-orbitron">{profile?.nickname || 'Commander'}</div>
+                                        <div className="text-[10px] text-cyan-400 font-mono">Level {userLevel}</div>
+                                    </div>
+                                </div>
+                                {/* Mini Stats */}
+                                <div className="grid grid-cols-2 gap-2">
+                                    <div className="bg-black/40 rounded px-2 py-1.5 border border-white/5">
+                                        <div className="text-[9px] text-amber-400/70 uppercase">Coins</div>
+                                        <div className="text-xs font-bold text-amber-400">{userCoins.toLocaleString()}</div>
+                                    </div>
+                                    <div className="bg-black/40 rounded px-2 py-1.5 border border-white/5">
+                                        <div className="text-[9px] text-purple-400/70 uppercase">Tokens</div>
+                                        <div className="text-xs font-bold text-purple-400">{userTokens.toLocaleString()}</div>
+                                    </div>
+                                </div>
+                            </div>
+
+                            {/* Menu Items */}
+                            <div className="flex-1 overflow-y-auto py-2">
+                                {mobileMenuItems.map((category, idx) => (
+                                    <div key={idx} className="mb-4">
+                                        <div className="px-4 py-1.5 mb-1 text-[10px] font-bold text-gray-500 uppercase tracking-widest flex items-center gap-2">
+                                            <span className="w-1 h-1 bg-gray-600 rounded-full" />
+                                            {category.category}
+                                        </div>
+                                        <div className="space-y-0.5">
+                                            {category.items.map((item) => (
+                                                <Link
+                                                    key={item.path}
+                                                    href={item.path}
+                                                    className={`
+                                                        relative flex items-center gap-3 px-5 py-3 transition-all duration-200 border-l-2
+                                                        ${pathname.startsWith(item.path)
+                                                            ? `bg-white/5 border-${item.color}-500 text-white`
+                                                            : 'border-transparent text-gray-400 hover:text-white hover:bg-white/5'
+                                                        }
+                                                    `}
+                                                >
+                                                    <span className="text-lg">{item.icon}</span>
+                                                    <span className="text-sm font-medium font-orbitron tracking-wide">{item.name}</span>
+                                                    {pathname.startsWith(item.path) && (
+                                                        <motion.div
+                                                            layoutId="active-mobile-menu"
+                                                            className={`absolute right-4 w-1.5 h-1.5 rounded-full bg-${item.color}-500 shadow-[0_0_8px_currentColor]`}
+                                                        />
+                                                    )}
+                                                </Link>
+                                            ))}
+                                        </div>
+                                    </div>
+                                ))}
+                            </div>
+
+                            {/* Footer Area */}
+                            <div className="p-4 border-t border-white/10 bg-black/50">
+                                <button
+                                    onClick={handleLogout}
+                                    className="w-full flex items-center justify-center gap-2 p-3 rounded-lg border border-red-500/20 bg-red-500/10 text-red-400 hover:bg-red-500/20 transition-all font-bold text-sm"
+                                >
+                                    <LogOut size={16} />
+                                    <span>SYSTEM LOGOUT</span>
+                                </button>
+                            </div>
+                        </motion.div>
+                    </>
+                )}
+            </AnimatePresence>
         </>
     );
 }
