@@ -42,6 +42,7 @@ export const useSidebar = () => useContext(SidebarContext);
 export default function MainLayout({ children }: { children: React.ReactNode }) {
     const pathname = usePathname();
     const { state: footerState } = useFooter();
+    const [mobileMenuOpen, setMobileMenuOpen] = useState(false); // [NEW] Lifted State
 
     // Pages that should be 100% full page without any layout
     const isNoLayout = !pathname ||
@@ -68,7 +69,11 @@ export default function MainLayout({ children }: { children: React.ReactNode }) 
                 )}
             >
                 {/* 상단 바 */}
-                <GameTopBar sidebarCollapsed={false} />
+                <GameTopBar
+                    sidebarCollapsed={false}
+                    mobileMenuOpen={mobileMenuOpen}
+                    setMobileMenuOpen={setMobileMenuOpen}
+                />
 
                 {/* 컨텐츠 */}
                 <main
@@ -92,7 +97,7 @@ export default function MainLayout({ children }: { children: React.ReactNode }) 
                 </main>
 
                 {/* Mobile Navigation */}
-                <MobileNav />
+                <MobileNav onMenuToggle={() => setMobileMenuOpen(!mobileMenuOpen)} />
             </div>
 
             {/* 사이드바 (우측 고정) - 데스크탑 전용 */}

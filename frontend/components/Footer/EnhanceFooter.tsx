@@ -38,11 +38,11 @@ export default function EnhanceFooter({
 
             {/* 메인 푸터 */}
             <div className="absolute inset-0 bg-gradient-to-t from-black via-zinc-900/95 to-transparent backdrop-blur-md">
-                {/* 중앙 정렬 컨테이너 (70% 너비) - Space Between 복구 */}
-                <div className="h-full px-6 py-3 flex items-center gap-6 mx-auto w-[70%] max-w-[70%]">
+                {/* 중앙 정렬 컨테이너 - 모바일 대응 */}
+                <div className="h-full px-4 md:px-6 py-3 flex items-center gap-4 md:gap-6 mx-auto w-full max-w-7xl overflow-x-auto no-scrollbar">
                     {/* 타겟 슬롯 */}
-                    <div className="flex flex-col items-center gap-1">
-                        <p className="text-[10px] font-mono text-cyan-400 uppercase">🎯 Target</p>
+                    <div className="flex flex-col items-center gap-1 flex-shrink-0">
+                        <p className="text-[10px] font-mono text-cyan-400 uppercase">Target</p>
                         <FooterSlot
                             card={targetCard}
                             index={0}
@@ -54,36 +54,35 @@ export default function EnhanceFooter({
                     </div>
 
                     {/* 구분선 */}
-                    <div className="h-24 w-px bg-white/20" />
+                    <div className="h-16 md:h-24 w-px bg-white/20 flex-shrink-0" />
 
-                    {/* 재료 슬롯 (1줄로 나열) */}
-                    <div className="flex items-center gap-3">
-                        <p className="text-[10px] font-mono text-amber-400 uppercase whitespace-nowrap">
-                            Materials ({filledCount}/10)
-                        </p>
-                        <div className="flex gap-1.5">
-                            {materialSlots.map((card, index) => (
-                                <FooterSlot
-                                    key={index}
-                                    card={card}
-                                    index={index}
-                                    size="small"
-                                    onDrop={(droppedCard) => onMaterialDrop(droppedCard as InventoryCard, index)}
-                                    onRemove={card ? () => onMaterialRemove(index) : undefined}
-                                />
-                            ))}
+                    {/* 재료 슬롯 (스크롤 가능) */}
+                    <div className="flex items-center gap-3 overflow-x-auto flex-1 no-scrollbar pr-4">
+                        <div className="flex flex-col justify-center min-w-max">
+                            <p className="text-[10px] font-mono text-amber-400 uppercase whitespace-nowrap mb-1">
+                                Materials ({filledCount}/10)
+                            </p>
+                            <div className="flex gap-1.5">
+                                {materialSlots.map((card, index) => (
+                                    <FooterSlot
+                                        key={index}
+                                        card={card}
+                                        index={index}
+                                        size="small"
+                                        onDrop={(droppedCard) => onMaterialDrop(droppedCard as InventoryCard, index)}
+                                        onRemove={card ? () => onMaterialRemove(index) : undefined}
+                                    />
+                                ))}
+                            </div>
                         </div>
                     </div>
 
-                    {/* 스페이서 */}
-                    <div className="flex-1" />
-
-                    {/* 버튼 영역 */}
-                    <div className="flex items-center gap-3">
-                        {/* 초기화 버튼 */}
+                    {/* 버튼 영역 (모바일에서는 축소) */}
+                    <div className="flex items-center gap-2 md:gap-3 flex-shrink-0">
+                        {/* 초기화 버튼 - 모바일 숨김 또는 아이콘만 */}
                         <button
                             onClick={onClear}
-                            className="px-4 py-2.5 bg-white/10 hover:bg-white/20 text-white/80 hover:text-white rounded-lg transition-colors text-sm"
+                            className="hidden md:block px-4 py-2.5 bg-white/10 hover:bg-white/20 text-white/80 hover:text-white rounded-lg transition-colors text-sm"
                         >
                             초기화
                         </button>
@@ -93,13 +92,14 @@ export default function EnhanceFooter({
                             onClick={onAutoSelect}
                             disabled={!targetCard}
                             className={cn(
-                                "px-5 py-2.5 rounded-lg transition-all text-sm font-medium",
+                                "px-3 md:px-5 py-2 md:py-2.5 rounded-lg transition-all text-xs md:text-sm font-medium whitespace-nowrap",
                                 targetCard
                                     ? "bg-cyan-500/30 hover:bg-cyan-500/50 text-cyan-300 border border-cyan-400/50"
                                     : "bg-gray-700 text-gray-500 cursor-not-allowed"
                             )}
                         >
-                            자동선택
+                            <span className="md:hidden">Auto</span>
+                            <span className="hidden md:inline">자동선택</span>
                         </button>
 
                         {/* 강화 버튼 */}
@@ -107,14 +107,14 @@ export default function EnhanceFooter({
                             onClick={onEnhance}
                             disabled={!canEnhance}
                             className={cn(
-                                "px-8 py-3 font-bold rounded-xl transition-all text-base flex items-center gap-2 shadow-lg",
+                                "px-4 md:px-8 py-2 md:py-3 font-bold rounded-xl transition-all text-sm md:text-base flex items-center gap-2 shadow-lg whitespace-nowrap",
                                 canEnhance
                                     ? "bg-gradient-to-r from-green-500 to-emerald-500 hover:from-green-400 hover:to-emerald-400 text-black shadow-green-500/50 hover:scale-105"
                                     : "bg-gray-700 text-gray-400 cursor-not-allowed shadow-none"
                             )}
                         >
-                            <Sparkles size={18} />
-                            강화
+                            <Sparkles size={16} />
+                            <span>강화</span>
                         </button>
                     </div>
                 </div>

@@ -54,13 +54,19 @@ export default function LabPage() {
     const [timeReduction, setTimeReduction] = useState(0);
 
     // 타이머 - 연구 진행 중일 때만 실행
+    // 타이머 및 상태 동기화
     useEffect(() => {
-        const hasActiveResearch = research && getActiveResearch(research);
-        if (!hasActiveResearch) return;
-
+        // 1초마다 화면 갱신 (리렌더링 유도)
         const timer = setInterval(() => setCurrentTime(Date.now()), 1000);
-        return () => clearInterval(timer);
-    }, [research]);
+
+        // 5초마다 실제 데이터 동기화 (다른 기기/창에서 완료되었을 수 있음)
+        const syncTimer = setInterval(loadResearch, 5000);
+
+        return () => {
+            clearInterval(timer);
+            clearInterval(syncTimer);
+        };
+    }, []);
 
     // 연구 상태 로드
     useEffect(() => {

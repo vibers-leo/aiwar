@@ -2,37 +2,48 @@
 'use client';
 
 import { usePathname, useRouter } from 'next/navigation';
-import { Home, ShoppingBag, Sword, Box, Menu } from 'lucide-react';
+import { Home, ShoppingBag, BookOpen, Box, Menu } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { motion } from 'framer-motion';
 
-export default function MobileNav() {
+interface MobileNavProps {
+    onMenuToggle: () => void;
+}
+
+export default function MobileNav({ onMenuToggle }: MobileNavProps) {
     const pathname = usePathname();
     const router = useRouter();
 
     const navItems = [
         { name: '홈', path: '/main', icon: Home },
+        { name: '스토리', path: '/story', icon: BookOpen },
         { name: '상점', path: '/shop', icon: ShoppingBag },
-        { name: '전투', path: '/battle', icon: Sword },
         { name: '보관함', path: '/my-cards', icon: Box },
-        { name: '메뉴', path: '/ranking', icon: Menu }, // 임시로 랭킹/메뉴 매핑
+        { name: '메뉴', path: '#menu', icon: Menu, action: onMenuToggle },
     ];
 
     const isCurrent = (path: string) => {
         if (path === '/main' && pathname === '/') return true;
+        if (path === '#menu') return false;
         return pathname?.startsWith(path);
     };
 
     return (
-        <div className="mobile-nav-container fixed bottom-0 left-0 right-0 z-40 bg-black/90 backdrop-blur-lg border-t border-white/10 md:hidden pb-safe">
+        <div className="mobile-nav-container fixed bottom-0 left-0 right-0 z-[60] bg-[#050510]/95 backdrop-blur-xl border-t border-white/10 md:hidden pb-safe shadow-[0_-5px_20px_rgba(0,0,0,0.5)]">
             <div className="flex justify-around items-center h-16">
                 {navItems.map((item) => {
                     const active = isCurrent(item.path);
                     return (
                         <button
                             key={item.path}
-                            onClick={() => router.push(item.path)}
-                            className="relative flex flex-col items-center justify-center w-full h-full space-y-1"
+                            onClick={() => {
+                                if (item.action) {
+                                    item.action();
+                                } else {
+                                    router.push(item.path);
+                                }
+                            }}
+                            className="relative flex flex-col items-center justify-center w-full h-full space-y-1 group"
                         >
                             {active && (
                                 <motion.div
@@ -43,8 +54,8 @@ export default function MobileNav() {
                             <item.icon
                                 size={20}
                                 className={cn(
-                                    "transition-colors duration-300",
-                                    active ? "text-cyan-400" : "text-gray-500"
+                                    "transition-all duration-300",
+                                    active ? "text-cyan-400 scale-110 drop-shadow-[0_0_5px_rgba(34,211,238,0.5)]" : "text-gray-500 group-active:scale-95"
                                 )}
                             />
                             <span className={cn(

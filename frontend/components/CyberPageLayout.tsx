@@ -144,7 +144,7 @@ export default function CyberPageLayout({
                 </div>
 
                 {/* Content */}
-                <div className="relative z-10 max-w-7xl mx-auto px-6 py-8 w-full">
+                <div className="relative z-10 max-w-7xl mx-auto px-4 py-4 md:px-6 md:py-8 w-full">
                     {/* Page Header */}
                     <motion.header
                         initial={{ opacity: 0, y: -20 }}

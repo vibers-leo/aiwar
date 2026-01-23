@@ -191,14 +191,14 @@ export default function RankingPage() {
             </div>
 
             {/* Filters */}
-            <div className="flex gap-2 mb-6 relative z-20">
+            <div className="flex gap-2 mb-6 relative z-20 overflow-x-auto pb-2 scrollbar-hide">
                 {(['top10', 'top100', 'all'] as const).map(f => (
                     <button
                         key={f}
                         type="button"
                         onClick={() => setFilter(f)}
                         className={cn(
-                            "px-4 py-2 rounded text-[10px] font-mono uppercase tracking-widest transition-all cursor-pointer",
+                            "px-4 py-2 rounded text-[10px] font-mono uppercase tracking-widest transition-all cursor-pointer whitespace-nowrap",
                             filter === f ? "bg-pink-500/20 border border-pink-500/50 text-pink-400" : "bg-white/5 border border-white/10 text-white/40 hover:border-white/20 hover:text-white"
                         )}
                     >
@@ -208,7 +208,7 @@ export default function RankingPage() {
             </div>
 
             {/* Ranking Table */}
-            <div className="bg-white/5 border border-white/10 rounded-xl overflow-hidden min-h-[400px]">
+            <div className="bg-white/5 border border-white/10 rounded-xl overflow-hidden min-h-[400px] overflow-x-auto">
                 {processedRankings.length > 0 ? (
                     <table className="w-full">
                         <thead className="bg-white/5">

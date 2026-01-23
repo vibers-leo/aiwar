@@ -32,36 +32,35 @@ export default function FusionFooter({
 
             {/* 메인 푸터 */}
             <div className="absolute inset-0 bg-gradient-to-t from-black via-purple-900/10 to-transparent backdrop-blur-md">
-                {/* 중앙 정렬 컨테이너 (70% 너비) - Space Between 복구 */}
-                <div className="h-full px-6 py-3 flex items-center gap-6 mx-auto w-[70%] max-w-[70%]">
-                    {/* 재료 슬롯 */}
-                    <div className="flex items-center gap-4">
-                        <p className="text-[10px] font-mono text-purple-400 uppercase whitespace-nowrap">
-                            🔮 Materials ({filledCount}/3)
-                        </p>
-                        <div className="flex gap-3">
-                            {materialSlots.map((card, index) => (
-                                <FooterSlot
-                                    key={index}
-                                    card={card}
-                                    index={index}
-                                    size="medium"
-                                    onDrop={(droppedCard) => onMaterialDrop(droppedCard as InventoryCard, index)}
-                                    onRemove={card ? () => onMaterialRemove(index) : undefined}
-                                />
-                            ))}
+                {/* 중앙 정렬 컨테이너 - 모바일 대응 */}
+                <div className="h-full px-4 md:px-6 py-3 flex items-center gap-4 md:gap-6 mx-auto w-full max-w-7xl overflow-x-auto no-scrollbar">
+                    {/* 재료 슬롯 (스크롤 가능) */}
+                    <div className="flex items-center gap-3 overflow-x-auto flex-1 no-scrollbar pr-4">
+                        <div className="flex flex-col justify-center min-w-max">
+                            <p className="text-[10px] font-mono text-purple-400 uppercase whitespace-nowrap mb-1">
+                                🔮 Materials ({filledCount}/3)
+                            </p>
+                            <div className="flex gap-1.5 md:gap-3">
+                                {materialSlots.map((card, index) => (
+                                    <FooterSlot
+                                        key={index}
+                                        card={card}
+                                        index={index}
+                                        size="medium"
+                                        onDrop={(droppedCard) => onMaterialDrop(droppedCard as InventoryCard, index)}
+                                        onRemove={card ? () => onMaterialRemove(index) : undefined}
+                                    />
+                                ))}
+                            </div>
                         </div>
                     </div>
 
-                    {/* 스페이서 */}
-                    <div className="flex-1" />
-
-                    {/* 버튼 영역 */}
-                    <div className="flex items-center gap-3">
+                    {/* 버튼 영역 (모바일에서는 축소) */}
+                    <div className="flex items-center gap-2 md:gap-3 flex-shrink-0">
                         {/* 초기화 버튼 */}
                         <button
                             onClick={onClear}
-                            className="px-4 py-2.5 bg-white/10 hover:bg-white/20 text-white/80 hover:text-white rounded-lg transition-colors text-sm"
+                            className="hidden md:block px-4 py-2.5 bg-white/10 hover:bg-white/20 text-white/80 hover:text-white rounded-lg transition-colors text-sm"
                         >
                             초기화
                         </button>
@@ -69,9 +68,10 @@ export default function FusionFooter({
                         {/* 자동선택 버튼 */}
                         <button
                             onClick={onAutoSelect}
-                            className="px-5 py-2.5 bg-cyan-500/30 hover:bg-cyan-500/50 text-cyan-300 rounded-lg transition-all text-sm font-medium border border-cyan-400/50"
+                            className="px-3 md:px-5 py-2 md:py-2.5 bg-cyan-500/30 hover:bg-cyan-500/50 text-cyan-300 rounded-lg transition-all text-xs md:text-sm font-medium border border-cyan-400/50 whitespace-nowrap"
                         >
-                            자동선택
+                            <span className="md:hidden">Auto</span>
+                            <span className="hidden md:inline">자동선택</span>
                         </button>
 
                         {/* 합성 버튼 */}
@@ -79,14 +79,14 @@ export default function FusionFooter({
                             onClick={onFuse}
                             disabled={!canFuse}
                             className={cn(
-                                "px-8 py-3 font-bold rounded-xl transition-all text-base flex items-center gap-2 shadow-lg",
+                                "px-4 md:px-8 py-2 md:py-3 font-bold rounded-xl transition-all text-sm md:text-base flex items-center gap-2 shadow-lg whitespace-nowrap",
                                 canFuse
                                     ? "bg-gradient-to-r from-purple-500 to-pink-500 hover:from-purple-400 hover:to-pink-400 text-white shadow-purple-500/50 hover:scale-105"
                                     : "bg-gray-700 text-gray-400 cursor-not-allowed shadow-none"
                             )}
                         >
-                            <FlaskConical size={18} />
-                            합성
+                            <FlaskConical size={16} />
+                            <span>합성</span>
                         </button>
                     </div>
                 </div>

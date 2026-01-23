@@ -705,41 +705,41 @@ export default function PVPArenaPage() {
                                 </div>
                             )}
                             {/* 전적 표시 */}
-                            <div className="grid grid-cols-5 gap-4 mb-8">
-                                <div className="bg-gradient-to-br from-amber-500/10 to-yellow-500/10 border border-amber-500/30 rounded-xl p-6">
+                            <div className="grid grid-cols-2 md:grid-cols-5 gap-3 md:gap-4 mb-6 md:mb-8">
+                                <div className="bg-gradient-to-br from-amber-500/10 to-yellow-500/10 border border-amber-500/30 rounded-xl p-4 md:p-6">
                                     <div className="flex items-center gap-2 mb-2">
                                         <Award className="text-amber-400" size={20} />
-                                        <h3 className="text-sm text-white/60">레이팅</h3>
+                                        <h3 className="text-xs md:text-sm text-white/60">레이팅</h3>
                                     </div>
-                                    <p className="text-3xl font-black text-amber-400">{stats.rating || 1000}</p>
+                                    <p className="text-2xl md:text-3xl font-black text-amber-400">{stats.rating || 1000}</p>
                                 </div>
-                                <div className="bg-gradient-to-br from-green-500/10 to-emerald-500/10 border border-green-500/30 rounded-xl p-6">
+                                <div className="bg-gradient-to-br from-green-500/10 to-emerald-500/10 border border-green-500/30 rounded-xl p-4 md:p-6">
                                     <div className="flex items-center gap-2 mb-2">
                                         <Trophy className="text-green-400" size={20} />
-                                        <h3 className="text-sm text-white/60">승리</h3>
+                                        <h3 className="text-xs md:text-sm text-white/60">승리</h3>
                                     </div>
-                                    <p className="text-3xl font-black text-green-400">{stats.wins}</p>
+                                    <p className="text-2xl md:text-3xl font-black text-green-400">{stats.wins}</p>
                                 </div>
-                                <div className="bg-gradient-to-br from-red-500/10 to-rose-500/10 border border-red-500/30 rounded-xl p-6">
+                                <div className="bg-gradient-to-br from-red-500/10 to-rose-500/10 border border-red-500/30 rounded-xl p-4 md:p-6">
                                     <div className="flex items-center gap-2 mb-2">
                                         <XCircle className="text-red-400" size={20} />
-                                        <h3 className="text-sm text-white/60">패배</h3>
+                                        <h3 className="text-xs md:text-sm text-white/60">패배</h3>
                                     </div>
-                                    <p className="text-3xl font-black text-red-400">{stats.losses}</p>
+                                    <p className="text-2xl md:text-3xl font-black text-red-400">{stats.losses}</p>
                                 </div>
-                                <div className="bg-gradient-to-br from-cyan-500/10 to-blue-500/10 border border-cyan-500/30 rounded-xl p-6">
+                                <div className="bg-gradient-to-br from-cyan-500/10 to-blue-500/10 border border-cyan-500/30 rounded-xl p-4 md:p-6">
                                     <div className="flex items-center gap-2 mb-2">
                                         <TrendingUp className="text-cyan-400" size={20} />
-                                        <h3 className="text-sm text-white/60">승률</h3>
+                                        <h3 className="text-xs md:text-sm text-white/60">승률</h3>
                                     </div>
-                                    <p className="text-3xl font-black text-cyan-400">{stats.winRate}%</p>
+                                    <p className="text-2xl md:text-3xl font-black text-cyan-400">{stats.winRate}%</p>
                                 </div>
-                                <div className="bg-gradient-to-br from-purple-500/10 to-pink-500/10 border border-purple-500/30 rounded-xl p-6">
+                                <div className="col-span-2 md:col-span-1 bg-gradient-to-br from-purple-500/10 to-pink-500/10 border border-purple-500/30 rounded-xl p-4 md:p-6">
                                     <div className="flex items-center gap-2 mb-2">
                                         <Swords className="text-purple-400" size={20} />
-                                        <h3 className="text-sm text-white/60">총 전투</h3>
+                                        <h3 className="text-xs md:text-sm text-white/60">총 전투</h3>
                                     </div>
-                                    <p className="text-3xl font-black text-purple-400">{stats.totalBattles}</p>
+                                    <p className="text-2xl md:text-3xl font-black text-purple-400">{stats.totalBattles}</p>
                                 </div>
                             </div>
 
@@ -788,7 +788,7 @@ export default function PVPArenaPage() {
                                 <Target className="text-red-400" size={24} />
                                 전투 모드 선택
                             </h2>
-                            <div className="grid grid-cols-3 gap-4 mb-6">
+                            <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-6">
                                 {modes.map((mode) => {
                                     const Icon = mode.icon;
                                     const isSelected = selectedMode === mode.id;

@@ -384,7 +384,7 @@ export default function FactionsPage() {
                                 </div>
 
                                 {/* Tier Options */}
-                                <div className="grid grid-cols-3 gap-4 mb-6">
+                                <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-6">
                                     {(['free', 'pro', 'ultra'] as SubscriptionTier[]).map(tier => {
                                         const config = TIER_CONFIG[tier];
                                         const isSelected = selectedTier === tier;

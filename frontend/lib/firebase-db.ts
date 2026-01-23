@@ -131,6 +131,7 @@ export interface UserProfile {
             fortune: number;
         };
     };
+    research?: any; // [NEW] Full Research State (CommanderResearch)
 }
 
 const BASE_MAX_TOKENS = 1000;

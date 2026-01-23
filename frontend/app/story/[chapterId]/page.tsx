@@ -100,7 +100,7 @@ export default function ChapterDetailPage() {
     const progress = Math.round((completedStages / chapter.stages.length) * 100);
 
     return (
-        <div className="min-h-screen py-12 px-4 lg:px-8 bg-[#050505] relative overflow-hidden flex flex-col">
+        <div className="min-h-screen py-6 md:py-12 px-4 lg:px-8 bg-[#050505] relative overflow-hidden flex flex-col">
             <BackgroundBeams className="opacity-40" />
 
             <div className="max-w-7xl mx-auto w-full relative z-10 flex flex-col flex-1">

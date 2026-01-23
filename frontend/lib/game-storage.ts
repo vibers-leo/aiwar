@@ -329,7 +329,7 @@ class UnifiedStorage {
                         unlockedFactions: [], // Load from DB if implemented, otherwise default
                         slots: [],
                         equipment: [],
-                        research: undefined,
+                        research: profile.research || localState?.research, // [FIX] Sync research (Fallback to local if missing in DB)
                         decks: []
                     };
                 } else {
@@ -389,6 +389,7 @@ class UnifiedStorage {
                     if (validatedStateUpdate.tokens !== undefined) profileUpdate.tokens = validatedStateUpdate.tokens;
                     if (validatedStateUpdate.level !== undefined) profileUpdate.level = validatedStateUpdate.level;
                     if (validatedStateUpdate.experience !== undefined) profileUpdate.exp = validatedStateUpdate.experience;
+                    if (validatedStateUpdate.research !== undefined) profileUpdate.research = validatedStateUpdate.research; // [NEW] Sync Research
 
                     // [NEW] PVP Stats Sync
                     if (validatedStateUpdate.stats) {
