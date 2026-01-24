@@ -250,15 +250,14 @@ export function UserProvider({ children }: { children: React.ReactNode }) {
                         syncSubscriptionsWithFirebase(user.uid) // This also returns a promise, but its result isn't directly used here
                     ]);
 
-                    // [NEW] Calculate Max Tokens based on ACTIVE slots
-                    const { getGenerationSlots: getSlotsForToken } = await import('@/lib/generation-utils');
+                    // [NEW] Calculate Max Tokens based on ALL ACTIVE subscriptions
+                    // (Slot-based policy was too confusing for UI indicators)
                     const { calculateRechargeParams: calcTokenParams } = await import('@/lib/token-system');
-                    const currentSlots = getSlotsForToken(user.uid);
-                    const activeIds = currentSlots.filter(s => s.factionId).map(s => s.factionId);
-                    const activeFactionSubs = subs.filter(s => activeIds.includes(s.factionId));
+                    const activeFactionSubs = subs.filter(s => s.status === 'active');
                     const { maxCap } = calcTokenParams(activeFactionSubs, profile.level);
+
                     setMaxTokens(maxCap);
-                    setActiveSubscriptions(activeFactionSubs); // [NEW] Update Active Subs state
+                    setActiveSubscriptions(activeFactionSubs);
 
                     const formattedCards = cards.map(c => ({
                         ...c,
@@ -438,47 +437,17 @@ export function UserProvider({ children }: { children: React.ReactNode }) {
                     user.uid,
                     tokens, // current state
                     profile.lastTokenUpdate, // timestamp from profile
-                    // [Fix] Only apply token boost for factions in GENERATION SLOTS
-                    // We use an async function inside useEffect to handle async imports cleaner if needed, 
-                    // but for checking slots which is sync (localStorage), we can fetch directly.
-                    // However, getGenerationSlots might be in a module we want to lazy load or it's fine to load top level.
-                    // Let's rely on the fact that syncUserData already updated maxTokens, 
-                    // asking checkAndRechargeTokens to use specific subs is good, but we need to pass them correctly.
-
-                    // Since we cannot easily async await inside the arg list, let's pass all subscriptions 
-                    // AND let checkAndRechargeTokens handle filtering if we change its signature, 
-                    // OR filter them here synchronously if possible.
-
-                    // Better approach: Calculate activeSubs outside and pass it.
+                    // [Fix] Apply token boost for ALL active subscriptions to match UI expectations
                     (() => {
-                        try {
-                            // Synchronous attempt if module is already loaded or we import it top level
-                            // But getGenerationSlots uses 'storage' which is client-side.
-                            // Let's safely try to get slots from localStorage directly to avoid import issues in this hook scope
-                            if (typeof window !== 'undefined') {
-                                const key = `generationSlots_${user.uid}`;
-                                const stored = localStorage.getItem(key);
-                                const slots = stored ? JSON.parse(stored) : [];
-                                const activeFactionIds = slots
-                                    .filter((slot: any) => slot.factionId)
-                                    .map((slot: any) => slot.factionId);
+                        const activeSubs = subscriptions.filter(sub => sub.status === 'active');
 
-                                const activeSubs = subscriptions.filter(sub => activeFactionIds.includes(sub.factionId));
-
-                                // Recalculate Max Tokens just in case
-                                // roughly: Base 1000 + (Lv-1)*100 + Text(200)*Count
-                                let calculatedMax = 1000 + ((profile.level - 1) * 100);
-                                const textBonus = 200; // Hardcoded from constants for safety check
-                                activeSubs.forEach(sub => {
-                                    // We'd need to check category but for now let's trust syncUserData mostly.
-                                    // This inline block is mostly for checkAndRechargeTokens arg.
-                                });
-                                return activeSubs;
-                            }
-                        } catch (e) {
-                            console.warn("Error calculating active subs in effect:", e);
+                        // Sync Max Tokens state
+                        const { calculateRechargeParams } = require('@/lib/token-system');
+                        const { maxCap } = calculateRechargeParams(activeSubs, profile.level);
+                        if (maxTokens !== maxCap) {
+                            setMaxTokens(maxCap);
                         }
-                        return subscriptions; // Fallback to all subs if fails (legacy behavior better than 0)
+                        return activeSubs;
                     })()
                 );
 
@@ -625,12 +594,10 @@ export function UserProvider({ children }: { children: React.ReactNode }) {
                 // [NEW] Update Max Tokens based on ACTIVE slots
                 const { getGenerationSlots } = require('@/lib/generation-utils');
                 const { calculateRechargeParams } = require('@/lib/token-system');
-                const currentSlots = getGenerationSlots(user.uid);
-                const activeIds = currentSlots.filter((s: any) => s.factionId).map((s: any) => s.factionId);
-                const activeSubs = fetchedSubscriptions.filter(s => activeIds.includes(s.factionId));
+                const activeSubs = fetchedSubscriptions.filter(s => s.status === 'active');
                 const { maxCap } = calculateRechargeParams(activeSubs, freshProfile.level);
                 setMaxTokens(maxCap);
-                setActiveSubscriptions(activeSubs); // [NEW]
+                setActiveSubscriptions(activeSubs);
             }
 
             // [STARTER PACK] Auto-check
