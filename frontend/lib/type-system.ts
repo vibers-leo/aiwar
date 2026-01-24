@@ -149,6 +149,17 @@ export function resolveBattleResult(card1: any, card2: any): {
 } {
     if (!card1 || !card2) return { winner: 'draw', reason: 'DRAW' };
 
+    // [NEW] 전군 지휘 보너스 (리더십 연구 반영)
+    let leadershipBoost = 0;
+    try {
+        const { gameStorage } = require('./game-storage');
+        const state = gameStorage.getGameState();
+        if (state.research?.stats?.leadership) {
+            const rank = state.research.stats.leadership.currentLevel;
+            leadershipBoost = rank > 0 ? (rank >= 9 ? 0.20 : rank * 0.02) : 0;
+        }
+    } catch (e) { }
+
     const type1 = card1.type || 'EFFICIENCY';
     const type2 = card2.type || 'EFFICIENCY';
 
@@ -158,20 +169,22 @@ export function resolveBattleResult(card1: any, card2: any): {
 
     // 2. Specific Stat (If same type)
     if (type1 === type2) {
-        const getStat = (card: any, type: string) => {
-            if (type === 'EFFICIENCY') return card.stats?.efficiency || 0;
-            if (type === 'CREATIVITY') return card.stats?.creativity || 0;
-            if (type === 'FUNCTION') return card.stats?.function || 0;
-            return 0;
+        const getStat = (card: any, type: string, boost: number = 0) => {
+            let base = 0;
+            if (type === 'EFFICIENCY') base = card.stats?.efficiency || 0;
+            else if (type === 'CREATIVITY') base = card.stats?.creativity || 0;
+            else if (type === 'FUNCTION') base = card.stats?.function || 0;
+
+            return Math.floor(base * (1 + boost));
         };
-        const s1 = getStat(card1, type1);
+        const s1 = getStat(card1, type1, leadershipBoost);
         const s2 = getStat(card2, type2);
         if (s1 > s2) return { winner: 'player1', reason: 'STAT' };
         if (s2 > s1) return { winner: 'player2', reason: 'STAT' };
     }
 
     // 3. Total Power
-    const p1 = card1.stats?.totalPower || 0;
+    const p1 = Math.floor((card1.stats?.totalPower || 0) * (1 + leadershipBoost));
     const p2 = card2.stats?.totalPower || 0;
     if (p1 > p2) return { winner: 'player1', reason: 'POWER' };
     if (p2 > p1) return { winner: 'player2', reason: 'POWER' };

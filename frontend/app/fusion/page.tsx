@@ -25,6 +25,8 @@ export default function FusionPage() {
     const [allCards, setAllCards] = useState<InventoryCard[]>([]);
     const [materialSlots, setMaterialSlots] = useState<(InventoryCard | null)[]>(Array(3).fill(null));
     const [userTokens, setUserTokens] = useState(0);
+    const [discount, setDiscount] = useState(0);
+    const [masteryLevel, setMasteryLevel] = useState(0);
     const [selectedRarity, setSelectedRarity] = useState<string>('all');
 
     // Reward Modal State
@@ -39,6 +41,18 @@ export default function FusionPage() {
         // Use inventory-system for consistency
         const cards = await loadInventorySystem();
         const gameState = await gameStorage.loadGameState();
+
+        let discountVal = 0;
+        let masteryVal = 0;
+        if (gameState.research?.stats?.negotiation) {
+            const { getResearchBonus } = require('@/lib/research-system');
+            discountVal = getResearchBonus('negotiation', gameState.research.stats.negotiation.currentLevel) / 100;
+        }
+        if (gameState.research?.stats?.mastery) {
+            masteryVal = gameState.research.stats.mastery.currentLevel;
+        }
+        setDiscount(discountVal);
+        setMasteryLevel(masteryVal);
 
         setAllCards(cards);
         // Use profile tokens if logged in, otherwise local state
@@ -126,7 +140,8 @@ export default function FusionPage() {
         }
 
         // 토큰 체크 및 소모
-        const cost = getFusionCost(filledMaterials[0].rarity!);
+        const currentRarity = filledMaterials[0].rarity!;
+        const cost = getFusionCost(currentRarity, discount * 100);
 
         // 카테고리 판별 (첫 번째 재료 기준)
         const factionId = filledMaterials[0].aiFactionId || 'gemini';
@@ -134,36 +149,46 @@ export default function FusionPage() {
 
         const success = await consumeTokens(cost, categoryKey);
 
-        // check.canFuse에서 이미 토큰 잔액 체크를 했지만, consumeTokens가 최종 권한
         if (!success) {
             showAlert({ title: '토큰 부족', message: `토큰이 부족합니다. (필요: ${cost})`, type: 'error' });
             return;
         }
 
         try {
-            const fusedCard = fuseCards(filledMaterials as any, 'guest');
-            // cost variable already defined above
+            // [NEW] 합성 성공률 계산 및 주사위 굴리기
+            const { getResearchBonus } = require('@/lib/research-system');
+            const masteryBonus = getResearchBonus('mastery', masteryLevel); // This is likely for enhancement, but let's check lib/fusion-utils for its scale
 
-            // 1. 재료 삭제 (DB & UI)
+            const preview = getFusionPreview(filledMaterials as any, masteryBonus);
+            const isSuccess = Math.random() * 100 < preview.successRate;
+
+            // 1. 재료 삭제 (성공/실패 상관없이 소모)
             for (const mat of filledMaterials) {
                 await removeCardFromInventory(mat.instanceId);
             }
 
-            // 2. 결과 저장 (DB)
-            await addCardToInventory(fusedCard);
+            if (isSuccess) {
+                // 2. 결과 저장 (DB)
+                const fusedCard = fuseCards(filledMaterials as any, user?.uid || 'guest');
+                await addCardToInventory(fusedCard);
 
-            // 3. 토큰 차감 (consumeTokens에서 이미 처리됨)
-
-            // 4. 모달 표시 및 데이터 갱신
-            setRewardCard(fusedCard);
-            setRewardModalOpen(true);
+                setRewardCard(fusedCard);
+                setRewardModalOpen(true);
+                addNotification('fusion', '합성 성공!', `${fusedCard.name} 카드를 획득했습니다!`, '/fusion');
+                trackMissionEvent('card-fusion', 1);
+            } else {
+                // 실패 처리
+                showAlert({
+                    title: '합성 실패',
+                    message: '합성 실험 중 분자 구조가 붕괴되었습니다! 재료가 모두 소모되었습니다.',
+                    type: 'error'
+                });
+                addNotification('error', '합성 실패', '안타깝게도 카드 합성에 실패했습니다.', '/fusion');
+            }
 
             handleClear();
             await loadCards(); // 인벤토리 새로고침
             refreshData(); // 유저 데이터(토큰 등) 새로고침
-
-            addNotification('fusion', '합성 성공!', `${fusedCard.name} 카드를 획득했습니다!`, '/fusion');
-            trackMissionEvent('card-fusion', 1); // [NEW] Track Mission
         } catch (error) {
             console.error(error);
             showAlert({ title: '오류', message: '합성 중 문제가 발생했습니다.', type: 'error' });

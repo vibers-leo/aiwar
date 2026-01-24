@@ -74,14 +74,29 @@ export function judgeBattle(
     playerCard: Card,
     opponentCard: Card
 ): BattleJudgment {
+    // [NEW] 전군 지휘 보너스 (리더십 연구 반영 - 1레벨당 2% 고정 상승, 최대 20%)
+    let leadershipRank = 0;
+    try {
+        const { gameStorage } = require('./game-storage');
+        const state = gameStorage.getGameState();
+        if (state.research?.stats?.leadership) {
+            leadershipRank = state.research.stats.leadership.currentLevel;
+        }
+    } catch (e) { }
+
+    const leadershipBoost = leadershipRank > 0 ? (leadershipRank >= 9 ? 0.20 : leadershipRank * 0.02) : 0;
+
+    const playerDetailPower = getDetailPower(playerCard);
+    const playerTotalPower = playerCard.stats?.totalPower || 0;
+
     const judgment: BattleJudgment = {
         typeAdvantage: 'none',
         detailPower: {
-            player: getDetailPower(playerCard),
+            player: Math.floor(playerDetailPower * (1 + leadershipBoost)),
             opponent: getDetailPower(opponentCard),
         },
         totalPower: {
-            player: playerCard.stats?.totalPower || 0,
+            player: Math.floor(playerTotalPower * (1 + leadershipBoost)),
             opponent: opponentCard.stats?.totalPower || 0,
         },
         finalVerdict: 'draw',
@@ -127,23 +142,7 @@ export function judgeBattle(
         return judgment;
     }
 
-    // 5. 전군 지휘 보너스 (리더십 연구 반영 - 1레벨당 2% 고정 상승)
-    let leadershipRank = 0;
-    try {
-        const { gameStorage } = require('./game-storage');
-        const state = gameStorage.getGameState();
-        if (state.research?.stats?.leadership) {
-            leadershipRank = state.research.stats.leadership.currentLevel;
-        }
-    } catch (e) { }
-
-    if (leadershipRank > 0) {
-        const boost = leadershipRank * 0.02; // Lv.1: 2%, Lv.5: 10%, Lv.9: 18% (보너스 캡 20%)
-        const finalBoost = leadershipRank >= 9 ? 0.20 : boost;
-        judgment.totalPower.player = Math.floor(judgment.totalPower.player * (1 + finalBoost));
-    }
-
-    // 6. 무승부
+    // 5. 무승부 (여기 도달하면 정말 비긴 것임)
     return judgment;
 }
 

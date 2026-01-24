@@ -600,9 +600,23 @@ function calculateRewards(mode: BattleMode, winner: 'player' | 'opponent' | 'dra
         winner === 'draw' ? PVP_REWARDS.draw :
             PVP_REWARDS.loss;
 
+    // [NEW] 행운 연구 보너스 반영
+    let fortuneBonus = 0;
+    try {
+        const { gameStorage } = require('./game-storage');
+        const { getResearchBonus } = require('./research-system');
+        const state = gameStorage.getGameState();
+        if (state.research?.stats?.fortune) {
+            const level = state.research.stats.fortune.currentLevel;
+            fortuneBonus = getResearchBonus('fortune', level);
+        }
+    } catch (e) { }
+
+    const multiplier = 1 + (fortuneBonus / 100);
+
     return {
-        coins: rewards.coins,
-        experience: rewards.exp,
+        coins: Math.floor(rewards.coins * multiplier),
+        experience: Math.floor(rewards.exp * multiplier),
         ratingChange: rewards.rating,
     };
 }
