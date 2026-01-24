@@ -28,7 +28,7 @@ export function getFusionCost(rarity: Rarity, discountPercentage: number = 0): n
         common: 500,
         rare: 2000,
         epic: 5000,
-        legendary: 10000, // Cost for Legendary -> Mythic
+        legendary: 10000, // [UPDATED] 전설 -> 신화 합성 허용 (비용 10000 토큰)
         mythic: 0, // Cannot fuse Mythic
         commander: 0 // 군단장은 합성 불가
     };

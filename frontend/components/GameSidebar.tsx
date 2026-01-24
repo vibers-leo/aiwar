@@ -58,7 +58,7 @@ export default function GameSidebar() {
     const menuItems: MenuItem[] = [
         { name: t('menu.myCards'), path: '/my-cards', icon: '📦', color: 'purple' },
         { name: t('menu.generation'), path: '/generation', icon: '🎲', color: 'green' },
-        { name: t('menu.uniqueGeneration'), path: '/unique-create', icon: '✨', color: 'pink' },
+        { name: t('menu.uniqueStudio'), path: '/studio', icon: '✨', color: 'pink' },
         { name: t('menu.enhance'), path: '/enhance', icon: '🆙', color: 'amber' },
         { name: t('menu.fusion'), path: '/fusion', icon: '🔮', color: 'blue' },
         { name: t('menu.encyclopedia'), path: '/encyclopedia', icon: '📖', color: 'cyan' },
