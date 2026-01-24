@@ -19,7 +19,7 @@ import { FACTION_CATEGORY_MAP } from '@/lib/token-constants'; // [NEW]
 export default function FusionPage() {
     const { addNotification } = useNotification();
     const { showAlert } = useAlert();
-    const { refreshData, consumeTokens, trackMissionEvent } = useUser(); // [NEW] consumeTokens & Track Mission
+    const { user, refreshData, consumeTokens, trackMissionEvent } = useUser(); // [FIX] Added user for fusion logic
     const { profile, reload } = useUserProfile(); // Firebase profile
 
     const [allCards, setAllCards] = useState<InventoryCard[]>([]);
