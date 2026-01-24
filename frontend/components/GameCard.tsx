@@ -123,9 +123,16 @@ function GameCard({
         );
     }
 
-    // 실제 카드 등급 사용 (fallback: common) & 대소문자 정규화
-    const rarity = (card.rarity?.toLowerCase() || 'common') as Rarity;
-    const config = RARITY_CONFIG[rarity] || RARITY_CONFIG.common;
+    // 등급 정규화 및 유효성 검사 (안전한 fallback 보장)
+    const validRarities: Rarity[] = ['common', 'rare', 'epic', 'legendary', 'mythic', 'commander'];
+    let safeRarity = (card.rarity?.toLowerCase() || 'common') as Rarity;
+
+    if (!validRarities.includes(safeRarity)) {
+        safeRarity = 'common';
+    }
+
+    const rarity = safeRarity;
+    const config = RARITY_CONFIG[rarity];
 
     // [REFACTOR] Handle Unique Customization (isUnique flag)
     const isUnique = 'isUnique' in card && !!card.isUnique;

@@ -69,7 +69,8 @@ export function getSubscribedFactions(userId?: string): FactionSubscription[] {
     const { getResetDateString } = require('./utils');
     const today = getResetDateString();
 
-    let billingOccurred = false;
+    let dataChanged = false;
+
     const currentSubs = subscriptions.map(sub => {
         const subscription = {
             ...sub,
@@ -80,25 +81,35 @@ export function getSubscribedFactions(userId?: string): FactionSubscription[] {
         // 티어 설정에서 최신 값 가져와서 동기화
         const config = TIER_CONFIG[subscription.tier];
         if (config) {
-            subscription.dailyCost = config.cost;
-            subscription.dailyGenerationLimit = config.dailyLimit;
-            subscription.generationInterval = config.generationInterval;
+            // 설정 변경 감지
+            if (subscription.dailyCost !== config.cost ||
+                subscription.dailyGenerationLimit !== config.dailyLimit ||
+                subscription.generationInterval !== config.generationInterval) {
+                subscription.dailyCost = config.cost;
+                subscription.dailyGenerationLimit = config.dailyLimit;
+                subscription.generationInterval = config.generationInterval;
+                dataChanged = true;
+            }
         }
 
         // 날짜가 바뀌면 카운터 리셋
         if (subscription.lastResetDate !== today) {
+            console.log(`[Subscription] Daily reset for faction ${subscription.factionId}: ${subscription.lastResetDate} -> ${today}`);
             subscription.generationsToday = 0;
             subscription.lastResetDate = today;
+            dataChanged = true;
         }
 
         // 친밀도 초기화
         if (subscription.affinity === undefined) {
             subscription.affinity = 0;
+            dataChanged = true;
         }
 
         // 필드 초기화 (기존 데이터 호환)
         if (!subscription.lastBilledAt) {
             subscription.lastBilledAt = new Date().toISOString();
+            dataChanged = true;
         }
 
         return subscription;
@@ -106,7 +117,9 @@ export function getSubscribedFactions(userId?: string): FactionSubscription[] {
 
     // 일일 구독료 정산 (마켓 이코노미: 접속 시 정산)
     const { billedSubs, updatedCoins } = processRecurringBilling(currentSubs, userId);
-    if (updatedCoins !== undefined) {
+
+    // 데이터 변경이 있거나 과금이 발생했을 때 저장
+    if (updatedCoins !== undefined || dataChanged) {
         saveSubscriptions(billedSubs, userId);
         return billedSubs;
     }
