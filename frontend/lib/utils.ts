@@ -36,7 +36,10 @@ export function getRandomRarity(weights: { common: number; rare: number; epic: n
 
 // 등급에 따른 랜덤 능력치 생성
 export function generateRandomStats(rarity: Rarity): Stats {
-    const ranges = gameBalanceData.statRanges[rarity];
+    // [FIX] 'mythic' 등급은 데이터상 'unique' 키를 사용
+    const dataKey = rarity === 'mythic' ? 'unique' : rarity;
+    // @ts-ignore - JSON 데이터 키 타입 불일치 해결
+    const ranges = gameBalanceData.statRanges[dataKey];
 
     const creativity = randomInt(ranges.creativity.min, ranges.creativity.max);
     const accuracy = randomInt(ranges.accuracy.min, ranges.accuracy.max);
