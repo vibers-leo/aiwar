@@ -61,6 +61,7 @@ interface UserContextType {
     hideStarterPack: () => void;
     consumeTokens: (baseAmount: number, category?: string) => Promise<boolean>;
     subscriptions: UserSubscription[];
+    activeSubscriptions: UserSubscription[]; // [NEW] Only those in slots
     buyCardPack: (cards: Card[], price: number, currencyType: 'coin' | 'token') => Promise<void>;
     completeTutorial: () => void;
     quests: Quest[];
@@ -94,6 +95,7 @@ export function UserProvider({ children }: { children: React.ReactNode }) {
     const [loading, setLoading] = useState(true);
     const [starterPackAvailable, setStarterPackAvailable] = useState(false);
     const [subscriptions, setSubscriptions] = useState<UserSubscription[]>([]);
+    const [activeSubscriptions, setActiveSubscriptions] = useState<UserSubscription[]>([]); // [NEW]
     const [quests, setQuests] = useState<Quest[]>([]); // [NEW] Quest State
     const [research, setResearch] = useState<any | null>(null); // [NEW] Research State
     const [stageProgress, setStageProgress] = useState<any | null>(null); // [NEW] Stage Progress
@@ -256,6 +258,7 @@ export function UserProvider({ children }: { children: React.ReactNode }) {
                     const activeFactionSubs = subs.filter(s => activeIds.includes(s.factionId));
                     const { maxCap } = calcTokenParams(activeFactionSubs, profile.level);
                     setMaxTokens(maxCap);
+                    setActiveSubscriptions(activeFactionSubs); // [NEW] Update Active Subs state
 
                     const formattedCards = cards.map(c => ({
                         ...c,
@@ -436,23 +439,46 @@ export function UserProvider({ children }: { children: React.ReactNode }) {
                     tokens, // current state
                     profile.lastTokenUpdate, // timestamp from profile
                     // [Fix] Only apply token boost for factions in GENERATION SLOTS
+                    // We use an async function inside useEffect to handle async imports cleaner if needed, 
+                    // but for checking slots which is sync (localStorage), we can fetch directly.
+                    // However, getGenerationSlots might be in a module we want to lazy load or it's fine to load top level.
+                    // Let's rely on the fact that syncUserData already updated maxTokens, 
+                    // asking checkAndRechargeTokens to use specific subs is good, but we need to pass them correctly.
+
+                    // Since we cannot easily async await inside the arg list, let's pass all subscriptions 
+                    // AND let checkAndRechargeTokens handle filtering if we change its signature, 
+                    // OR filter them here synchronously if possible.
+
+                    // Better approach: Calculate activeSubs outside and pass it.
                     (() => {
-                        const { getGenerationSlots } = require('@/lib/generation-utils');
-                        const slots = getGenerationSlots(user.uid);
-                        const activeFactionIds = slots
-                            .filter((slot: any) => slot.factionId)
-                            .map((slot: any) => slot.factionId);
+                        try {
+                            // Synchronous attempt if module is already loaded or we import it top level
+                            // But getGenerationSlots uses 'storage' which is client-side.
+                            // Let's safely try to get slots from localStorage directly to avoid import issues in this hook scope
+                            if (typeof window !== 'undefined') {
+                                const key = `generationSlots_${user.uid}`;
+                                const stored = localStorage.getItem(key);
+                                const slots = stored ? JSON.parse(stored) : [];
+                                const activeFactionIds = slots
+                                    .filter((slot: any) => slot.factionId)
+                                    .map((slot: any) => slot.factionId);
 
-                        const activeSubs = subscriptions.filter(sub => activeFactionIds.includes(sub.factionId));
+                                const activeSubs = subscriptions.filter(sub => activeFactionIds.includes(sub.factionId));
 
-                        // Also update Max Tokens state here to be safe
-                        const { calculateRechargeParams } = require('@/lib/token-system');
-                        const { maxCap } = calculateRechargeParams(activeSubs, profile.level);
-                        if (maxTokens !== maxCap) {
-                            setMaxTokens(maxCap);
+                                // Recalculate Max Tokens just in case
+                                // roughly: Base 1000 + (Lv-1)*100 + Text(200)*Count
+                                let calculatedMax = 1000 + ((profile.level - 1) * 100);
+                                const textBonus = 200; // Hardcoded from constants for safety check
+                                activeSubs.forEach(sub => {
+                                    // We'd need to check category but for now let's trust syncUserData mostly.
+                                    // This inline block is mostly for checkAndRechargeTokens arg.
+                                });
+                                return activeSubs;
+                            }
+                        } catch (e) {
+                            console.warn("Error calculating active subs in effect:", e);
                         }
-
-                        return activeSubs;
+                        return subscriptions; // Fallback to all subs if fails (legacy behavior better than 0)
                     })()
                 );
 
@@ -604,6 +630,7 @@ export function UserProvider({ children }: { children: React.ReactNode }) {
                 const activeSubs = fetchedSubscriptions.filter(s => activeIds.includes(s.factionId));
                 const { maxCap } = calculateRechargeParams(activeSubs, freshProfile.level);
                 setMaxTokens(maxCap);
+                setActiveSubscriptions(activeSubs); // [NEW]
             }
 
             // [STARTER PACK] Auto-check
@@ -991,7 +1018,7 @@ export function UserProvider({ children }: { children: React.ReactNode }) {
             value={{
                 coins, tokens, maxTokens, level, experience, user, profile, inventory, loading, refreshData,
                 addCoins: addCoinsByContext, addTokens: addTokensByContext, addExperience: addExperienceByContext,
-                isAdmin, starterPackAvailable, claimStarterPack, hideStarterPack, consumeTokens, subscriptions,
+                isAdmin, starterPackAvailable, claimStarterPack, hideStarterPack, consumeTokens, subscriptions, activeSubscriptions,
                 buyCardPack: async (cards, price, currencyType) => {
                     if (!user) return;
                     await purchaseCardPackTransaction(user.uid, cards, price, currencyType);

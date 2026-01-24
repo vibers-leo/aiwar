@@ -35,11 +35,11 @@ export default function GameTopBar({
         level: userLevel,
         experience: userExp,
         maxTokens, // [NEW] From Context
-        subscriptions // [NEW] For calculating rates
+        activeSubscriptions // [NEW] Correct usage for rate calculation
     } = useUser();
 
     const { profile } = useUserProfile();
-    const params = calculateRechargeParams(subscriptions as any, userLevel);
+    const params = calculateRechargeParams(activeSubscriptions as any, userLevel);
 
     // Required Exp Calculation
     const requiredExp = userLevel * 100;
@@ -318,13 +318,13 @@ export default function GameTopBar({
 
                                         {/* Breakdown Compact */}
                                         <div className="space-y-1 bg-white/5 rounded-lg p-3 border border-white/5">
-                                            {subscriptions.length > 0 ? (
+                                            {activeSubscriptions && activeSubscriptions.length > 0 ? (
                                                 <div className="flex justify-between items-center text-[10px] text-amber-300">
                                                     <span className="flex items-center gap-1.5">
                                                         <Zap size={10} className="fill-current" />
                                                         Active Boosts
                                                     </span>
-                                                    <span className="font-mono font-bold">+{subscriptions.length} Factions</span>
+                                                    <span className="font-mono font-bold">+{activeSubscriptions.length} Factions</span>
                                                 </div>
                                             ) : (
                                                 <div className="text-[10px] text-white/30 text-center py-1">
