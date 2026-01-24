@@ -248,6 +248,15 @@ export function UserProvider({ children }: { children: React.ReactNode }) {
                         syncSubscriptionsWithFirebase(user.uid) // This also returns a promise, but its result isn't directly used here
                     ]);
 
+                    // [NEW] Calculate Max Tokens based on ACTIVE slots
+                    const { getGenerationSlots: getSlotsForToken } = await import('@/lib/generation-utils');
+                    const { calculateRechargeParams: calcTokenParams } = await import('@/lib/token-system');
+                    const currentSlots = getSlotsForToken(user.uid);
+                    const activeIds = currentSlots.filter(s => s.factionId).map(s => s.factionId);
+                    const activeFactionSubs = subs.filter(s => activeIds.includes(s.factionId));
+                    const { maxCap } = calcTokenParams(activeFactionSubs, profile.level);
+                    setMaxTokens(maxCap);
+
                     const formattedCards = cards.map(c => ({
                         ...c,
                         acquiredAt: (c.acquiredAt && 'toDate' in (c.acquiredAt as any)) ? (c.acquiredAt as any).toDate() : new Date(c.acquiredAt as any)
@@ -426,7 +435,25 @@ export function UserProvider({ children }: { children: React.ReactNode }) {
                     user.uid,
                     tokens, // current state
                     profile.lastTokenUpdate, // timestamp from profile
-                    subscriptions
+                    // [Fix] Only apply token boost for factions in GENERATION SLOTS
+                    (() => {
+                        const { getGenerationSlots } = require('@/lib/generation-utils');
+                        const slots = getGenerationSlots(user.uid);
+                        const activeFactionIds = slots
+                            .filter((slot: any) => slot.factionId)
+                            .map((slot: any) => slot.factionId);
+
+                        const activeSubs = subscriptions.filter(sub => activeFactionIds.includes(sub.factionId));
+
+                        // Also update Max Tokens state here to be safe
+                        const { calculateRechargeParams } = require('@/lib/token-system');
+                        const { maxCap } = calculateRechargeParams(activeSubs, profile.level);
+                        if (maxTokens !== maxCap) {
+                            setMaxTokens(maxCap);
+                        }
+
+                        return activeSubs;
+                    })()
                 );
 
                 // If tokens changed, it means a recharge happened (DB updated)
@@ -568,6 +595,15 @@ export function UserProvider({ children }: { children: React.ReactNode }) {
                     experience: freshProfile.exp,
                     inventory: formattedInv
                 }, user.uid);
+
+                // [NEW] Update Max Tokens based on ACTIVE slots
+                const { getGenerationSlots } = require('@/lib/generation-utils');
+                const { calculateRechargeParams } = require('@/lib/token-system');
+                const currentSlots = getGenerationSlots(user.uid);
+                const activeIds = currentSlots.filter((s: any) => s.factionId).map((s: any) => s.factionId);
+                const activeSubs = fetchedSubscriptions.filter(s => activeIds.includes(s.factionId));
+                const { maxCap } = calculateRechargeParams(activeSubs, freshProfile.level);
+                setMaxTokens(maxCap);
             }
 
             // [STARTER PACK] Auto-check

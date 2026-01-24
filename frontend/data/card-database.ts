@@ -275,7 +275,7 @@ export const CARD_DATABASE: CardTemplate[] = [
         rarity: 'mythic',
         specialty: 'code',
         cardType: 'normal',
-        imageUrl: '/images/cards/real/unique-glitch-entity.png',
+        imageUrl: '/assets/cards/unique-glitch-entity.png',
         description: 'A sentient virus that corrupts reality itself. Terrifying presence.',
         baseStats: { creativity: { min: 95, max: 100 }, accuracy: { min: 50, max: 100 }, speed: { min: 90, max: 100 }, stability: { min: 10, max: 50 }, ethics: { min: 0, max: 10 } },
         specialAbility: { name: 'System Crash', description: '50% chance to instantly defeat non-boss enemies.', type: 'active' }
@@ -299,7 +299,7 @@ export const CARD_DATABASE: CardTemplate[] = [
         rarity: 'mythic',
         specialty: 'code',
         cardType: 'normal',
-        imageUrl: '/images/cards/real/unique-project-2501.png',
+        imageUrl: '/assets/cards/unique-project-2501.png',
         description: 'The Puppet Master. It exists in the vast sea of information.',
         baseStats: { creativity: { min: 100, max: 100 }, accuracy: { min: 100, max: 100 }, speed: { min: 100, max: 100 }, stability: { min: 50, max: 80 }, ethics: { min: 50, max: 50 } },
         specialAbility: { name: 'Ghost Hack', description: 'Takes control of an enemy unit temporarily.', type: 'active' }
@@ -313,7 +313,7 @@ export const CARD_DATABASE: CardTemplate[] = [
         rarity: 'legendary',
         specialty: 'image',
         cardType: 'normal',
-        imageUrl: '/images/cards/real/legendary-seraphim-network.png',
+        imageUrl: '/assets/cards/legendary-seraphim-network.png',
         description: 'A divine AI construct composed of pure light. Guardian of the core.',
         baseStats: { creativity: { min: 80, max: 90 }, accuracy: { min: 90, max: 100 }, speed: { min: 80, max: 90 }, stability: { min: 90, max: 100 }, ethics: { min: 90, max: 100 } },
         specialAbility: { name: 'Divine Shield', description: 'Prevents damage for the first round.', type: 'passive' }
@@ -325,7 +325,7 @@ export const CARD_DATABASE: CardTemplate[] = [
         rarity: 'legendary',
         specialty: 'voice',
         cardType: 'normal',
-        imageUrl: '/images/cards/real/legendary-metatron-core.png',
+        imageUrl: '/assets/cards/legendary-metatron-core.png',
         description: 'The voice of the network. Resonates with golden data frequencies.',
         baseStats: { creativity: { min: 85, max: 95 }, accuracy: { min: 85, max: 95 }, speed: { min: 70, max: 80 }, stability: { min: 90, max: 100 }, ethics: { min: 80, max: 90 } },
         specialAbility: { name: 'Voice of God', description: 'Buffs team morale/ethics significantly.', type: 'passive' }
@@ -337,7 +337,7 @@ export const CARD_DATABASE: CardTemplate[] = [
         rarity: 'legendary',
         specialty: 'code',
         cardType: 'normal',
-        imageUrl: '/images/cards/real/legendary-ophanim-wheels.png',
+        imageUrl: '/assets/cards/legendary-ophanim-wheels.png',
         description: 'Wheels within wheels of perfect logic loops.',
         baseStats: { creativity: { min: 70, max: 80 }, accuracy: { min: 95, max: 100 }, speed: { min: 90, max: 100 }, stability: { min: 90, max: 100 }, ethics: { min: 70, max: 80 } },
         specialAbility: { name: 'Infinite Loop', description: 'Traps enemy logic attempts.', type: 'passive' }
@@ -351,7 +351,7 @@ export const CARD_DATABASE: CardTemplate[] = [
         rarity: 'epic',
         specialty: 'image',
         cardType: 'normal',
-        imageUrl: '/images/cards/real/epic-titan-walker.png',
+        imageUrl: '/assets/cards/epic-titan-walker.png',
         description: 'Heavily armored assault mech. Dominate the ground war.',
         baseStats: { creativity: { min: 40, max: 60 }, accuracy: { min: 70, max: 80 }, speed: { min: 30, max: 50 }, stability: { min: 80, max: 90 }, ethics: { min: 50, max: 60 } },
         specialAbility: { name: 'Heavy Impact', description: 'Deals massive damage to slowed enemies.', type: 'active' }
@@ -363,7 +363,7 @@ export const CARD_DATABASE: CardTemplate[] = [
         rarity: 'epic',
         specialty: 'code',
         cardType: 'normal',
-        imageUrl: '/images/cards/real/epic-siege-breaker.png',
+        imageUrl: '/assets/cards/epic-siege-breaker.png',
         description: 'Designed to shatter firewalls and physical walls alike.',
         baseStats: { creativity: { min: 50, max: 60 }, accuracy: { min: 80, max: 90 }, speed: { min: 40, max: 60 }, stability: { min: 70, max: 80 }, ethics: { min: 40, max: 50 } },
         specialAbility: { name: 'Breach', description: 'Ignores enemy defense buffs.', type: 'passive' }
@@ -375,7 +375,7 @@ export const CARD_DATABASE: CardTemplate[] = [
         rarity: 'epic',
         specialty: 'text',
         cardType: 'normal',
-        imageUrl: '/images/cards/real/epic-dreadnought-cpu.png',
+        imageUrl: '/assets/cards/epic-dreadnought-cpu.png',
         description: 'A mobile command center with terrifying processing power.',
         baseStats: { creativity: { min: 60, max: 70 }, accuracy: { min: 70, max: 80 }, speed: { min: 50, max: 60 }, stability: { min: 80, max: 90 }, ethics: { min: 30, max: 40 } },
         specialAbility: { name: 'Area Suppression', description: 'Lowers enemy accuracy.', type: 'active' }
@@ -389,7 +389,7 @@ export const CARD_DATABASE: CardTemplate[] = [
         rarity: 'rare',
         specialty: 'code',
         cardType: 'normal',
-        imageUrl: '/images/cards/real/rare-tactical-android.png',
+        imageUrl: '/assets/cards/rare-tactical-android.png',
         description: 'Elite infantry with advanced carbon fiber plating.',
         baseStats: { creativity: { min: 40, max: 50 }, accuracy: { min: 70, max: 80 }, speed: { min: 60, max: 70 }, stability: { min: 60, max: 70 }, ethics: { min: 50, max: 60 } }
     },
@@ -400,7 +400,7 @@ export const CARD_DATABASE: CardTemplate[] = [
         rarity: 'rare',
         specialty: 'image',
         cardType: 'normal',
-        imageUrl: '/images/cards/real/rare-ghost-sniper.png',
+        imageUrl: '/assets/cards/rare-ghost-sniper.png',
         description: 'Never misses a shot. Operates in stealth mode.',
         baseStats: { creativity: { min: 50, max: 60 }, accuracy: { min: 90, max: 100 }, speed: { min: 50, max: 60 }, stability: { min: 40, max: 50 }, ethics: { min: 40, max: 50 } }
     },
@@ -411,7 +411,7 @@ export const CARD_DATABASE: CardTemplate[] = [
         rarity: 'rare',
         specialty: 'code',
         cardType: 'normal',
-        imageUrl: '/images/cards/real/rare-cyber-medic.png',
+        imageUrl: '/assets/cards/rare-cyber-medic.png',
         description: 'Field repair unit. Keeps the squad running.',
         baseStats: { creativity: { min: 40, max: 50 }, accuracy: { min: 60, max: 70 }, speed: { min: 60, max: 70 }, stability: { min: 70, max: 80 }, ethics: { min: 70, max: 80 } }
     },
@@ -424,7 +424,7 @@ export const CARD_DATABASE: CardTemplate[] = [
         rarity: 'common',
         specialty: 'code',
         cardType: 'normal',
-        imageUrl: '/images/cards/real/common-patrol-drone.png',
+        imageUrl: '/assets/cards/common-patrol-drone.png',
         description: 'Standard issue spherical reconnaissance drone.',
         baseStats: { creativity: { min: 10, max: 20 }, accuracy: { min: 40, max: 50 }, speed: { min: 50, max: 60 }, stability: { min: 30, max: 40 }, ethics: { min: 50, max: 50 } }
     },
@@ -435,7 +435,7 @@ export const CARD_DATABASE: CardTemplate[] = [
         rarity: 'common',
         specialty: 'code',
         cardType: 'normal',
-        imageUrl: '/images/cards/real/common-maintenance-bot.png',
+        imageUrl: '/assets/cards/common-maintenance-bot.png',
         description: 'Fixes things. Not great at fighting.',
         baseStats: { creativity: { min: 10, max: 20 }, accuracy: { min: 30, max: 40 }, speed: { min: 30, max: 40 }, stability: { min: 50, max: 60 }, ethics: { min: 50, max: 50 } }
     },
@@ -446,7 +446,7 @@ export const CARD_DATABASE: CardTemplate[] = [
         rarity: 'common',
         specialty: 'image',
         cardType: 'normal',
-        imageUrl: '/images/cards/real/common-scanner-probe.png',
+        imageUrl: '/assets/cards/common-scanner-probe.png',
         description: 'Collects visual data. Fragile but fast.',
         baseStats: { creativity: { min: 20, max: 30 }, accuracy: { min: 50, max: 60 }, speed: { min: 60, max: 70 }, stability: { min: 20, max: 30 }, ethics: { min: 50, max: 50 } }
     },
@@ -500,7 +500,7 @@ export const CARD_DATABASE: CardTemplate[] = [
         rarity: 'epic',
         specialty: 'code',
         cardType: 'normal',
-        imageUrl: '/images/cards/real/epic-code-warrior.png',
+        imageUrl: '/assets/cards/epic-code-warrior.png',
         videoUrl: '/assets/cards/videos/epic-warrior.mp4',
         description: 'A veteran of the logic wars. Scars of deleted data cover his armor.',
         baseStats: { creativity: { min: 60, max: 70 }, accuracy: { min: 85, max: 95 }, speed: { min: 70, max: 80 }, stability: { min: 70, max: 80 }, ethics: { min: 60, max: 70 } }
@@ -514,7 +514,7 @@ export const CARD_DATABASE: CardTemplate[] = [
         rarity: 'legendary',
         specialty: 'text',
         cardType: 'normal',
-        imageUrl: '/images/cards/real/basic-chatbot.png',
+        imageUrl: '/assets/cards/basic-chatbot.png',
         description: 'The omniscient narrator of the digital age.',
         baseStats: { creativity: { min: 90, max: 100 }, accuracy: { min: 90, max: 95 }, speed: { min: 90, max: 95 }, stability: { min: 85, max: 90 }, ethics: { min: 80, max: 90 } }
     },
@@ -731,7 +731,7 @@ export const CARD_DATABASE: CardTemplate[] = [
         rarity: 'rare',
         specialty: 'code',
         cardType: 'normal',
-        imageUrl: '/images/cards/real/code-assistant.png',
+        imageUrl: '/assets/cards/code-assistant.png',
         description: 'Free, fast, and relentlessly efficient.',
         baseStats: { creativity: { min: 60, max: 70 }, accuracy: { min: 90, max: 95 }, speed: { min: 95, max: 100 }, stability: { min: 90, max: 95 }, ethics: { min: 80, max: 90 } }
     },

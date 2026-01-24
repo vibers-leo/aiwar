@@ -133,6 +133,10 @@ export default function EncyclopediaPage() {
                                     src={card.imageUrl}
                                     alt={card.name}
                                     className="w-full h-full object-cover opacity-80 group-hover:opacity-100 transition-opacity"
+                                    onError={(e) => {
+                                        e.currentTarget.style.display = 'none'; // Hide broken image
+                                        e.currentTarget.parentElement!.style.backgroundColor = '#1a1a1a'; // Fallback color
+                                    }}
                                 />
                             </div>
                         )}
