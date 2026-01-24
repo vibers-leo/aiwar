@@ -788,7 +788,7 @@ export default function PVPArenaPage() {
                                 <Target className="text-red-400" size={24} />
                                 전투 모드 선택
                             </h2>
-                            <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-6">
+                            <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-6">
                                 {modes.map((mode) => {
                                     const Icon = mode.icon;
                                     const isSelected = selectedMode === mode.id;
