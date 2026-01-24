@@ -123,9 +123,9 @@ function GameCard({
         );
     }
 
-    // 실제 카드 등급 사용 (fallback: common)
-    const rarity: Rarity = card.rarity || 'common';
-    const config = RARITY_CONFIG[rarity];
+    // 실제 카드 등급 사용 (fallback: common) & 대소문자 정규화
+    const rarity = (card.rarity?.toLowerCase() || 'common') as Rarity;
+    const config = RARITY_CONFIG[rarity] || RARITY_CONFIG.common;
 
     // [REFACTOR] Handle Unique Customization (isUnique flag)
     const isUnique = 'isUnique' in card && !!card.isUnique;
