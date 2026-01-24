@@ -107,7 +107,7 @@ export const RARITY_FALLBACK_IMAGES: Record<Rarity, string> = {
     rare: '/images/cards/real/rare.png',
     epic: '/images/cards/real/epic.png',
     legendary: '/images/cards/real/legendary.png',
-    unique: '/images/cards/real/unique.png',
+    mythic: '/images/cards/real/unique.png',
     commander: '/images/cards/real/commander.png'
 };
 
