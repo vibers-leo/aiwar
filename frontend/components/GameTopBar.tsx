@@ -66,9 +66,9 @@ export default function GameTopBar({
     const { unreadCount } = useNotification();
     const [isNotificationOpen, setIsNotificationOpen] = useState(false);
 
-    // [NEW] Token Detail Modal State
     // [NEW] Next Recharge Countdown Logic
     const [timeUntilNextRecharge, setTimeUntilNextRecharge] = useState<string>('--:--');
+    const [isTooltipVisible, setIsTooltipVisible] = useState(false);
 
     useEffect(() => {
         if (!profile?.lastTokenUpdate || userTokens >= maxTokens) {
@@ -99,6 +99,7 @@ export default function GameTopBar({
         const timer = setInterval(updateTimer, 1000);
         return () => clearInterval(timer);
     }, [profile?.lastTokenUpdate, params.intervalMin, userTokens, maxTokens]);
+
     const { handleSignOut } = useUser();
 
     const handleLogout = () => {
@@ -232,23 +233,27 @@ export default function GameTopBar({
                         </div>
                     </div>
 
-                    {/* Tokens with Hover Tooltip */}
-                    <div className="relative group z-[50]">
+                    {/* Tokens with State-based Tooltip */}
+                    <div
+                        className="relative z-[50]"
+                        onMouseEnter={() => setIsTooltipVisible(true)}
+                        onMouseLeave={() => setIsTooltipVisible(false)}
+                    >
                         {/* Token Badge */}
-                        <div className="flex items-center gap-3 bg-black/60 backdrop-blur-md px-4 py-2 rounded-xl border border-purple-500/20 group-hover:border-purple-500/50 group-hover:bg-purple-900/10 transition-all duration-300 cursor-default">
+                        <div className="flex items-center gap-3 bg-black/60 backdrop-blur-md px-4 py-2 rounded-xl border border-purple-500/20 hover:border-purple-500/50 hover:bg-purple-900/10 transition-all duration-300 cursor-default">
                             <div className="relative">
-                                <div className="w-8 h-8 rounded-full bg-gradient-to-br from-purple-500 to-indigo-600 flex items-center justify-center text-sm shadow-[0_0_10px_rgba(168,85,247,0.4)] group-hover:scale-110 transition-transform duration-300">
+                                <div className="w-8 h-8 rounded-full bg-gradient-to-br from-purple-500 to-indigo-600 flex items-center justify-center text-sm shadow-[0_0_10px_rgba(168,85,247,0.4)] hover:scale-110 transition-transform duration-300">
                                     💎
                                 </div>
                                 <div className="absolute -bottom-1 -right-1 w-3 h-3 bg-green-500 border-2 border-black rounded-full animate-pulse" />
                             </div>
 
                             <div className="flex flex-col items-end">
-                                <div className="text-[9px] text-purple-300/80 font-bold tracking-wider uppercase mb-0.5 group-hover:text-purple-300 transition-colors hidden md:block">
+                                <div className="text-[9px] text-purple-300/80 font-bold tracking-wider uppercase mb-0.5 hover:text-purple-300 transition-colors hidden md:block">
                                     Token Balance
                                 </div>
                                 <div className="flex items-baseline gap-1.5 font-orbitron">
-                                    <span className="text-sm font-black text-white group-hover:text-purple-100 transition-colors">
+                                    <span className="text-sm font-black text-white hover:text-purple-100 transition-colors">
                                         {userTokens.toLocaleString()}
                                     </span>
                                     <span className="text-[10px] text-white/40 font-bold hidden md:inline">
@@ -258,73 +263,83 @@ export default function GameTopBar({
                             </div>
                         </div>
 
-                        {/* HOVER TOOLTIP (Replaces Modal) */}
-                        <div className="absolute top-full right-0 mt-3 w-80 opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all duration-200 transform group-hover:translate-y-0 translate-y-2 pointer-events-none group-hover:pointer-events-auto z-[100]">
-                            <div className="bg-[#050510]/95 backdrop-blur-xl border border-purple-500/30 rounded-2xl p-5 shadow-[0_0_50px_rgba(168,85,247,0.2)] relative">
-                                {/* Triangle Arrow */}
-                                <div className="absolute -top-2 right-10 w-4 h-4 bg-[#050510]/95 border-t border-l border-purple-500/30 rotate-45" />
+                        {/* TOOLTIP (State-based) */}
+                        <AnimatePresence>
+                            {isTooltipVisible && (
+                                <motion.div
+                                    initial={{ opacity: 0, y: 10, scale: 0.95 }}
+                                    animate={{ opacity: 1, y: 0, scale: 1 }}
+                                    exit={{ opacity: 0, y: 10, scale: 0.95 }}
+                                    transition={{ duration: 0.2 }}
+                                    className="absolute top-full right-0 mt-3 w-80 z-[100]"
+                                >
+                                    <div className="bg-[#050510]/95 backdrop-blur-xl border border-purple-500/30 rounded-2xl p-5 shadow-[0_0_50px_rgba(168,85,247,0.4)] relative">
+                                        {/* Triangle Arrow */}
+                                        <div className="absolute -top-2 right-10 w-4 h-4 bg-[#050510]/95 border-t border-l border-purple-500/30 rotate-45" />
 
-                                <div className="flex items-center justify-between mb-4">
-                                    <h3 className="text-sm font-black text-transparent bg-clip-text bg-gradient-to-r from-purple-400 to-indigo-400 font-orbitron tracking-wider">
-                                        RESOURCE MONITOR
-                                    </h3>
-                                    {timeUntilNextRecharge !== 'MAX' && (
-                                        <div className="flex items-center gap-1.5 px-2 py-0.5 bg-blue-500/20 text-blue-300 rounded text-[10px] font-bold border border-blue-500/30">
-                                            <Zap size={10} className="fill-current" />
-                                            <span>Recharging...</span>
+                                        <div className="flex items-center justify-between mb-4">
+                                            <h3 className="text-sm font-black text-transparent bg-clip-text bg-gradient-to-r from-purple-400 to-indigo-400 font-orbitron tracking-wider">
+                                                RESOURCE MONITOR
+                                            </h3>
+                                            {timeUntilNextRecharge !== 'MAX' && (
+                                                <div className="flex items-center gap-1.5 px-2 py-0.5 bg-blue-500/20 text-blue-300 rounded text-[10px] font-bold border border-blue-500/30">
+                                                    <Zap size={10} className="fill-current" />
+                                                    <span>Recharging...</span>
+                                                </div>
+                                            )}
                                         </div>
-                                    )}
-                                </div>
 
-                                {/* Main Gauge */}
-                                <div className="mb-5 bg-black/40 rounded-xl p-3 border border-white/5">
-                                    <div className="flex justify-between text-[10px] mb-1.5">
-                                        <span className="text-white/60 font-bold uppercase tracking-wider">Storage Capacity</span>
-                                        <span className="text-purple-400 font-mono font-bold">{Math.round((userTokens / maxTokens) * 100)}%</span>
-                                    </div>
-                                    <div className="h-2 w-full bg-black/80 rounded-full overflow-hidden border border-white/10">
-                                        <div
-                                            className="h-full bg-gradient-to-r from-purple-600 via-indigo-500 to-purple-400 shadow-[0_0_15px_rgba(168,85,247,0.6)]"
-                                            style={{ width: `${Math.min(100, (userTokens / maxTokens) * 100)}%` }}
-                                        />
-                                    </div>
-                                </div>
-
-                                {/* Next Recharge Timer - THE FIX FOR "FEELING" */}
-                                <div className="bg-gradient-to-br from-blue-900/20 to-purple-900/20 rounded-xl p-3 border border-indigo-500/30 mb-4 flex items-center justify-between group/timer hover:border-indigo-400/50 transition-colors">
-                                    <div className="flex flex-col">
-                                        <span className="text-[9px] text-blue-300/80 uppercase tracking-widest font-bold mb-0.5">Next Recharge</span>
-                                        <span className="text-[10px] text-white/40">
-                                            +{params.rateAmount} Tokens every {params.intervalMin}m
-                                        </span>
-                                    </div>
-                                    <div className="text-2xl font-black text-white font-orbitron tabular-nums drop-shadow-[0_0_8px_rgba(59,130,246,0.6)]">
-                                        {timeUntilNextRecharge}
-                                    </div>
-                                </div>
-
-                                {/* Breakdown Compact */}
-                                <div className="space-y-1 bg-white/5 rounded-lg p-3 border border-white/5">
-                                    {subscriptions.length > 0 ? (
-                                        <div className="flex justify-between items-center text-[10px] text-amber-300">
-                                            <span className="flex items-center gap-1.5">
-                                                <Zap size={10} className="fill-current" />
-                                                Active Boosts
-                                            </span>
-                                            <span className="font-mono font-bold">+{subscriptions.length} Factions</span>
+                                        {/* Main Gauge */}
+                                        <div className="mb-5 bg-black/40 rounded-xl p-3 border border-white/5">
+                                            <div className="flex justify-between text-[10px] mb-1.5">
+                                                <span className="text-white/60 font-bold uppercase tracking-wider">Storage Capacity</span>
+                                                <span className="text-purple-400 font-mono font-bold">{Math.round((userTokens / maxTokens) * 100)}%</span>
+                                            </div>
+                                            <div className="h-2 w-full bg-black/80 rounded-full overflow-hidden border border-white/10">
+                                                <div
+                                                    className="h-full bg-gradient-to-r from-purple-600 via-indigo-500 to-purple-400 shadow-[0_0_15px_rgba(168,85,247,0.6)]"
+                                                    style={{ width: `${Math.min(100, (userTokens / maxTokens) * 100)}%` }}
+                                                />
+                                            </div>
                                         </div>
-                                    ) : (
-                                        <div className="text-[10px] text-white/30 text-center py-1">
-                                            No active boosts
+
+                                        {/* Next Recharge Timer - THE FIX FOR "FEELING" */}
+                                        <div className="bg-gradient-to-br from-blue-900/20 to-purple-900/20 rounded-xl p-3 border border-indigo-500/30 mb-4 flex items-center justify-between group/timer hover:border-indigo-400/50 transition-colors">
+                                            <div className="flex flex-col">
+                                                <span className="text-[9px] text-blue-300/80 uppercase tracking-widest font-bold mb-0.5">Next Recharge</span>
+                                                <span className="text-[10px] text-white/40">
+                                                    +{params.rateAmount} Tokens every {params.intervalMin}m
+                                                </span>
+                                            </div>
+                                            <div className="text-2xl font-black text-white font-orbitron tabular-nums drop-shadow-[0_0_8px_rgba(59,130,246,0.6)]">
+                                                {timeUntilNextRecharge}
+                                            </div>
                                         </div>
-                                    )}
-                                    <div className="flex justify-between items-center text-[10px] text-white/50 pt-1 border-t border-white/5 mt-1">
-                                        <span>Level Bonus (Lv.{userLevel})</span>
-                                        <span className="font-mono text-green-400">+{((userLevel - 1) * 100).toLocaleString()} Cap</span>
+
+                                        {/* Breakdown Compact */}
+                                        <div className="space-y-1 bg-white/5 rounded-lg p-3 border border-white/5">
+                                            {subscriptions.length > 0 ? (
+                                                <div className="flex justify-between items-center text-[10px] text-amber-300">
+                                                    <span className="flex items-center gap-1.5">
+                                                        <Zap size={10} className="fill-current" />
+                                                        Active Boosts
+                                                    </span>
+                                                    <span className="font-mono font-bold">+{subscriptions.length} Factions</span>
+                                                </div>
+                                            ) : (
+                                                <div className="text-[10px] text-white/30 text-center py-1">
+                                                    No active boosts
+                                                </div>
+                                            )}
+                                            <div className="flex justify-between items-center text-[10px] text-white/50 pt-1 border-t border-white/5 mt-1">
+                                                <span>Level Bonus (Lv.{userLevel})</span>
+                                                <span className="font-mono text-green-400">+{((userLevel - 1) * 100).toLocaleString()} Cap</span>
+                                            </div>
+                                        </div>
                                     </div>
-                                </div>
-                            </div>
-                        </div>
+                                </motion.div>
+                            )}
+                        </AnimatePresence>
                     </div>
 
                     {/* Divider */}
@@ -488,7 +503,6 @@ export default function GameTopBar({
                     </>
                 )}
             </AnimatePresence>
-
         </>
     );
 }
