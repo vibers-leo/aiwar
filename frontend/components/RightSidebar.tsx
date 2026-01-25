@@ -21,7 +21,7 @@ export default function RightSidebar() {
         { name: 'Cards', href: '/my-cards', icon: '🎴' },
         { name: 'Enhance', href: '/enhance', icon: '⚡' },
         { name: 'Fusion', href: '/fusion', icon: '🔮' },
-        { name: '유니크 생성', href: '/unique-create', icon: '✨' },
+        { name: '유니크 생성', href: '/studio', icon: '✨' },
         { name: 'Shop', href: '/shop', icon: '🛒' },
         { name: 'Missions', href: '/missions', icon: '🎯' },
         { name: 'Achieve', href: '/achievements', icon: '🏆' },

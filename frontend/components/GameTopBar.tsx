@@ -4,7 +4,7 @@ import { useState, useEffect } from 'react';
 import Link from 'next/link';
 import { usePathname, useRouter } from 'next/navigation';
 import { AnimatePresence, motion } from 'framer-motion';
-import { Link as LinkIcon, Bell, LogOut, Settings, Menu, X, ChevronRight, Zap, Box, Users, HelpCircle } from 'lucide-react';
+import { Bell, LogOut, Settings, Menu, X, Zap, Box } from 'lucide-react';
 import { useTranslation } from '@/context/LanguageContext';
 import { useUser } from '@/context/UserContext';
 import { useAlert } from '@/context/AlertContext';
@@ -12,6 +12,8 @@ import { useNotification } from '@/context/NotificationContext';
 import { useUserProfile } from '@/hooks/useUserProfile';
 import NotificationPanel from '@/components/NotificationPanel';
 import { calculateRechargeParams } from '@/lib/token-system';
+import { Tooltip } from '@/components/ui/custom/Tooltip';
+import { cn } from '@/lib/utils';
 
 interface GameTopBarProps {
     sidebarCollapsed?: boolean;
@@ -25,50 +27,34 @@ export default function GameTopBar({
     setMobileMenuOpen = () => { }
 }: GameTopBarProps) {
     const pathname = usePathname();
-    const router = useRouter();
     const { t } = useTranslation();
-
-    // Use UserContext as Single Source of Truth
     const {
         tokens: userTokens,
         coins: userCoins,
         level: userLevel,
         experience: userExp,
-        maxTokens, // [NEW] From Context
-        activeSubscriptions // [NEW] Correct usage for rate calculation
+        maxTokens,
+        activeSubscriptions,
+        handleSignOut
     } = useUser();
 
     const { profile } = useUserProfile();
-    const params = calculateRechargeParams(activeSubscriptions as any, userLevel);
+    const { showConfirm } = useAlert();
+    const { unreadCount } = useNotification();
+    const [isNotificationOpen, setIsNotificationOpen] = useState(false);
+    const [timeUntilNextRecharge, setTimeUntilNextRecharge] = useState<string>('--:--');
 
-    // Required Exp Calculation
+    const params = calculateRechargeParams(activeSubscriptions as any, userLevel);
     const requiredExp = userLevel * 100;
 
     const navLinks = [
         { name: t('menu.story'), path: '/story', color: 'cyan' },
-        // { name: t('menu.battle'), path: '/battle', color: 'red' }, // 스토리 모드에 집중 - 숨김
         { name: t('menu.aiFaction'), path: '/factions', color: 'green' },
         { name: t('menu.shop'), path: '/shop', color: 'yellow' },
         { name: 'LAB', path: '/lab', color: 'amber' },
         { name: t('menu.pvp'), path: '/pvp', color: 'purple' },
         { name: t('menu.ranking'), path: '/ranking', color: 'pink' },
     ];
-
-    const [isAuthenticated, setIsAuthenticated] = useState(false);
-
-    useEffect(() => {
-        setIsAuthenticated(!!localStorage.getItem('nickname'));
-    }, []);
-
-    const { showConfirm } = useAlert();
-
-    // Notification hooks
-    const { unreadCount } = useNotification();
-    const [isNotificationOpen, setIsNotificationOpen] = useState(false);
-
-    // [NEW] Next Recharge Countdown Logic
-    const [timeUntilNextRecharge, setTimeUntilNextRecharge] = useState<string>('--:--');
-    const [isTooltipVisible, setIsTooltipVisible] = useState(false);
 
     useEffect(() => {
         if (!profile?.lastTokenUpdate || userTokens >= maxTokens) {
@@ -87,7 +73,7 @@ export default function GameTopBar({
             const diff = nextUpdate.getTime() - now.getTime();
 
             if (diff <= 0) {
-                setTimeUntilNextRecharge('SOON...'); // Waiting for sync
+                setTimeUntilNextRecharge('SOON...');
             } else {
                 const m = Math.floor(diff / 60000);
                 const s = Math.floor((diff % 60000) / 1000);
@@ -95,12 +81,10 @@ export default function GameTopBar({
             }
         };
 
-        updateTimer(); // Initial call
+        updateTimer();
         const timer = setInterval(updateTimer, 1000);
         return () => clearInterval(timer);
     }, [profile?.lastTokenUpdate, params.intervalMin, userTokens, maxTokens]);
-
-    const { handleSignOut } = useUser();
 
     const handleLogout = () => {
         showConfirm({
@@ -115,12 +99,10 @@ export default function GameTopBar({
         });
     };
 
-    // Close menu when route changes
     useEffect(() => {
         setMobileMenuOpen(false);
     }, [pathname]);
 
-    // Consolidated Mobile Menu Items
     const mobileMenuItems = [
         {
             category: 'OPERATIONS',
@@ -157,263 +139,272 @@ export default function GameTopBar({
         }
     ];
 
+    const colorMap: Record<string, { borderClass: string; bgClass: string; shadowClassMobile: string }> = {
+        cyan: { borderClass: 'border-cyan-500', bgClass: 'bg-cyan-500', shadowClassMobile: 'shadow-[0_0_8px_rgba(6,182,212,0.8)]' },
+        red: { borderClass: 'border-red-500', bgClass: 'bg-red-500', shadowClassMobile: 'shadow-[0_0_8px_rgba(239,68,68,0.8)]' },
+        green: { borderClass: 'border-green-500', bgClass: 'bg-green-500', shadowClassMobile: 'shadow-[0_0_8px_rgba(34,197,94,0.8)]' },
+        amber: { borderClass: 'border-amber-500', bgClass: 'bg-amber-500', shadowClassMobile: 'shadow-[0_0_8px_rgba(245,158,11,0.8)]' },
+        yellow: { borderClass: 'border-yellow-500', bgClass: 'bg-yellow-500', shadowClassMobile: 'shadow-[0_0_8px_rgba(234,179,8,0.8)]' },
+        purple: { borderClass: 'border-purple-500', bgClass: 'bg-purple-500', shadowClassMobile: 'shadow-[0_0_8px_rgba(168,85,247,0.8)]' },
+        blue: { borderClass: 'border-blue-500', bgClass: 'bg-blue-500', shadowClassMobile: 'shadow-[0_0_8px_rgba(59,130,246,0.8)]' },
+        pink: { borderClass: 'border-pink-500', bgClass: 'bg-pink-500', shadowClassMobile: 'shadow-[0_0_8px_rgba(236,72,153,0.8)]' },
+        gold: { borderClass: 'border-yellow-600', bgClass: 'bg-yellow-600', shadowClassMobile: 'shadow-[0_0_8px_rgba(202,138,4,0.8)]' },
+        gray: { borderClass: 'border-gray-500', bgClass: 'bg-gray-500', shadowClassMobile: 'shadow-[0_0_8px_rgba(107,114,128,0.8)]' },
+    };
+
     return (
         <>
-            <div
-                className="fixed top-0 left-0 right-0 h-16 bg-black/90 backdrop-blur-2xl border-b border-cyan-500/10 z-60 px-6 flex items-center justify-between transition-all duration-300 ease-out"
-            >
-                {/* Decorative top line */}
-                <div className="absolute top-0 left-0 right-0 h-px bg-gradient-to-r from-[var(--primary-blue)] via-transparent to-[var(--primary-purple)]" />
+            <header className={cn(
+                "fixed top-0 left-0 right-0 h-16 bg-black/80 backdrop-blur-3xl border-b border-white/10 z-[100] transition-all duration-500",
+                sidebarCollapsed ? "md:left-20" : "md:left-0"
+            )}>
+                <div className="flex h-full items-center justify-between px-4 md:px-8 max-w-[1920px] mx-auto relative overflow-visible">
+                    <div className="absolute top-0 left-0 right-0 h-px bg-gradient-to-r from-cyan-400 via-transparent to-purple-500" />
 
-                {/* Left - Logo */}
-                <div className="flex items-center gap-3 md:gap-4">
-                    <Link href="/main" className="group flex items-center gap-2">
-                        <span className="text-2xl font-black italic text-transparent bg-clip-text bg-gradient-to-r from-cyan-400 to-purple-500 group-hover:scale-105 transition-transform font-orbitron">
-                            AGI WAR
-                        </span>
-                        <div className="w-1.5 h-1.5 bg-green-500 rounded-full animate-pulse shadow-[0_0_5px_#22c55e]" />
-                    </Link>
-                </div>
-
-                {/* Middle - Navigation (wider spacing, bold italic) - HIDDEN ON MOBILE */}
-                <nav className="absolute left-[42%] -translate-x-1/2 hidden md:flex items-center gap-8 h-full">
-                    {navLinks.map((link) => {
-                        const isActive = pathname.startsWith(link.path);
-                        return (
-                            <Link
-                                key={link.path}
-                                href={link.path}
-                                className="relative h-full flex items-center group"
-                            >
-                                <span className={`text-base md:text-lg font-black italic tracking-[0.15em] transition-all duration-300 ${isActive
-                                    ? 'text-transparent bg-clip-text bg-gradient-to-r from-cyan-400 to-purple-400 scale-110 drop-shadow-[0_0_12px_rgba(34,211,238,0.6)]'
-                                    : 'text-white/50 group-hover:text-white group-hover:scale-105 group-hover:drop-shadow-[0_0_8px_rgba(255,255,255,0.3)]'
-                                    }`}>
-                                    {link.name}
-                                </span>
-
-                                {/* Active indicator - more prominent */}
-                                {isActive && (
-                                    <div className="absolute bottom-0 left-1/2 -translate-x-1/2 w-full h-1 bg-gradient-to-r from-cyan-500 via-purple-500 to-cyan-500 shadow-[0_0_20px_rgba(34,211,238,0.9)] rounded-full animate-pulse" />
-                                )}
-
-                                {/* Hover highlight */}
-                                <div className="absolute inset-x-0 bottom-0 h-1/2 bg-gradient-to-t from-white/5 to-transparent opacity-0 group-hover:opacity-100 transition-opacity pointer-events-none" />
-                            </Link>
-                        );
-                    })}
-                </nav>
-
-                {/* Right - Stats & Actions */}
-                <div className="flex items-center gap-3 ml-auto" data-tutorial="resources">
-                    {/* Level & Exp */}
-                    <div className="hidden xl:flex flex-col items-end gap-0.5 px-3 py-1.5 bg-black/40 rounded-lg border border-white/5">
-                        <div className="flex items-center gap-2">
-                            <span className="text-[9px] text-white/30 font-mono uppercase">SYNC LV</span>
-                            <span className="text-sm font-black orbitron text-cyan-400">{userLevel}</span>
-                        </div>
-                        <div className="w-24 h-1 bg-black/50 rounded-full overflow-hidden border border-white/10">
-                            <div
-                                className="h-full bg-gradient-to-r from-cyan-500 to-purple-500 shadow-[0_0_8px_rgba(34,211,238,0.4)]"
-                                style={{ width: `${(userExp / requiredExp) * 100}%` }}
-                            />
-                        </div>
-                    </div>
-
-                    {/* Coins */}
-                    <div className="flex items-center gap-2 bg-black/40 backdrop-blur-sm px-3 py-1.5 rounded-lg border border-amber-500/20">
-                        <div className="w-6 h-6 rounded-full bg-gradient-to-br from-amber-400 to-yellow-600 flex items-center justify-center text-xs shadow-md">
-                            💰
-                        </div>
-                        <div className="flex flex-col items-end">
-                            <div className="text-[8px] text-amber-400/60 font-mono uppercase hidden md:block">Coins</div>
-                            <div className="text-xs font-black orbitron text-amber-400">
-                                {userCoins.toLocaleString()}
+                    <div className="flex items-center gap-4 xl:gap-8 flex-1">
+                        <Link href="/main" className="flex items-center gap-2 group">
+                            <div className="relative w-10 h-10 flex items-center justify-center">
+                                <Box className="w-8 h-8 text-cyan-500 absolute animate-pulse opacity-50" />
+                                <Box className="w-6 h-6 text-cyan-400 relative z-10" />
                             </div>
-                        </div>
-                    </div>
-
-                    {/* Tokens with State-based Tooltip */}
-                    <div
-                        className="relative z-[50]"
-                        onMouseEnter={() => setIsTooltipVisible(true)}
-                        onMouseLeave={() => setIsTooltipVisible(false)}
-                    >
-                        {/* Token Badge */}
-                        <div className="flex items-center gap-3 bg-black/60 backdrop-blur-md px-4 py-2 rounded-xl border border-purple-500/20 hover:border-purple-500/50 hover:bg-purple-900/10 transition-all duration-300 cursor-default">
-                            <div className="relative">
-                                <div className="w-8 h-8 rounded-full bg-gradient-to-br from-purple-500 to-indigo-600 flex items-center justify-center text-sm shadow-[0_0_10px_rgba(168,85,247,0.4)] hover:scale-110 transition-transform duration-300">
-                                    💎
-                                </div>
-                                <div className="absolute -bottom-1 -right-1 w-3 h-3 bg-green-500 border-2 border-black rounded-full animate-pulse" />
-                            </div>
-
-                            <div className="flex flex-col items-end">
-                                <div className="text-[9px] text-purple-300/80 font-bold tracking-wider uppercase mb-0.5 hover:text-purple-300 transition-colors hidden md:block">
-                                    Token Balance
-                                </div>
-                                <div className="flex items-baseline gap-1.5 font-orbitron">
-                                    <span className="text-sm font-black text-white hover:text-purple-100 transition-colors">
-                                        {userTokens.toLocaleString()}
-                                    </span>
-                                    <span className="text-[10px] text-white/40 font-bold hidden md:inline">
-                                        / <span className="text-purple-400">{maxTokens.toLocaleString()}</span>
-                                    </span>
+                            <div>
+                                <h1 className="text-xl font-black italic tracking-tighter text-transparent bg-clip-text bg-gradient-to-r from-cyan-400 to-purple-500 font-orbitron leading-none">
+                                    AGI WAR
+                                </h1>
+                                <div className="text-[8px] font-bold text-cyan-500/50 orbitron tracking-[0.2em] mt-0.5">
+                                    LEGION COMMAND
                                 </div>
                             </div>
-                        </div>
+                        </Link>
 
-                        {/* TOOLTIP (State-based) */}
-                        <AnimatePresence>
-                            {isTooltipVisible && (
-                                <motion.div
-                                    initial={{ opacity: 0, y: 10, scale: 0.95 }}
-                                    animate={{ opacity: 1, y: 0, scale: 1 }}
-                                    exit={{ opacity: 0, y: 10, scale: 0.95 }}
-                                    transition={{ duration: 0.2 }}
-                                    className="absolute top-full right-0 mt-3 w-80 z-[100]"
-                                >
-                                    <div className="bg-[#050510]/95 backdrop-blur-xl border border-purple-500/30 rounded-2xl p-5 shadow-[0_0_50px_rgba(168,85,247,0.4)] relative">
-                                        {/* Triangle Arrow */}
-                                        <div className="absolute -top-2 right-10 w-4 h-4 bg-[#050510]/95 border-t border-l border-purple-500/30 rotate-45" />
-
-                                        <div className="flex items-center justify-between mb-4">
-                                            <h3 className="text-sm font-black text-transparent bg-clip-text bg-gradient-to-r from-purple-400 to-indigo-400 font-orbitron tracking-wider">
-                                                RESOURCE MONITOR
-                                            </h3>
-                                            {timeUntilNextRecharge !== 'MAX' && (
-                                                <div className="flex items-center gap-1.5 px-2 py-0.5 bg-blue-500/20 text-blue-300 rounded text-[10px] font-bold border border-blue-500/30">
-                                                    <Zap size={10} className="fill-current" />
-                                                    <span>Recharging...</span>
-                                                </div>
+                        <nav className="hidden lg:flex items-center gap-1 xl:gap-2">
+                            {navLinks.map((link) => {
+                                const isActive = pathname.startsWith(link.path);
+                                return (
+                                    <Tooltip
+                                        key={link.path}
+                                        content={link.name}
+                                        placement="bottom"
+                                        className="orbitron uppercase tracking-tighter"
+                                    >
+                                        <Link
+                                            href={link.path}
+                                            className={cn(
+                                                "relative px-3 py-1.5 rounded-lg text-xs font-bold transition-all duration-300 group overflow-hidden",
+                                                isActive ? "text-white" : "text-white/40 hover:text-white/80"
                                             )}
-                                        </div>
-
-                                        {/* Main Gauge */}
-                                        <div className="mb-5 bg-black/40 rounded-xl p-3 border border-white/5">
-                                            <div className="flex justify-between text-[10px] mb-1.5">
-                                                <span className="text-white/60 font-bold uppercase tracking-wider">Storage Capacity</span>
-                                                <span className="text-purple-400 font-mono font-bold">{Math.round((userTokens / maxTokens) * 100)}%</span>
-                                            </div>
-                                            <div className="h-2 w-full bg-black/80 rounded-full overflow-hidden border border-white/10">
-                                                <div
-                                                    className="h-full bg-gradient-to-r from-purple-600 via-indigo-500 to-purple-400 shadow-[0_0_15px_rgba(168,85,247,0.6)]"
-                                                    style={{ width: `${Math.min(100, (userTokens / maxTokens) * 100)}%` }}
+                                        >
+                                            <span className="relative z-10">{link.name}</span>
+                                            {isActive && (
+                                                <motion.div
+                                                    layoutId="active-nav"
+                                                    className={cn(
+                                                        "absolute inset-0 rounded-lg -z-10 bg-white/5 border-b-2",
+                                                        link.color === 'cyan' && "border-cyan-500 shadow-[0_4px_10px_rgba(34,211,238,0.3)]",
+                                                        link.color === 'green' && "border-green-500 shadow-[0_4px_10px_rgba(34,197,94,0.3)]",
+                                                        link.color === 'yellow' && "border-yellow-500 shadow-[0_4px_10px_rgba(234,179,8,0.3)]",
+                                                        link.color === 'amber' && "border-amber-500 shadow-[0_4px_10px_rgba(245,158,11,0.3)]",
+                                                        link.color === 'purple' && "border-purple-500 shadow-[0_4px_10px_rgba(168,85,247,0.3)]",
+                                                        link.color === 'pink' && "border-pink-500 shadow-[0_4px_10px_rgba(236,72,153,0.3)]"
+                                                    )}
                                                 />
-                                            </div>
-                                        </div>
-
-                                        {/* Next Recharge Timer - THE FIX FOR "FEELING" */}
-                                        <div className="bg-gradient-to-br from-blue-900/20 to-purple-900/20 rounded-xl p-3 border border-indigo-500/30 mb-4 flex items-center justify-between group/timer hover:border-indigo-400/50 transition-colors">
-                                            <div className="flex flex-col">
-                                                <span className="text-[9px] text-blue-300/80 uppercase tracking-widest font-bold mb-0.5">Next Recharge</span>
-                                                <span className="text-[10px] text-white/40">
-                                                    +{params.rateAmount} Tokens every {params.intervalMin}m
-                                                </span>
-                                            </div>
-                                            <div className="text-2xl font-black text-white font-orbitron tabular-nums drop-shadow-[0_0_8px_rgba(59,130,246,0.6)]">
-                                                {timeUntilNextRecharge}
-                                            </div>
-                                        </div>
-
-                                        {/* Breakdown Compact */}
-                                        <div className="space-y-1 bg-white/5 rounded-lg p-3 border border-white/5">
-                                            {activeSubscriptions && activeSubscriptions.length > 0 ? (
-                                                <div className="flex justify-between items-center text-[10px] text-amber-300">
-                                                    <span className="flex items-center gap-1.5">
-                                                        <Zap size={10} className="fill-current" />
-                                                        Active Boosts
-                                                    </span>
-                                                    <span className="font-mono font-bold">+{activeSubscriptions.length} Factions</span>
-                                                </div>
-                                            ) : (
-                                                <div className="text-[10px] text-white/30 text-center py-1">
-                                                    No active boosts
-                                                </div>
                                             )}
-                                            <div className="flex justify-between items-center text-[10px] text-white/50 pt-1 border-t border-white/5 mt-1">
-                                                <span>Level Bonus (Lv.{userLevel})</span>
-                                                <span className="font-mono text-green-400">+{((userLevel - 1) * 100).toLocaleString()} Cap</span>
+                                            <div className={cn(
+                                                "absolute bottom-0 left-0 w-full h-0.5 scale-x-0 group-hover:scale-x-100 transition-transform duration-300 origin-left opacity-50",
+                                                link.color === 'cyan' && "bg-cyan-500",
+                                                link.color === 'green' && "bg-green-500",
+                                                link.color === 'yellow' && "bg-yellow-500",
+                                                link.color === 'amber' && "bg-amber-500",
+                                                link.color === 'purple' && "bg-purple-500",
+                                                link.color === 'pink' && "bg-pink-500"
+                                            )} />
+                                        </Link>
+                                    </Tooltip>
+                                );
+                            })}
+                        </nav>
+                    </div>
+
+                    <div className="flex items-center gap-3 md:gap-6">
+                        <div className="hidden xl:flex flex-col items-end gap-0.5 px-3 py-1.5 bg-black/40 rounded-lg border border-white/5">
+                            <div className="flex items-center gap-2">
+                                <span className="text-[9px] text-white/30 font-mono uppercase">SYNC LV</span>
+                                <span className="text-sm font-black orbitron text-cyan-400">{userLevel}</span>
+                            </div>
+                            <div className="w-24 h-1 bg-black/50 rounded-full overflow-hidden border border-white/10">
+                                <div
+                                    className="h-full bg-gradient-to-r from-cyan-500 to-purple-500 shadow-[0_0_8px_rgba(34,211,238,0.4)]"
+                                    style={{ width: `${(userExp / requiredExp) * 100}%` }}
+                                />
+                            </div>
+                        </div>
+
+                        <Tooltip
+                            content={
+                                <div className="flex flex-col gap-1 p-1">
+                                    <span className="text-amber-400 font-black">Data Coins</span>
+                                    <span className="text-[10px] text-white/60">Gained from battles and missions.</span>
+                                </div>
+                            }
+                            placement="bottom"
+                        >
+                            <div className="flex items-center gap-2 bg-black/40 px-3 py-1.5 rounded-lg border border-white/5 hover:border-amber-500/30 transition-all cursor-default">
+                                <Box className="w-4 h-4 text-amber-500" />
+                                <div className="text-xs font-black orbitron text-amber-400">
+                                    {userCoins.toLocaleString()}
+                                </div>
+                            </div>
+                        </Tooltip>
+
+                        <Tooltip
+                            placement="bottom"
+                            allowClick={true}
+                            className="!p-0 !bg-transparent !border-0 !shadow-none"
+                            content={
+                                <div className="bg-[#050510]/95 backdrop-blur-xl border border-purple-500/30 rounded-2xl p-5 shadow-[0_0_50px_rgba(168,85,247,0.4)] w-80 relative overflow-hidden text-left">
+                                    <div className="absolute inset-0 opacity-10 pointer-events-none bg-[radial-gradient(circle_at_center,rgba(168,85,247,0.15)_0%,transparent_100%)]" />
+                                    <div className="flex items-center justify-between mb-4 relative z-10">
+                                        <h3 className="text-sm font-black text-transparent bg-clip-text bg-gradient-to-r from-purple-400 to-indigo-400 font-orbitron tracking-wider">
+                                            RESOURCE MONITOR
+                                        </h3>
+                                        {timeUntilNextRecharge !== 'MAX' && (
+                                            <div className="flex items-center gap-1.5 px-2 py-0.5 bg-blue-500/20 text-blue-300 rounded text-[10px] font-bold border border-blue-500/30">
+                                                <Zap size={10} className="fill-current animate-pulse" />
+                                                <span>Recharging...</span>
                                             </div>
+                                        )}
+                                    </div>
+                                    <div className="mb-5 bg-black/40 rounded-xl p-3 border border-white/5 relative z-10">
+                                        <div className="flex justify-between text-[10px] mb-1.5">
+                                            <span className="text-white/60 font-bold uppercase tracking-wider">Storage Capacity</span>
+                                            <span className="text-purple-400 font-mono font-bold">{Math.round((userTokens / maxTokens) * 100)}%</span>
+                                        </div>
+                                        <div className="h-2 w-full bg-black/80 rounded-full overflow-hidden border border-white/10">
+                                            <div
+                                                className="h-full bg-gradient-to-r from-purple-600 via-indigo-500 to-purple-400 shadow-[0_0_15px_rgba(168,85,247,0.6)]"
+                                                style={{ width: `${Math.min(100, (userTokens / maxTokens) * 100)}%` }}
+                                            />
                                         </div>
                                     </div>
-                                </motion.div>
+                                    <div className="bg-gradient-to-br from-blue-900/20 to-purple-900/20 rounded-xl p-3 border border-indigo-500/30 mb-4 flex items-center justify-between transition-colors relative z-10">
+                                        <div className="flex flex-col">
+                                            <span className="text-[9px] text-blue-300/80 uppercase tracking-widest font-bold mb-0.5">Next Recharge</span>
+                                            <span className="text-[10px] text-white/40">
+                                                +{params.rateAmount} Tokens every {params.intervalMin}m
+                                            </span>
+                                        </div>
+                                        <div className="text-2xl font-black text-white font-orbitron tabular-nums drop-shadow-[0_0_8px_rgba(59,130,246,0.6)]">
+                                            {timeUntilNextRecharge}
+                                        </div>
+                                    </div>
+                                    <div className="space-y-1 bg-white/5 rounded-lg p-3 border border-white/5 relative z-10">
+                                        {activeSubscriptions && activeSubscriptions.length > 0 ? (
+                                            <div className="flex justify-between items-center text-[10px] text-amber-300">
+                                                <span className="flex items-center gap-1.5">
+                                                    <Zap size={10} className="fill-current" />
+                                                    Active Boosts
+                                                </span>
+                                                <span className="font-mono font-bold">+{activeSubscriptions.length} Factions</span>
+                                            </div>
+                                        ) : (
+                                            <div className="text-[10px] text-white/30 text-center py-1 font-bold">
+                                                No active boosts
+                                            </div>
+                                        )}
+                                        <div className="flex justify-between items-center text-[10px] text-white/50 pt-1 border-t border-white/5 mt-1">
+                                            <span>Level Bonus (Lv.{userLevel})</span>
+                                            <span className="font-mono text-green-400">+{((userLevel - 1) * 100).toLocaleString()} Cap</span>
+                                        </div>
+                                    </div>
+                                    <p className="text-[8px] text-white/20 mt-3 text-center uppercase tracking-widest font-bold">
+                                        Click to toggle persistence
+                                    </p>
+                                </div>
+                            }
+                        >
+                            <div className="flex items-center gap-3 bg-black/60 backdrop-blur-md px-4 py-2 rounded-xl border border-purple-500/20 hover:border-purple-500/50 transition-all cursor-help group">
+                                <div className="relative">
+                                    <div className="w-8 h-8 rounded-full bg-gradient-to-br from-purple-500 to-indigo-600 flex items-center justify-center text-sm shadow-[0_0_10px_rgba(168,85,247,0.4)] group-hover:scale-110 transition-transform duration-300">
+                                        💎
+                                    </div>
+                                    <div className="absolute -bottom-1 -right-1 w-3 h-3 bg-green-500 border-2 border-black rounded-full animate-pulse" />
+                                </div>
+                                <div className="flex flex-col items-end">
+                                    <div className="text-[9px] text-purple-300/80 font-bold tracking-wider uppercase mb-0.5 group-hover:text-purple-300 transition-colors hidden md:block text-right">
+                                        Token Balance
+                                    </div>
+                                    <div className="flex items-baseline gap-1.5 font-orbitron">
+                                        <span className="text-sm font-black text-white group-hover:text-purple-100 transition-colors">
+                                            {userTokens.toLocaleString()}
+                                        </span>
+                                        <span className="text-[10px] text-white/40 font-bold hidden md:inline">
+                                            / <span className="text-purple-400">{maxTokens.toLocaleString()}</span>
+                                        </span>
+                                    </div>
+                                </div>
+                            </div>
+                        </Tooltip>
+
+                        <div className="h-8 w-px bg-white/10" />
+
+                        <button
+                            onClick={() => setIsNotificationOpen(!isNotificationOpen)}
+                            className="relative w-9 h-9 flex items-center justify-center bg-black/40 hover:bg-white/10 border border-white/5 rounded-lg transition-all group"
+                        >
+                            <Bell size={16} className={isNotificationOpen ? "text-white" : "text-white/40 group-hover:text-white transition-colors"} />
+                            {unreadCount > 0 && (
+                                <div className="absolute top-1 right-1 w-2 h-2 bg-red-500 rounded-full shadow-[0_0_6px_rgba(239,68,68,0.8)] animate-pulse" />
                             )}
-                        </AnimatePresence>
+                        </button>
+
+                        <Link
+                            href="/settings"
+                            className="w-9 h-9 flex items-center justify-center bg-black/40 hover:bg-white/10 border border-white/5 rounded-lg transition-all group"
+                        >
+                            <Settings size={16} className="text-white/40 group-hover:text-white group-hover:rotate-90 transition-all" />
+                        </Link>
+
+                        <button
+                            onClick={handleLogout}
+                            className="w-9 h-9 hidden md:flex items-center justify-center bg-black/40 hover:bg-red-500/20 border border-white/5 hover:border-red-500/30 rounded-lg transition-all group"
+                        >
+                            <LogOut size={16} className="text-white/40 group-hover:text-red-400 transition-colors" />
+                        </button>
+
+                        <button
+                            onClick={() => setMobileMenuOpen(true)}
+                            className="md:hidden flex items-center justify-center w-9 h-9 rounded-lg bg-white/5 border border-white/10 text-white/70 hover:text-white hover:bg-white/10 transition-all active:scale-95"
+                        >
+                            <Menu size={20} />
+                        </button>
                     </div>
-
-                    {/* Divider */}
-                    <div className="h-8 w-px bg-white/10" />
-
-                    {/* Notification */}
-                    <button
-                        onClick={() => setIsNotificationOpen(!isNotificationOpen)}
-                        className="relative w-9 h-9 flex items-center justify-center bg-black/40 hover:bg-white/10 border border-white/5 rounded-lg transition-all group"
-                    >
-                        <Bell size={16} className={isNotificationOpen ? "text-white" : "text-white/40 group-hover:text-white transition-colors"} />
-                        {unreadCount > 0 && (
-                            <div className="absolute top-1 right-1 w-2 h-2 bg-red-500 rounded-full shadow-[0_0_6px_rgba(239,68,68,0.8)] animate-pulse" />
-                        )}
-                    </button>
-
-                    {/* Settings */}
-                    <Link
-                        href="/settings"
-                        className="w-9 h-9 flex items-center justify-center bg-black/40 hover:bg-white/10 border border-white/5 rounded-lg transition-all group"
-                    >
-                        <Settings size={16} className="text-white/40 group-hover:text-white group-hover:rotate-90 transition-all" />
-                    </Link>
-
-                    {/* Logout - Hidden on mobile if space is tight, usually fine */}
-                    <button
-                        onClick={handleLogout}
-                        className="w-9 h-9 hidden md:flex items-center justify-center bg-black/40 hover:bg-red-500/20 border border-white/5 hover:border-red-500/30 rounded-lg transition-all group"
-                    >
-                        <LogOut size={16} className="text-white/40 group-hover:text-red-400 transition-colors" />
-                    </button>
-
-                    {/* [NEW] Hamburger Button (Right Side) */}
-                    <button
-                        onClick={() => setMobileMenuOpen(true)}
-                        className="md:hidden flex items-center justify-center w-9 h-9 rounded-lg bg-white/5 border border-white/10 text-white/70 hover:text-white hover:bg-white/10 transition-all active:scale-95"
-                    >
-                        <Menu size={20} />
-                    </button>
                 </div>
-            </div>
+            </header>
 
             <NotificationPanel isOpen={isNotificationOpen} onClose={() => setIsNotificationOpen(false)} />
 
-            {/* [NEW] Mobile Side Menu Drawer (Cyberpunk Style) - Right Side */}
             <AnimatePresence>
                 {mobileMenuOpen && (
                     <>
-                        {/* Backdrop */}
                         <motion.div
                             initial={{ opacity: 0 }}
                             animate={{ opacity: 1 }}
                             exit={{ opacity: 0 }}
                             onClick={() => setMobileMenuOpen(false)}
-                            className="fixed inset-0 bg-black/80 backdrop-blur-sm z-[70] md:hidden"
+                            className="fixed inset-0 bg-black/80 backdrop-blur-sm z-[110] md:hidden"
                         />
-
-                        {/* Drawer */}
                         <motion.div
                             initial={{ x: '100%' }}
                             animate={{ x: 0 }}
                             exit={{ x: '100%' }}
                             transition={{ type: "spring", bounce: 0, duration: 0.4 }}
-                            className="fixed top-0 right-0 bottom-0 w-[280px] bg-[#050510] border-l border-cyan-500/30 z-[80] md:hidden flex flex-col shadow-[0_0_50px_rgba(0,0,0,0.8)]"
+                            className="fixed top-0 right-0 bottom-0 w-[280px] bg-[#050510] border-l border-cyan-500/30 z-[120] md:hidden flex flex-col shadow-[0_0_50px_rgba(0,0,0,0.8)]"
                         >
-                            {/* Drawer Header */}
                             <div className="p-5 border-b border-white/10 flex items-center justify-between bg-black/50">
                                 <div className="flex items-center gap-2">
                                     <span className="text-xl font-black italic text-transparent bg-clip-text bg-gradient-to-r from-cyan-400 to-purple-500 font-orbitron">
                                         AGI WAR
                                     </span>
-                                    <div className="px-1.5 py-0.5 rounded bg-cyan-500/20 text-[10px] text-cyan-400 font-bold border border-cyan-500/30">
-                                        SYSTEM
-                                    </div>
                                 </div>
                                 <button
                                     onClick={() => setMobileMenuOpen(false)}
@@ -423,7 +414,6 @@ export default function GameTopBar({
                                 </button>
                             </div>
 
-                            {/* User Info Summary */}
                             <div className="p-4 bg-white/5 border-b border-white/5">
                                 <div className="flex items-center gap-3 mb-3">
                                     <div className="w-10 h-10 rounded-full bg-gradient-to-br from-cyan-500 to-purple-600 p-[1px]">
@@ -440,7 +430,6 @@ export default function GameTopBar({
                                         <div className="text-[10px] text-cyan-400 font-mono">Level {userLevel}</div>
                                     </div>
                                 </div>
-                                {/* Mini Stats */}
                                 <div className="grid grid-cols-2 gap-2">
                                     <div className="bg-black/40 rounded px-2 py-1.5 border border-white/5">
                                         <div className="text-[9px] text-amber-400/70 uppercase">Coins</div>
@@ -453,7 +442,6 @@ export default function GameTopBar({
                                 </div>
                             </div>
 
-                            {/* Menu Items */}
                             <div className="flex-1 overflow-y-auto py-2">
                                 {mobileMenuItems.map((category, idx) => (
                                     <div key={idx} className="mb-4">
@@ -466,20 +454,24 @@ export default function GameTopBar({
                                                 <Link
                                                     key={item.path}
                                                     href={item.path}
-                                                    className={`
-                                                        relative flex items-center gap-3 px-5 py-3 transition-all duration-200 border-l-2
-                                                        ${pathname.startsWith(item.path)
-                                                            ? `bg-white/5 border-${item.color}-500 text-white`
-                                                            : 'border-transparent text-gray-400 hover:text-white hover:bg-white/5'
-                                                        }
-                                                    `}
+                                                    className={cn(
+                                                        "relative flex items-center gap-3 px-5 py-3 transition-all duration-200 border-l-2",
+                                                        pathname.startsWith(item.path)
+                                                            ? "bg-white/5 text-white"
+                                                            : "border-transparent text-gray-400 hover:text-white hover:bg-white/5",
+                                                        pathname.startsWith(item.path) && colorMap[item.color]?.borderClass
+                                                    )}
                                                 >
-                                                    <span className="text-lg">{item.icon}</span>
-                                                    <span className="text-sm font-medium font-orbitron tracking-wide">{item.name}</span>
+                                                    <span className="text-lg relative z-10">{item.icon}</span>
+                                                    <span className="text-sm font-medium font-orbitron tracking-wide relative z-10">{item.name}</span>
                                                     {pathname.startsWith(item.path) && (
                                                         <motion.div
                                                             layoutId="active-mobile-menu"
-                                                            className={`absolute right-4 w-1.5 h-1.5 rounded-full bg-${item.color}-500 shadow-[0_0_8px_currentColor]`}
+                                                            className={cn(
+                                                                "absolute right-4 w-1.5 h-1.5 rounded-full",
+                                                                colorMap[item.color]?.bgClass,
+                                                                colorMap[item.color]?.shadowClassMobile
+                                                            )}
                                                         />
                                                     )}
                                                 </Link>
@@ -489,7 +481,6 @@ export default function GameTopBar({
                                 ))}
                             </div>
 
-                            {/* Footer Area */}
                             <div className="p-4 border-t border-white/10 bg-black/50">
                                 <button
                                     onClick={handleLogout}

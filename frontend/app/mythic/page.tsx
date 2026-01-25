@@ -14,6 +14,7 @@ import { useUser } from '@/context/UserContext';
 import { useNotification } from '@/context/NotificationContext';
 import { generateId } from '@/lib/utils';
 import { useTranslation } from '@/context/LanguageContext';
+import { Crown } from "lucide-react";
 
 export default function MythicCreationPage() {
     const { showAlert } = useAlert();
@@ -195,6 +196,14 @@ export default function MythicCreationPage() {
             englishTitle={t('page.unique.englishTitle')}
             description={t('page.unique.description')}
             color="red"
+            leftSidebarIcon={<Crown size={32} className="text-red-500" />}
+            leftSidebarTips={[
+                "👑 전설 등급 카드 3장을 융합하여 '신화(Mythic)' 등급 카드를 제작합니다.",
+                "⚠️ 융합에 사용된 전설 카드는 소멸되므로 신중하게 선택하세요.",
+                "⚡ 신화 제작에는 대량의 토큰(5,000)이 소모됩니다.",
+                "⚔️ 신화 유닛은 압도적인 기본 능력치와 강력한 고유 스킬을 보유합니다.",
+                "🎰 제작 시 일정 확률로 다른 기종의 신화 유닛이 등장할 수 있습니다 (변이)."
+            ]}
         >
             {/* Top Info */}
             <div className="p-6">

@@ -3,7 +3,7 @@
 import React, { useState } from 'react';
 import { useTranslation } from '@/context/LanguageContext';
 import { motion } from 'framer-motion';
-import { Bug, Lightbulb, Coffee, ArrowRight, Github, Mail, MessageSquare } from 'lucide-react';
+import { Bug, Lightbulb, Coffee, ArrowRight, Github, Mail, MessageSquare, HelpCircle } from 'lucide-react';
 import CyberPageLayout from '@/components/CyberPageLayout';
 import { cn } from '@/lib/utils';
 import { createSupportTicket } from '@/lib/firebase-db';
@@ -116,6 +116,14 @@ export default function SupportPage() {
             subtitle={t('support.subtitle')}
             description={t('support.description')}
             color="blue"
+            leftSidebarIcon={<HelpCircle size={32} className="text-blue-400" />}
+            leftSidebarTips={[
+                "🐛 게임 이용 중 발견된 버그나 오류를 제보해 주세요.",
+                "💡 참신한 아이디어나 개선 의견은 언제나 환영합니다.",
+                "☕ 후원을 통해 인디 개발팀에게 큰 힘을 실어주실 수 있습니다.",
+                "📧 이메일이나 디스코드 커뮤니티를 통해서도 문의가 가능합니다.",
+                "🤝 여러분의 피드백이 더 나은 AI WAR를 만듭니다."
+            ]}
         >
             <div className="max-w-4xl mx-auto pb-20">
                 {/* 상단 안내 */}

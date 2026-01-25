@@ -41,6 +41,11 @@ export const metadata: Metadata = {
     ].map(l => `<${l.href}>; rel=${l.rel}`).join(", ")
   },
   manifest: '/manifest.json',
+  appleWebApp: {
+    capable: true,
+    statusBarStyle: "black-translucent",
+    title: "AGI WAR",
+  },
 };
 
 export const viewport = {

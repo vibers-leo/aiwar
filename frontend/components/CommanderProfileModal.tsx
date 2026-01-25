@@ -14,6 +14,7 @@ import { Button } from "@/components/ui/custom/Button";
 import { Progress } from "@/components/ui/custom/Progress";
 import { Divider } from "@/components/ui/custom/Divider";
 import { Chip } from "@/components/ui/custom/Chip";
+import { Tooltip } from "@/components/ui/custom/Tooltip";
 import { motion, AnimatePresence } from "framer-motion";
 import { Input } from "@/components/ui/custom/Input";
 import { updateNickname, saveUserProfile, checkNicknameUnique } from '@/lib/firebase-db';
@@ -504,49 +505,62 @@ export default function CommanderProfileModal({ isOpen, onClose }: CommanderProf
                                 </div>
 
                                 <div className="grid grid-cols-2 lg:grid-cols-3 gap-3">
-                                    {RESEARCH_STATS.map((stat, idx) => {
-                                        const currentLevel = research?.stats[stat.id]?.currentLevel || 1; // 1레벨 기본값
+                                    {RESEARCH_STATS.map((stat) => {
+                                        const currentLevel = research?.stats[stat.id]?.currentLevel || 1;
                                         const bonus = getResearchBonus(stat.id, currentLevel);
+                                        const levelEffect = stat.effects[Math.min(currentLevel - 1, stat.effects.length - 1)]?.description || 'Basic stats';
 
                                         return (
-                                            <div
+                                            <Tooltip
                                                 key={stat.id}
-                                                className={cn(
-                                                    "p-3 rounded-xl border border-white/5 transition-all flex items-center gap-4",
-                                                    currentLevel > 0 ? "bg-white/5" : "bg-black/40 opacity-40"
-                                                )}
-                                                onMouseEnter={() => setHoveredStat(stat.id)}
-                                                onMouseLeave={() => setHoveredStat(null)}
+                                                content={
+                                                    <div className="flex flex-col gap-1 p-1 max-w-[200px] whitespace-normal">
+                                                        <span className="text-cyan-400 font-black orbitron text-[10px]">{stat.name}</span>
+                                                        <p className="text-[10px] text-white/80 leading-relaxed">{stat.description}</p>
+                                                        <div className="mt-1 pt-1 border-t border-white/10">
+                                                            <p className="text-[9px] text-green-400 font-bold">Current: {levelEffect}</p>
+                                                        </div>
+                                                    </div>
+                                                }
+                                                placement="top"
                                             >
-                                                <div className={cn("w-10 h-10 rounded-lg flex items-center justify-center text-xl bg-gradient-to-br", stat.gradient)}>
-                                                    {stat.icon}
-                                                </div>
-                                                <div className="flex-1">
-                                                    <p className="text-[10px] text-gray-400 font-bold uppercase">{stat.name}</p>
-                                                    <div className="flex items-center gap-2">
-                                                        <span className={cn(
-                                                            "text-lg font-black orbitron",
-                                                            hoveredStat === stat.id ? "text-cyan-400" : "text-white"
-                                                        )}>
-                                                            Lv.{currentLevel}
-                                                        </span>
-                                                        {currentLevel === 9 && (
-                                                            <span className="text-[10px] text-yellow-500 font-bold px-1.5 py-0.5 bg-yellow-500/10 rounded border border-yellow-500/20">MAX</span>
+                                                <div
+                                                    className={cn(
+                                                        "p-3 rounded-xl border border-white/5 transition-all flex items-center gap-4 cursor-help",
+                                                        currentLevel > 0 ? "bg-white/5 hover:bg-white/10 hover:border-cyan-500/30" : "bg-black/40 opacity-40"
+                                                    )}
+                                                    onMouseEnter={() => setHoveredStat(stat.id)}
+                                                    onMouseLeave={() => setHoveredStat(null)}
+                                                >
+                                                    <div className={cn("w-10 h-10 rounded-lg flex items-center justify-center text-xl bg-gradient-to-br", stat.gradient)}>
+                                                        {stat.icon}
+                                                    </div>
+                                                    <div className="flex-1">
+                                                        <p className="text-[10px] text-gray-400 font-bold uppercase">{stat.name}</p>
+                                                        <div className="flex items-center gap-2">
+                                                            <span className={cn(
+                                                                "text-lg font-black orbitron",
+                                                                hoveredStat === stat.id ? "text-cyan-400" : "text-white"
+                                                            )}>
+                                                                Lv.{currentLevel}
+                                                            </span>
+                                                            {currentLevel === 9 && (
+                                                                <span className="text-[10px] text-yellow-500 font-bold px-1.5 py-0.5 bg-yellow-500/10 rounded border border-yellow-500/20">MAX</span>
+                                                            )}
+                                                        </div>
+                                                        {bonus > 0 && (
+                                                            <p className="text-[10px] text-green-400 font-medium mt-0.5">
+                                                                {stat.id === 'insight' && `고등급 확률 +${bonus}%`}
+                                                                {stat.id === 'efficiency' && `시간 -${bonus}%`}
+                                                                {stat.id === 'negotiation' && `비용 -${bonus}%`}
+                                                                {stat.id === 'leadership' && `전투력 +${bonus}%`}
+                                                                {stat.id === 'mastery' && `+3 확률 ${bonus}%`}
+                                                                {stat.id === 'fortune' && `보상 +${bonus}%`}
+                                                            </p>
                                                         )}
                                                     </div>
-                                                    {/* [NEW] Show active bonus effect */}
-                                                    {bonus > 0 && (
-                                                        <p className="text-[10px] text-green-400 font-medium mt-0.5">
-                                                            {stat.id === 'insight' && `고등급 확률 +${bonus}%`}
-                                                            {stat.id === 'efficiency' && `시간 -${bonus}%`}
-                                                            {stat.id === 'negotiation' && `비용 -${bonus}%`}
-                                                            {stat.id === 'leadership' && `전투력 +${bonus}%`}
-                                                            {stat.id === 'mastery' && `+3 확률 ${bonus}%`}
-                                                            {stat.id === 'fortune' && `보상 +${bonus}%`}
-                                                        </p>
-                                                    )}
                                                 </div>
-                                            </div>
+                                            </Tooltip>
                                         );
                                     })}
                                 </div>

@@ -184,8 +184,8 @@ export default function FactionsPage() {
             leftSidebarIcon={<Shield size={32} className="text-purple-400" />}
             leftSidebarTips={[
                 "💎 티어별 혜택:",
-                "Free: 비용 0 • 30분 주기 • 일 5회",
-                "Pro (Lv.10+): 40코인/일 • 일 20회 • 토큰 충전속도 UP",
+                "Free: 비용 0 • 30분 주기 • 일 3회",
+                "Pro (Lv.10+): 40코인/일 • 일 10회 • 토큰 충전속도 UP",
                 "Ultra (Lv.30+): 200코인/일 • 무제한 • 최대 토큰 UP",
                 "━━━━━━━━━━━━━━━━━━",
                 "📌 구독은 매일 자정에 자동 결제됩니다.",

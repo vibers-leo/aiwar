@@ -46,7 +46,7 @@ export default function LeftSidebar({
             onMouseEnter={() => setIsHovered(true)}
             onMouseLeave={() => setIsHovered(false)}
             className={cn(
-                "shrink-0 border-r flex flex-col relative",
+                "shrink-0 border-r flex flex-col relative z-20 bg-black/20 backdrop-blur-sm",
                 theme.border,
                 "hover:border-opacity-40 transition-colors"
             )}

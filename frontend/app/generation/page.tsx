@@ -457,6 +457,14 @@ export default function GenerationPage() {
             englishTitle="CARD GENERATION"
             description="시간이 되면 자동으로 생성되는 카드를 수령하세요"
             color="green"
+            leftSidebarIcon={<Zap size={32} className="text-green-400" />}
+            leftSidebarTips={[
+                "⚡ 카드는 설정된 주기마다 자동으로 생성됩니다.",
+                "🔋 각 슬롯에 원하는 AI 군단을 배치하여 카드를 생산하세요.",
+                "🛒 상점에서 '슬롯 확장권'을 구매하면 동시 생성 수를 늘릴 수 있습니다.",
+                "💎 'AI 군단' 메뉴에서 구독 티어를 올리면 생성 속도가 빨라집니다.",
+                "📌 생성된 카드는 클릭하여 수령해야 인벤토리에 저장됩니다."
+            ]}
         >
             <div className="flex flex-col">
                 <div className="mb-6 bg-gradient-to-r from-green-500/10 to-cyan-500/10 border border-green-500/20 rounded-lg p-6 flex-shrink-0">

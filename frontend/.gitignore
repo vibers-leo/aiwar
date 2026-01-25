@@ -43,3 +43,11 @@ next-env.d.ts
 # playwright
 playwright-report/
 test-results/
+
+# PWA
+public/sw.js
+public/sw.js.map
+public/workbox-*.js
+public/workbox-*.js.map
+public/worker-*.js
+public/swe-worker-*.js

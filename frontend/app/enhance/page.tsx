@@ -16,6 +16,7 @@ import { getGameState } from '@/lib/game-state';
 import { gameStorage } from '@/lib/game-storage';
 import { FACTION_CATEGORY_MAP } from '@/lib/token-constants'; // [NEW]
 import { useUser } from '@/context/UserContext'; // [NEW]
+import { Sparkles } from "lucide-react";
 
 export default function EnhancePage() {
     const { showAlert } = useAlert();
@@ -268,6 +269,14 @@ export default function EnhancePage() {
             englishTitle="UNIT UPGRADE"
             description="인벤토리의 유닛을 선택하여 강화합니다. 숙달 연구 레벨에 따라 고성장 확률이 증가하며, 협상력 레벨에 따라 비용이 할인됩니다."
             color="amber"
+            leftSidebarIcon={<Sparkles size={32} className="text-amber-400" />}
+            leftSidebarTips={[
+                "✨ 동일한 등급의 AI 카드를 재료로 사용하여 유닛을 강화할 수 있습니다.",
+                "🧪 [연구소 > 숙달 연구] 레벨이 높으면 강화 '대성공' 확률이 증가합니다.",
+                "💰 [연구소 > 협상력 연구] 레벨이 높으면 강화 비용(토큰)이 할인됩니다.",
+                "⚠️ 강화에 사용된 재료 카드는 사라지므로 주의하세요.",
+                "⭐ 주력 카드는 잠금 설정하여 실수로 재료로 사용하는 것을 방지하세요."
+            ]}
         >
             {/* 메인 영역: 카드 목록 */}
             {/* 메인 영역: 카드 목록 */}
