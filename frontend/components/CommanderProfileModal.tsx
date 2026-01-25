@@ -453,6 +453,45 @@ export default function CommanderProfileModal({ isOpen, onClose }: CommanderProf
                                     />
                                 </div>
 
+                                {/* 자원 상태 정보 */}
+                                <div className="grid grid-cols-2 gap-2">
+                                    <Tooltip
+                                        content={
+                                            <div className="flex flex-col gap-1 p-1">
+                                                <span className="text-purple-400 font-black">Tokens</span>
+                                                <span className="text-[10px] text-white/60">전투와 활동에 필요한 에너지 자원입니다.</span>
+                                            </div>
+                                        }
+                                        placement="top"
+                                    >
+                                        <div className="bg-purple-900/10 p-3 rounded-2xl border border-purple-500/20 hover:bg-purple-900/20 transition-all cursor-help">
+                                            <div className="flex items-center gap-1.5 mb-1">
+                                                <Zap size={12} className="text-purple-400" />
+                                                <p className="text-[9px] font-bold text-purple-400 uppercase">Tokens</p>
+                                            </div>
+                                            <p className="text-lg font-black text-white orbitron leading-none">{tokens}</p>
+                                        </div>
+                                    </Tooltip>
+
+                                    <Tooltip
+                                        content={
+                                            <div className="flex flex-col gap-1 p-1">
+                                                <span className="text-amber-400 font-black">Data Coins</span>
+                                                <span className="text-[10px] text-white/60">아이템 구매와 연구에 사용되는 화폐입니다.</span>
+                                            </div>
+                                        }
+                                        placement="top"
+                                    >
+                                        <div className="bg-amber-900/10 p-3 rounded-2xl border border-amber-500/20 hover:bg-amber-900/20 transition-all cursor-help">
+                                            <div className="flex items-center gap-1.5 mb-1">
+                                                <Box size={12} className="text-amber-400" />
+                                                <p className="text-[9px] font-bold text-amber-400 uppercase">Coins</p>
+                                            </div>
+                                            <p className="text-lg font-black text-white orbitron leading-none">{coins.toLocaleString()}</p>
+                                        </div>
+                                    </Tooltip>
+                                </div>
+
                                 {/* 연구 시간 버프 정보 */}
                                 <div className="bg-cyan-900/10 p-4 rounded-2xl border border-cyan-500/20">
                                     <div className="flex items-center gap-2 mb-2">

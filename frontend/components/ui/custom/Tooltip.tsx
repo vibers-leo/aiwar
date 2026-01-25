@@ -31,28 +31,26 @@ export const Tooltip = ({
     const updateCoords = () => {
         if (!triggerRef.current) return;
         const rect = triggerRef.current.getBoundingClientRect();
-        const scrollX = window.scrollX;
-        const scrollY = window.scrollY;
 
         let top = 0;
         let left = 0;
 
         switch (placement) {
             case 'top':
-                top = rect.top + scrollY - 10;
-                left = rect.left + scrollX + rect.width / 2;
+                top = rect.top - 10;
+                left = rect.left + rect.width / 2;
                 break;
             case 'bottom':
-                top = rect.bottom + scrollY + 10;
-                left = rect.left + scrollX + rect.width / 2;
+                top = rect.bottom + 10;
+                left = rect.left + rect.width / 2;
                 break;
             case 'left':
-                top = rect.top + scrollY + rect.height / 2;
-                left = rect.left + scrollX - 10;
+                top = rect.top + rect.height / 2;
+                left = rect.left - 10;
                 break;
             case 'right':
-                top = rect.top + scrollY + rect.height / 2;
-                left = rect.right + scrollX + 10;
+                top = rect.top + rect.height / 2;
+                left = rect.right + 10;
                 break;
         }
 
