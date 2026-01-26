@@ -24,9 +24,14 @@ export const Tooltip = ({
 }: TooltipProps) => {
     const [isVisible, setIsVisible] = useState(false);
     const [isPersistent, setIsPersistent] = useState(false);
+    const [mounted, setMounted] = useState(false);
     const [coords, setCoords] = useState({ top: 0, left: 0 });
     const triggerRef = useRef<HTMLDivElement>(null);
     const timeoutRef = useRef<NodeJS.Timeout | null>(null);
+
+    useEffect(() => {
+        setMounted(true);
+    }, []);
 
     const updateCoords = () => {
         if (!triggerRef.current) return;
@@ -35,22 +40,25 @@ export const Tooltip = ({
         let top = 0;
         let left = 0;
 
+        // Space between trigger and tooltip
+        const offset = 12;
+
         switch (placement) {
             case 'top':
-                top = rect.top - 10;
+                top = rect.top - offset;
                 left = rect.left + rect.width / 2;
                 break;
             case 'bottom':
-                top = rect.bottom + 10;
+                top = rect.bottom + offset;
                 left = rect.left + rect.width / 2;
                 break;
             case 'left':
                 top = rect.top + rect.height / 2;
-                left = rect.left - 10;
+                left = rect.left - offset;
                 break;
             case 'right':
                 top = rect.top + rect.height / 2;
-                left = rect.right + 10;
+                left = rect.right + offset;
                 break;
         }
 
@@ -87,6 +95,7 @@ export const Tooltip = ({
         if (isVisible || isPersistent) {
             window.addEventListener('scroll', updateCoords);
             window.addEventListener('resize', updateCoords);
+            updateCoords(); // Initial position update when showing
         }
         return () => {
             window.removeEventListener('scroll', updateCoords);
@@ -95,17 +104,17 @@ export const Tooltip = ({
     }, [isVisible, isPersistent]);
 
     const motionVariants = {
-        top: { initial: { opacity: 0, y: 5, x: '-50%' }, animate: { opacity: 1, y: 0, x: '-50%' } },
-        bottom: { initial: { opacity: 0, y: -5, x: '-50%' }, animate: { opacity: 1, y: 0, x: '-50%' } },
-        left: { initial: { opacity: 0, x: 5, y: '-50%' }, animate: { opacity: 1, x: 0, y: '-50%' } },
-        right: { initial: { opacity: 0, x: -5, y: '-50%' }, animate: { opacity: 1, x: 0, y: '-50%' } },
+        top: { initial: { opacity: 0, y: 5 }, animate: { opacity: 1, y: 0 } },
+        bottom: { initial: { opacity: 0, y: -5 }, animate: { opacity: 1, y: 0 } },
+        left: { initial: { opacity: 0, x: 5 }, animate: { opacity: 1, x: 0 } },
+        right: { initial: { opacity: 0, x: -5 }, animate: { opacity: 1, x: 0 } },
     };
 
-    const placementClasses = {
-        top: "-translate-x-1/2 -translate-y-full mb-2",
-        bottom: "-translate-x-1/2 mt-2",
-        left: "-translate-x-full -translate-y-1/2 mr-2",
-        right: "-translate-y-1/2 ml-2",
+    const placementStyles = {
+        top: { transform: 'translate(-50%, -100%)' },
+        bottom: { transform: 'translate(-50%, 0)' },
+        left: { transform: 'translate(-100%, -50%)' },
+        right: { transform: 'translate(0, -50%)' },
     };
 
     return (
@@ -117,7 +126,7 @@ export const Tooltip = ({
             onClick={togglePersistent}
         >
             {children}
-            {typeof document !== 'undefined' && createPortal(
+            {mounted && typeof document !== 'undefined' && createPortal(
                 <AnimatePresence>
                     {(isVisible || isPersistent) && (
                         <motion.div
@@ -126,16 +135,18 @@ export const Tooltip = ({
                             exit={motionVariants[placement].initial}
                             transition={{ duration: 0.15 }}
                             className={cn(
-                                "fixed z-[9999] px-3 py-2 text-xs font-bold text-white bg-[#050510]/95 border border-white/20 rounded-lg shadow-[0_0_30px_rgba(0,0,0,0.8)] backdrop-blur-xl pointer-events-auto",
-                                "before:absolute before:inset-0 before:rounded-lg before:shadow-[0_0_15px_rgba(255,255,255,0.1)] before:pointer-events-none",
-                                placementClasses[placement],
+                                "fixed z-[10000] px-3 py-2 text-xs font-bold text-white bg-[#050510]/95 border border-white/20 rounded-lg shadow-[0_0_30px_rgba(0,0,0,0.8)] backdrop-blur-xl pointer-events-auto",
                                 className
                             )}
-                            style={{ top: coords.top, left: coords.left }}
+                            style={{
+                                top: coords.top,
+                                left: coords.left,
+                                ...placementStyles[placement]
+                            }}
                             onMouseEnter={showTooltip}
                             onMouseLeave={hideTooltip}
                         >
-                            {/* The Bridge to keep hover active during gap crossing */}
+                            {/* Bridge to prevent closing when moving to tooltip */}
                             <div className={cn(
                                 "absolute bg-transparent",
                                 placement === 'top' && "bottom-[-20px] left-0 right-0 h-[20px]",
