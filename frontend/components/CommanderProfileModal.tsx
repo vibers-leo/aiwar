@@ -30,7 +30,9 @@ import {
     Sparkles,
     Clock,
     Check,
-    X
+    X,
+    Zap,
+    Box
 } from "lucide-react";
 import { useUser } from '@/context/UserContext';
 import { LogOut, ExternalLink, Mail, Fingerprint } from "lucide-react"; // Import new icons
