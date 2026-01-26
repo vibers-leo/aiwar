@@ -36,29 +36,33 @@ export const Tooltip = ({
     const updateCoords = () => {
         if (!triggerRef.current) return;
         const rect = triggerRef.current.getBoundingClientRect();
+        const offset = 12;
 
         let top = 0;
         let left = 0;
-
-        // Space between trigger and tooltip
-        const offset = 12;
+        let x = '-50%';
+        let y = '-50%';
 
         switch (placement) {
             case 'top':
                 top = rect.top - offset;
                 left = rect.left + rect.width / 2;
+                y = '-100%';
                 break;
             case 'bottom':
                 top = rect.bottom + offset;
                 left = rect.left + rect.width / 2;
+                y = '0%';
                 break;
             case 'left':
                 top = rect.top + rect.height / 2;
                 left = rect.left - offset;
+                x = '-100%';
                 break;
             case 'right':
                 top = rect.top + rect.height / 2;
                 left = rect.right + offset;
+                x = '0%';
                 break;
         }
 
@@ -93,9 +97,9 @@ export const Tooltip = ({
 
     useEffect(() => {
         if (isVisible || isPersistent) {
+            updateCoords();
             window.addEventListener('scroll', updateCoords);
             window.addEventListener('resize', updateCoords);
-            updateCoords(); // Initial position update when showing
         }
         return () => {
             window.removeEventListener('scroll', updateCoords);
@@ -103,19 +107,18 @@ export const Tooltip = ({
         };
     }, [isVisible, isPersistent]);
 
-    const motionVariants = {
-        top: { initial: { opacity: 0, y: 5 }, animate: { opacity: 1, y: 0 } },
-        bottom: { initial: { opacity: 0, y: -5 }, animate: { opacity: 1, y: 0 } },
-        left: { initial: { opacity: 0, x: 5 }, animate: { opacity: 1, x: 0 } },
-        right: { initial: { opacity: 0, x: -5 }, animate: { opacity: 1, x: 0 } },
+    // Simple positioning styles
+    const getTransform = () => {
+        switch (placement) {
+            case 'top': return 'translate(-50%, -100%)';
+            case 'bottom': return 'translate(-50%, 0)';
+            case 'left': return 'translate(-100%, -50%)';
+            case 'right': return 'translate(0, -50%)';
+            default: return 'translate(-50%, -50%)';
+        }
     };
 
-    const placementStyles = {
-        top: { transform: 'translate(-50%, -100%)' },
-        bottom: { transform: 'translate(-50%, 0)' },
-        left: { transform: 'translate(-100%, -50%)' },
-        right: { transform: 'translate(0, -50%)' },
-    };
+    if (!mounted) return <div className="relative inline-block" ref={triggerRef}>{children}</div>;
 
     return (
         <div
@@ -126,42 +129,36 @@ export const Tooltip = ({
             onClick={togglePersistent}
         >
             {children}
-            {mounted && typeof document !== 'undefined' && createPortal(
-                <AnimatePresence>
-                    {(isVisible || isPersistent) && (
-                        <motion.div
-                            initial={motionVariants[placement].initial}
-                            animate={motionVariants[placement].animate}
-                            exit={motionVariants[placement].initial}
-                            transition={{ duration: 0.15 }}
-                            className={cn(
-                                "fixed z-[10000] px-3 py-2 text-xs font-bold text-white bg-[#050510]/95 border border-white/20 rounded-lg shadow-[0_0_30px_rgba(0,0,0,0.8)] backdrop-blur-xl pointer-events-auto",
-                                className
-                            )}
-                            style={{
-                                top: coords.top,
-                                left: coords.left,
-                                ...placementStyles[placement]
-                            }}
-                            onMouseEnter={showTooltip}
-                            onMouseLeave={hideTooltip}
-                        >
-                            {/* Bridge to prevent closing when moving to tooltip */}
-                            <div className={cn(
-                                "absolute bg-transparent",
-                                placement === 'top' && "bottom-[-20px] left-0 right-0 h-[20px]",
-                                placement === 'bottom' && "top-[-20px] left-0 right-0 h-[20px]",
-                                placement === 'left' && "right-[-20px] top-0 bottom-0 w-[20px]",
-                                placement === 'right' && "left-[-20px] top-0 bottom-0 w-[20px]",
-                            )} />
-                            {content}
-                        </motion.div>
+            {(isVisible || isPersistent) && createPortal(
+                <div
+                    className={cn(
+                        "fixed z-[999999] px-3 py-2 text-xs font-bold text-white bg-[#050510]/95 border border-white/20 rounded-lg shadow-[0_0_30px_rgba(0,0,0,0.8)] backdrop-blur-xl pointer-events-auto transition-opacity duration-200",
+                        className
                     )}
-                </AnimatePresence>,
+                    style={{
+                        top: coords.top,
+                        left: coords.left,
+                        transform: getTransform(),
+                        opacity: (coords.top === 0 && coords.left === 0) ? 0 : 1
+                    }}
+                    onMouseEnter={showTooltip}
+                    onMouseLeave={hideTooltip}
+                >
+                    {/* Bridge to prevent closing when moving to tooltip */}
+                    <div className={cn(
+                        "absolute bg-transparent",
+                        placement === 'top' && "bottom-[-20px] left-0 right-0 h-[20px]",
+                        placement === 'bottom' && "top-[-20px] left-0 right-0 h-[20px]",
+                        placement === 'left' && "right-[-20px] top-0 bottom-0 w-[20px]",
+                        placement === 'right' && "left-[-20px] top-0 bottom-0 w-[20px]",
+                    )} />
+                    {content}
+                </div>,
                 document.body
             )}
         </div>
     );
 };
+
 
 
