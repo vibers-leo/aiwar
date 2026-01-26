@@ -53,14 +53,14 @@ export default function Sidebar({ isOpen, onToggle }: SidebarProps) {
 
     const { t, language } = useTranslation();
     const navItems = [
-        { name: language === 'ko' ? '내 카드' : 'My Cards', path: '/my-cards', icon: <Shield size={18} />, color: "primary" },
-        { name: language === 'ko' ? '생성' : 'Generation', path: '/generation', icon: <Zap size={18} />, color: "warning" },
-        { name: language === 'ko' ? 'AI 군단' : 'AI Factions', path: '/factions', icon: <Trophy size={18} />, color: "secondary" },
-        { name: language === 'ko' ? '신화 제작' : 'Mythic Fusion', path: '/mythic', icon: <Sparkles size={18} />, color: "danger" },
-        { name: language === 'ko' ? '유니크 생성' : 'Unique Creation', path: '/studio', icon: <User size={18} />, color: "success" },
-        { name: language === 'ko' ? '강화' : 'Enhancement', path: '/enhance', icon: <Heart size={18} />, color: "warning" },
-        { name: language === 'ko' ? '합성' : 'Fusion', path: '/fusion', icon: <FlaskConical size={18} />, color: "secondary" },
-        { name: language === 'ko' ? '도감' : 'Encyclopedia', path: '/encyclopedia', icon: <BookOpen size={18} />, color: "default" },
+        { name: t('menu.myCards'), path: '/my-cards', icon: <Shield size={18} />, color: "primary" },
+        { name: t('menu.generation'), path: '/generation', icon: <Zap size={18} />, color: "warning" },
+        { name: t('menu.aiFaction'), path: '/factions', icon: <Trophy size={18} />, color: "secondary" },
+        { name: t('menu.uniqueGeneration'), path: '/mythic', icon: <Sparkles size={18} />, color: "danger" },
+        { name: t('menu.uniqueStudio'), path: '/studio', icon: <User size={18} />, color: "success" },
+        { name: t('menu.enhance'), path: '/enhance', icon: <Heart size={18} />, color: "warning" },
+        { name: t('menu.fusion'), path: '/fusion', icon: <FlaskConical size={18} />, color: "secondary" },
+        { name: t('menu.encyclopedia'), path: '/encyclopedia', icon: <BookOpen size={18} />, color: "default" },
     ];
     // navItemsFixed is now same as navItems
     const navItemsFixed = navItems;
@@ -153,8 +153,8 @@ export default function Sidebar({ isOpen, onToggle }: SidebarProps) {
                                 {/* EXP 바 */}
                                 <div className="px-6 py-3">
                                     <div className="flex justify-between items-center mb-1 px-1">
-                                        <span className="text-[9px] text-gray-500 font-bold uppercase tracking-widest">{language === 'ko' ? '경험치' : 'Experience'}</span>
-                                        <span className="text-[9px] text-purple-400 font-mono">{experience} / {level * 100} PX</span>
+                                        <span className="text-[9px] text-gray-500 font-bold uppercase tracking-widest">{t('sidebar.experience')}</span>
+                                        <span className="text-[9px] text-purple-400 font-mono">{experience} / {level * 100} XP</span>
                                     </div>
                                     <Progress
                                         size="sm"
@@ -181,7 +181,7 @@ export default function Sidebar({ isOpen, onToggle }: SidebarProps) {
                     )}
                     {!isOpen && (
                         <div className="flex justify-center p-2">
-                            <Tooltip content="DAILY RESET COUNTDOWN" placement="left">
+                            <Tooltip content={t('sidebar.dailyReset')} placement="left">
                                 <div className="p-2 rounded-full bg-white/5">
                                     <ResetTimer showLabel={false} />
                                 </div>
@@ -245,7 +245,7 @@ export default function Sidebar({ isOpen, onToggle }: SidebarProps) {
                                 className={`h-10 text-gray-400 hover:text-cyan-400 hover:bg-white/5 ${!isOpen ? "min-w-0 px-0 justify-center" : "!justify-start"}`}
                                 startContent={<Users size={18} />}
                             >
-                                {isOpen && <span className="ml-2 font-bold text-xs orbitron">SOCIAL DASHBOARD</span>}
+                                {isOpen && <span className="ml-2 font-bold text-xs orbitron">{t('sidebar.socialDashboard')}</span>}
                             </Button>
                         </div>
 
@@ -258,7 +258,7 @@ export default function Sidebar({ isOpen, onToggle }: SidebarProps) {
                                 className={`h-10 text-gray-400 hover:text-white hover:bg-white/5 ${!isOpen ? "min-w-0 px-0 justify-center" : "!justify-start"}`}
                                 startContent={<Settings size={18} />}
                             >
-                                {isOpen && <span className="ml-2 font-bold text-xs orbitron">{language === 'ko' ? '시스템 설정' : 'SYSTEM SETTINGS'}</span>}
+                                {isOpen && <span className="ml-2 font-bold text-xs orbitron">{t('sidebar.systemSettings')}</span>}
                             </Button>
                         </div>
                         <Button
@@ -269,7 +269,7 @@ export default function Sidebar({ isOpen, onToggle }: SidebarProps) {
                             className={`h-10 text-gray-400 hover:text-red-400 ${!isOpen ? "min-w-0 px-0 justify-center" : "!justify-start"}`}
                             startContent={<LogOut size={18} />}
                         >
-                            {isOpen && <span className="ml-2 font-bold text-xs orbitron">{language === 'ko' ? '시스템 로그아웃' : 'SYSTEM LOGOUT'}</span>}
+                            {isOpen && <span className="ml-2 font-bold text-xs orbitron">{t('sidebar.systemLogout')}</span>}
                         </Button>
                         {isOpen && (
                             <div className="text-center pt-2">

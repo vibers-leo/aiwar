@@ -441,10 +441,10 @@ export default function CommanderProfileModal({ isOpen, onClose }: CommanderProf
                                 <div className="bg-white/5 p-4 rounded-2xl border border-white/10">
                                     <div className="flex justify-between items-end mb-2">
                                         <div>
-                                            <p className="text-[10px] text-gray-400 font-bold uppercase tracking-widest orbitron">Experience Level</p>
+                                            <p className="text-[10px] text-gray-400 font-bold uppercase tracking-widest orbitron">{t('topbar.levelBonus', { level: '' }).split('(')[0].trim()}</p>
                                             <p className="text-2xl font-black text-white orbitron">LV.{level}</p>
                                         </div>
-                                        <p className="text-[10px] text-cyan-400 font-mono">{experience} / {level * 100} PX</p>
+                                        <p className="text-[10px] text-cyan-400 font-mono">{experience} / {level * 100} XP</p>
                                     </div>
                                     <Progress
                                         value={(experience / (level * 100)) * 100}
@@ -460,8 +460,8 @@ export default function CommanderProfileModal({ isOpen, onClose }: CommanderProf
                                     <Tooltip
                                         content={
                                             <div className="flex flex-col gap-1 p-1">
-                                                <span className="text-purple-400 font-black">Tokens</span>
-                                                <span className="text-[10px] text-white/60">전투와 활동에 필요한 에너지 자원입니다.</span>
+                                                <span className="text-purple-400 font-black">{t('topbar.tokenBalance')}</span>
+                                                <span className="text-[10px] text-white/60">{t('topbar.tokens.desc')}</span>
                                             </div>
                                         }
                                         placement="top"
@@ -478,8 +478,8 @@ export default function CommanderProfileModal({ isOpen, onClose }: CommanderProf
                                     <Tooltip
                                         content={
                                             <div className="flex flex-col gap-1 p-1">
-                                                <span className="text-amber-400 font-black">Data Coins</span>
-                                                <span className="text-[10px] text-white/60">아이템 구매와 연구에 사용되는 화폐입니다.</span>
+                                                <span className="text-amber-400 font-black">{t('topbar.coinBalance')}</span>
+                                                <span className="text-[10px] text-white/60">{t('topbar.coins.desc')}</span>
                                             </div>
                                         }
                                         placement="top"

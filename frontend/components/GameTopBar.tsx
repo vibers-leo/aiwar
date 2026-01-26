@@ -51,7 +51,7 @@ export default function GameTopBar({
         { name: t('menu.story'), path: '/story', color: 'cyan' },
         { name: t('menu.aiFaction'), path: '/factions', color: 'green' },
         { name: t('menu.shop'), path: '/shop', color: 'yellow' },
-        { name: 'LAB', path: '/lab', color: 'amber' },
+        { name: t('menu.research'), path: '/lab', color: 'amber' },
         { name: t('menu.pvp'), path: '/pvp', color: 'purple' },
         { name: t('menu.ranking'), path: '/ranking', color: 'pink' },
     ];
@@ -243,7 +243,7 @@ export default function GameTopBar({
                             content={
                                 <div className="flex flex-col gap-1 p-1">
                                     <span className="text-amber-400 font-black">Data Coins</span>
-                                    <span className="text-[10px] text-white/60">Gained from battles and missions.</span>
+                                    <span className="text-[10px] text-white/60">{t('topbar.coins.desc')}</span>
                                 </div>
                             }
                             placement="bottom"
@@ -265,18 +265,18 @@ export default function GameTopBar({
                                     <div className="absolute inset-0 opacity-10 pointer-events-none bg-[radial-gradient(circle_at_center,rgba(168,85,247,0.15)_0%,transparent_100%)]" />
                                     <div className="flex items-center justify-between mb-4 relative z-10">
                                         <h3 className="text-sm font-black text-transparent bg-clip-text bg-gradient-to-r from-purple-400 to-indigo-400 font-orbitron tracking-wider">
-                                            RESOURCE MONITOR
+                                            {t('topbar.resourceMonitor')}
                                         </h3>
                                         {timeUntilNextRecharge !== 'MAX' && (
                                             <div className="flex items-center gap-1.5 px-2 py-0.5 bg-blue-500/20 text-blue-300 rounded text-[10px] font-bold border border-blue-500/30">
                                                 <Zap size={10} className="fill-current animate-pulse" />
-                                                <span>Recharging...</span>
+                                                <span>{t('topbar.recharging')}</span>
                                             </div>
                                         )}
                                     </div>
                                     <div className="mb-5 bg-black/40 rounded-xl p-3 border border-white/5 relative z-10">
                                         <div className="flex justify-between text-[10px] mb-1.5">
-                                            <span className="text-white/60 font-bold uppercase tracking-wider">Storage Capacity</span>
+                                            <span className="text-white/60 font-bold uppercase tracking-wider">{t('topbar.storageCapacity')}</span>
                                             <span className="text-purple-400 font-mono font-bold">{Math.round((userTokens / maxTokens) * 100)}%</span>
                                         </div>
                                         <div className="h-2 w-full bg-black/80 rounded-full overflow-hidden border border-white/10">
@@ -288,7 +288,7 @@ export default function GameTopBar({
                                     </div>
                                     <div className="bg-gradient-to-br from-blue-900/20 to-purple-900/20 rounded-xl p-3 border border-indigo-500/30 mb-4 flex items-center justify-between transition-colors relative z-10">
                                         <div className="flex flex-col">
-                                            <span className="text-[9px] text-blue-300/80 uppercase tracking-widest font-bold mb-0.5">Next Recharge</span>
+                                            <span className="text-[9px] text-blue-300/80 uppercase tracking-widest font-bold mb-0.5">{t('topbar.nextRecharge')}</span>
                                             <span className="text-[10px] text-white/40">
                                                 +{params.rateAmount} Tokens every {params.intervalMin}m
                                             </span>
@@ -302,22 +302,22 @@ export default function GameTopBar({
                                             <div className="flex justify-between items-center text-[10px] text-amber-300">
                                                 <span className="flex items-center gap-1.5">
                                                     <Zap size={10} className="fill-current" />
-                                                    Active Boosts
+                                                    {t('topbar.activeBoosts')}
                                                 </span>
                                                 <span className="font-mono font-bold">+{activeSubscriptions.length} Factions</span>
                                             </div>
                                         ) : (
                                             <div className="text-[10px] text-white/30 text-center py-1 font-bold">
-                                                No active boosts
+                                                {t('topbar.noActiveBoosts')}
                                             </div>
                                         )}
                                         <div className="flex justify-between items-center text-[10px] text-white/50 pt-1 border-t border-white/5 mt-1">
-                                            <span>Level Bonus (Lv.{userLevel})</span>
+                                            <span>{t('topbar.levelBonus', { level: userLevel })}</span>
                                             <span className="font-mono text-green-400">+{((userLevel - 1) * 100).toLocaleString()} Cap</span>
                                         </div>
                                     </div>
                                     <p className="text-[8px] text-white/20 mt-3 text-center uppercase tracking-widest font-bold">
-                                        Click to toggle persistence
+                                        {t('topbar.togglePersistence')}
                                     </p>
                                 </div>
                             }
@@ -331,7 +331,7 @@ export default function GameTopBar({
                                 </div>
                                 <div className="flex flex-col items-end">
                                     <div className="text-[9px] text-purple-300/80 font-bold tracking-wider uppercase mb-0.5 group-hover:text-purple-300 transition-colors hidden md:block text-right">
-                                        Token Balance
+                                        {t('topbar.tokenBalance')}
                                     </div>
                                     <div className="flex items-baseline gap-1.5 font-orbitron">
                                         <span className="text-sm font-black text-white group-hover:text-purple-100 transition-colors">

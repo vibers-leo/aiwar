@@ -161,6 +161,11 @@ export type TranslationKey =
     | 'sidebar.commander'
     | 'sidebar.eliteCommander'
     | 'sidebar.quickAccess'
+    | 'sidebar.experience'
+    | 'sidebar.dailyReset'
+    | 'sidebar.socialDashboard'
+    | 'sidebar.systemSettings'
+    | 'sidebar.systemLogout'
     | 'topbar.commanderRegistry'
     | 'topbar.syncLevel'
     | 'topbar.token'
@@ -485,7 +490,20 @@ export type TranslationKey =
     | 'battle.log.finalDefeat'
     | 'battle.result.win'
     | 'battle.result.lose'
-    | 'battle.result.draw';
+    | 'battle.result.draw'
+    // Resource & Tooltips
+    | 'topbar.resourceMonitor'
+    | 'topbar.recharging'
+    | 'topbar.storageCapacity'
+    | 'topbar.nextRecharge'
+    | 'topbar.activeBoosts'
+    | 'topbar.noActiveBoosts'
+    | 'topbar.levelBonus'
+    | 'topbar.tokenBalance'
+    | 'topbar.coinBalance'
+    | 'topbar.togglePersistence'
+    | 'topbar.tokens.desc'
+    | 'topbar.coins.desc';
 
 export type Translations = Record<TranslationKey, string>;
 
