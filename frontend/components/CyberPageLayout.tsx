@@ -3,12 +3,13 @@
 import React from 'react';
 import { useRouter } from 'next/navigation';
 import { motion } from 'framer-motion';
-import { ArrowLeft, User } from 'lucide-react';
+import { ArrowLeft, User, HelpCircle, Lightbulb, ShieldAlert } from 'lucide-react';
 import { BackgroundBeams } from '@/components/ui/aceternity/background-beams';
 import { cn } from '@/lib/utils';
 import { useUserProfile } from '@/hooks/useUserProfile';
 import Link from 'next/link';
 import LeftSidebar from './LeftSidebar';
+import { Modal } from './ui/custom/Modal';
 
 interface CyberPageLayoutProps {
     children: React.ReactNode;
@@ -104,6 +105,7 @@ export default function CyberPageLayout({
     const router = useRouter();
     const colors = colorConfig[color];
     const { profile } = useUserProfile();
+    const [isHelpOpen, setIsHelpOpen] = React.useState(false);
 
     const handleBack = () => {
         if (backPath) {
@@ -115,16 +117,18 @@ export default function CyberPageLayout({
 
     return (
         <div className="relative min-h-screen bg-black text-white overflow-hidden flex">
-            {/* Left Sidebar */}
+            {/* Left Sidebar - Hidden on mobile/tablet */}
             {showLeftSidebar && (
-                <LeftSidebar
-                    title={title}
-                    englishTitle={englishTitle}
-                    icon={leftSidebarIcon}
-                    tips={leftSidebarTips}
-                    gameConditions={leftSidebarGameConditions}
-                    color={color}
-                />
+                <div className="hidden lg:flex">
+                    <LeftSidebar
+                        title={title}
+                        englishTitle={englishTitle}
+                        icon={leftSidebarIcon}
+                        tips={leftSidebarTips}
+                        gameConditions={leftSidebarGameConditions}
+                        color={color}
+                    />
+                </div>
             )}
 
             {/* Main Content Area */}
@@ -152,57 +156,64 @@ export default function CyberPageLayout({
                         transition={{ duration: 0.5 }}
                         className="mb-10"
                     >
-                        {/* Show title in header when sidebar is disabled */}
-                        {!showLeftSidebar && (
-                            <div className="flex items-center justify-between mb-6">
-                                <div className="flex items-center gap-4">
-                                    {/* Accent Line */}
-                                    <div className={cn("w-1 h-12 rounded-full", colors.line, colors.glow)} />
+                        {/* Show title in header when sidebar is disabled OR on mobile */}
+                        <div className={cn("flex items-center justify-between mb-6", showLeftSidebar ? "lg:hidden" : "")}>
+                            <div className="flex items-center gap-4">
+                                {/* Accent Line */}
+                                <div className={cn("w-1 h-12 rounded-full", colors.line, colors.glow)} />
 
-                                    <div>
-                                        {/* Subtitle */}
-                                        {subtitle && (
-                                            <p className={cn("text-[10px] font-mono uppercase tracking-[0.3em] mb-1", colors.text)}>
-                                                {subtitle}
-                                            </p>
+                                <div>
+                                    {/* Subtitle */}
+                                    {subtitle && (
+                                        <p className={cn("text-[10px] font-mono uppercase tracking-[0.3em] mb-1", colors.text)}>
+                                            {subtitle}
+                                        </p>
+                                    )}
+                                    {/* Title */}
+                                    <div className="flex items-baseline gap-3">
+                                        <h1 className="text-4xl md:text-5xl font-black italic tracking-tighter text-white font-sans">
+                                            {title}
+                                        </h1>
+                                        {englishTitle && (
+                                            <span className="text-sm md:text-lg font-bold orbitron text-white/30 tracking-widest uppercase">
+                                                {englishTitle}
+                                            </span>
                                         )}
-                                        {/* Title */}
-                                        <div className="flex items-baseline gap-3">
-                                            <h1 className="text-4xl md:text-5xl font-black italic tracking-tighter text-white font-sans">
-                                                {title}
-                                            </h1>
-                                            {englishTitle && (
-                                                <span className="text-sm md:text-lg font-bold orbitron text-white/30 tracking-widest uppercase">
-                                                    {englishTitle}
-                                                </span>
-                                            )}
-                                        </div>
                                     </div>
                                 </div>
-
-                                {/* Right: Actions + Back Button */}
-                                <div className="flex items-center gap-3">
-                                    {action}
-
-                                    {showBack && (
-                                        <button
-                                            onClick={handleBack}
-                                            className="flex items-center gap-2 px-4 py-2 rounded-lg bg-white/5 border border-white/10 text-white/40 hover:text-white hover:border-white/20 transition-all group"
-                                        >
-                                            <ArrowLeft size={14} className="group-hover:-translate-x-1 transition-transform" />
-                                            <span className="text-[9px] font-mono uppercase tracking-widest">BACK</span>
-                                        </button>
-                                    )}
-                                </div>
                             </div>
-                        )}
 
-                        {/* Show minimal header when sidebar is enabled */}
+                            {/* Right: Actions + Help + Back Button */}
+                            <div className="flex items-center gap-2 md:gap-3">
+                                {action}
+
+                                {showLeftSidebar && (
+                                    <button
+                                        onClick={() => setIsHelpOpen(true)}
+                                        className="lg:hidden flex items-center justify-center w-10 h-10 rounded-lg bg-cyan-500/10 border border-cyan-500/20 text-cyan-400 hover:bg-cyan-500/20 transition-all"
+                                    >
+                                        <HelpCircle size={20} />
+                                    </button>
+                                )}
+
+                                {showBack && (
+                                    <button
+                                        onClick={handleBack}
+                                        className="flex items-center gap-2 px-4 py-2 rounded-lg bg-white/5 border border-white/10 text-white/40 hover:text-white hover:border-white/20 transition-all group"
+                                    >
+                                        <ArrowLeft size={14} className="group-hover:-translate-x-1 transition-transform" />
+                                        <span className="text-[9px] font-mono uppercase tracking-widest hidden xs:block">BACK</span>
+                                    </button>
+                                )}
+                            </div>
+                        </div>
+
+                        {/* Show minimal header row when sidebar is enabled (Desktop Only) */}
                         {showLeftSidebar && (
-                            <div className="flex items-center justify-between">
+                            <div className="hidden lg:flex items-center justify-between">
                                 {/* Left: Description */}
                                 {description && (
-                                    <p className="text-sm text-white/40 max-w-4xl leading-relaxed">
+                                    <p className="text-sm text-white/40 max-w-4xl leading-relaxed text-left">
                                         {description}
                                     </p>
                                 )}
@@ -224,12 +235,14 @@ export default function CyberPageLayout({
                             </div>
                         )}
 
-                        {/* Description below title when sidebar is disabled */}
-                        {!showLeftSidebar && description && (
-                            <p className="text-sm text-white/40 max-w-4xl leading-relaxed pl-5 border-l border-white/10 mt-4">
-                                {description}
-                            </p>
-                        )}
+                        {/* Description below title when sidebar is disabled OR on mobile */}
+                        <div className={cn("mt-4", showLeftSidebar ? "lg:hidden" : "")}>
+                            {description && (
+                                <p className="text-sm text-white/40 max-w-4xl leading-relaxed pl-5 border-l border-white/10 text-left">
+                                    {description}
+                                </p>
+                            )}
+                        </div>
 
                         {/* Separator Line */}
                         <div className="mt-4 h-px bg-gradient-to-r from-white/10 via-white/5 to-transparent" />
@@ -245,6 +258,55 @@ export default function CyberPageLayout({
                     </motion.div>
                 </div>
             </div>
+
+            {/* Help Modal for Mobile */}
+            <Modal
+                isOpen={isHelpOpen}
+                onClose={() => setIsHelpOpen(false)}
+                title={title}
+                subtitle="HELP / TIPS"
+            >
+                <div className="space-y-6 pt-2">
+                    {/* Game Conditions */}
+                    {leftSidebarGameConditions && (
+                        <div className="p-4 bg-white/5 rounded-2xl border border-white/10">
+                            <div className="flex items-center gap-2 mb-4 text-cyan-400">
+                                <ShieldAlert size={18} />
+                                <h3 className="text-sm font-bold tracking-widest uppercase">RULES</h3>
+                            </div>
+                            <div className="text-white/80">
+                                {leftSidebarGameConditions}
+                            </div>
+                        </div>
+                    )}
+
+                    {/* Tips */}
+                    {leftSidebarTips && leftSidebarTips.length > 0 && (
+                        <div className="p-4 bg-white/5 rounded-2xl border border-white/10">
+                            <div className="flex items-center gap-2 mb-4 text-amber-400">
+                                <Lightbulb size={18} />
+                                <h3 className="text-sm font-bold tracking-widest uppercase">TIPS</h3>
+                            </div>
+                            <div className="space-y-3">
+                                {leftSidebarTips.map((tip, idx) => (
+                                    <div key={idx} className="flex gap-3 text-sm text-white/70">
+                                        <span className="text-amber-500 font-bold">•</span>
+                                        <p>{tip}</p>
+                                    </div>
+                                ))}
+                            </div>
+                        </div>
+                    )}
+
+                    <Button
+                        fullWidth
+                        onPress={() => setIsHelpOpen(false)}
+                        className="bg-cyan-500/20 border-cyan-500/30 text-cyan-400 mt-4"
+                    >
+                        CONFIRM
+                    </Button>
+                </div>
+            </Modal>
         </div>
     );
 }

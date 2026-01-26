@@ -36,7 +36,7 @@ export const Tooltip = ({
     const updateCoords = () => {
         if (!triggerRef.current) return;
         const rect = triggerRef.current.getBoundingClientRect();
-        const offset = 12;
+        const offset = 16;
 
         let top = 0;
         let left = 0;

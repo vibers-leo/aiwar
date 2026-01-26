@@ -130,14 +130,17 @@ export function getResetDateString(): string {
     const now = new Date();
     const hours = now.getHours();
 
-    // 오전 6시 이전이면 어제 날짜로 취급
+    // 로컬 시간 기준으로 오전 6시 이전이면 어제 날짜로 취급
+    const targetDate = new Date(now);
     if (hours < 6) {
-        const yesterday = new Date(now);
-        yesterday.setDate(now.getDate() - 1);
-        return yesterday.toISOString().split('T')[0];
+        targetDate.setDate(now.getDate() - 1);
     }
 
-    return now.toISOString().split('T')[0];
+    const year = targetDate.getFullYear();
+    const month = String(targetDate.getMonth() + 1).padStart(2, '0');
+    const day = String(targetDate.getDate()).padStart(2, '0');
+
+    return `${year}-${month}-${day}`;
 }
 
 

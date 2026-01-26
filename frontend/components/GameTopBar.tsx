@@ -190,7 +190,7 @@ export default function GameTopBar({
                                         <Link
                                             href={link.path}
                                             className={cn(
-                                                "relative px-3 py-1.5 rounded-lg text-xs font-bold transition-all duration-300 group overflow-hidden",
+                                                "relative px-4 py-2 rounded-lg text-[13px] font-black transition-all duration-300 group overflow-hidden orbitron tracking-wider",
                                                 isActive ? "text-white" : "text-white/40 hover:text-white/80"
                                             )}
                                         >
@@ -242,13 +242,13 @@ export default function GameTopBar({
                         <Tooltip
                             content={
                                 <div className="flex flex-col gap-1 p-1">
-                                    <span className="text-amber-400 font-black">Data Coins</span>
+                                    <span className="text-amber-400 font-black">{t('topbar.coinBalance')}</span>
                                     <span className="text-[10px] text-white/60">{t('topbar.coins.desc')}</span>
                                 </div>
                             }
                             placement="bottom"
                         >
-                            <div className="flex items-center gap-2 bg-black/40 px-3 py-1.5 rounded-lg border border-white/5 hover:border-amber-500/30 transition-all cursor-default">
+                            <div className="hidden lg:flex items-center gap-2 bg-black/40 px-3 py-1.5 rounded-lg border border-white/5 hover:border-amber-500/30 transition-all cursor-default">
                                 <Box className="w-4 h-4 text-amber-500" />
                                 <div className="text-xs font-black orbitron text-amber-400">
                                     {userCoins.toLocaleString()}
@@ -290,7 +290,7 @@ export default function GameTopBar({
                                         <div className="flex flex-col">
                                             <span className="text-[9px] text-blue-300/80 uppercase tracking-widest font-bold mb-0.5">{t('topbar.nextRecharge')}</span>
                                             <span className="text-[10px] text-white/40">
-                                                +{params.rateAmount} Tokens every {params.intervalMin}m
+                                                {t('topbar.rechargeRate', { amount: String(params.rateAmount), min: String(params.intervalMin) })}
                                             </span>
                                         </div>
                                         <div className="text-2xl font-black text-white font-orbitron tabular-nums drop-shadow-[0_0_8px_rgba(59,130,246,0.6)]">
@@ -304,7 +304,7 @@ export default function GameTopBar({
                                                     <Zap size={10} className="fill-current" />
                                                     {t('topbar.activeBoosts')}
                                                 </span>
-                                                <span className="font-mono font-bold">+{activeSubscriptions.length} Factions</span>
+                                                <span className="font-mono font-bold">{t('topbar.factionsBoost', { count: String(activeSubscriptions.length) })}</span>
                                             </div>
                                         ) : (
                                             <div className="text-[10px] text-white/30 text-center py-1 font-bold">
@@ -313,7 +313,7 @@ export default function GameTopBar({
                                         )}
                                         <div className="flex justify-between items-center text-[10px] text-white/50 pt-1 border-t border-white/5 mt-1">
                                             <span>{t('topbar.levelBonus', { level: userLevel })}</span>
-                                            <span className="font-mono text-green-400">+{((userLevel - 1) * 100).toLocaleString()} Cap</span>
+                                            <span className="font-mono text-green-400">{t('topbar.capacityBonus', { amount: ((userLevel - 1) * 100).toLocaleString() })}</span>
                                         </div>
                                     </div>
                                     <p className="text-[8px] text-white/20 mt-3 text-center uppercase tracking-widest font-bold">
@@ -322,7 +322,7 @@ export default function GameTopBar({
                                 </div>
                             }
                         >
-                            <div className="flex items-center gap-3 bg-black/60 backdrop-blur-md px-4 py-2 rounded-xl border border-purple-500/20 hover:border-purple-500/50 transition-all cursor-help group">
+                            <div className="hidden lg:flex items-center gap-3 bg-black/60 backdrop-blur-md px-4 py-2 rounded-xl border border-purple-500/20 hover:border-purple-500/50 transition-all cursor-help group">
                                 <div className="relative">
                                     <div className="w-8 h-8 rounded-full bg-gradient-to-br from-purple-500 to-indigo-600 flex items-center justify-center text-sm shadow-[0_0_10px_rgba(168,85,247,0.4)] group-hover:scale-110 transition-transform duration-300">
                                         💎
@@ -347,15 +347,21 @@ export default function GameTopBar({
 
                         <div className="h-8 w-px bg-white/10" />
 
-                        <button
-                            onClick={() => setIsNotificationOpen(!isNotificationOpen)}
-                            className="relative w-9 h-9 flex items-center justify-center bg-black/40 hover:bg-white/10 border border-white/5 rounded-lg transition-all group"
+                        <div
+                            onMouseEnter={() => setIsNotificationOpen(true)}
+                            onMouseLeave={() => setIsNotificationOpen(false)}
+                            className="relative"
                         >
-                            <Bell size={16} className={isNotificationOpen ? "text-white" : "text-white/40 group-hover:text-white transition-colors"} />
-                            {unreadCount > 0 && (
-                                <div className="absolute top-1 right-1 w-2 h-2 bg-red-500 rounded-full shadow-[0_0_6px_rgba(239,68,68,0.8)] animate-pulse" />
-                            )}
-                        </button>
+                            <button
+                                className="relative w-9 h-9 flex items-center justify-center bg-black/40 hover:bg-white/10 border border-white/5 rounded-lg transition-all group"
+                            >
+                                <Bell size={16} className={isNotificationOpen ? "text-white" : "text-white/40 group-hover:text-white transition-colors"} />
+                                {unreadCount > 0 && (
+                                    <div className="absolute top-1 right-1 w-2 h-2 bg-red-500 rounded-full shadow-[0_0_6px_rgba(239,68,68,0.8)] animate-pulse" />
+                                )}
+                            </button>
+                            <NotificationPanel isOpen={isNotificationOpen} onClose={() => setIsNotificationOpen(false)} />
+                        </div>
 
                         <Link
                             href="/settings"
@@ -381,7 +387,7 @@ export default function GameTopBar({
                 </div>
             </header>
 
-            <NotificationPanel isOpen={isNotificationOpen} onClose={() => setIsNotificationOpen(false)} />
+
 
             <AnimatePresence>
                 {mobileMenuOpen && (

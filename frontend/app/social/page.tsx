@@ -33,20 +33,19 @@ import { Avatar } from '@/components/ui/custom/Avatar';
 import { Button } from '@/components/ui/custom/Button';
 import { Input } from '@/components/ui/custom/Input';
 import { Card, CardBody } from '@/components/ui/custom/Card';
-import { useAlert } from '@/context/AlertContext';
-import CyberPageLayout from '@/components/CyberPageLayout';
-import Link from 'next/link';
 import { ResetTimer } from '@/components/ResetTimer';
+import { useTranslation } from '@/context/LanguageContext';
 
 export default function SocialPage() {
     const { user } = useUser();
     const { profile } = useUserProfile();
     const { showAlert, showConfirm } = useAlert();
-    const [activeTab, setActiveTab] = useState<'friends' | 'search' | 'requests'>('friends');
-    const [language] = useState('ko'); // TODO: Get from context/settings
+    const { t } = useTranslation();
+    const [activeTab, setActiveTab] = useState<'friends' | 'search' | 'requests' | 'sent'>('friends');
 
     const [friends, setFriends] = useState<FriendUser[]>([]);
     const [requests, setRequests] = useState<FriendUser[]>([]);
+    const [sentRequests, setSentRequests] = useState<FriendUser[]>([]);
     const [searchResults, setSearchResults] = useState<FriendUser[]>([]);
 
     const [searchQuery, setSearchQuery] = useState('');
@@ -72,6 +71,8 @@ export default function SocialPage() {
                     acceptedFriends.push(friendData);
                 } else if (data.status === 'pending_received') {
                     allRequests.push(friendData);
+                } else if (data.status === 'pending_sent') {
+                    allSentRequests.push(friendData);
                 }
             });
 
@@ -92,6 +93,7 @@ export default function SocialPage() {
 
             setFriends(friendsWithPresence);
             setRequests(allRequests);
+            setSentRequests(allSentRequests);
         });
 
         return () => unsubscribe();
@@ -114,9 +116,9 @@ export default function SocialPage() {
         if (!user || !profile) return;
         const result = await sendFriendRequest(user.uid, profile, targetUser.uid, targetUser);
         if (result.success) {
-            showAlert({ title: 'Success', message: 'Friend request sent.', type: 'success' });
+            showAlert({ title: t('common.confirm'), message: t('friends.requestSent'), type: 'success' });
         } else {
-            showAlert({ title: 'Error', message: result.message || 'Request failed', type: 'error' });
+            showAlert({ title: t('common.confirm'), message: result.message || 'Request failed', type: 'error' });
         }
     };
 
@@ -127,11 +129,12 @@ export default function SocialPage() {
 
     const handleRemove = (friendId: string, nickname: string) => {
         showConfirm({
-            title: 'Remove Friend',
-            message: `Remove ${nickname} from your friends list?`,
+            title: t('friends.remove'),
+            message: t('friends.removeConfirm', { name: nickname }),
             onConfirm: async () => {
                 if (!user) return;
                 await removeFriend(user.uid, friendId);
+                showAlert({ title: t('common.confirm'), message: t('friends.removeSuccess'), type: 'success' });
             }
         });
     };
@@ -139,8 +142,8 @@ export default function SocialPage() {
     const handleBattleStepSync = async (friend: FriendUser) => {
         if (!user || !profile) return;
         showConfirm({
-            title: 'BATTLE CHALLENGE',
-            message: `Challenge ${friend.nickname} to a battle?`,
+            title: t('friends.battle'),
+            message: t('friends.battleConfirm', { name: friend.nickname }),
             onConfirm: async () => {
                 const result = await sendBattleInvitation(
                     user.uid,
@@ -150,9 +153,9 @@ export default function SocialPage() {
                     friend.nickname
                 );
                 if (result.success) {
-                    showAlert({ title: 'Sent', message: 'Challenge sent! Waiting for response...', type: 'success' });
+                    showAlert({ title: t('common.confirm'), message: t('pvp.modal.searching'), type: 'success' });
                 } else {
-                    showAlert({ title: 'Failed', message: result.message || 'Challenge failed', type: 'error' });
+                    showAlert({ title: t('common.confirm'), message: result.message || 'Challenge failed', type: 'error' });
                 }
             }
         });
@@ -169,9 +172,9 @@ export default function SocialPage() {
 
     return (
         <CyberPageLayout
-            title="친구"
+            title={t('friends.title')}
             englishTitle="FRIENDS"
-            subtitle="친구 목록 및 관리"
+            subtitle={t('friends.list.empty').replace('.', '')}
             color="purple"
         >
             <div className="grid grid-cols-1 lg:grid-cols-12 gap-6 pb-20">
@@ -188,14 +191,14 @@ export default function SocialPage() {
                                 </div>
                                 <div>
                                     <h3 className="text-xl font-bold text-white italic orbitron tracking-tighter truncate max-w-[200px]">
-                                        {profile?.nickname || '지휘관'}
+                                        {profile?.nickname || 'Commander'}
                                     </h3>
-                                    <p className="text-[10px] text-purple-400 font-bold uppercase tracking-widest mt-1 opacity-70">랭킹 미리보기: #77</p>
+                                    <p className="text-[10px] text-purple-400 font-bold uppercase tracking-widest mt-1 opacity-70">RANK PREVIEW: #77</p>
                                 </div>
                                 <div className="w-full flex gap-2">
                                     <Link href={`/profile/${user?.uid}`} className="flex-1">
                                         <Button variant="ghost" size="sm" fullWidth className="text-[10px] orbitron h-8 border-purple-500/30 hover:bg-purple-500/10">
-                                            내 프로필
+                                            {t('side.profile')}
                                         </Button>
                                     </Link>
                                 </div>
@@ -203,12 +206,12 @@ export default function SocialPage() {
                         </CardBody>
                     </Card>
 
-                    {/* Navigation Tabs */}
                     <div className="space-y-2">
                         {[
-                            { id: 'friends', name: '친구 목록', icon: <Users size={16} />, count: friends.length },
-                            { id: 'requests', name: '친구 요청', icon: <Bell size={16} />, count: requests.length },
-                            { id: 'search', name: '친구 찾기', icon: <Search size={16} />, count: 0 },
+                            { id: 'friends', name: t('friends.tab.list', { n: friends.length }), icon: <Users size={16} />, count: 0 },
+                            { id: 'requests', name: t('friends.tab.requests', { n: requests.length }), icon: <Bell size={16} />, count: requests.length },
+                            { id: 'sent', name: `SENT (${sentRequests.length})`, icon: <Bell size={16} />, count: 0 },
+                            { id: 'search', name: t('friends.tab.search'), icon: <Search size={16} />, count: 0 },
                         ].map(tab => (
                             <button
                                 key={tab.id}
@@ -243,7 +246,7 @@ export default function SocialPage() {
                             value={searchQuery}
                             onChange={(e) => setSearchQuery(e.target.value)}
                             onKeyDown={(e) => e.key === 'Enter' && handleSearch()}
-                            placeholder="닉네임으로 지휘관 검색..."
+                            placeholder={t('friends.search.placeholder')}
                             className="w-full bg-black/60 border border-white/10 rounded-2xl py-5 pl-12 pr-28 text-sm text-white focus:outline-none focus:border-purple-500/50 backdrop-blur-xl transition-all shadow-[0_0_30px_rgba(0,0,0,0.5)]"
                         />
                         <div className="absolute right-4 top-1/2 -translate-y-1/2">
@@ -254,7 +257,7 @@ export default function SocialPage() {
                                 color="secondary"
                                 className="font-bold px-6 h-10 shadow-[0_0_15px_rgba(168,85,247,0.3)]"
                             >
-                                검색
+                                {t('friends.search.button')}
                             </Button>
                         </div>
                     </div>
@@ -269,14 +272,13 @@ export default function SocialPage() {
                                 className="space-y-4"
                             >
                                 <div className="flex items-center justify-between px-2 mb-2">
-                                    <h2 className="text-xs font-bold text-white/50 tracking-widest">활성 지휘관 ({friends.length})</h2>
+                                    <h2 className="text-xs font-bold text-white/50 tracking-widest">{t('friends.online')} ({friends.length})</h2>
                                 </div>
                                 {friends.length === 0 ? (
                                     <div className="text-center py-20 bg-black/20 rounded-3xl border border-dashed border-white/5">
                                         <Users className="mx-auto text-white/10 mb-4" size={48} />
                                         <p className="text-gray-500 text-sm leading-relaxed">
-                                            아직 친구가 없습니다.<br />
-                                            '친구 찾기' 탭에서 다른 지휘관을 검색하세요.
+                                            {t('friends.list.empty')}
                                         </p>
                                     </div>
                                 ) : (
@@ -297,12 +299,12 @@ export default function SocialPage() {
                                                             <div className="flex items-center gap-2">
                                                                 <h4 className="font-bold text-white truncate max-w-[150px] italic">{friend.nickname}</h4>
                                                                 {isUserOnline(friend.updatedAt) ? (
-                                                                    <span className="text-[10px] text-green-400 uppercase">온라인</span>
+                                                                    <span className="text-[10px] text-green-400 uppercase">{t('friends.online')}</span>
                                                                 ) : (
-                                                                    <span className="text-[10px] text-white/30 uppercase">오프라인</span>
+                                                                    <span className="text-[10px] text-white/30 uppercase">{t('friends.offline')}</span>
                                                                 )}
                                                             </div>
-                                                            <div className="text-[10px] text-white/30 mt-0.5">LV.{friend.level || 1} • 엘리트 지휘관</div>
+                                                            <div className="text-[10px] text-white/30 mt-0.5">LV.{friend.level || 1} • COMMANDER</div>
                                                         </div>
                                                     </div>
                                                     <div className="flex items-center gap-2 opacity-60 group-hover:opacity-100 transition-opacity">
@@ -311,12 +313,12 @@ export default function SocialPage() {
                                                             size="sm"
                                                             variant="light"
                                                             className="h-10 w-10 p-0 text-cyan-400 hover:bg-cyan-500/10"
-                                                            title="대전"
+                                                            title={t('friends.battle')}
                                                         >
                                                             <Swords size={20} />
                                                         </Button>
                                                         <Link href={`/profile/${friend.uid}`}>
-                                                            <Button size="sm" variant="light" className="h-10 w-10 p-0 text-white/50 hover:text-white hover:bg-white/5" title="프로필 보기">
+                                                            <Button size="sm" variant="light" className="h-10 w-10 p-0 text-white/50 hover:text-white hover:bg-white/5" title="View Profile">
                                                                 <ExternalLink size={20} />
                                                             </Button>
                                                         </Link>
@@ -325,7 +327,7 @@ export default function SocialPage() {
                                                             size="sm"
                                                             variant="light"
                                                             className="h-10 w-10 p-0 text-red-500/40 hover:text-red-500 hover:bg-red-500/10"
-                                                            title="삭제"
+                                                            title={t('friends.remove')}
                                                         >
                                                             <UserX size={20} />
                                                         </Button>
@@ -347,12 +349,12 @@ export default function SocialPage() {
                                 className="space-y-4"
                             >
                                 <div className="flex items-center justify-between px-2 mb-2">
-                                    <h2 className="text-xs font-bold text-white/50 tracking-widest">대기 중인 요청 ({requests.length})</h2>
+                                    <h2 className="text-xs font-bold text-white/50 tracking-widest">{t('friends.tab.requests', { n: requests.length })}</h2>
                                 </div>
                                 {requests.length === 0 ? (
                                     <div className="text-center py-20 bg-black/20 rounded-3xl border border-dashed border-white/5">
                                         <Bell className="mx-auto text-white/10 mb-4" size={48} />
-                                        <p className="text-gray-500 text-sm">대기 중인 요청이 없습니다.</p>
+                                        <p className="text-gray-500 text-sm">{t('friends.requests.empty')}</p>
                                     </div>
                                 ) : (
                                     <div className="grid grid-cols-1 gap-3">
@@ -363,7 +365,7 @@ export default function SocialPage() {
                                                         <Avatar src={req.avatarUrl} className="w-12 h-12" />
                                                         <div>
                                                             <h4 className="font-bold text-white">{req.nickname}</h4>
-                                                            <p className="text-[10px] text-gray-500 uppercase leading-none">친구 요청 받음</p>
+                                                            <p className="text-[10px] text-gray-500 uppercase leading-none">{t('friends.wantsToBeFriends')}</p>
                                                         </div>
                                                     </div>
                                                     <div className="flex gap-2">
@@ -372,7 +374,7 @@ export default function SocialPage() {
                                                             size="sm"
                                                             className="font-bold text-[10px] bg-green-500/20 text-green-400 border border-green-500/30 hover:bg-green-500/40"
                                                         >
-                                                            수락
+                                                            {t('friends.accept')}
                                                         </Button>
                                                         <Button
                                                             onClick={() => removeFriend(user?.uid || '', req.uid)}
@@ -380,7 +382,7 @@ export default function SocialPage() {
                                                             variant="ghost"
                                                             className="font-bold text-[10px] border-red-500/30 text-red-400 hover:bg-red-500/10"
                                                         >
-                                                            거절
+                                                            {t('friends.decline')}
                                                         </Button>
                                                     </div>
                                                 </CardBody>
@@ -400,14 +402,13 @@ export default function SocialPage() {
                                 className="space-y-4"
                             >
                                 <div className="flex items-center justify-between px-2 mb-2">
-                                    <h2 className="text-xs font-bold text-white/50 tracking-widest">검색 결과 ({searchResults.length})</h2>
+                                    <h2 className="text-xs font-bold text-white/50 tracking-widest">{t('friends.tab.search')} ({searchResults.length})</h2>
                                 </div>
                                 {searchResults.length === 0 ? (
                                     <div className="text-center py-20 bg-black/20 rounded-3xl border border-dashed border-white/5">
                                         <Search className="mx-auto text-white/10 mb-4" size={48} />
                                         <p className="text-gray-500 text-sm leading-relaxed">
-                                            검색 결과가 없습니다.<br />
-                                            다른 닉네임으로 다시 검색해보세요.
+                                            {t('friends.search.noResults')}
                                         </p>
                                     </div>
                                 ) : (
@@ -427,7 +428,7 @@ export default function SocialPage() {
                                                         <div className="w-full pt-2 flex gap-2">
                                                             <Link href={`/profile/${result.uid}`} className="flex-1">
                                                                 <Button variant="ghost" size="sm" fullWidth className="text-[10px] border-white/10">
-                                                                    프로필 보기
+                                                                    View Profile
                                                                 </Button>
                                                             </Link>
                                                             {!isFriend && !isAlreadyRequested && (
@@ -437,12 +438,12 @@ export default function SocialPage() {
                                                                     color="primary"
                                                                     className="flex-1 font-bold text-[10px]"
                                                                 >
-                                                                    친구 추가
+                                                                    {t('friends.tab.search')}
                                                                 </Button>
                                                             )}
                                                             {isFriend && (
-                                                                <div className="flex-1 flex items-center justify-center bg-purple-500/20 rounded-lg border border-purple-500/30 text-[10px] text-purple-400 font-bold">
-                                                                    친구
+                                                                <div className="flex-1 flex items-center justify-center bg-purple-500/20 rounded-lg border border-purple-500/30 text-[10px] text-purple-400 font-bold orbitron">
+                                                                    {t('friends.online').toUpperCase()}
                                                                 </div>
                                                             )}
                                                         </div>
@@ -450,6 +451,49 @@ export default function SocialPage() {
                                                 </Card>
                                             );
                                         })}
+                                    </div>
+                                )}
+                            </motion.div>
+                        )}
+                        {activeTab === 'sent' && (
+                            <motion.div
+                                key="sent"
+                                initial={{ opacity: 0, y: 10 }}
+                                animate={{ opacity: 1, y: 0 }}
+                                exit={{ opacity: 0, y: -10 }}
+                                className="space-y-4"
+                            >
+                                <div className="flex items-center justify-between px-2 mb-2">
+                                    <h2 className="text-xs font-bold text-white/50 tracking-widest">SENT REQUESTS ({sentRequests.length})</h2>
+                                </div>
+                                {sentRequests.length === 0 ? (
+                                    <div className="text-center py-20 bg-black/20 rounded-3xl border border-dashed border-white/5">
+                                        <Bell className="mx-auto text-white/10 mb-4" size={48} />
+                                        <p className="text-gray-500 text-sm">No sent requests.</p>
+                                    </div>
+                                ) : (
+                                    <div className="grid grid-cols-1 gap-3">
+                                        {sentRequests.map(req => (
+                                            <Card key={req.uid} className="bg-white/5 border-white/10">
+                                                <CardBody className="p-4 flex items-center justify-between">
+                                                    <div className="flex items-center gap-4">
+                                                        <Avatar src={req.avatarUrl} className="w-12 h-12" />
+                                                        <div>
+                                                            <h4 className="font-bold text-white">{req.nickname}</h4>
+                                                            <p className="text-[10px] text-gray-500 uppercase leading-none orbitron">PENDING...</p>
+                                                        </div>
+                                                    </div>
+                                                    <Button
+                                                        onClick={() => removeFriend(user?.uid || '', req.uid)}
+                                                        size="sm"
+                                                        variant="ghost"
+                                                        className="font-bold text-[10px] border-red-500/30 text-red-400 hover:bg-red-500/10"
+                                                    >
+                                                        CANCEL
+                                                    </Button>
+                                                </CardBody>
+                                            </Card>
+                                        ))}
                                     </div>
                                 )}
                             </motion.div>
@@ -463,7 +507,7 @@ export default function SocialPage() {
                         <CardBody className="p-6">
                             <div className="flex items-center gap-2 mb-6">
                                 <ShieldAlert size={18} className="text-cyan-400" />
-                                <h3 className="text-xs font-bold text-white tracking-widest uppercase">정보 피드</h3>
+                                <h3 className="text-xs font-bold text-white tracking-widest uppercase">{t('social.infoFeed')}</h3>
                             </div>
                             <div className="mb-6 p-4 bg-purple-500/5 border border-purple-500/10 rounded-2xl">
                                 <ResetTimer className="justify-center" />
@@ -471,17 +515,17 @@ export default function SocialPage() {
                             <div className="space-y-4">
                                 <div className="p-3 bg-white/5 rounded-xl border-l-2 border-cyan-500">
                                     <p className="text-[11px] text-gray-400 leading-relaxed">
-                                        <span className="text-cyan-400 font-bold">시스템:</span> 시즌 1 "제네시스"가 활성화되었습니다. 모든 소셜 랭킹이 초기화되었습니다.
+                                        <span className="text-cyan-400 font-bold">SYSTEM:</span> {t('social.systemMessage')}
                                     </p>
                                 </div>
                                 <div className="p-3 bg-white/5 rounded-xl border-l-2 border-purple-500">
                                     <p className="text-[11px] text-gray-400 leading-relaxed">
-                                        <span className="text-purple-400 font-bold">팁:</span> 레벨 10 달성 시 "전투 분대" 기능이 해금됩니다 - 최고의 지휘관들과 동맹을 맺으세요.
+                                        <span className="text-purple-400 font-bold">TIP:</span> {t('social.tipMessage')}
                                     </p>
                                 </div>
                                 <div className="p-3 bg-white/5 rounded-xl border-l-2 border-amber-500">
                                     <p className="text-[11px] text-gray-400 leading-relaxed">
-                                        <span className="text-amber-400 font-bold">보안:</span> 귀하의 데이터는 신경망을 통해 완전히 암호화됩니다.
+                                        <span className="text-amber-400 font-bold">SECURE:</span> {t('social.securityMessage')}
                                     </p>
                                 </div>
                             </div>
@@ -494,12 +538,12 @@ export default function SocialPage() {
                             <div className="relative z-10 space-y-4">
                                 <Trophy className="text-amber-400" size={32} />
                                 <div>
-                                    <h3 className="text-sm font-black text-white tracking-tight italic">글로벌 랭킹</h3>
-                                    <p className="text-[10px] text-white/50 mt-1">전 세계 지휘관들과 경쟁하세요.</p>
+                                    <h3 className="text-sm font-black text-white tracking-tight italic">{t('social.globalRanking')}</h3>
+                                    <p className="text-[10px] text-white/50 mt-1">{t('social.globalRankingDesc')}</p>
                                 </div>
                                 <Link href="/ranking">
                                     <Button fullWidth size="sm" variant="ghost" className="text-[10px] border-white/20 hover:bg-white/10 mt-2">
-                                        리더보드 보기
+                                        {t('social.viewLeaderboard')}
                                     </Button>
                                 </Link>
                             </div>

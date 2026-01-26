@@ -70,7 +70,7 @@ export default function Sidebar({ isOpen, onToggle }: SidebarProps) {
         <motion.aside
             animate={{ width: isOpen ? 280 : 80 }}
             transition={{ type: "spring", stiffness: 300, damping: 30 }}
-            className="fixed right-0 top-20 bottom-0 z-30 p-4 select-none"
+            className="hidden lg:block fixed right-0 top-20 bottom-0 z-30 p-4 select-none"
         >
             <Card
                 className="h-full bg-black/40 backdrop-blur-2xl border-l border-white/5 shadow-2xl overflow-hidden rounded-lg"
@@ -202,8 +202,8 @@ export default function Sidebar({ isOpen, onToggle }: SidebarProps) {
                                     color="default"
                                     onPress={() => router.push(item.path)}
                                     className={`
-                                        h-10 !justify-start px-4 transition-all relative overflow-hidden
-                                        ${pathname.startsWith(item.path) ? "font-bold text-white bg-white/5" : "text-gray-400 hover:text-white hover:bg-white/5"}
+                                        h-12 !justify-start px-5 transition-all relative overflow-hidden
+                                        ${pathname.startsWith(item.path) ? "font-black text-white bg-white/10" : "text-gray-400 hover:text-white hover:bg-white/5"}
                                         ${!isOpen ? "min-w-0 px-0 justify-center" : ""}
                                     `}
                                 >
@@ -222,10 +222,10 @@ export default function Sidebar({ isOpen, onToggle }: SidebarProps) {
                                         />
                                     )}
                                     <div className="relative z-10 flex items-center w-full">
-                                        <div className={`${pathname.startsWith(item.path) ? "text-white" : "opacity-60"}`}>
+                                        <div className={`${pathname.startsWith(item.path) ? "text-white scale-110" : "opacity-60"} transition-transform duration-300`}>
                                             {item.icon}
                                         </div>
-                                        {isOpen && <span className="ml-2 orbitron text-xs">{item.name}</span>}
+                                        {isOpen && <span className="ml-3 orbitron text-[13px] tracking-wider">{item.name}</span>}
                                     </div>
                                 </Button>
                             </Tooltip>
@@ -242,10 +242,10 @@ export default function Sidebar({ isOpen, onToggle }: SidebarProps) {
                                 variant="light"
                                 color="default"
                                 onPress={() => router.push('/social')}
-                                className={`h-10 text-gray-400 hover:text-cyan-400 hover:bg-white/5 ${!isOpen ? "min-w-0 px-0 justify-center" : "!justify-start"}`}
+                                className={`h-12 text-gray-400 hover:text-cyan-400 hover:bg-white/5 ${!isOpen ? "min-w-0 px-0 justify-center" : "!justify-start px-5"}`}
                                 startContent={<Users size={18} />}
                             >
-                                {isOpen && <span className="ml-2 font-bold text-xs orbitron">{t('sidebar.socialDashboard')}</span>}
+                                {isOpen && <span className="ml-3 font-bold text-xs orbitron tracking-widest">{t('sidebar.socialDashboard')}</span>}
                             </Button>
                         </div>
 
@@ -255,10 +255,10 @@ export default function Sidebar({ isOpen, onToggle }: SidebarProps) {
                                 variant="light"
                                 color="default"
                                 onPress={() => setIsSettingsOpen(true)}
-                                className={`h-10 text-gray-400 hover:text-white hover:bg-white/5 ${!isOpen ? "min-w-0 px-0 justify-center" : "!justify-start"}`}
+                                className={`h-12 text-gray-400 hover:text-white hover:bg-white/5 ${!isOpen ? "min-w-0 px-0 justify-center" : "!justify-start px-5"}`}
                                 startContent={<Settings size={18} />}
                             >
-                                {isOpen && <span className="ml-2 font-bold text-xs orbitron">{t('sidebar.systemSettings')}</span>}
+                                {isOpen && <span className="ml-3 font-bold text-xs orbitron tracking-widest">{t('sidebar.systemSettings')}</span>}
                             </Button>
                         </div>
                         <Button
@@ -266,10 +266,10 @@ export default function Sidebar({ isOpen, onToggle }: SidebarProps) {
                             variant="light"
                             color="danger"
                             onPress={handleSignOut}
-                            className={`h-10 text-gray-400 hover:text-red-400 ${!isOpen ? "min-w-0 px-0 justify-center" : "!justify-start"}`}
+                            className={`h-12 text-gray-400 hover:text-red-400 ${!isOpen ? "min-w-0 px-0 justify-center" : "!justify-start px-5"}`}
                             startContent={<LogOut size={18} />}
                         >
-                            {isOpen && <span className="ml-2 font-bold text-xs orbitron">{t('sidebar.systemLogout')}</span>}
+                            {isOpen && <span className="ml-3 font-bold text-xs orbitron tracking-widest">{t('sidebar.systemLogout')}</span>}
                         </Button>
                         {isOpen && (
                             <div className="text-center pt-2">

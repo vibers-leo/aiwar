@@ -491,6 +491,28 @@ export type TranslationKey =
     | 'battle.result.win'
     | 'battle.result.lose'
     | 'battle.result.draw'
+    // Friends System
+    | 'friends.title'
+    | 'friends.tab.list'
+    | 'friends.tab.search'
+    | 'friends.tab.requests'
+    | 'friends.search.placeholder'
+    | 'friends.search.button'
+    | 'friends.search.noResults'
+    | 'friends.list.empty'
+    | 'friends.requests.empty'
+    | 'friends.wantsToBeFriends'
+    | 'friends.accept'
+    | 'friends.decline'
+    | 'friends.remove'
+    | 'friends.removeConfirm'
+    | 'friends.removeSuccess'
+    | 'friends.requestSent'
+    | 'friends.alreadyFriend'
+    | 'friends.online'
+    | 'friends.offline'
+    | 'friends.battle'
+    | 'friends.battleConfirm'
     // Resource & Tooltips
     | 'topbar.resourceMonitor'
     | 'topbar.recharging'
@@ -503,7 +525,18 @@ export type TranslationKey =
     | 'topbar.coinBalance'
     | 'topbar.togglePersistence'
     | 'topbar.tokens.desc'
-    | 'topbar.coins.desc';
+    | 'topbar.coins.desc'
+    | 'topbar.rechargeRate'
+    | 'topbar.factionsBoost'
+    | 'topbar.capacityBonus'
+    // Social Page
+    | 'social.infoFeed'
+    | 'social.systemMessage'
+    | 'social.tipMessage'
+    | 'social.securityMessage'
+    | 'social.globalRanking'
+    | 'social.globalRankingDesc'
+    | 'social.viewLeaderboard';
 
 export type Translations = Record<TranslationKey, string>;
 
