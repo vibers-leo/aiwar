@@ -437,7 +437,6 @@ export function UserProvider({ children }: { children: React.ReactNode }) {
                     user.uid,
                     tokens, // current state
                     profile.lastTokenUpdate, // timestamp from profile
-                    // [Fix] Apply token boost for ALL active subscriptions to match UI expectations
                     (() => {
                         const activeSubs = subscriptions.filter(sub => sub.status === 'active');
 
@@ -448,7 +447,8 @@ export function UserProvider({ children }: { children: React.ReactNode }) {
                             setMaxTokens(maxCap);
                         }
                         return activeSubs;
-                    })()
+                    })() as any,
+                    profile.level
                 );
 
                 // If tokens changed, it means a recharge happened (DB updated)
@@ -571,7 +571,8 @@ export function UserProvider({ children }: { children: React.ReactNode }) {
                         user.uid,
                         freshProfile.tokens,
                         freshProfile.lastTokenUpdate,
-                        fetchedSubscriptions
+                        fetchedSubscriptions as any,
+                        freshProfile.level
                     );
                 } catch (err) {
                     console.error("[UserContext] Token recharge failed:", err);

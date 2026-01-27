@@ -394,7 +394,8 @@ export async function checkAndRechargeTokens(
     userId: string,
     currentTokens: number,
     lastUpdate: any,
-    subscriptions: { factionId: string; tier: SubscriptionTier }[] = []
+    subscriptions: { factionId: string; tier: SubscriptionTier }[] = [],
+    level: number = 1
 ): Promise<number> {
     if (!lastUpdate) {
         // 첫 실행 시 현재 시간 기록 - 프로필 데이터 하위 문서에 기록해야 함
@@ -414,7 +415,8 @@ export async function checkAndRechargeTokens(
     // => 단순히 (경과시간 / 주기) * (기본양 + 보너스양) 으로 계산.
 
     const rechargeAmountPerCycle = BASE_RECHARGE_RATE + bonusRecharge;
-    const maxTokens = BASE_MAX_TOKENS + bonusMaxCap;
+    // [Jung-Gong-Beop] Max Cap Formula: Base (1000) + (Level - 1) * 100 + bonusMaxCap
+    const maxTokens = BASE_MAX_TOKENS + ((level - 1) * 100) + bonusMaxCap;
 
     const now = new Date();
     const lastDate = lastUpdate.toDate ? lastUpdate.toDate() : new Date(lastUpdate);
