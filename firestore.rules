@@ -47,6 +47,27 @@ service cloud.firestore {
       match /factions/{document=**} {
         allow read, write: if isOwner(userId);
       }
+
+      // Friends Subcollection
+      match /friends/{friendId} {
+        // Owner has full access
+        allow read, write: if isOwner(userId);
+        
+        // Cross-user access (initiated by the friendId user)
+        // 1. Create: Allow sending a friend request (creating a 'pending_received' status doc in target's list)
+        allow create: if isAuthenticated() && 
+                         friendId == request.auth.uid && 
+                         request.resource.data.status == 'pending_received';
+                         
+        // 2. Update: Allow accepting a request (updating status to 'accepted' in sender's list)
+        allow update: if isAuthenticated() && 
+                         friendId == request.auth.uid && 
+                         resource.data.status == 'pending_sent' &&
+                         request.resource.data.status == 'accepted';
+                         
+        // 3. Delete: Allow canceling/removing oneself from someone else's list
+        allow delete: if isAuthenticated() && friendId == request.auth.uid;
+      }
       
       // Legacy/Standard Collections (if still used)
       match /inventory/{cardId} {

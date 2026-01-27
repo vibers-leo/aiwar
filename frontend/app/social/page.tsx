@@ -24,8 +24,10 @@ import {
     sendFriendRequest,
     acceptFriendRequest,
     removeFriend,
+    getRecommendedUsers,
     FriendUser
 } from '@/lib/friend-system';
+import { Copy, PlusCircle, RefreshCw } from 'lucide-react';
 import { sendBattleInvitation } from '@/lib/battle-invitation-system';
 import { collection, query, onSnapshot, orderBy, doc, getDoc } from 'firebase/firestore';
 import { db } from '@/lib/firebase';
@@ -35,6 +37,9 @@ import { Input } from '@/components/ui/custom/Input';
 import { Card, CardBody } from '@/components/ui/custom/Card';
 import { ResetTimer } from '@/components/ResetTimer';
 import { useTranslation } from '@/context/LanguageContext';
+import Link from 'next/link';
+import CyberPageLayout from '@/components/CyberPageLayout';
+import { useAlert } from '@/context/AlertContext';
 
 export default function SocialPage() {
     const { user } = useUser();
@@ -47,6 +52,8 @@ export default function SocialPage() {
     const [requests, setRequests] = useState<FriendUser[]>([]);
     const [sentRequests, setSentRequests] = useState<FriendUser[]>([]);
     const [searchResults, setSearchResults] = useState<FriendUser[]>([]);
+    const [recommendedUsers, setRecommendedUsers] = useState<FriendUser[]>([]);
+    const [refreshKey, setRefreshKey] = useState(0);
 
     const [searchQuery, setSearchQuery] = useState('');
     const [isSearching, setIsSearching] = useState(false);
@@ -57,8 +64,8 @@ export default function SocialPage() {
 
         const friendsRef = collection(db, 'users', user.uid, 'friends');
         const unsubscribe = onSnapshot(friendsRef, async (snapshot) => {
-            const tempFriends: FriendUser[] = [];
             const allRequests: FriendUser[] = [];
+            const allSentRequests: FriendUser[] = [];
 
             // We'll collect UIDs to fetch actual presence
             const acceptedFriends: FriendUser[] = [];
@@ -98,6 +105,19 @@ export default function SocialPage() {
 
         return () => unsubscribe();
     }, [user]);
+
+    // Fetch recommendations
+    useEffect(() => {
+        if (!user) return;
+        getRecommendedUsers(user.uid).then(setRecommendedUsers);
+    }, [user, refreshKey]);
+
+    const handleCopyId = () => {
+        if (user?.uid) {
+            navigator.clipboard.writeText(user.uid);
+            showAlert({ title: "Copied!", message: "User ID copied to clipboard.", type: "success" });
+        }
+    };
 
     const handleSearch = async () => {
         if (!searchQuery.trim()) return;
@@ -196,11 +216,14 @@ export default function SocialPage() {
                                     <p className="text-[10px] text-purple-400 font-bold uppercase tracking-widest mt-1 opacity-70">RANK PREVIEW: #77</p>
                                 </div>
                                 <div className="w-full flex gap-2">
-                                    <Link href={`/profile/${user?.uid}`} className="flex-1">
-                                        <Button variant="ghost" size="sm" fullWidth className="text-[10px] orbitron h-8 border-purple-500/30 hover:bg-purple-500/10">
-                                            {t('side.profile')}
+                                    <Link href={user ? `/profile/${user.uid}` : '#'} className="flex-1">
+                                        <Button variant="ghost" size="sm" fullWidth className="text-[10px] border-purple-500/30 text-purple-400 hover:bg-purple-500/10">
+                                            MY PROFILE
                                         </Button>
                                     </Link>
+                                    <Button onClick={handleCopyId} variant="ghost" size="sm" className="w-8 border-purple-500/30 hover:bg-purple-500/10 text-purple-400" title="Copy User ID">
+                                        <Copy size={12} />
+                                    </Button>
                                 </div>
                             </div>
                         </CardBody>
@@ -233,12 +256,12 @@ export default function SocialPage() {
                             </button>
                         ))}
                     </div>
-                </div>
+                </div >
 
                 {/* Main Content Area */}
-                <div className="lg:col-span-6 space-y-6">
+                < div className="lg:col-span-6 space-y-6" >
                     {/* Search Bar - Permanent in main area */}
-                    <div className="relative group">
+                    < div className="relative group" >
                         <Search className="absolute left-4 top-1/2 -translate-y-1/2 text-gray-500 group-focus-within:text-purple-400 transition-colors" size={20} />
                         <Link href="/factions" className="hidden" /> {/* SEO dummy */}
                         <input
@@ -260,7 +283,7 @@ export default function SocialPage() {
                                 {t('friends.search.button')}
                             </Button>
                         </div>
-                    </div>
+                    </div >
 
                     <AnimatePresence mode="wait">
                         {activeTab === 'friends' && (
@@ -407,9 +430,51 @@ export default function SocialPage() {
                                 {searchResults.length === 0 ? (
                                     <div className="text-center py-20 bg-black/20 rounded-3xl border border-dashed border-white/5">
                                         <Search className="mx-auto text-white/10 mb-4" size={48} />
-                                        <p className="text-gray-500 text-sm leading-relaxed">
+                                        <p className="text-gray-500 text-sm leading-relaxed mb-4">
                                             {t('friends.search.noResults')}
                                         </p>
+
+                                        {/* Recommendations Fallback */}
+                                        {recommendedUsers.length > 0 && (
+                                            <div className="mt-8 px-4">
+                                                <div className="flex items-center justify-between mb-4">
+                                                    <h3 className="text-xs font-bold text-cyan-400 tracking-widest uppercase flex items-center gap-2">
+                                                        <RefreshCw size={12} /> RECOMMENDED
+                                                    </h3>
+                                                    <button onClick={() => setRefreshKey(k => k + 1)} className="text-[10px] text-white/40 hover:text-white">Refresh</button>
+                                                </div>
+                                                <div className="grid grid-cols-1 md:grid-cols-2 gap-3 text-left">
+                                                    {recommendedUsers.map(rec => {
+                                                        const isFriend = friends.some(f => f.uid === rec.uid);
+                                                        const isRequested = requests.some(r => r.uid === rec.uid);
+                                                        const isSent = sentRequests.some(s => s.uid === rec.uid);
+
+                                                        if (isFriend) return null;
+
+                                                        return (
+                                                            <div key={rec.uid} className="flex items-center justify-between p-3 bg-white/5 rounded-xl border border-white/5 hover:border-cyan-500/30 transition-colors">
+                                                                <div className="flex items-center gap-3">
+                                                                    <Avatar src={rec.avatarUrl} className="w-10 h-10" />
+                                                                    <div>
+                                                                        <div className="text-sm font-bold text-white">{rec.nickname}</div>
+                                                                        <div className="text-[10px] text-white/40">LV.{rec.level}</div>
+                                                                    </div>
+                                                                </div>
+                                                                {isSent ? (
+                                                                    <span className="text-[10px] text-white/40">SENT</span>
+                                                                ) : isRequested ? (
+                                                                    <Button size="sm" onClick={() => handleAccept(rec.uid)} className="h-7 text-[10px] bg-green-500/20 text-green-400">ACCEPT</Button>
+                                                                ) : (
+                                                                    <Button size="sm" onClick={() => handleSendRequest(rec)} className="h-7 w-7 p-0 bg-cyan-500/20 text-cyan-400 border-cyan-500/30">
+                                                                        <PlusCircle size={14} />
+                                                                    </Button>
+                                                                )}
+                                                            </div>
+                                                        );
+                                                    })}
+                                                </div>
+                                            </div>
+                                        )}
                                     </div>
                                 ) : (
                                     <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
@@ -499,10 +564,10 @@ export default function SocialPage() {
                             </motion.div>
                         )}
                     </AnimatePresence>
-                </div>
+                </div >
 
                 {/* Right Panel: Recommendations / Stats */}
-                <div className="lg:col-span-3 space-y-6">
+                < div className="lg:col-span-3 space-y-6" >
                     <Card className="bg-black/40 border-white/5">
                         <CardBody className="p-6">
                             <div className="flex items-center gap-2 mb-6">
@@ -549,8 +614,8 @@ export default function SocialPage() {
                             </div>
                         </CardBody>
                     </Card>
-                </div>
-            </div>
-        </CyberPageLayout>
+                </div >
+            </div >
+        </CyberPageLayout >
     );
 }

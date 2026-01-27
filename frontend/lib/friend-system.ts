@@ -11,7 +11,9 @@ import {
     updateDoc,
     serverTimestamp,
     runTransaction,
-    Timestamp
+    Timestamp,
+    orderBy,
+    limit
 } from 'firebase/firestore';
 import { db } from './firebase';
 
@@ -20,7 +22,7 @@ export interface FriendUser {
     nickname: string;
     avatarUrl: string;
     level: number;
-    status: 'pending_sent' | 'pending_received' | 'accepted';
+    status?: 'pending_sent' | 'pending_received' | 'accepted';
     updatedAt: any;
 }
 
@@ -39,7 +41,8 @@ export async function searchUsers(nickname: string): Promise<FriendUser[]> {
         const q = query(
             usersRef,
             where('nickname', '>=', nickname),
-            where('nickname', '<=', nickname + '\uf8ff')
+            where('nickname', '<=', nickname + '\uf8ff'),
+            limit(20)
         );
 
         const querySnapshot = await getDocs(q);
@@ -52,7 +55,6 @@ export async function searchUsers(nickname: string): Promise<FriendUser[]> {
                 nickname: data.nickname || 'Unknown',
                 avatarUrl: data.avatarUrl || '',
                 level: data.level || 1,
-                status: 'accepted', // 검색 결과는 상태와 무관하지만 타입 일치를 위해 임시 설정
                 updatedAt: null
             });
         });
@@ -60,6 +62,37 @@ export async function searchUsers(nickname: string): Promise<FriendUser[]> {
         return users;
     } catch (error) {
         console.error("Error searching users:", error);
+        return [];
+    }
+}
+
+// 최근 활동 유저 추천 (친구 추가용)
+export async function getRecommendedUsers(currentUserId: string, limitCount = 5): Promise<FriendUser[]> {
+    if (!db) return [];
+    try {
+        const usersRef = collection(db, 'users');
+        // lastLogin 기준으로 내림차순 정렬 (최근 접속자)
+        // [Note] 복합 인덱스 필요 가능성 있음
+        const q = query(usersRef, orderBy('lastLogin', 'desc'), limit(limitCount + 1));
+
+        const snapshot = await getDocs(q);
+        const users: FriendUser[] = [];
+
+        snapshot.forEach(doc => {
+            if (doc.id === currentUserId) return; // 나 자신 제외
+            const data = doc.data();
+            users.push({
+                uid: doc.id,
+                nickname: data.nickname || 'User',
+                avatarUrl: data.avatarUrl || '',
+                level: data.level || 1,
+                updatedAt: data.lastLogin
+            });
+        });
+
+        return users.slice(0, limitCount);
+    } catch (error) {
+        console.warn("Failed to fetch recommended users (likely missing index):", error);
         return [];
     }
 }

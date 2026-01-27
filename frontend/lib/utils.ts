@@ -123,22 +123,32 @@ export function ensureDate(dateVal: any): Date {
 }
 
 /**
- * [NEW] 6:00 AM 기준 초기화 날짜 문자열 가져오기
- * 현재 서버/로컬 시간 기준으로 오전 6시 이전이면 어제의 날짜를 반환
+ * [FIX] 6:00 AM KST (한국 시간) 기준 초기화 날짜 문자열 가져오기
+ * 시스템/서버의 로컬 타임존에 의존하지 않고, 강제로 UTC+9(KST)를 적용하여 계산합니다.
+ * - 한국 시간 오전 6시 이전이면 '어제' 날짜 반환
+ * - 한국 시간 오전 6시 이후면 '오늘' 날짜 반환
  */
 export function getResetDateString(): string {
     const now = new Date();
-    const hours = now.getHours();
 
-    // 로컬 시간 기준으로 오전 6시 이전이면 어제 날짜로 취급
-    const targetDate = new Date(now);
-    if (hours < 6) {
-        targetDate.setDate(now.getDate() - 1);
+    // 1. 순수 UTC 타임스탬프 + 9시간 (KST)
+    // getTime()은 UTC 기준 ms를 반환하므로, 여기에 9시간 ms를 더하면
+    // 해당 시점의 UTC 표현이 곧 KST 시간이 됨.
+    const kstTimestamp = now.getTime() + (9 * 60 * 60 * 1000);
+    const kstDate = new Date(kstTimestamp);
+
+    // 2. KST 기준 시간 확인 (getUTC* 메서드 사용 필수)
+    // kstTimestamp는 이미 Shift된 시간이므로, 이를 UTC로 읽어야 원래 의도한 KST 시각이 나옴
+    const kstHours = kstDate.getUTCHours();
+
+    // 3. 오전 6시 이전이면 하루 빼기
+    if (kstHours < 6) {
+        kstDate.setUTCDate(kstDate.getUTCDate() - 1);
     }
 
-    const year = targetDate.getFullYear();
-    const month = String(targetDate.getMonth() + 1).padStart(2, '0');
-    const day = String(targetDate.getDate()).padStart(2, '0');
+    const year = kstDate.getUTCFullYear();
+    const month = String(kstDate.getUTCMonth() + 1).padStart(2, '0');
+    const day = String(kstDate.getUTCDate()).padStart(2, '0');
 
     return `${year}-${month}-${day}`;
 }

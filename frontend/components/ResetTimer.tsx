@@ -14,17 +14,22 @@ export const ResetTimer: React.FC<ResetTimerProps> = ({ className = '', showLabe
     useEffect(() => {
         const calculateTimeLeft = () => {
             const now = new Date();
-            const target = new Date();
+            // 1. KST (UTC+9)로 변환된 타임스탬프 계산
+            const kstNowMs = now.getTime() + (9 * 60 * 60 * 1000);
+            const kstDate = new Date(kstNowMs);
 
-            // 오전 6시 기준
-            target.setHours(6, 0, 0, 0);
+            // 2. 목표 시간 설정 (오늘 오전 6시)
+            // kstDate는 이미 9시간 Shift 되었으므로, UTC 메서드로 시간을 설정하면 KST 기준 시간이 됨
+            const targetKstDate = new Date(kstNowMs);
+            targetKstDate.setUTCHours(6, 0, 0, 0);
 
-            // 현재 시간이 오전 6시 이후라면 내일 오전 6시가 목표
-            if (now.getHours() >= 6) {
-                target.setDate(target.getDate() + 1);
+            // 3. 현재 시간이 오전 6시 이후라면 내일 오전 6시가 목표
+            if (kstDate.getUTCHours() >= 6) {
+                targetKstDate.setUTCDate(targetKstDate.getUTCDate() + 1);
             }
 
-            const diff = target.getTime() - now.getTime();
+            // 4. 남은 시간 계산 (Shift된 시간끼리의 차이는 실제 지속 시간과 동일)
+            const diff = targetKstDate.getTime() - kstDate.getTime();
 
             const hours = Math.floor(diff / (1000 * 60 * 60));
             const minutes = Math.floor((diff % (1000 * 60 * 60)) / (1000 * 60));
