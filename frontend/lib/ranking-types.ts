@@ -4,6 +4,7 @@ export interface RankingEntry {
     rank: number;
     playerId: string;
     playerName: string;
+    avatarUrl?: string;
     level: number;
     rating: number;
     wins: number;

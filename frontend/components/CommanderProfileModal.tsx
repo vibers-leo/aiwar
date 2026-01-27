@@ -54,7 +54,7 @@ export default function CommanderProfileModal({ isOpen, onClose }: CommanderProf
     const { state: footerState } = useFooter();
     const { profile } = useUserProfile();
     const { user } = useFirebase();
-    const { language } = useTranslation();
+    const { t, language } = useTranslation();
     const [research, setResearch] = useState<CommanderResearch | null>(null);
     const [loading, setLoading] = useState(true);
     const [hoveredStat, setHoveredStat] = useState<string | null>(null);

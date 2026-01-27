@@ -11,18 +11,30 @@ import { RankingEntry } from '@/lib/ranking-types';
 import { getCurrentSeason, getRankTier, getRatingToNextTier } from '@/lib/ranking-utils';
 import { getPvPStats } from '@/lib/pvp-utils';
 import { cn } from '@/lib/utils';
-
 import { useUser } from '@/context/UserContext';
+import { useAlert } from '@/context/AlertContext';
+import { sendFriendRequest } from '@/lib/friend-system';
+import { Modal, ModalBody, ModalHeader, ModalFooter } from '@/components/ui/custom/Modal';
+import { Button } from '@/components/ui/custom/Button';
+import { UserPlus, MessageCircle, User } from 'lucide-react';
+import { Avatar } from '@/components/ui/custom/Avatar';
+import { ChatModal } from '@/components/ChatModal';
 
 export default function RankingPage() {
     const router = useRouter();
     const { user, profile } = useUser();
+    const { showAlert, showConfirm } = useAlert();
     const [rankings, setRankings] = useState<RankingEntry[]>([]);
     const [myRank, setMyRank] = useState<RankingEntry | null>(null);
     const [currentSeason, setCurrentSeason] = useState<any>(null);
     const [pvpStats, setPvpStats] = useState<any>(null);
     const [filter, setFilter] = useState<'top10' | 'top100' | 'all'>('top100');
     const [sortConfig, setSortConfig] = useState<{ key: keyof RankingEntry; direction: 'asc' | 'desc' }>({ key: 'rating', direction: 'desc' });
+
+    // User Action Modal State
+    const [selectedUser, setSelectedUser] = useState<RankingEntry | null>(null);
+    const [isActionModalOpen, setIsActionModalOpen] = useState(false);
+    const [isChatModalOpen, setIsChatModalOpen] = useState(false);
 
     useEffect(() => {
         async function loadData() {
@@ -39,6 +51,7 @@ export default function RankingPage() {
                     rank: index + 1,
                     playerId: p.uid || 'unknown',
                     playerName: p.nickname || p.displayName || `Commander #${p.uid?.slice(0, 4) || '????'}`,
+                    avatarUrl: p.avatarUrl || '',
                     level: p.level || 1,
                     rating: p.pvpStats?.currentRating || 1000,
                     highestRating: p.pvpStats?.highestRating || 1000,
@@ -80,6 +93,57 @@ export default function RankingPage() {
         }));
     };
 
+    // User Interaction Handlers
+    const handleUserClick = (entry: RankingEntry) => {
+        if (entry.playerId === 'unknown') return;
+        // If it's me, go to profile directly or show limited options? Let's show specific modal or just go profile.
+        if (user && entry.playerId === user.uid) {
+            router.push(`/profile/${user.uid}`);
+            return;
+        }
+
+        setSelectedUser(entry);
+        setIsActionModalOpen(true);
+    };
+
+    const handleAddFriend = async () => {
+        if (!user || !profile || !selectedUser) return;
+
+        try {
+            // Reconstruct minimal profile data for target
+            const targetUser = {
+                uid: selectedUser.playerId,
+                nickname: selectedUser.playerName,
+                avatarUrl: selectedUser.avatarUrl || '',
+                level: selectedUser.level
+            };
+
+            const result = await sendFriendRequest(user.uid, profile, selectedUser.playerId, targetUser);
+            if (result.success) {
+                showAlert({ title: "Friend Request", message: "Friend request sent successfully!", type: 'success' });
+            } else {
+                showAlert({ title: "Request Failed", message: result.message || "Failed to send request.", type: 'error' });
+            }
+        } catch (error) {
+            console.error(error);
+            showAlert({ title: "Error", message: "An unexpected error occurred.", type: 'error' });
+        } finally {
+            setIsActionModalOpen(false);
+        }
+    };
+
+    const handleSendMessage = () => {
+        setIsActionModalOpen(false);
+        setIsChatModalOpen(true);
+    };
+
+    const handleViewProfile = () => {
+        if (selectedUser) {
+            router.push(`/profile/${selectedUser.playerId}`);
+            setIsActionModalOpen(false);
+        }
+    };
+
     // Derived State: Filtered & Sorted
     const processedRankings = [...rankings]
         .filter(r => {
@@ -90,8 +154,8 @@ export default function RankingPage() {
         .sort((a, b) => {
             const { key, direction } = sortConfig;
             // Handle special cases
-            let valA = a[key];
-            let valB = b[key];
+            let valA = a[key] ?? 0;
+            let valB = b[key] ?? 0;
 
             // If sorting by Rank, lower is better (so 'desc' sort should technically be reversed for intuitive UI? 
             // Actually usually "Rank 1" is top. So Ascending = 1, 2, 3. Descending = 100, 99...
@@ -239,9 +303,7 @@ export default function RankingPage() {
                                 return (
                                     <tr
                                         key={entry.playerId}
-                                        onClick={() => {
-                                            if (entry.playerId !== 'unknown') router.push(`/profile/${entry.playerId}`);
-                                        }}
+                                        onClick={() => handleUserClick(entry)}
                                         className={cn(
                                             "border-t border-white/5 transition-all cursor-pointer",
                                             "hover:bg-white/10 hover:scale-[1.005]",
@@ -279,6 +341,47 @@ export default function RankingPage() {
                     START_PVP ⚔️
                 </Link>
             </motion.div>
-        </CyberPageLayout>
+
+
+            {/* User Action Modal */}
+            <Modal isOpen={isActionModalOpen} onClose={() => setIsActionModalOpen(false)} size="sm">
+                <ModalHeader className="flex flex-col items-center gap-2 pt-6 border-none">
+                    <Avatar src={selectedUser?.avatarUrl} className="w-20 h-20 border-2 border-pink-500 shadow-lg mb-2" />
+                    <div className="text-center">
+                        <h3 className="text-xl font-bold text-white orbitron">{selectedUser?.playerName}</h3>
+                        <p className="text-sm text-white/50 font-mono">Rank {selectedUser?.rank} • Level {selectedUser?.level}</p>
+                    </div>
+                </ModalHeader>
+                <ModalBody className="py-2">
+                    <div className="flex flex-col gap-3 px-4">
+                        <Button onClick={handleAddFriend} variant="flat" className="bg-green-500/20 text-green-400 hover:bg-green-500/30 border border-green-500/30 h-10 w-full justify-start pl-6 gap-3 font-bold">
+                            <UserPlus size={18} /> Add Friend
+                        </Button>
+                        <Button onClick={handleSendMessage} variant="flat" className="bg-cyan-500/20 text-cyan-400 hover:bg-cyan-500/30 border border-cyan-500/30 h-10 w-full justify-start pl-6 gap-3 font-bold">
+                            <MessageCircle size={18} /> Send Message
+                        </Button>
+                        <Button onClick={handleViewProfile} variant="flat" className="bg-white/5 text-white/70 hover:bg-white/10 border border-white/10 h-10 w-full justify-start pl-6 gap-3 font-bold">
+                            <User size={18} /> View Profile
+                        </Button>
+                    </div>
+                </ModalBody>
+                <ModalFooter className="border-none justify-center pb-6">
+                    <Button onClick={() => setIsActionModalOpen(false)} variant="ghost" className="text-white/30 text-xs">
+                        CLOSE
+                    </Button>
+                </ModalFooter>
+            </Modal>
+
+            {/* Chat Modal */}
+            <ChatModal
+                isOpen={isChatModalOpen}
+                onClose={() => setIsChatModalOpen(false)}
+                targetUser={selectedUser ? {
+                    uid: selectedUser.playerId,
+                    nickname: selectedUser.playerName,
+                    avatarUrl: selectedUser.avatarUrl
+                } : null}
+            />
+        </CyberPageLayout >
     );
 }
