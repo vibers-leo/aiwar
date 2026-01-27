@@ -28,9 +28,14 @@ interface SubscriptionInput {
  * 활성화된 구독을 기반으로 토큰 충전 파라미터 계산
  * @param subscriptions 활성 구독 목록
  * @param level 유저 레벨 (최대 토큰 한도에 영향)
+ * @param efficiencyStat 지휘관 효율 스텟 (충전 속도에 영향, % 단축)
  * @returns 충전 파라미터 (충전량, 충전 간격, 최대 용량)
  */
-export function calculateRechargeParams(subscriptions: SubscriptionInput[], level: number = 1): RechargeParams {
+export function calculateRechargeParams(
+    subscriptions: SubscriptionInput[],
+    level: number = 1,
+    efficiencyStat: number = 0
+): RechargeParams {
     let rateAmount = BASE_RECHARGE_RATE;
     let intervalMin = BASE_RECHARGE_INTERVAL_MIN;
 
@@ -44,20 +49,30 @@ export function calculateRechargeParams(subscriptions: SubscriptionInput[], leve
         const bonusConfig = CATEGORY_TOKEN_BONUS[category];
         if (!bonusConfig) return;
 
-        const multiplier = TIER_MULTIPLIER[sub.tier as SubscriptionTier] || 1;
+        const multiplier = TIER_MULTIPLIER[sub.tier?.toLowerCase() as SubscriptionTier] || 1;
 
         // Apply Bonuses by Category
         if (bonusConfig.type === 'recharge_amount') {
             // AUDIO: Recharge Amount Increase
             rateAmount += ((bonusConfig.baseValue || 0) * multiplier);
         } else if (bonusConfig.type === 'recharge_speed') {
-            // IMAGE: Recharge Speed (reduce interval, min 10 min)
-            intervalMin = Math.max(10, intervalMin - ((bonusConfig.baseValue || 0) * multiplier));
+            // IMAGE: Recharge Speed (reduce interval)
+            intervalMin -= ((bonusConfig.baseValue || 0) * multiplier);
         } else if (bonusConfig.type === 'max_capacity') {
             // TEXT: Max Capacity Increase
             maxCap += ((bonusConfig.baseValue || 0) * multiplier);
         }
     });
+
+    // [NEW] Apply Efficiency Stat Bonus (% reduction to the interval)
+    if (efficiencyStat > 0) {
+        // Limit max efficiency bonus to avoid 0 or negative intervals
+        const reductionScale = Math.min(efficiencyStat, 70) / 100; // Max 70% reduction
+        intervalMin = intervalMin * (1 - reductionScale);
+    }
+
+    // Ensure minimum interval is 10 minutes
+    intervalMin = Math.max(10, intervalMin);
 
     return { rateAmount, intervalMin, maxCap };
 }
@@ -92,14 +107,16 @@ export function getMaxTokenCapacity(level: number, subscriptions: SubscriptionIn
  * 다음 충전까지 남은 시간 계산 (초 단위)
  * @param lastTokenUpdate 마지막 충전 시간
  * @param subscriptions 활성 구독 목록
+ * @param efficiencyStat 지휘관 효율 스텟
  */
 export function getSecondsUntilNextRecharge(
     lastTokenUpdate: Date | null,
-    subscriptions: SubscriptionInput[] = []
+    subscriptions: SubscriptionInput[] = [],
+    efficiencyStat: number = 0
 ): number {
     if (!lastTokenUpdate) return 0;
 
-    const { intervalMin } = calculateRechargeParams(subscriptions);
+    const { intervalMin } = calculateRechargeParams(subscriptions, 1, efficiencyStat);
     const now = new Date();
     const nextRecharge = new Date(lastTokenUpdate.getTime() + (intervalMin * 60 * 1000));
     const diffMs = nextRecharge.getTime() - now.getTime();

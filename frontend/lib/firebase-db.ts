@@ -136,6 +136,7 @@ export interface UserProfile {
 
 const BASE_MAX_TOKENS = 1000;
 const BASE_RECHARGE_RATE = 100;
+const BASE_RECHARGE_INTERVAL_MIN = 60;
 
 /**
  * 카드팩 구매 트랜잭션 (재화 차감 + 카드 지급)
@@ -299,7 +300,7 @@ function calculateTokenBonuses(subscriptions: { factionId: string; tier: Subscri
         if (!categoryKey) return;
 
         const bonusConfig = CATEGORY_TOKEN_BONUS[categoryKey];
-        const multiplier = TIER_MULTIPLIER[sub.tier] || 1;
+        const multiplier = TIER_MULTIPLIER[sub.tier?.toLowerCase() as SubscriptionTier] || 1;
 
         if (bonusConfig.type === 'recharge_amount') {
             bonusRecharge += (bonusConfig.baseValue || 0) * multiplier;
@@ -395,7 +396,8 @@ export async function checkAndRechargeTokens(
     currentTokens: number,
     lastUpdate: any,
     subscriptions: { factionId: string; tier: SubscriptionTier }[] = [],
-    level: number = 1
+    level: number = 1,
+    efficiencyStat: number = 0
 ): Promise<number> {
     if (!lastUpdate) {
         // 첫 실행 시 현재 시간 기록 - 프로필 데이터 하위 문서에 기록해야 함
@@ -406,14 +408,19 @@ export async function checkAndRechargeTokens(
 
     const { bonusRecharge, bonusMaxCap, bonusSpeedMinutes } = calculateTokenBonuses(subscriptions);
 
+    // [MODIFIED] Calculate Interval with AI Faction Bonuses AND Efficiency Stat
+    let intervalMin = BASE_RECHARGE_INTERVAL_MIN - bonusSpeedMinutes;
+
+    // Apply Efficiency Stat bonus (as % reduction)
+    if (efficiencyStat > 0) {
+        const reductionScale = Math.min(efficiencyStat, 70) / 100; // Max 70% reduction
+        intervalMin = intervalMin * (1 - reductionScale);
+    }
+
     // 기본 60분 - 보너스 단축 (최소 10분 간격은 유지)
-    const rechargeIntervalMinutes = Math.max(10, 60 - bonusSpeedMinutes);
+    const rechargeIntervalMinutes = Math.max(10, intervalMin);
 
     // 최종 충전량 (시간당 기본 100 + 보너스)
-    // 간격이 줄어들면, '1회 충전당 지급량'을 조절하거나, '시간당 총량'을 유지하거나 선택해야 함.
-    // 여기서는 '시간당 총량' 개념보다 '충전 주기'가 빨라지는 것으로 기획됨 (이미지 카테고리).
-    // => 단순히 (경과시간 / 주기) * (기본양 + 보너스양) 으로 계산.
-
     const rechargeAmountPerCycle = BASE_RECHARGE_RATE + bonusRecharge;
     // [Jung-Gong-Beop] Max Cap Formula: Base (1000) + (Level - 1) * 100 + bonusMaxCap
     const maxTokens = BASE_MAX_TOKENS + ((level - 1) * 100) + bonusMaxCap;
@@ -452,7 +459,7 @@ export async function checkAndRechargeTokens(
             lastTokenUpdate: newLastUpdate
         });
 
-        console.log(`🔋 토큰 충전: +${newTokens - currentTokens} (주기: ${cycles}회, 간격: ${rechargeIntervalMinutes}분)`);
+        console.log(`🔋 토큰 충전: +${newTokens - currentTokens} (주기: ${cycles}회, 간격: ${rechargeIntervalMinutes.toFixed(1)}분)`);
         return newTokens;
     }
 

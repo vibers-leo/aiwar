@@ -44,7 +44,11 @@ export default function GameTopBar({
     const [isNotificationOpen, setIsNotificationOpen] = useState(false);
     const [timeUntilNextRecharge, setTimeUntilNextRecharge] = useState<string>('--:--');
 
-    const params = calculateRechargeParams(activeSubscriptions as any, userLevel);
+    const params = calculateRechargeParams(
+        activeSubscriptions as any,
+        userLevel,
+        profile?.commander?.stats?.efficiency || 0
+    );
     const requiredExp = userLevel * 100;
 
     const navLinks = [

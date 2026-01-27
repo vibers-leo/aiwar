@@ -433,6 +433,11 @@ export function UserProvider({ children }: { children: React.ReactNode }) {
         const syncTokens = async () => {
             try {
                 // Check and recharge
+                // [Fixed] Calculate efficiency from Inventory, not just stale Profile
+                // Find commander in inventory (Rarity 'commander' or type 'commander')
+                const commanderCard = inventory.find(c => c.rarity === 'commander' || c.isCommanderCard);
+                const currentEfficiency = commanderCard?.stats?.efficiency || profile.commander?.stats?.efficiency || 0;
+
                 const newTokens = await checkAndRechargeTokens(
                     user.uid,
                     tokens, // current state
@@ -442,13 +447,18 @@ export function UserProvider({ children }: { children: React.ReactNode }) {
 
                         // Sync Max Tokens state
                         const { calculateRechargeParams } = require('@/lib/token-system');
-                        const { maxCap } = calculateRechargeParams(activeSubs, profile.level);
+                        const { maxCap } = calculateRechargeParams(
+                            activeSubs,
+                            profile.level,
+                            currentEfficiency
+                        );
                         if (maxTokens !== maxCap) {
                             setMaxTokens(maxCap);
                         }
                         return activeSubs;
                     })() as any,
-                    profile.level
+                    profile.level,
+                    currentEfficiency
                 );
 
                 // If tokens changed, it means a recharge happened (DB updated)
@@ -565,6 +575,30 @@ export function UserProvider({ children }: { children: React.ReactNode }) {
             // [SYNC] Global Stats
             if (freshProfile) {
                 // [NEW] Token Auto-Refill Logic
+                // [CRITICAL FIX] Sync Commander Stats from Inventory to Profile
+                // Profile in DB 'users/{uid}/profile/data' might be stale regarding commander stats.
+                // We use the actual Inventory Card as the source of truth.
+                const commanderCard = formattedInv.find((c: any) => c.rarity === 'commander' || c.isCommanderCard);
+                let effectiveEfficiency = 0;
+
+                if (commanderCard) {
+                    // Update freshProfile with latest commander data locally
+                    freshProfile.commander = {
+                        ...(freshProfile.commander || {}),
+                        name: commanderCard.name || freshProfile.commander?.name || 'Commander',
+                        level: commanderCard.level || 1,
+                        exp: commanderCard.experience || 0,
+                        avatarUrl: freshProfile.commander?.avatarUrl, // Keep profile avatar
+                        stats: commanderCard.stats || { efficiency: 0, creativity: 0, function: 0 }
+                    } as any;
+
+                    effectiveEfficiency = commanderCard.stats?.efficiency || 0;
+                    // console.log(`[UserContext] 🛠️ Synced Commander Stats from Inventory: Efficiency ${effectiveEfficiency}`);
+                } else {
+                    effectiveEfficiency = freshProfile.commander?.stats?.efficiency || 0;
+                }
+
+
                 let finalTokens = freshProfile.tokens;
                 try {
                     finalTokens = await checkAndRechargeTokens(
@@ -572,7 +606,8 @@ export function UserProvider({ children }: { children: React.ReactNode }) {
                         freshProfile.tokens,
                         freshProfile.lastTokenUpdate,
                         fetchedSubscriptions as any,
-                        freshProfile.level
+                        freshProfile.level,
+                        effectiveEfficiency
                     );
                 } catch (err) {
                     console.error("[UserContext] Token recharge failed:", err);
