@@ -49,9 +49,29 @@ export default function MainLayout({ children }: { children: React.ReactNode }) 
         ['/login', '/signup', '/', '/start'].includes(pathname) ||
         pathname.startsWith('/battle');
 
-    // Pages that should have header but NO sidebar
-    // const hideSidebar = pathname?.startsWith('/story'); // Reverted based on user feedback
-    const hideSidebar = false;
+    // [POLICY] Hide the global right sidebar on almost all functional pages 
+    // because they now use the premium CyberPageLayout which has its own layout logic.
+    const hideSidebar = pathname !== null && (
+        pathname.startsWith('/story') ||
+        pathname.startsWith('/main') ||
+        pathname.startsWith('/profile') ||
+        pathname.startsWith('/pvp') ||
+        pathname.startsWith('/factions') ||
+        pathname.startsWith('/shop') ||
+        pathname.startsWith('/lab') ||
+        pathname.startsWith('/ranking') ||
+        pathname.startsWith('/social') ||
+        pathname.startsWith('/my-cards') ||
+        pathname.startsWith('/encyclopedia') ||
+        pathname.startsWith('/generation') ||
+        pathname.startsWith('/enhance') ||
+        pathname.startsWith('/fusion') ||
+        pathname.startsWith('/special-unit') ||
+        pathname.startsWith('/studio') ||
+        pathname.startsWith('/support') ||
+        pathname.startsWith('/mythic') ||
+        pathname.startsWith('/missions')
+    );
 
     if (isNoLayout) {
         return <div className="h-screen w-screen overflow-hidden bg-black">{children}</div>;

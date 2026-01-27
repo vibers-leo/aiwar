@@ -19,53 +19,50 @@ service cloud.firestore {
       allow read: if isAuthenticated();
       
       // Allow write only to own document
-      // [FIX] Relaxed to allow partial updates (e.g. stats sync) which might not include full userId field
       allow write: if isOwner(userId);
       
       // Profile subcollection (users/{userId}/profile/data)
       match /profile/{document=**} {
-        allow read, write: if isOwner(userId);
+        allow read: if isAuthenticated(); // [MODIFIED] Allow all authenticated users to read profiles
+        allow write: if isOwner(userId);
       }
       
       // Generic Data Subcollection (Singleton docs)
-      // Stores: stageProgress, research, quests
-      // Path: users/{userId}/data/{docId}
       match /data/{document=**} {
         allow read, write: if isOwner(userId);
       }
 
       // Progress Subcollection
-      // Stores: story
-      // Path: users/{userId}/progress/{docId}
       match /progress/{document=**} {
         allow read, write: if isOwner(userId);
       }
 
       // Factions Subcollection
-      // Stores: subscriptions
-      // Path: users/{userId}/factions/{docId}
       match /factions/{document=**} {
         allow read, write: if isOwner(userId);
       }
 
       // Friends Subcollection
       match /friends/{friendId} {
-        // Owner has full access
-        allow read, write: if isOwner(userId);
+        // Owner has full access, and any user can read their own entry in another user's list
+        allow read: if isOwner(userId) || (isAuthenticated() && friendId == request.auth.uid);
         
-        // Cross-user access (initiated by the friendId user)
-        // 1. Create: Allow sending a friend request (creating a 'pending_received' status doc in target's list)
+        // 1. Owner can write anything
+        allow write: if isOwner(userId);
+        
+        // 2. Cross-user access (initiated by the friendId user)
+        // Create: Allow sending a friend request (creating a 'pending_received' status doc in target's list)
         allow create: if isAuthenticated() && 
                          friendId == request.auth.uid && 
                          request.resource.data.status == 'pending_received';
                          
-        // 2. Update: Allow accepting a request (updating status to 'accepted' in sender's list)
+        // Update: Allow accepting a request (updating status to 'accepted' in sender's list)
         allow update: if isAuthenticated() && 
                          friendId == request.auth.uid && 
                          resource.data.status == 'pending_sent' &&
                          request.resource.data.status == 'accepted';
                          
-        // 3. Delete: Allow canceling/removing oneself from someone else's list
+        // Delete: Allow canceling/removing oneself from someone else's list
         allow delete: if isAuthenticated() && friendId == request.auth.uid;
       }
 
@@ -84,7 +81,6 @@ service cloud.firestore {
         }
       }
       
-      // Legacy/Standard Collections (if still used)
       match /inventory/{cardId} {
         allow read, write: if isOwner(userId);
       }
@@ -93,17 +89,12 @@ service cloud.firestore {
         allow read, write: if isOwner(userId);
       }
       
-      match /achievements/{achievementId} {
-        allow read, write: if isOwner(userId);
-      }
-
-      // Subscriptions Collection
       match /subscriptions/{subscriptionId} {
         allow read, write: if isOwner(userId);
       }
     }
     
-    // Support tickets - root level (admin + owner access)
+    // Support tickets
     match /support_tickets/{ticketId} {
       allow read: if isAuthenticated() && 
                      (resource.data.userId == request.auth.uid || 
@@ -113,25 +104,23 @@ service cloud.firestore {
       allow update, delete: if request.auth.token.email == 'juuuno@naver.com';
     }
     
-    // Leaderboard - read-only for all authenticated users
+    // Leaderboard
     match /leaderboard/{userId} {
       allow read: if isAuthenticated();
-      allow write: if false; // Managed by Cloud Functions only
+      allow write: if false;
     }
     
-    // Nicknames - globally unique via document ID
+    // Nicknames
     match /nicknames/{nickname} {
       allow read: if isAuthenticated();
-      // Allow creation if the user claims it for themselves
       allow create: if isAuthenticated() && request.resource.data.uid == request.auth.uid;
-      // Allow update/delete only if the user owns the nickname
       allow update, delete: if isAuthenticated() && resource.data.uid == request.auth.uid;
     }
 
-    // Global settings - read-only
+    // Settings
     match /settings/{document=**} {
       allow read: if true;
-      allow write: if false; // Admin only via console
+      allow write: if false;
     }
   }
 }
