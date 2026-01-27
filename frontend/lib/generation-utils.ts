@@ -303,10 +303,22 @@ export function updateAllSlotStatuses(userId?: string): GenerationSlot[] {
             if (!canGenerate) {
                 slot.status = 'limit_reached';
                 slot.nextGenerationAt = null;
-            } else if (slot.nextGenerationAt && new Date() >= slot.nextGenerationAt) {
-                slot.status = 'active';
-            } else if (slot.nextGenerationAt) {
-                slot.status = 'waiting';
+            } else {
+                // [NEW] Daily Reset Logic: Auto-Resume & Instant Gratification
+                // If limit reset (canGenerate=true) but slot was stalled (no date or limit_reached),
+                // restart immediately as 'active' so user can claim right away!
+                if (!slot.nextGenerationAt || slot.status === 'limit_reached') {
+                    console.log(`[Generation] Auto-activating slot ${slot.index} after daily reset!`);
+                    slot.nextGenerationAt = new Date(); // Ready Now!
+                    slot.status = 'active';
+                }
+
+                // Classic Timer Check
+                else if (new Date() >= slot.nextGenerationAt) {
+                    slot.status = 'active';
+                } else {
+                    slot.status = 'waiting';
+                }
             }
         }
     });
