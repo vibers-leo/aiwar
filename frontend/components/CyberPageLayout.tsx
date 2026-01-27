@@ -64,50 +64,10 @@ export default function CyberPageLayout({
         <main className="min-h-screen bg-[#050505] text-white relative overflow-hidden flex flex-col">
             <BackgroundBeams className="opacity-40" />
 
-            {/* Header / Navigation */}
-            <header className="relative z-50 border-b border-white/5 bg-black/40 backdrop-blur-md">
-                <div className="max-w-7xl mx-auto px-4 h-16 flex items-center justify-between">
-                    <div className="flex items-center gap-4">
-                        {showBack && (
-                            <button
-                                onClick={() => backPath ? router.push(backPath) : router.back()}
-                                className="p-2 hover:bg-white/5 rounded-full transition-colors group"
-                            >
-                                <ArrowLeft size={20} className="text-gray-400 group-hover:text-white" />
-                            </button>
-                        )}
-                        <Link href="/main" className="flex items-center gap-2 group">
-                            <div className="w-8 h-8 bg-gradient-to-br from-cyan-500 to-blue-600 rounded-lg flex items-center justify-center font-black italic text-sm shadow-[0_0_15px_rgba(6,182,212,0.5)]">
-                                AW
-                            </div>
-                            <span className="font-black italic tracking-tighter text-xl hidden sm:block group-hover:text-cyan-400 transition-colors">AIWAR</span>
-                        </Link>
-                    </div>
-
-                    <div className="flex items-center gap-3">
-                        {action}
-                        <div className="h-8 w-[1px] bg-white/10 mx-1" />
-                        <Link href="/profile" className="flex items-center gap-3 pl-2 py-1 pr-1 bg-white/5 hover:bg-white/10 rounded-full border border-white/5 transition-all group">
-                            <div className="text-right hidden sm:block">
-                                <p className="text-[10px] font-bold text-white/40 leading-none mb-1">COMMANDER</p>
-                                <p className="text-xs font-bold text-white leading-none">{profile?.nickname || 'Guest'}</p>
-                            </div>
-                            <div className="w-8 h-8 rounded-full bg-zinc-800 border border-white/10 flex items-center justify-center overflow-hidden">
-                                {profile?.avatarUrl ? (
-                                    <img src={profile.avatarUrl} alt="Avatar" className="w-full h-full object-cover" />
-                                ) : (
-                                    <User size={16} className="text-gray-500" />
-                                )}
-                            </div>
-                        </Link>
-                    </div>
-                </div>
-            </header>
-
             <div className="flex-1 flex w-full relative z-10">
                 {/* Left Sidebar (Desktop Only) - Outside max-width container to stick to the left edge */}
                 {showLeftSidebar && (
-                    <div className="hidden lg:block sticky top-16 h-[calc(100vh-4rem)] flex-none">
+                    <div className="hidden lg:block sticky top-4 h-[calc(100vh-4rem)] flex-none">
                         <LeftSidebar
                             icon={leftSidebarIcon}
                             title={title}
@@ -122,16 +82,34 @@ export default function CyberPageLayout({
                 <div className="flex-1 overflow-y-auto px-4 py-8">
                     <div className="max-w-6xl mx-auto w-full space-y-8">
                         {/* Page Title Section */}
-                        <div className="flex flex-col md:flex-row md:items-end justify-between gap-6 border-b border-white/5 pb-8">
+                        <div className="flex flex-col md:flex-row md:items-end justify-between gap-6 border-b border-white/5 pb-8 relative">
                             <div className="flex-1">
+                                {/* Back Button moved here */}
+                                {showBack && (
+                                    <button
+                                        onClick={() => backPath ? router.push(backPath) : router.back()}
+                                        className="flex items-center gap-2 text-white/40 hover:text-white transition-colors group mb-4 w-fit"
+                                    >
+                                        <div className="p-1.5 bg-white/5 rounded-lg group-hover:bg-white/10 transition-colors border border-white/5 group-hover:border-white/20">
+                                            <ArrowLeft size={16} />
+                                        </div>
+                                        <span className="text-xs font-bold tracking-widest uppercase">BACK</span>
+                                    </button>
+                                )}
+
                                 <div className="flex items-center gap-3 mb-3">
                                     <div className={cn("px-2.5 py-1 rounded text-[10px] font-bold tracking-[0.2em] uppercase bg-gradient-to-r", themeClasses[color])}>
                                         {englishTitle || 'SYSTEM / INTERFACE'}
                                     </div>
                                 </div>
-                                <h1 className="text-4xl md:text-5xl lg:text-7xl font-black italic tracking-tighter text-white uppercase orbitron drop-shadow-[0_0_20px_rgba(255,255,255,0.1)]">
-                                    {title}
-                                </h1>
+                                <div className="flex items-center justify-between">
+                                    <h1 className="text-4xl md:text-5xl lg:text-7xl font-black italic tracking-tighter text-white uppercase orbitron drop-shadow-[0_0_20px_rgba(255,255,255,0.1)]">
+                                        {title}
+                                    </h1>
+                                    {/* Action Button Desktop Position */}
+                                    {action && <div className="hidden md:block">{action}</div>}
+                                </div>
+
                                 {subtitle && (
                                     <p className="text-gray-400 font-medium tracking-widest mt-4 flex items-center gap-2 uppercase text-sm">
                                         <span className={cn("w-2 h-2 rounded-full", themeClasses[color])} />
@@ -140,8 +118,11 @@ export default function CyberPageLayout({
                                 )}
                             </div>
 
+                            {/* Mobile Action Button */}
+                            {action && <div className="md:hidden w-full">{action}</div>}
+
                             {description && (
-                                <div className="max-w-md bg-white/5 p-5 rounded-2xl border-l-2 border-cyan-500 backdrop-blur-sm border-t border-r border-b border-white/5">
+                                <div className="max-w-md bg-white/5 p-5 rounded-2xl border-l-2 border-cyan-500 backdrop-blur-sm border-t border-r border-b border-white/5 mt-4 md:mt-0">
                                     <p className="text-sm text-gray-300 leading-relaxed italic">
                                         "{description}"
                                     </p>
