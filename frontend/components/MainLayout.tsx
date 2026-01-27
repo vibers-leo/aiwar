@@ -51,26 +51,15 @@ export default function MainLayout({ children }: { children: React.ReactNode }) 
 
     // [POLICY] Hide the global right sidebar on almost all functional pages 
     // because they now use the premium CyberPageLayout which has its own layout logic.
+    // [POLICY] Hide the global right sidebar ONLY on critical immersive pages
+    // We want to show the right sidebar (Friends/Status) on most functional pages now.
     const hideSidebar = pathname !== null && (
-        pathname.startsWith('/story') ||
-        pathname.startsWith('/main') ||
-        pathname.startsWith('/profile') ||
-        pathname.startsWith('/pvp') ||
-        pathname.startsWith('/factions') ||
-        pathname.startsWith('/shop') ||
-        pathname.startsWith('/lab') ||
-        pathname.startsWith('/ranking') ||
-        pathname.startsWith('/social') ||
-        pathname.startsWith('/my-cards') ||
-        pathname.startsWith('/encyclopedia') ||
-        pathname.startsWith('/generation') ||
-        pathname.startsWith('/enhance') ||
-        pathname.startsWith('/fusion') ||
-        pathname.startsWith('/special-unit') ||
-        pathname.startsWith('/studio') ||
-        pathname.startsWith('/support') ||
-        pathname.startsWith('/mythic') ||
-        pathname.startsWith('/missions')
+        pathname === '/' ||
+        pathname === '/login' ||
+        pathname === '/signup' ||
+        pathname === '/start' ||
+        pathname.startsWith('/battle') ||
+        pathname.startsWith('/story') // Story mode needs full immersion
     );
 
     if (isNoLayout) {

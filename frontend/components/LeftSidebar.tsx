@@ -41,7 +41,7 @@ export default function LeftSidebar({
 
     return (
         <motion.div
-            animate={{ width: isHovered ? '100%' : '60px' }}
+            animate={{ width: isHovered ? 280 : 60 }}
             transition={{ type: 'spring', damping: 20, stiffness: 300 }}
             onMouseEnter={() => setIsHovered(true)}
             onMouseLeave={() => setIsHovered(false)}
