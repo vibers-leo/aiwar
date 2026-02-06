@@ -117,7 +117,7 @@ export default function IntroPage() {
         { id: 1, name: 'GPT-5', faction: 'OpenAI', power: 97, x: 15, y: 20, img: '/images/cards/real/gpt5-omni.png' },
         { id: 2, name: 'Claude', faction: 'Anthropic', power: 92, x: 75, y: 15, img: '/images/cards/real/epic-code-warrior.png' },
         { id: 3, name: 'Gemini', faction: 'DeepMind', power: 94, x: 85, y: 60, img: '/images/cards/real/legendary-metatron-core.png' },
-        { id: 4, name: 'Llama', faction: 'Meta AI', power: 88, x: 10, y: 70, img: '/images/cards/real/mythic-project-2501.png' },
+        { id: 4, name: 'Llama', faction: 'Meta AI', power: 88, x: 10, y: 70, img: '/images/cards/real/unique-project-2501.png' },
     ];
 
     return (
