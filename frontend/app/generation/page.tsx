@@ -226,11 +226,8 @@ export default function GenerationPage() {
                     try {
                         console.log(`[Rental] Faction placed in slot: ${factionId}`);
 
-                        // Refresh inventory to sync rental commander status
-                        await refreshInventory();
-
                         if (commanderTemplate) {
-                            // Show reward modal
+                            // [FIX] 모달을 먼저 표시하여 빠른 피드백 제공
                             const newCommanderCard = {
                                 ...createCardFromTemplate(commanderTemplate),
                                 isRented: true,
@@ -255,7 +252,14 @@ export default function GenerationPage() {
                             }
 
                             setRewardModalOpen(true);
+
+                            // [FIX] 인벤토리 새로고침을 백그라운드에서 실행 (모달 표시 속도 개선)
+                            refreshInventory().catch(err => {
+                                console.error("[Rental] Background inventory refresh failed:", err);
+                            });
                         } else {
+                            // 군단장이 없는 경우에만 인벤토리 새로고침 대기
+                            await refreshInventory();
                             showAlert({ title: '배치 완료', message: '군단이 배치되어 카드 생성이 시작되었습니다.', type: 'success' });
                         }
                     } catch (error) {

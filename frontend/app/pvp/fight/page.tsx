@@ -43,7 +43,7 @@ function PvPFightContent() {
     const router = useRouter();
     const searchParams = useSearchParams();
     const opponentId = searchParams.get('opponentId');
-    const { addCoins, addExperience } = useUser();
+    const { addCoins, addExperience, user } = useUser();
     const { t, language } = useTranslation();
     const lang = (language as 'ko' | 'en') || 'ko';
 
@@ -120,6 +120,21 @@ function PvPFightContent() {
         const newStats = updatePvPStats(stats, isWin ? 'win' : 'lose', newRating);
         savePvPStats(newStats);
         savePvPHistory(`match-${Date.now()}`, opponent?.name || 'Unknown', opponent?.level || 1, isWin ? 'win' : 'lose', ratingChange, rewards);
+
+        // [FIX] Firebase에 PVP 통계 동기화 (랭킹 반영)
+        try {
+            if (user?.uid) {
+                const { saveUserProfile } = await import('@/lib/firebase-db');
+                await saveUserProfile({
+                    rating: newRating,
+                    wins: newStats.wins,
+                    losses: newStats.losses
+                }, user.uid);
+                console.log(`[PVP] Rating synced to Firebase: ${newRating}`);
+            }
+        } catch (error) {
+            console.error('[PVP] Failed to sync rating to Firebase:', error);
+        }
 
         await addCoins(rewards.coins);
         await addExperience(rewards.experience);
