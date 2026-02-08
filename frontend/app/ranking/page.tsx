@@ -53,11 +53,11 @@ export default function RankingPage() {
                     playerName: p.nickname || p.displayName || `Commander #${p.uid?.slice(0, 4) || '????'}`,
                     avatarUrl: p.avatarUrl || '',
                     level: p.level || 1,
-                    rating: p.pvpStats?.currentRating || 1000,
-                    highestRating: p.pvpStats?.highestRating || 1000,
-                    wins: p.pvpStats?.wins || 0,
-                    losses: p.pvpStats?.losses || 0,
-                    winRate: p.pvpStats?.winRate || 0
+                    rating: p.rating || p.pvpStats?.currentRating || 1000,
+                    highestRating: p.highestRating || p.pvpStats?.highestRating || 1000,
+                    wins: p.wins || p.pvpStats?.wins || 0,
+                    losses: p.losses || p.pvpStats?.losses || 0,
+                    winRate: p.winRate || p.pvpStats?.winRate || 0
                 }));
 
                 setRankings(mappedRankings);

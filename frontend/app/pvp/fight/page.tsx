@@ -125,12 +125,17 @@ function PvPFightContent() {
         try {
             if (user?.uid) {
                 const { saveUserProfile } = await import('@/lib/firebase-db');
+                const winRate = newStats.totalMatches > 0
+                    ? Math.round((newStats.wins / newStats.totalMatches) * 100)
+                    : 0;
+
                 await saveUserProfile({
                     rating: newRating,
                     wins: newStats.wins,
-                    losses: newStats.losses
+                    losses: newStats.losses,
+                    winRate: winRate
                 }, user.uid);
-                console.log(`[PVP] Rating synced to Firebase: ${newRating}`);
+                console.log(`[PVP] Rating synced to Firebase: ${newRating} (${newStats.wins}W ${newStats.losses}L, ${winRate}%)`);
             }
         } catch (error) {
             console.error('[PVP] Failed to sync rating to Firebase:', error);

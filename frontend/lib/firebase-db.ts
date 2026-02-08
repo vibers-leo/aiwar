@@ -113,6 +113,7 @@ export interface UserProfile {
     rating?: number; // PVP Rating
     wins?: number; // PVP Wins
     losses?: number; // PVP Losses
+    winRate?: number; // PVP Win Rate (%)
     rank?: number; // Ranking
     lastLogoutAt?: any; // Added for Secure Logout Sync
     // [NEW] Commander Profile
