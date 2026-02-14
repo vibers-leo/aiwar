@@ -9,12 +9,7 @@ import {
     serverTimestamp,
     DatabaseReference
 } from 'firebase/database';
-// import { database, isFirebaseConfigured } from './firebase';
-import { isFirebaseConfigured } from './firebase';
-
-// Firebase Realtime Database is not configured in this project
-// This file is kept for reference but database variable is not available
-const database: any = null;
+import { database, isFirebaseConfigured } from './firebase';
 import { getUserId } from './firebase-auth';
 import { GameState } from './game-storage';
 import { CommanderResearch } from './research-system';

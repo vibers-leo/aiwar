@@ -1,5 +1,52 @@
 {
     "rules": {
+        "users": {
+            "$userId": {
+                ".read": "$userId === auth.uid",
+                ".write": "$userId === auth.uid",
+                ".indexOn": ["level", "totalPower", "updatedAt"]
+            }
+        },
+        "leaderboard": {
+            "global": {
+                ".read": true,
+                "$userId": {
+                    ".write": "$userId === auth.uid",
+                    ".validate": "newData.hasChildren(['displayName', 'level', 'totalPower', 'winRate', 'userId', 'updatedAt'])"
+                },
+                ".indexOn": ["level", "totalPower", "winRate"]
+            }
+        },
+        "minigame": {
+            "cardClash": {
+                "queue": {
+                    ".read": "auth != null",
+                    "$userId": {
+                        ".write": "$userId === auth.uid || !data.exists()",
+                        ".validate": "newData.hasChildren(['userId', 'mode', 'betAmount', 'hand', 'timestamp'])"
+                    }
+                },
+                "activeGames": {
+                    "$gameId": {
+                        ".read": "auth != null && (data.child('player1/userId').val() === auth.uid || data.child('player2/userId').val() === auth.uid)",
+                        ".write": "auth != null && (!data.exists() || data.child('player1/userId').val() === auth.uid || data.child('player2/userId').val() === auth.uid)"
+                    }
+                },
+                "results": {
+                    "$userId": {
+                        ".read": "$userId === auth.uid",
+                        ".write": "$userId === auth.uid"
+                    }
+                }
+            }
+        },
+        "chat": {
+            ".read": "auth != null",
+            "$chatId": {
+                ".write": "auth != null",
+                ".validate": "newData.hasChildren(['userId', 'displayName', 'message', 'timestamp']) && newData.child('message').val().length <= 500"
+            }
+        },
         "waitingRooms": {
             ".read": "auth != null",
             "$code": {

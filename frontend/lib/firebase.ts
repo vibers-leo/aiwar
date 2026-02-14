@@ -8,6 +8,7 @@ import { getAuth, Auth } from 'firebase/auth';
 import { getStorage, FirebaseStorage } from 'firebase/storage';
 import { getAnalytics, Analytics, isSupported } from 'firebase/analytics';
 import { getPerformance, FirebasePerformance } from 'firebase/performance';
+import { getDatabase, Database } from 'firebase/database';
 
 const firebaseConfig = {
     apiKey: process.env.NEXT_PUBLIC_FIREBASE_API_KEY || '',
@@ -16,7 +17,7 @@ const firebaseConfig = {
     storageBucket: process.env.NEXT_PUBLIC_FIREBASE_STORAGE_BUCKET || '',
     messagingSenderId: process.env.NEXT_PUBLIC_FIREBASE_MESSAGING_SENDER_ID || '',
     appId: process.env.NEXT_PUBLIC_FIREBASE_APP_ID || '',
-    databaseURL: 'https://aiwar-14246-default-rtdb.asia-southeast1.firebasedatabase.app/',
+    databaseURL: process.env.NEXT_PUBLIC_FIREBASE_DATABASE_URL || '',
 };
 
 // Firebase가 설정되었는지 확인
@@ -29,6 +30,7 @@ let auth: Auth | null = null;
 let storage: FirebaseStorage | null = null;
 let analytics: Analytics | null = null;
 let perf: FirebasePerformance | null = null;
+let database: Database | null = null;
 
 if (isFirebaseConfigured) {
     if (!getApps().length) {
@@ -41,6 +43,7 @@ if (isFirebaseConfigured) {
     db = getFirestore(app);
     auth = getAuth(app);
     storage = getStorage(app);
+    database = getDatabase(app);
 
     // Browser-only services
     if (typeof window !== 'undefined') {
@@ -49,9 +52,11 @@ if (isFirebaseConfigured) {
         });
         perf = getPerformance(app);
     }
+
+    console.log('✅ Realtime Database 초기화 완료:', firebaseConfig.databaseURL);
 } else {
     console.warn('⚠️ Firebase 설정이 없습니다. 환경 변수를 확인하세요.');
 }
 
-export { db, auth, storage, analytics, perf, isFirebaseConfigured };
+export { db, auth, storage, analytics, perf, database, isFirebaseConfigured };
 export default app;
