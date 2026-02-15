@@ -1,0 +1,31 @@
+rules_version = '2';
+
+// Firebase Storage 보안 규칙
+// 사용자 카드 이미지 업로드 허용
+
+service firebase.storage {
+  match /b/{bucket}/o {
+
+    // 사용자 카드 이미지 (인증된 사용자만 업로드 가능)
+    match /user-cards/{imageId} {
+      // 읽기: 모든 사용자 허용 (public)
+      allow read: if true;
+
+      // 쓰기: 인증된 사용자만 허용
+      allow write: if request.auth != null
+                   && request.resource.size < 10 * 1024 * 1024  // 10MB 제한
+                   && request.resource.contentType.matches('image/.*');  // 이미지만
+    }
+
+    // 관리자 전용 폴더 (미래 확장용)
+    match /admin-cards/{imageId} {
+      allow read: if true;
+      allow write: if request.auth != null && request.auth.token.admin == true;
+    }
+
+    // 기본: 모든 접근 거부
+    match /{allPaths=**} {
+      allow read, write: if false;
+    }
+  }
+}
