@@ -251,6 +251,23 @@ body::before {
   -ms-overflow-style: none;
 }
 
+/* 3D Transform Utilities (For MiniGame & Card Flip) */
+.perspective-1000 {
+  perspective: 1000px;
+}
+
+.transform-style-3d {
+  transform-style: preserve-3d;
+}
+
+.backface-hidden {
+  backface-visibility: hidden;
+}
+
+.rotate-y-180 {
+  transform: rotateY(180deg);
+}
+
 /* 글로우 효과 유틸리티 클래스 */
 .glow-blue {
   box-shadow: var(--glow-blue);
@@ -262,6 +279,15 @@ body::before {
 
 .glow-gold {
   box-shadow: var(--glow-gold);
+}
+
+/* 텍스트 글로우 효과 */
+.text-glow-red {
+  text-shadow: 0 0 10px rgba(255, 51, 102, 0.8), 0 0 20px rgba(255, 51, 102, 0.4);
+}
+
+.text-glow-blue {
+  text-shadow: 0 0 10px rgba(0, 217, 255, 0.8), 0 0 20px rgba(0, 217, 255, 0.4);
 }
 
 .glow-cyan {

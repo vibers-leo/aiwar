@@ -79,7 +79,7 @@ export default function CyberPageLayout({
                 )}
 
                 {/* Main Content Area */}
-                <div className="flex-1 overflow-y-auto px-4 py-8">
+                <div className="flex-1 overflow-y-auto px-3 sm:px-4 py-5 sm:py-8">
                     <div className="max-w-6xl mx-auto w-full space-y-8">
                         {/* Page Title Section */}
                         <div className="flex flex-col md:flex-row md:items-end justify-between gap-6 border-b border-white/5 pb-8 relative">
@@ -103,7 +103,7 @@ export default function CyberPageLayout({
                                     </div>
                                 </div>
                                 <div className="flex items-center justify-between">
-                                    <h1 className="text-4xl md:text-5xl lg:text-7xl font-black italic tracking-tighter text-white uppercase orbitron drop-shadow-[0_0_20px_rgba(255,255,255,0.1)]">
+                                    <h1 className="text-3xl sm:text-4xl md:text-5xl lg:text-7xl font-black italic tracking-tighter text-white uppercase orbitron drop-shadow-[0_0_20px_rgba(255,255,255,0.1)]">
                                         {title}
                                     </h1>
                                     {/* Action Button Desktop Position */}
@@ -148,9 +148,10 @@ export default function CyberPageLayout({
             {showLeftSidebar && (
                 <button
                     onClick={() => setIsHelpOpen(true)}
-                    className="lg:hidden fixed bottom-24 left-6 z-[60] w-14 h-14 bg-cyan-500 rounded-full shadow-[0_0_25px_rgba(6,182,212,0.6)] flex items-center justify-center text-black hover:scale-110 active:scale-95 transition-all group"
+                    className="lg:hidden fixed bottom-20 sm:bottom-24 left-4 sm:left-6 z-[60] w-12 h-12 sm:w-14 sm:h-14 bg-cyan-500 rounded-full shadow-[0_0_25px_rgba(6,182,212,0.6)] flex items-center justify-center text-black hover:scale-110 active:scale-95 transition-all group"
                 >
-                    <HelpCircle size={28} className="group-hover:rotate-12 transition-transform" />
+                    <HelpCircle size={22} className="sm:hidden group-hover:rotate-12 transition-transform" />
+                    <HelpCircle size={28} className="hidden sm:block group-hover:rotate-12 transition-transform" />
                     <div className="absolute -top-1 -right-1 w-5 h-5 bg-red-500 rounded-full border-2 border-black flex items-center justify-center">
                         <span className="text-[10px] font-bold text-white">!</span>
                     </div>

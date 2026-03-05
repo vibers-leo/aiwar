@@ -6,10 +6,9 @@ import { useRouter } from 'next/navigation';
 import { motion } from 'framer-motion';
 import { Trophy } from 'lucide-react';
 import CyberPageLayout from '@/components/CyberPageLayout';
-import { getLeaderboardData, saveUserProfile } from '@/lib/firebase-db';
+import { fetchLeaderboard, saveUserProfile } from '@/lib/firebase-db';
 import { RankingEntry } from '@/lib/ranking-types';
 import { getCurrentSeason, getRankTier, getRatingToNextTier } from '@/lib/ranking-utils';
-import { getPvPStats } from '@/lib/pvp-utils';
 import { cn } from '@/lib/utils';
 import { useUser } from '@/context/UserContext';
 import { useAlert } from '@/context/AlertContext';
@@ -27,7 +26,6 @@ export default function RankingPage() {
     const [rankings, setRankings] = useState<RankingEntry[]>([]);
     const [myRank, setMyRank] = useState<RankingEntry | null>(null);
     const [currentSeason, setCurrentSeason] = useState<any>(null);
-    const [pvpStats, setPvpStats] = useState<any>(null);
     const [filter, setFilter] = useState<'top10' | 'top100' | 'all'>('top100');
     const [sortConfig, setSortConfig] = useState<{ key: keyof RankingEntry; direction: 'asc' | 'desc' }>({ key: 'rating', direction: 'desc' });
 
@@ -44,7 +42,7 @@ export default function RankingPage() {
                 setCurrentSeason(season);
 
                 // 2. Get Leaderboard Data
-                const userProfiles = await getLeaderboardData();
+                const userProfiles = await fetchLeaderboard();
 
                 // Map UserProfile to RankingEntry
                 const mappedRankings: RankingEntry[] = (userProfiles as any[]).map((p, index) => ({
@@ -62,13 +60,16 @@ export default function RankingPage() {
 
                 setRankings(mappedRankings);
 
-                // 3. Get User Stats (Local/Global)
-                const stats = getPvPStats();
-                setPvpStats(stats);
-
                 if (user) {
                     const mine = mappedRankings.find(r => r.playerId === user.uid);
-                    if (mine) setMyRank(mine);
+                    if (mine) {
+                        setMyRank(mine);
+                        // Persist rank to profile if it's new or changed
+                        if (profile?.rank !== mine.rank) {
+                            console.log(`Updating user rank: ${profile?.rank} -> ${mine.rank}`);
+                            saveUserProfile({ rank: mine.rank }, user.uid).catch(e => console.error("Failed to save rank", e));
+                        }
+                    }
                 }
             } catch (error) {
                 console.error("Failed to load ranking data:", error);
@@ -76,9 +77,6 @@ export default function RankingPage() {
                 // Set defaults to break the loading state even on failure
                 if (!currentSeason) {
                     setCurrentSeason(getCurrentSeason());
-                }
-                if (!pvpStats) {
-                    setPvpStats({ currentRating: 1000, wins: 0, losses: 0, winRate: 0, totalMatches: 0 });
                 }
             }
         }
@@ -171,7 +169,7 @@ export default function RankingPage() {
             return 0;
         });
 
-    if (!currentSeason || !pvpStats) {
+    if (!currentSeason) {
         return (
             <CyberPageLayout title="글로벌 랭킹" englishTitle="GLOBAL LEADERBOARD" description="로딩 중..." color="pink">
                 <div className="text-center py-20 text-white/30 font-mono">LOADING_DATA...</div>
@@ -179,20 +177,27 @@ export default function RankingPage() {
         );
     }
 
-    // Use server rank data if available, otherwise fall back to local pvpStats (which might be sync'd)
-    const displayRating = myRank?.rating || pvpStats.currentRating || pvpStats.rating || 1000;
+    // Use server rank data if available, otherwise fall back to profile data
+    const displayRating = myRank?.rating || profile?.rating || 1000;
     const displayTier = getRankTier(displayRating);
-    const displayRank = myRank ? `#${myRank.rank}` : 'Unranked';
-    const displayWinRate = myRank ? `${myRank.winRate}%` : `${pvpStats.winRate}%`;
+    const displayRank = myRank ? `#${myRank.rank}` : (profile?.rank ? `#${profile.rank}` : 'Unranked');
+
+    // Calculate Win Rate safely
+    const profileWins = profile?.wins || 0;
+    const profileLosses = profile?.losses || 0;
+    const profileTotal = profileWins + profileLosses;
+    const profileWinRate = profileTotal > 0 ? Math.round((profileWins / profileTotal) * 100) : 0;
+
+    const displayWinRate = myRank ? `${myRank.winRate}%` : `${profileWinRate}%`;
 
     const tableHeaders = [
-        { label: 'RANK', key: 'rank' as keyof RankingEntry },
-        { label: 'PLAYER', key: 'playerName' as keyof RankingEntry },
-        { label: 'LEVEL', key: 'level' as keyof RankingEntry },
-        { label: 'TIER', key: 'rating' as keyof RankingEntry }, // Sort tier by rating
-        { label: 'RATING', key: 'rating' as keyof RankingEntry },
-        { label: 'RECORD', key: 'wins' as keyof RankingEntry },
-        { label: 'WIN_RATE', key: 'winRate' as keyof RankingEntry }
+        { label: 'RANK', key: 'rank' as keyof RankingEntry, className: '' },
+        { label: 'PLAYER', key: 'playerName' as keyof RankingEntry, className: '' },
+        { label: 'LEVEL', key: 'level' as keyof RankingEntry, className: 'hidden sm:table-cell' },
+        { label: 'TIER', key: 'rating' as keyof RankingEntry, className: 'hidden xs:table-cell' }, // Sort tier by rating
+        { label: 'RATING', key: 'rating' as keyof RankingEntry, className: '' },
+        { label: 'RECORD', key: 'wins' as keyof RankingEntry, className: 'hidden sm:table-cell' },
+        { label: 'WIN_RATE', key: 'winRate' as keyof RankingEntry, className: 'hidden sm:table-cell' }
     ];
 
     return (
@@ -227,10 +232,10 @@ export default function RankingPage() {
             }
         >
             {/* Season Info */}
-            <motion.div initial={{ opacity: 0, y: -20 }} animate={{ opacity: 1, y: 0 }} className="bg-gradient-to-r from-pink-500/10 to-purple-500/10 border border-pink-500/30 rounded-xl p-6 mb-8">
+            <motion.div initial={{ opacity: 0, y: -20 }} animate={{ opacity: 1, y: 0 }} className="bg-gradient-to-r from-pink-500/10 to-purple-500/10 border border-pink-500/30 rounded-xl p-4 sm:p-6 mb-8">
                 <div className="flex justify-between items-center">
                     <div>
-                        <h2 className="text-xl font-bold orbitron text-white">{currentSeason.name}</h2>
+                        <h2 className="text-lg sm:text-xl font-bold orbitron text-white">{currentSeason.name}</h2>
                         <p className="text-sm text-white/40 font-mono">{new Date(currentSeason.startDate).toLocaleDateString()} ~ {new Date(currentSeason.endDate).toLocaleDateString()}</p>
                     </div>
                     <span className={cn("px-3 py-1 rounded text-[10px] font-mono uppercase", currentSeason.status === 'active' ? "bg-green-500/20 text-green-400" : "bg-white/10 text-white/40")}>
@@ -272,7 +277,7 @@ export default function RankingPage() {
             </div>
 
             {/* Ranking Table */}
-            <div className="bg-white/5 border border-white/10 rounded-xl overflow-hidden min-h-[400px] overflow-x-auto">
+            <div className="bg-white/5 border border-white/10 rounded-xl overflow-hidden min-h-[250px] sm:min-h-[400px] overflow-x-auto">
                 {processedRankings.length > 0 ? (
                     <table className="w-full">
                         <thead className="bg-white/5">
@@ -281,7 +286,7 @@ export default function RankingPage() {
                                     <th
                                         key={header.label}
                                         onClick={() => handleSort(header.key)}
-                                        className="px-4 py-3 text-[10px] font-mono text-white/40 uppercase tracking-widest text-left cursor-pointer hover:text-cyan-400 hover:bg-white/5 transition-all select-none"
+                                        className={cn("px-3 sm:px-4 py-3 text-[10px] font-mono text-white/40 uppercase tracking-widest text-left cursor-pointer hover:text-cyan-400 hover:bg-white/5 transition-all select-none", header.className)}
                                         title={`Sort by ${header.label}`}
                                     >
                                         <div className="flex items-center gap-1.5">
@@ -310,25 +315,25 @@ export default function RankingPage() {
                                             isMe && "bg-pink-500/10 hover:bg-pink-500/20"
                                         )}
                                     >
-                                        <td className="px-4 py-3 text-sm"><span className={cn("font-bold", entry.rank <= 3 ? "text-amber-400" : "text-white")}>{entry.rank === 1 ? '🥇' : entry.rank === 2 ? '🥈' : entry.rank === 3 ? '🥉' : `#${entry.rank}`}</span></td>
-                                        <td className="px-4 py-3 text-white font-medium text-sm">
-                                            <div className="flex items-center gap-2">
-                                                {entry.playerName}
-                                                {isMe && <span className="px-1.5 py-0.5 rounded bg-pink-500/20 text-pink-400 text-[10px] font-bold">ME</span>}
+                                        <td className="px-3 sm:px-4 py-3 text-sm"><span className={cn("font-bold", entry.rank <= 3 ? "text-amber-400" : "text-white")}>{entry.rank === 1 ? '🥇' : entry.rank === 2 ? '🥈' : entry.rank === 3 ? '🥉' : `#${entry.rank}`}</span></td>
+                                        <td className="px-3 sm:px-4 py-3 text-white font-medium text-sm">
+                                            <div className="flex items-center gap-1.5 sm:gap-2">
+                                                <span className="truncate max-w-[80px] sm:max-w-none">{entry.playerName}</span>
+                                                {isMe && <span className="px-1.5 py-0.5 rounded bg-pink-500/20 text-pink-400 text-[10px] font-bold shrink-0">ME</span>}
                                             </div>
                                         </td>
-                                        <td className="px-4 py-3 text-amber-400 text-sm font-mono">LV.{entry.level}</td>
-                                        <td className="px-4 py-3"><span className={cn("text-xs font-bold px-2 py-0.5 rounded bg-white/5", tier.color)}>{tier.icon} {tier.tier}</span></td>
-                                        <td className="px-4 py-3 text-cyan-400 font-bold font-orbitron">{entry.rating}</td>
-                                        <td className="px-4 py-3 text-sm font-mono"><span className="text-green-400">{entry.wins}W</span> <span className="text-red-400">{entry.losses}L</span></td>
-                                        <td className="px-4 py-3 text-sm font-mono"><span className={cn("font-bold", entry.winRate >= 60 ? "text-green-400" : entry.winRate >= 50 ? "text-amber-400" : "text-white/40")}>{entry.winRate}%</span></td>
+                                        <td className="hidden sm:table-cell px-3 sm:px-4 py-3 text-amber-400 text-sm font-mono">LV.{entry.level}</td>
+                                        <td className="hidden xs:table-cell px-3 sm:px-4 py-3"><span className={cn("text-xs font-bold px-2 py-0.5 rounded bg-white/5", tier.color)}>{tier.icon} {tier.tier}</span></td>
+                                        <td className="px-3 sm:px-4 py-3 text-cyan-400 font-bold font-orbitron text-sm">{entry.rating}</td>
+                                        <td className="hidden sm:table-cell px-3 sm:px-4 py-3 text-sm font-mono"><span className="text-green-400">{entry.wins}W</span> <span className="text-red-400">{entry.losses}L</span></td>
+                                        <td className="hidden sm:table-cell px-3 sm:px-4 py-3 text-sm font-mono"><span className={cn("font-bold", entry.winRate >= 60 ? "text-green-400" : entry.winRate >= 50 ? "text-amber-400" : "text-white/40")}>{entry.winRate}%</span></td>
                                     </tr>
                                 );
                             })}
                         </tbody>
                     </table>
                 ) : (
-                    <div className="flex flex-col items-center justify-center h-[400px] text-white/30">
+                    <div className="flex flex-col items-center justify-center h-[250px] sm:h-[400px] text-white/30">
                         <div className="text-4xl mb-4">🌪️</div>
                         <p>랭킹 데이터가 없습니다.</p>
                     </div>

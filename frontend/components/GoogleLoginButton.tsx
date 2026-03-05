@@ -2,12 +2,14 @@
 
 import { signInWithGoogle } from '@/lib/auth-utils';
 import { handleRedirectResult } from '@/lib/firebase-auth';
-import { useRouter } from 'next/navigation';
+import { useRouter, useSearchParams } from 'next/navigation';
 import { useState, useEffect } from 'react';
 import { useUser } from '@/context/UserContext';
 
 export default function GoogleLoginButton() {
     const router = useRouter();
+    const searchParams = useSearchParams();
+    const redirectUrl = searchParams.get('redirect') || '/';
     const { user } = useUser();
     const [isLoading, setIsLoading] = useState(false);
 
@@ -18,7 +20,7 @@ export default function GoogleLoginButton() {
                 const redirectUser = await handleRedirectResult();
                 if (redirectUser) {
                     console.log('[GoogleLoginButton] Redirect login successful, navigating to home');
-                    router.push('/');
+                    router.push(redirectUrl);
                 }
             } catch (error) {
                 console.error('[GoogleLoginButton] Error handling redirect:', error);
@@ -33,7 +35,7 @@ export default function GoogleLoginButton() {
         try {
             const result = await signInWithGoogle();
             if (result.success) {
-                router.push('/');
+                router.push(redirectUrl);
             } else {
                 if (result.message) alert(result.message);
                 setIsLoading(false);

@@ -90,6 +90,29 @@
                     ".validate": "newData.hasChildren(['playerId', 'status'])"
                 }
             }
+        },
+        "minigame_rooms": {
+            ".read": "auth != null",
+            "$roomId": {
+                ".write": "auth != null && (!data.exists() || data.child('hostId').val() == auth.uid || data.child('guestId').val() == auth.uid)",
+                ".indexOn": ["status", "createdAt"]
+            }
+        },
+        "clash_rooms": {
+            ".read": "auth != null",
+            "$roomId": {
+                ".write": "auth != null && (!data.exists() || data.child('hostId').val() == auth.uid || data.child('guestId').val() == auth.uid)",
+                ".indexOn": ["status", "mode", "createdAt"]
+            }
+        },
+        "clash_chats": {
+            "$roomId": {
+                ".read": "auth != null",
+                ".write": "auth != null",
+                "$messageId": {
+                    ".validate": "newData.hasChildren(['senderId', 'senderName', 'message', 'timestamp']) && newData.child('message').val().length <= 100"
+                }
+            }
         }
     }
 }

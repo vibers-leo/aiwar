@@ -43,6 +43,7 @@ import { cn } from '@/lib/utils';
 import { useFooter } from '@/context/FooterContext';
 import { useUserProfile } from '@/hooks/useUserProfile';
 import { useFirebase } from '@/components/FirebaseProvider';
+import { getRankTier } from '@/lib/ranking-utils';
 
 interface CommanderProfileModalProps {
     isOpen: boolean;
@@ -190,18 +191,28 @@ export default function CommanderProfileModal({ isOpen, onClose }: CommanderProf
         }
     }, [profile?.avatarUrl]);
 
-    // 랑킹/전적 데이터 (가상)
+    // Real Stats from Profile
+    const pvpRating = profile?.rating || 1000;
+    const tierInfo = getRankTier(pvpRating);
+    const totalWins = profile?.wins || 0;
+    const totalLosses = profile?.losses || 0;
+    const totalBattles = totalWins + totalLosses; // or profile?.totalBattles if available? using sum for consistency
+    const winRate = totalBattles > 0 ? ((totalWins / totalBattles) * 100).toFixed(1) : '0.0';
+
+    // Fallback for global rank if not yet synced/calculated
+    const globalRank = profile?.rank ? `#${profile.rank}` : 'Unranked';
+
     const commanderStats = {
-        rank: 'Gold III',
-        rankIcon: '🌟',
-        globalRank: 1247,
-        winRate: 67.5,
-        totalBattles: 156,
-        wins: 105,
-        losses: 51,
-        cardCount: 48,
-        uniqueCount: 2,
-        joinDate: '2025.12.01'
+        rank: `${tierInfo.tier} (${pvpRating})`,
+        rankIcon: tierInfo.icon,
+        globalRank: globalRank,
+        winRate: winRate,
+        totalBattles: totalBattles,
+        wins: totalWins,
+        losses: totalLosses,
+        cardCount: inventory.length,
+        uniqueCount: new Set(inventory.map(c => c.id)).size, // Approximate unique cards
+        joinDate: profile?.createdAt?.toDate ? profile.createdAt.toDate().toLocaleDateString() : 'Unknown'
     };
 
     // 연구 시간 단축 버프 계산

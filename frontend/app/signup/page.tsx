@@ -1,15 +1,19 @@
 'use client';
 
-import { useState } from 'react';
-import { useRouter } from 'next/navigation';
+import { useState, Suspense } from 'react';
+import { useRouter, useSearchParams } from 'next/navigation';
+
+export const dynamic = 'force-dynamic';
 import Link from 'next/link';
 import { signUpWithEmail } from '@/lib/firebase-auth';
 import { login, validateUsername, validatePassword } from '@/lib/auth-utils';
 import { BackgroundBeams } from '@/components/ui/aceternity/background-beams';
 import { HoverBorderGradient } from '@/components/ui/aceternity/hover-border-gradient';
 
-export default function SignupPage() {
+function SignupForm() {
     const router = useRouter();
+    const searchParams = useSearchParams();
+    const redirectUrl = searchParams.get('redirect') || '/main';
     const [email, setEmail] = useState('');
     const [password, setPassword] = useState('');
     const [confirmPassword, setConfirmPassword] = useState('');
@@ -58,7 +62,7 @@ export default function SignupPage() {
                 login(email, password);
 
                 setTimeout(() => {
-                    router.push('/main'); // Redirect to Main to trigger nickname modal
+                    router.push(redirectUrl); // Redirect to Main or requested page
                 }, 500);
             } else {
                 // Error is handled inside signUpWithEmail via alert
@@ -161,5 +165,17 @@ export default function SignupPage() {
                 </div>
             </div>
         </div>
+    );
+}
+
+export default function SignupPage() {
+    return (
+        <Suspense fallback={
+            <div className="min-h-screen bg-[#0a0a0a] flex items-center justify-center">
+                <div className="text-white font-mono">Loading...</div>
+            </div>
+        }>
+            <SignupForm />
+        </Suspense>
     );
 }

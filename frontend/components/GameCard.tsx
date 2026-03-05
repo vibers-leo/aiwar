@@ -115,7 +115,7 @@ function GameCard({
         return (
             <div
                 className="relative rounded-xl overflow-hidden border-2 border-gray-500/50 bg-gray-900/80 flex items-center justify-center"
-                style={{ width: '160px', height: '240px' }}
+                style={{ width: 'clamp(110px, 22vw, 200px)', height: 'clamp(165px, 33vw, 300px)' }}
             >
                 <div className="text-4xl opacity-50">❓</div>
                 <span className="absolute bottom-2 text-xs text-white/30">No Card</span>
@@ -203,7 +203,7 @@ function GameCard({
             onMouseEnter={() => setIsHovered(true)}
             onMouseLeave={() => setIsHovered(false)}
             onClick={isDisabled ? undefined : onClick}
-            style={{ width: '160px', height: '240px' }}
+            style={{ width: 'clamp(110px, 22vw, 200px)', height: 'clamp(165px, 33vw, 300px)' }}
             whileHover={!isDisabled ? { scale: 1.08 } : undefined}
             transition={{ duration: 0.2 }}
         >

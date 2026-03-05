@@ -86,7 +86,7 @@ export default function MainPage() {
       </div>
 
       {/* Subtle Sparkles in Top-Left Corner */}
-      <div className="absolute top-0 left-0 w-96 h-96 pointer-events-none z-10">
+      <div className="absolute top-0 left-0 w-48 h-48 sm:w-72 sm:h-72 md:w-96 md:h-96 pointer-events-none z-10">
         <SparklesCore
           id="main-sparkles"
           background="transparent"
@@ -115,16 +115,16 @@ export default function MainPage() {
       <div id="season-banner" className="relative z-10 w-full max-w-7xl mx-auto mt-6 mb-8 overflow-hidden rounded-2xl border border-cyan-500/30 bg-black/60 backdrop-blur-md group cursor-pointer hover:border-cyan-400/80 transition-all duration-300 hover:shadow-[0_0_40px_rgba(6,182,212,0.3)]">
         <div className="absolute inset-0 bg-gradient-to-r from-cyan-900/20 via-blue-900/10 to-transparent opacity-50 group-hover:opacity-100 transition-opacity duration-500" />
         <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_left,rgba(6,182,212,0.15),transparent_70%)]" />
-        <div className="relative p-6 flex flex-col md:flex-row items-center justify-between gap-6">
-          <div className="flex items-center gap-6">
-            <div className="w-16 h-16 rounded-xl bg-cyan-950/50 border border-cyan-500/40 flex items-center justify-center text-3xl shadow-[0_0_30px_rgba(6,182,212,0.3)] group-hover:shadow-[0_0_40px_rgba(6,182,212,0.5)] transition-shadow duration-300">
+        <div className="relative p-4 sm:p-6 flex flex-col md:flex-row items-center justify-between gap-4 sm:gap-6">
+          <div className="flex items-center gap-4 sm:gap-6">
+            <div className="w-12 h-12 sm:w-16 sm:h-16 rounded-xl bg-cyan-950/50 border border-cyan-500/40 flex items-center justify-center text-2xl sm:text-3xl shadow-[0_0_30px_rgba(6,182,212,0.3)] group-hover:shadow-[0_0_40px_rgba(6,182,212,0.5)] transition-shadow duration-300">
               🌍
             </div>
             <div>
               <div className="flex items-center gap-3 mb-1">
                 <span className="px-2.5 py-0.5 bg-cyan-500/20 text-cyan-300 text-[10px] font-bold tracking-wider rounded-full border border-cyan-500/40 animate-pulse shadow-[0_0_10px_rgba(6,182,212,0.3)]">ACTIVE SEASON</span>
               </div>
-              <h3 className="text-xl md:text-2xl font-black text-white italic orbitron drop-shadow-[0_0_10px_rgba(255,255,255,0.2)]">
+              <h3 className="text-lg sm:text-xl md:text-2xl font-black text-white italic orbitron drop-shadow-[0_0_10px_rgba(255,255,255,0.2)]">
                 SEASON 1: GENESIS
               </h3>
               <p className="text-cyan-400/70 text-sm font-mono mt-1">
@@ -140,7 +140,7 @@ export default function MainPage() {
         </div>
       </div>
 
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 relative z-10">
+      <div className="grid grid-cols-2 md:grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-4 md:gap-6 relative z-10">
         {menuItems.map((item, idx) => {
           // Tailwind Dynamic Class Fix: Explicit mapping
           const colorVariants: Record<string, any> = {
@@ -163,21 +163,21 @@ export default function MainPage() {
                 <CardBody className={`
                         bg-black/40 relative group/card dark:hover:shadow-2xl ${variant.shadow}
                         dark:bg-black dark:border-white/[0.2] border-black/[0.1]
-                        w-full h-64 rounded-xl p-6 border ${variant.border}
-                        flex flex-col items-center justify-center gap-4 overflow-hidden
+                        w-full min-h-[140px] sm:min-h-[180px] md:h-64 rounded-xl p-4 sm:p-6 border ${variant.border}
+                        flex flex-col items-center justify-center gap-2 sm:gap-4 overflow-hidden
                         ${variant.hover} transition-colors duration-300
                     `}>
 
                   <div className={`absolute inset-0 bg-gradient-to-b ${variant.bg} to-transparent opacity-0 group-hover/card:opacity-100 transition-opacity`} />
 
                   <CardItem translateZ="50" className="w-full flex justify-center items-center">
-                    <span className="text-6xl drop-shadow-[0_0_15px_rgba(255,255,255,0.3)]">
+                    <span className="text-4xl sm:text-5xl md:text-6xl drop-shadow-[0_0_15px_rgba(255,255,255,0.3)]">
                       {item.icon}
                     </span>
                   </CardItem>
 
-                  <CardItem translateZ="60" className="text-center z-10 mt-4">
-                    <h3 className={`text-2xl font-bold text-white mb-1 ${variant.text} transition-colors`}>
+                  <CardItem translateZ="60" className="text-center z-10 mt-1 sm:mt-4">
+                    <h3 className={`text-lg sm:text-xl md:text-2xl font-bold text-white mb-1 ${variant.text} transition-colors`}>
                       {item.title}
                     </h3>
                     <p className="text-xs font-mono text-white/50 tracking-widest uppercase">

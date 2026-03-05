@@ -162,7 +162,7 @@ export default function GameTopBar({
                 "fixed top-0 left-0 right-0 h-16 bg-black/80 backdrop-blur-3xl border-b border-white/10 z-[100] transition-all duration-500",
                 sidebarCollapsed ? "md:left-20" : "md:left-0"
             )}>
-                <div className="flex h-full items-center justify-between px-4 md:px-8 max-w-[1920px] mx-auto relative overflow-visible">
+                <div className="flex h-full items-center justify-between px-3 sm:px-4 md:px-8 max-w-[1920px] mx-auto relative overflow-visible">
                     <div className="absolute top-0 left-0 right-0 h-px bg-gradient-to-r from-cyan-400 via-transparent to-purple-500" />
 
                     <div className="flex items-center gap-4 xl:gap-8 flex-1">
@@ -408,7 +408,7 @@ export default function GameTopBar({
                             animate={{ x: 0 }}
                             exit={{ x: '100%' }}
                             transition={{ type: "spring", bounce: 0, duration: 0.4 }}
-                            className="fixed top-0 right-0 bottom-0 w-[280px] bg-[#050510] border-l border-cyan-500/30 z-[120] md:hidden flex flex-col shadow-[0_0_50px_rgba(0,0,0,0.8)]"
+                            className="fixed top-0 right-0 bottom-0 w-[280px] max-w-[85vw] bg-[#050510] border-l border-cyan-500/30 z-[120] md:hidden flex flex-col shadow-[0_0_50px_rgba(0,0,0,0.8)]"
                         >
                             <div className="p-5 border-b border-white/10 flex items-center justify-between bg-black/50">
                                 <div className="flex items-center gap-2">
@@ -440,7 +440,7 @@ export default function GameTopBar({
                                         <div className="text-[10px] text-cyan-400 font-mono">Level {userLevel}</div>
                                     </div>
                                 </div>
-                                <div className="grid grid-cols-2 gap-2">
+                                <div className="grid grid-cols-2 gap-1.5 sm:gap-2">
                                     <div className="bg-black/40 rounded px-2 py-1.5 border border-white/5">
                                         <div className="text-[9px] text-amber-400/70 uppercase">Coins</div>
                                         <div className="text-xs font-bold text-amber-400">{userCoins.toLocaleString()}</div>

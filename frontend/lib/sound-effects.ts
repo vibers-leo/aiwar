@@ -85,21 +85,22 @@ export const playClick = () => {
     if (!audioCtx && !isMuted) initAudio();
     if (!audioCtx || isMuted) return;
 
-    const osc = audioCtx.createOscillator();
-    const gain = audioCtx.createGain();
+    const ctx = audioCtx; // Capture non-null reference
+    const osc = ctx.createOscillator();
+    const gain = ctx.createGain();
 
     osc.connect(gain);
     gain.connect(masterGain!);
 
     osc.type = 'sine';
-    osc.frequency.setValueAtTime(800, audioCtx.currentTime);
-    osc.frequency.exponentialRampToValueAtTime(1200, audioCtx.currentTime + 0.05);
+    osc.frequency.setValueAtTime(800, ctx.currentTime);
+    osc.frequency.exponentialRampToValueAtTime(1200, ctx.currentTime + 0.05);
 
-    gain.gain.setValueAtTime(0.3, audioCtx.currentTime);
-    gain.gain.exponentialRampToValueAtTime(0.01, audioCtx.currentTime + 0.05);
+    gain.gain.setValueAtTime(0.3, ctx.currentTime);
+    gain.gain.exponentialRampToValueAtTime(0.01, ctx.currentTime + 0.05);
 
     osc.start();
-    osc.stop(audioCtx.currentTime + 0.05);
+    osc.stop(ctx.currentTime + 0.05);
 };
 
 // 2. 베팅/코인 사운드 (띠링!)
@@ -107,21 +108,22 @@ export const playBet = () => {
     if (!audioCtx && !isMuted) initAudio();
     if (!audioCtx || isMuted) return;
 
-    const osc = audioCtx.createOscillator();
-    const gain = audioCtx.createGain();
+    const ctx = audioCtx; // Capture non-null reference
+    const osc = ctx.createOscillator();
+    const gain = ctx.createGain();
 
     osc.connect(gain);
     gain.connect(masterGain!);
 
     osc.type = 'square';
-    osc.frequency.setValueAtTime(1200, audioCtx.currentTime);
-    osc.frequency.linearRampToValueAtTime(1800, audioCtx.currentTime + 0.1);
+    osc.frequency.setValueAtTime(1200, ctx.currentTime);
+    osc.frequency.linearRampToValueAtTime(1800, ctx.currentTime + 0.1);
 
-    gain.gain.setValueAtTime(0.1, audioCtx.currentTime);
-    gain.gain.exponentialRampToValueAtTime(0.01, audioCtx.currentTime + 0.1);
+    gain.gain.setValueAtTime(0.1, ctx.currentTime);
+    gain.gain.exponentialRampToValueAtTime(0.01, ctx.currentTime + 0.1);
 
     osc.start();
-    osc.stop(audioCtx.currentTime + 0.1);
+    osc.stop(ctx.currentTime + 0.1);
 };
 
 // 3. 전투 시작/충돌 (쿵!)
@@ -129,29 +131,30 @@ export const playClash = () => {
     if (!audioCtx && !isMuted) initAudio();
     if (!audioCtx || isMuted) return;
 
+    const ctx = audioCtx; // Capture non-null reference
     // 노이즈 (폭발음)
-    const bufferSize = audioCtx.sampleRate * 0.5;
-    const buffer = audioCtx.createBuffer(1, bufferSize, audioCtx.sampleRate);
+    const bufferSize = ctx.sampleRate * 0.5;
+    const buffer = ctx.createBuffer(1, bufferSize, ctx.sampleRate);
     const data = buffer.getChannelData(0);
     for (let i = 0; i < bufferSize; i++) {
         data[i] = Math.random() * 2 - 1;
     }
 
-    const noise = audioCtx.createBufferSource();
+    const noise = ctx.createBufferSource();
     noise.buffer = buffer;
-    const noiseGain = audioCtx.createGain();
+    const noiseGain = ctx.createGain();
 
-    const filter = audioCtx.createBiquadFilter();
+    const filter = ctx.createBiquadFilter();
     filter.type = 'lowpass';
-    filter.frequency.setValueAtTime(800, audioCtx.currentTime);
-    filter.frequency.exponentialRampToValueAtTime(100, audioCtx.currentTime + 0.3);
+    filter.frequency.setValueAtTime(800, ctx.currentTime);
+    filter.frequency.exponentialRampToValueAtTime(100, ctx.currentTime + 0.3);
 
     noise.connect(filter);
     filter.connect(noiseGain);
     noiseGain.connect(masterGain!);
 
-    noiseGain.gain.setValueAtTime(0.8, audioCtx.currentTime);
-    noiseGain.gain.exponentialRampToValueAtTime(0.01, audioCtx.currentTime + 0.5);
+    noiseGain.gain.setValueAtTime(0.8, ctx.currentTime);
+    noiseGain.gain.exponentialRampToValueAtTime(0.01, ctx.currentTime + 0.5);
 
     noise.start();
 };
@@ -161,12 +164,13 @@ export const playWin = () => {
     if (!audioCtx && !isMuted) initAudio();
     if (!audioCtx || isMuted) return;
 
+    const ctx = audioCtx; // Capture non-null reference
     const notes = [523.25, 659.25, 783.99, 1046.50, 783.99, 1046.50]; // C Major Arpeggio
-    let time = audioCtx.currentTime;
+    let time = ctx.currentTime;
 
     notes.forEach((freq, i) => {
-        const osc = audioCtx.createOscillator();
-        const gain = audioCtx.createGain();
+        const osc = ctx.createOscillator();
+        const gain = ctx.createGain();
 
         osc.connect(gain);
         gain.connect(masterGain!);
@@ -189,21 +193,22 @@ export const playLose = () => {
     if (!audioCtx && !isMuted) initAudio();
     if (!audioCtx || isMuted) return;
 
-    const osc = audioCtx.createOscillator();
-    const gain = audioCtx.createGain();
+    const ctx = audioCtx; // Capture non-null reference
+    const osc = ctx.createOscillator();
+    const gain = ctx.createGain();
 
     osc.connect(gain);
     gain.connect(masterGain!);
 
     osc.type = 'sawtooth';
-    osc.frequency.setValueAtTime(300, audioCtx.currentTime);
-    osc.frequency.linearRampToValueAtTime(100, audioCtx.currentTime + 1.0);
+    osc.frequency.setValueAtTime(300, ctx.currentTime);
+    osc.frequency.linearRampToValueAtTime(100, ctx.currentTime + 1.0);
 
-    gain.gain.setValueAtTime(0.2, audioCtx.currentTime);
-    gain.gain.linearRampToValueAtTime(0.01, audioCtx.currentTime + 1.0);
+    gain.gain.setValueAtTime(0.2, ctx.currentTime);
+    gain.gain.linearRampToValueAtTime(0.01, ctx.currentTime + 1.0);
 
     osc.start();
-    osc.stop(audioCtx.currentTime + 1.0);
+    osc.stop(ctx.currentTime + 1.0);
 };
 
 // 6. 채팅 알림 (뽁!)
@@ -211,19 +216,20 @@ export const playChat = () => {
     if (!audioCtx && !isMuted) initAudio();
     if (!audioCtx || isMuted) return;
 
-    const osc = audioCtx.createOscillator();
-    const gain = audioCtx.createGain();
+    const ctx = audioCtx; // Capture non-null reference
+    const osc = ctx.createOscillator();
+    const gain = ctx.createGain();
 
     osc.connect(gain);
     gain.connect(masterGain!);
 
     osc.type = 'sine';
-    osc.frequency.setValueAtTime(800, audioCtx.currentTime);
-    osc.frequency.exponentialRampToValueAtTime(400, audioCtx.currentTime + 0.1);
+    osc.frequency.setValueAtTime(800, ctx.currentTime);
+    osc.frequency.exponentialRampToValueAtTime(400, ctx.currentTime + 0.1);
 
-    gain.gain.setValueAtTime(0.1, audioCtx.currentTime);
-    gain.gain.exponentialRampToValueAtTime(0.01, audioCtx.currentTime + 0.1);
+    gain.gain.setValueAtTime(0.1, ctx.currentTime);
+    gain.gain.exponentialRampToValueAtTime(0.01, ctx.currentTime + 0.1);
 
     osc.start();
-    osc.stop(audioCtx.currentTime + 0.1);
+    osc.stop(ctx.currentTime + 0.1);
 };

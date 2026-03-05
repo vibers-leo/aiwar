@@ -93,8 +93,10 @@ export function listenToUserData<T>(
         return () => { };
     }
 
+    const db = database; // Capture non-null database reference
+
     getUserId().then(userId => {
-        const dataRef = ref(database, `users/${userId}/${path}`);
+        const dataRef = ref(db, `users/${userId}/${path}`);
 
         onValue(dataRef, (snapshot) => {
             if (snapshot.exists()) {

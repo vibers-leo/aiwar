@@ -47,7 +47,8 @@ export default function MainLayout({ children }: { children: React.ReactNode }) 
     // Pages that should be 100% full page without any layout
     const isNoLayout = !pathname ||
         ['/login', '/signup', '/', '/start'].includes(pathname) ||
-        pathname.startsWith('/battle');
+        pathname.startsWith('/battle') ||
+        pathname.startsWith('/clash');
 
     // [POLICY] Hide the global right sidebar on almost all functional pages 
     // because they now use the premium CyberPageLayout which has its own layout logic.
@@ -89,7 +90,7 @@ export default function MainLayout({ children }: { children: React.ReactNode }) 
                     id="main-content"
                     className={cn(
                         "flex-1 overflow-y-auto overflow-x-hidden relative mt-16 bg-gradient-to-br from-[#050510] via-[#0a0a1a] to-[#050510] scroll-smooth",
-                        footerState.visible && "pb-[160px]" // 푸터가 보일 때 하단 여백 추가
+                        footerState.visible && "pb-[120px] sm:pb-[160px]" // 푸터가 보일 때 하단 여백 추가 (모바일 최적화)
                     )}
                 >
                     <TutorialManager />

@@ -1,15 +1,21 @@
 'use client';
 
-import { useState } from 'react';
-import { useRouter } from 'next/navigation';
+import { useState, Suspense } from 'react';
+import { useRouter, useSearchParams } from 'next/navigation';
+
+export const dynamic = 'force-dynamic';
 import Link from 'next/link';
 import { login, validateUsername, validatePassword, signInAsGuest } from '@/lib/auth-utils';
 import GoogleLoginButton from '@/components/GoogleLoginButton';
+import KakaoLoginButton from '@/components/KakaoLoginButton';
 import { BackgroundBeams } from '@/components/ui/aceternity/background-beams';
 import PasswordResetModal from '@/components/PasswordResetModal';
 
-export default function LoginPage() {
+function LoginForm() {
     const router = useRouter();
+    const searchParams = useSearchParams();
+    const redirectUrl = searchParams.get('redirect') || '/main';
+
     const [username, setUsername] = useState('');
     const [password, setPassword] = useState('');
     const [error, setError] = useState('');
@@ -41,7 +47,7 @@ export default function LoginPage() {
 
         if (result.success) {
             setTimeout(() => {
-                router.push('/main');
+                router.push(redirectUrl);
             }, 500);
         } else {
             setError(result.message);
@@ -52,7 +58,7 @@ export default function LoginPage() {
     const handleGuestLogin = async () => {
         const result = await signInAsGuest();
         if (result.success) {
-            router.push('/main');
+            router.push(redirectUrl);
         } else {
             setError('게스트 로그인 실패');
         }
@@ -137,6 +143,8 @@ export default function LoginPage() {
                     </div>
 
                     <div className="space-y-3">
+                        <KakaoLoginButton />
+
                         <GoogleLoginButton />
 
                         <button
@@ -167,5 +175,17 @@ export default function LoginPage() {
                 onClose={() => setIsResetModalOpen(false)}
             />
         </div>
+    );
+}
+
+export default function LoginPage() {
+    return (
+        <Suspense fallback={
+            <div className="min-h-screen bg-[#0a0a0a] flex items-center justify-center">
+                <div className="text-white font-mono">Loading...</div>
+            </div>
+        }>
+            <LoginForm />
+        </Suspense>
     );
 }

@@ -4,7 +4,7 @@
 import { useState, useEffect, useRef } from 'react';
 import { useParams, useRouter, useSearchParams } from 'next/navigation';
 import { motion, AnimatePresence } from 'framer-motion';
-import { Skull, AlertTriangle, ArrowLeft, Trophy, XCircle, Users, Loader2 } from 'lucide-react';
+import { Skull, AlertTriangle, ArrowLeft, Trophy, XCircle, Users, Loader2, Volume2, VolumeX } from 'lucide-react';
 import CyberPageLayout from '@/components/CyberPageLayout';
 import { Card as CardType } from '@/lib/types';
 import GameCard from '@/components/GameCard';
@@ -29,6 +29,7 @@ import {
     MiniGameRoom as RoomData
 } from '@/lib/realtime-minigame-service';
 import { handleMiniGameResultTransaction } from '@/lib/firebase-db';
+import { playClick, playBet, playClash, playWin, playLose, toggleMute, getMuteState, initAudio } from '@/lib/sound-effects';
 
 // 모드별 필요한 카드 수 (공식 지침 v1.0)
 const MODE_REQ = {
@@ -60,8 +61,41 @@ export default function MiniGameRoom() {
     const [finalResult, setFinalResult] = useState<GameResult | null>(null);
     const [isProcessing, setIsProcessing] = useState(false);
     const [isWaitingForOpponent, setIsWaitingForOpponent] = useState(false);
+    const [isSoundMuted, setIsSoundMuted] = useState(false);
 
     const reqCards = MODE_REQ[mode as keyof typeof MODE_REQ] || 5;
+
+    // 사운드 초기화
+    useEffect(() => {
+        setIsSoundMuted(getMuteState());
+
+        const initAudioContext = () => {
+            initAudio();
+            document.removeEventListener('click', initAudioContext);
+        };
+        document.addEventListener('click', initAudioContext);
+
+        return () => document.removeEventListener('click', initAudioContext);
+    }, []);
+
+    const handleToggleSound = () => {
+        const muted = toggleMute();
+        setIsSoundMuted(muted);
+    };
+
+    // 게임 상태 효과음
+    useEffect(() => {
+        if (phase === 'clash') {
+            playClash();
+        }
+        if (phase === 'result' && finalResult) {
+            if (finalResult === 'win') {
+                setTimeout(playWin, 500);
+            } else if (finalResult === 'lose') {
+                setTimeout(playLose, 500);
+            }
+        }
+    }, [phase, finalResult]);
 
     // 1. 실시간 방 구독 (PVP 전용)
     useEffect(() => {
@@ -112,6 +146,7 @@ export default function MiniGameRoom() {
     // 카드 선택 핸들러
     const handleCardSelect = (card: CardType) => {
         if (phase !== 'select') return;
+        playClick();
 
         // 선택 해제
         if (selectedCards.find(c => c.instanceId === card.instanceId)) {
@@ -143,6 +178,7 @@ export default function MiniGameRoom() {
     // 게임 시작 시퀀스
     const handleStartGame = async () => {
         if (selectedCards.length !== reqCards) return;
+        playBet();
 
         // 최종 경고: 고급 카드 포함 여부 체크
         const highValueCards = selectedCards.filter(c => c.rarity === 'legendary' || c.rarity === 'mythic');
@@ -246,6 +282,18 @@ export default function MiniGameRoom() {
             color="red"
         >
             <div className="max-w-6xl mx-auto p-4 min-h-screen flex flex-col">
+                {/* 사운드 토글 버튼 */}
+                <div className="absolute top-6 right-6 z-40">
+                    <Button
+                        onClick={handleToggleSound}
+                        variant="ghost"
+                        size="sm"
+                        className="text-white/60 hover:text-white p-3 bg-black/40 backdrop-blur-sm border border-white/10 hover:border-white/30 rounded-xl"
+                    >
+                        {isSoundMuted ? <VolumeX className="w-5 h-5" /> : <Volume2 className="w-5 h-5" />}
+                    </Button>
+                </div>
+
                 {/* PVP 시 대기 안내 */}
                 {isPVP && !roomData?.guestId && (
                     <div className="fixed inset-0 z-50 bg-black/90 flex flex-col items-center justify-center text-center p-6 backdrop-blur-md">

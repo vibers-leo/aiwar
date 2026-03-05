@@ -188,6 +188,50 @@ export async function purchaseCardPackTransaction(
 }
 
 /**
+ * 미니게임 결과 처리 트랜잭션 (카드 획득 또는 소멸)
+ */
+export async function handleMiniGameResultTransaction(
+    userId: string,
+    result: 'win' | 'lose' | 'draw',
+    playerCardInstanceIds: string[],
+    opponentCards: Card[]
+): Promise<void> {
+    if (!isFirebaseConfigured || !db) throw new Error('Firebase NOT_CONFIGURED');
+    if (result === 'draw') return; // Draw has no inventory changes
+
+    console.log(`[MiniGame] Processing ${result} for ${userId}. Cards involved:`, playerCardInstanceIds);
+
+    try {
+        await runTransaction(db, async (transaction) => {
+            if (result === 'win') {
+                // 1. 승리: 상대 카드 획득 (새 인스턴스로 생성)
+                for (const card of opponentCards) {
+                    const instanceId = `win-${card.id}-${Date.now()}-${Math.random().toString(36).substr(2, 5)}`;
+                    const cardRef = doc(db!, 'users', userId, 'inventory', instanceId);
+                    const cleanedCard = cleanDataForFirestore({
+                        ...card,
+                        instanceId,
+                        ownerId: userId, // 소유권 변경
+                        acquiredAt: serverTimestamp()
+                    });
+                    transaction.set(cardRef, cleanedCard);
+                }
+            } else if (result === 'lose') {
+                // 2. 패배: 내가 낸 카드 소멸
+                for (const instanceId of playerCardInstanceIds) {
+                    const cardRef = doc(db!, 'users', userId, 'inventory', instanceId);
+                    transaction.delete(cardRef);
+                }
+            }
+        });
+        console.log(`✅ 미니게임 결과 반영 완료: ${result}`);
+    } catch (error) {
+        console.error('❌ 미니게임 결과 반영 실패:', error);
+        throw error;
+    }
+}
+
+/**
  * 스타터팩 수령 트랜잭션 (코인 지급 + 닉네임 설정 + 카드 지급)
  */
 export async function claimStarterPackTransaction(
