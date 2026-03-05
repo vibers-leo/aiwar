@@ -134,20 +134,20 @@ export default function StageBattlePage() {
                 experience: storyStage.rewards.experience
             };
 
-            // Execute backend updates
-            await applyBattleResult(res, activeBattleDeck, enemies, false, false, false, manualRewards);
-
-            const chapterNum = storyStage.id.split('-')[1] || '1';
-            const chapterId = `chapter-${chapterNum}`;
-            await completeStage(chapterId, storyStage.id, user?.uid);
-
-            trackMissionEvent('battle-win', 1);
+            // Execute backend updates (with error safety - always show result screen)
+            try {
+                await applyBattleResult(res, activeBattleDeck, enemies, false, false, false, manualRewards);
+                const chapterNum = storyStage.id.split('-')[1] || '1';
+                const chapterId = `chapter-${chapterNum}`;
+                await completeStage(chapterId, storyStage.id, user?.uid);
+                trackMissionEvent('battle-win', 1);
+            } catch (e) {
+                console.error('[Battle] Backend update failed, proceeding to result screen:', e);
+            }
 
             // Show Result Screen instead of immediate redirect
             setBattleResult({
                 ...res,
-                // Ensure we pass mapped rounds for display if needed, 
-                // but for the summary score, just counts are enough.
                 rounds: result.rounds.map(r => ({
                     round: r.round,
                     winner: r.winner === 'player' ? 'player' : r.winner === 'enemy' ? 'opponent' : 'draw',
