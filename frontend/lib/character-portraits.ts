@@ -20,8 +20,8 @@ export interface CharacterInfo {
 export const characterPortraits = {
     gemini: '/assets/cards/gemini-character.png',
     chip: '/assets/cards/chip-character.png',
-    pichai: '/assets/cards/cmdr-pichai.png',
-    hassabis: '/assets/cards/cmdr-hassabis.png',
+    pichai: '/assets/cards/cmdr-gemini.png',
+    hassabis: '/assets/cards/cmdr-gemini.png',
     glitchEnemy1: '/assets/characters/glitch-enemy-1.png',
     glitchEnemy2: '/assets/characters/glitch-enemy-2.png',
     glitchEntity: '/assets/characters/glitch-entity.png',
