@@ -252,12 +252,14 @@ export default function UnifiedTutorialModal({ onClose, onClaim }: UnifiedTutori
     return (
         <AnimatePresence>
             {isVisible && (
-                <div className="fixed inset-0 z-[100] flex items-center justify-center">
+                <div className="fixed inset-0 z-[200] flex items-center justify-center">
                     {/* Background with optional glitch effect */}
                     {currentScene.backgroundEffect === 'glitch' ? (
-                        <GlitchEffect intensity="high" color="red">
-                            <div className="w-full h-full bg-black" />
-                        </GlitchEffect>
+                        <div className="absolute inset-0">
+                            <GlitchEffect intensity="high" color="red">
+                                <div className="w-full h-full bg-black" />
+                            </GlitchEffect>
+                        </div>
                     ) : (
                         <div className="absolute inset-0 bg-black/90 backdrop-blur-md" />
                     )}
@@ -265,7 +267,7 @@ export default function UnifiedTutorialModal({ onClose, onClaim }: UnifiedTutori
                     {/* Close Button */}
                     <button
                         onClick={completeTutorial}
-                        className="absolute top-4 right-4 z-[110] text-gray-500 hover:text-white transition-colors p-2 rounded-lg hover:bg-white/5"
+                        className="absolute top-4 right-4 z-[210] text-gray-500 hover:text-white transition-colors p-2 rounded-lg hover:bg-white/5"
                     >
                         <X size={24} />
                     </button>
@@ -279,7 +281,7 @@ export default function UnifiedTutorialModal({ onClose, onClaim }: UnifiedTutori
                     </button>
 
                     {/* Main Content Container */}
-                    <div className="relative z-[105] w-full h-full flex flex-col">
+                    <div className="relative z-[205] w-full h-full flex flex-col">
                         {/* Character Portrait (if exists) */}
                         {currentDialogue && currentDialogue.speaker !== 'system' && (
                             <motion.div
