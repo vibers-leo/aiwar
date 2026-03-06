@@ -13,6 +13,8 @@ export interface CardMetadata {
     videoUrl?: string;
     hoverSound?: string;
     hoverVideo?: string;
+    modelVersion?: string;       // 현재 게임에 반영된 AI 모델 버전 (예: 'GPT-5.4')
+    versionUpdatedAt?: string;   // 버전 마지막 업데이트 ISO 날짜
     updatedAt: any;
     updatedBy?: string;
 }

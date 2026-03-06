@@ -112,8 +112,14 @@ export default function AdminPage() {
                     {/* Quick Links */}
                     <div className="ml-auto flex gap-2">
                         <a
+                            href="/admin/ai-monitor"
+                            className="px-4 py-2 rounded-lg font-bold bg-gradient-to-r from-cyan-600 to-teal-600 text-white hover:from-cyan-500 hover:to-teal-500 transition-all flex items-center gap-2"
+                        >
+                            🤖 AI 버전 모니터
+                        </a>
+                        <a
                             href="/admin/card-assets"
-                            className="px-4 py-2 rounded-lg font-bold bg-gradient-to-r from-cyan-600 to-blue-600 text-white hover:from-cyan-500 hover:to-blue-500 transition-all flex items-center gap-2"
+                            className="px-4 py-2 rounded-lg font-bold bg-gradient-to-r from-purple-600 to-blue-600 text-white hover:from-purple-500 hover:to-blue-500 transition-all flex items-center gap-2"
                         >
                             🎴 카드 에셋 관리
                         </a>
