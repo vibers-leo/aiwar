@@ -134,18 +134,15 @@ export default function StageBattlePage() {
                 experience: storyStage.rewards.experience
             };
 
-            // Execute backend updates (with error safety - always show result screen)
-            try {
-                await applyBattleResult(res, activeBattleDeck, enemies, false, false, false, manualRewards);
-                const chapterNum = storyStage.id.split('-')[1] || '1';
-                const chapterId = `chapter-${chapterNum}`;
-                await completeStage(chapterId, storyStage.id, user?.uid);
-                trackMissionEvent('battle-win', 1);
-            } catch (e) {
-                console.error('[Battle] Backend update failed, proceeding to result screen:', e);
-            }
+            // Execute backend updates in background (fire-and-forget for instant result screen)
+            const chapterNum = storyStage.id.split('-')[1] || '1';
+            const chapterId = `chapter-${chapterNum}`;
+            applyBattleResult(res, activeBattleDeck, enemies, false, false, false, manualRewards)
+                .then(() => completeStage(chapterId, storyStage.id, user?.uid))
+                .then(() => trackMissionEvent('battle-win', 1))
+                .catch(e => console.error('[Battle] Backend update failed:', e));
 
-            // Show Result Screen instead of immediate redirect
+            // Show Result Screen immediately
             setBattleResult({
                 ...res,
                 rounds: result.rounds.map(r => ({
