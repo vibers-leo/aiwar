@@ -409,7 +409,7 @@ export async function subscribeToFaction(userId: string, factionId: string, tier
 /**
  * 유저의 활성 구독 목록 조회
  */
-export async function fetchUserSubscriptions(userId: string): Promise<any[]> {
+export async function fetchUserSubscriptions(userId: string): Promise<import('./faction-subscription').UserSubscription[]> {
     if (!isFirebaseConfigured || !db) {
         console.warn('Firebase not ready for subscriptions');
         return [];
@@ -419,13 +419,46 @@ export async function fetchUserSubscriptions(userId: string): Promise<any[]> {
         const q = query(subscriptionsRef, where('status', '==', 'active'));
         const querySnapshot = await getDocs(q);
 
-        return querySnapshot.docs.map(doc => ({
-            id: doc.id,
-            ...doc.data()
-        }));
+        return querySnapshot.docs.map(docSnap => ({
+            id: docSnap.id,
+            ...docSnap.data()
+        })) as import('./faction-subscription').UserSubscription[];
     } catch (error) {
         console.error('Error fetching subscriptions:', error);
         return [];
+    }
+}
+
+/**
+ * 구독 취소
+ */
+export async function cancelSubscription(userId: string, factionId: string): Promise<boolean> {
+    if (!isFirebaseConfigured || !db) return false;
+    try {
+        const subscriptionsRef = collection(db, 'users', userId, 'subscriptions');
+        const q = query(subscriptionsRef, where('factionId', '==', factionId), where('status', '==', 'active'));
+        const snapshot = await getDocs(q);
+
+        if (snapshot.empty) {
+            console.warn(`[cancelSubscription] No active subscription found for faction: ${factionId}`);
+            return false;
+        }
+
+        const batch = writeBatch(db);
+        snapshot.docs.forEach(docSnap => {
+            batch.update(doc(subscriptionsRef, docSnap.id), {
+                status: 'canceled',
+                autoRenew: false,
+                canceledAt: serverTimestamp()
+            });
+        });
+        await batch.commit();
+
+        console.log(`✅ 구독 취소 완료: ${factionId}`);
+        return true;
+    } catch (error) {
+        console.error('❌ 구독 취소 실패:', error);
+        return false;
     }
 }
 

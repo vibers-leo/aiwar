@@ -381,10 +381,10 @@ export function rerollCardStats(card: Card): Card {
             creativity,
             function: func,
             totalPower,
-            accuracy: baseLegacyStat + Math.floor(Math.random() * 5),
-            speed: baseLegacyStat + Math.floor(Math.random() * 5),
-            stability: baseLegacyStat + Math.floor(Math.random() * 5),
-            ethics: baseLegacyStat + Math.floor(Math.random() * 5)
+            accuracy: Math.max(5, baseLegacyStat + Math.floor(Math.random() * 5)),
+            speed: Math.max(5, baseLegacyStat + Math.floor(Math.random() * 5)),
+            stability: Math.max(5, baseLegacyStat + Math.floor(Math.random() * 5)),
+            ethics: Math.max(5, baseLegacyStat + Math.floor(Math.random() * 5))
         },
         type: mainType
     };
