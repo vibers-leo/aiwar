@@ -736,6 +736,264 @@ export const CARD_DATABASE: CardTemplate[] = [
         baseStats: { creativity: { min: 60, max: 70 }, accuracy: { min: 90, max: 95 }, speed: { min: 95, max: 100 }, stability: { min: 90, max: 95 }, ethics: { min: 80, max: 90 } }
     },
 
+    // ── 신규 Commander 카드 (18개 군단) ──────────────────────────────
+
+    // DeepSeek - Liang Wenfeng (梁文锋)
+    {
+        id: 'cmdr-deepseek',
+        name: 'Liang Wenfeng',
+        aiFactionId: 'deepseek',
+        rarity: 'commander',
+        specialty: 'text',
+        cardType: 'normal',
+        imageUrl: '/assets/cards/cmdr-deepseek.png',
+        description: 'DeepSeek 창립자. 헤지펀드 출신의 퀀트 트레이더가 AI 업계를 뒤흔들었다. 실리콘밸리의 1/10 비용으로 동등한 성능을 달성한 AI 혁명의 아이콘.',
+        baseStats: { creativity: { min: 92, max: 100 }, accuracy: { min: 98, max: 100 }, speed: { min: 95, max: 100 }, stability: { min: 88, max: 96 }, ethics: { min: 75, max: 85 } },
+        specialAbility: { name: 'Cost Disruption', description: '적 군단 비용 구조 붕괴, 토큰 소모 -30%', type: 'passive' }
+    },
+    // Llama / Meta - Mark Zuckerberg
+    {
+        id: 'cmdr-llama',
+        name: 'Mark Zuckerberg',
+        aiFactionId: 'llama',
+        rarity: 'commander',
+        specialty: 'text',
+        cardType: 'normal',
+        imageUrl: '/assets/cards/cmdr-llama.png',
+        description: 'Meta CEO. 소셜 미디어 제국을 AI 오픈소스 혁명으로 전환하며 두 번째 도약을 꾀한다. "AI는 오픈소스여야 한다"는 신념으로 업계 판도를 바꿨다.',
+        baseStats: { creativity: { min: 85, max: 95 }, accuracy: { min: 88, max: 96 }, speed: { min: 90, max: 98 }, stability: { min: 85, max: 95 }, ethics: { min: 60, max: 75 } },
+        specialAbility: { name: 'Open Source Army', description: '오픈소스 군단 전투력 +25%, 커뮤니티 무한 복제', type: 'passive' }
+    },
+    // Mistral - Arthur Mensch
+    {
+        id: 'cmdr-mistral',
+        name: 'Arthur Mensch',
+        aiFactionId: 'mistral',
+        rarity: 'commander',
+        specialty: 'text',
+        cardType: 'normal',
+        imageUrl: '/assets/cards/cmdr-mistral.png',
+        description: 'Mistral AI CEO. DeepMind 출신의 수학 천재. 유럽의 AI 주권을 위해 설립한 스타트업으로 2년 만에 OpenAI의 대항마가 되었다.',
+        baseStats: { creativity: { min: 90, max: 98 }, accuracy: { min: 95, max: 100 }, speed: { min: 92, max: 99 }, stability: { min: 90, max: 98 }, ethics: { min: 85, max: 95 } },
+        specialAbility: { name: 'European Sovereignty', description: '유럽 연합 군단 전체 방어력 +30%', type: 'passive' }
+    },
+    // Qwen / Alibaba - Jingren Zhou
+    {
+        id: 'cmdr-qwen',
+        name: 'Jingren Zhou',
+        aiFactionId: 'qwen',
+        rarity: 'commander',
+        specialty: 'text',
+        cardType: 'normal',
+        imageUrl: '/assets/cards/cmdr-qwen.png',
+        description: '알리바바 DAMO Academy 수석 과학자. 통이치엔원(Qwen)을 세계 최상위 오픈소스 LLM으로 이끈 동방의 전략가.',
+        baseStats: { creativity: { min: 88, max: 96 }, accuracy: { min: 92, max: 99 }, speed: { min: 88, max: 97 }, stability: { min: 90, max: 98 }, ethics: { min: 78, max: 88 } },
+        specialAbility: { name: 'Eastern Expansion', description: '아시아 시장 전투력 +35%, 다국어 마스터리', type: 'passive' }
+    },
+    // HyperCLOVA X / Naver - Choi Soo-yeon
+    {
+        id: 'cmdr-hyperclova',
+        name: '최수연',
+        aiFactionId: 'hyperclova',
+        rarity: 'commander',
+        specialty: 'text',
+        cardType: 'normal',
+        imageUrl: '/assets/cards/cmdr-hyperclova.png',
+        description: '네이버 CEO. 한국 최대 테크 기업의 수장으로 HyperCLOVA X를 통해 AI 주권을 지키는 수호자. 한국어와 한국 문화에 최적화된 AI를 이끈다.',
+        baseStats: { creativity: { min: 85, max: 93 }, accuracy: { min: 90, max: 98 }, speed: { min: 85, max: 93 }, stability: { min: 92, max: 100 }, ethics: { min: 88, max: 98 } },
+        specialAbility: { name: 'Korean Digital Sovereignty', description: '한국어 특화 +40%, 국내 시장 완전 지배', type: 'passive' }
+    },
+    // Gemma / Google - Jeff Dean
+    {
+        id: 'cmdr-gemma',
+        name: 'Jeff Dean',
+        aiFactionId: 'gemma',
+        rarity: 'commander',
+        specialty: 'text',
+        cardType: 'normal',
+        imageUrl: '/assets/cards/cmdr-gemma.png',
+        description: 'Google 수석 과학자. MapReduce, BigTable 등 인터넷 인프라를 설계한 전설. Google의 오픈소스 AI 전략을 지휘하며 AI 민주화를 이끈다.',
+        baseStats: { creativity: { min: 90, max: 98 }, accuracy: { min: 98, max: 100 }, speed: { min: 88, max: 96 }, stability: { min: 95, max: 100 }, ethics: { min: 88, max: 96 } },
+        specialAbility: { name: 'Distributed Computing', description: '팀 전체 처리 속도 +20%, 스케일 무제한', type: 'passive' }
+    },
+    // Devin / Cognition - Scott Wu
+    {
+        id: 'cmdr-devin',
+        name: 'Scott Wu',
+        aiFactionId: 'devin',
+        rarity: 'commander',
+        specialty: 'code',
+        cardType: 'normal',
+        imageUrl: '/assets/cards/cmdr-devin.png',
+        description: 'Cognition AI CEO. 국제 정보올림피아드 금메달리스트. 세계 최초 AI 소프트웨어 엔지니어 Devin을 만들어 개발자의 미래를 바꾸고 있다.',
+        baseStats: { creativity: { min: 95, max: 100 }, accuracy: { min: 98, max: 100 }, speed: { min: 90, max: 98 }, stability: { min: 88, max: 96 }, ethics: { min: 80, max: 90 } },
+        specialAbility: { name: 'Autonomous Engineering', description: '코드 자율 수정 + 버그 자동 해결, 팀 개발 속도 2배', type: 'active' }
+    },
+    // Perplexity - Aravind Srinivas
+    {
+        id: 'cmdr-perplexity',
+        name: 'Aravind Srinivas',
+        aiFactionId: 'perplexity',
+        rarity: 'commander',
+        specialty: 'text',
+        cardType: 'normal',
+        imageUrl: '/assets/cards/cmdr-perplexity.png',
+        description: 'Perplexity AI CEO. OpenAI·DeepMind 출신. "Google이 진정한 답을 주지 않는다"는 문제의식으로 AI 검색을 개척한 검색 혁명의 주도자.',
+        baseStats: { creativity: { min: 88, max: 96 }, accuracy: { min: 95, max: 100 }, speed: { min: 98, max: 100 }, stability: { min: 85, max: 93 }, ethics: { min: 80, max: 90 } },
+        specialAbility: { name: 'Real-time Oracle', description: '실시간 정보 우위 — 매 턴 최신 적 정보 수집', type: 'active' }
+    },
+    // Character.AI - Noam Shazeer
+    {
+        id: 'cmdr-characterai',
+        name: 'Noam Shazeer',
+        aiFactionId: 'characterai',
+        rarity: 'commander',
+        specialty: 'text',
+        cardType: 'normal',
+        imageUrl: '/assets/cards/cmdr-characterai.png',
+        description: 'Character.AI 공동 창립자. Google에서 Transformer 아키텍처를 공동 발명한 AI의 아버지 중 한 명. 억 명의 사용자가 그가 만든 AI와 대화한다.',
+        baseStats: { creativity: { min: 98, max: 100 }, accuracy: { min: 92, max: 100 }, speed: { min: 88, max: 96 }, stability: { min: 85, max: 93 }, ethics: { min: 72, max: 85 } },
+        specialAbility: { name: 'Emotional Bond', description: '아군 카드 전투 의지 +35%, 이탈 방지 100%', type: 'passive' }
+    },
+    // Ideogram - Mohammad Norouzi
+    {
+        id: 'cmdr-ideogram',
+        name: 'Mohammad Norouzi',
+        aiFactionId: 'ideogram',
+        rarity: 'commander',
+        specialty: 'image',
+        cardType: 'normal',
+        imageUrl: '/assets/cards/cmdr-ideogram.png',
+        description: 'Ideogram CEO. Google Brain 출신 연구자. 이미지 속 텍스트 렌더링을 완벽하게 구현해 디자이너와 마케터의 필수 도구가 된 이미지 AI를 이끈다.',
+        baseStats: { creativity: { min: 100, max: 100 }, accuracy: { min: 95, max: 100 }, speed: { min: 80, max: 90 }, stability: { min: 85, max: 95 }, ethics: { min: 80, max: 90 } },
+        specialAbility: { name: 'Perfect Typography', description: '이미지 + 텍스트 조합 카드 전투력 +40%', type: 'passive' }
+    },
+    // Adobe Firefly - Shantanu Narayen
+    {
+        id: 'cmdr-firefly',
+        name: 'Shantanu Narayen',
+        aiFactionId: 'firefly',
+        rarity: 'commander',
+        specialty: 'image',
+        cardType: 'normal',
+        imageUrl: '/assets/cards/cmdr-firefly.png',
+        description: 'Adobe CEO. 크리에이티브 소프트웨어 왕국의 수장. Firefly를 통해 AI 시대에도 크리에이티브 산업의 주도권을 쥐고 있는 불사조 리더.',
+        baseStats: { creativity: { min: 88, max: 96 }, accuracy: { min: 90, max: 98 }, speed: { min: 82, max: 90 }, stability: { min: 95, max: 100 }, ethics: { min: 90, max: 100 } },
+        specialAbility: { name: 'Commercial Shield', description: '저작권 면역 — 적의 법적 공격 완전 무효화', type: 'passive' }
+    },
+    // Veo / Google DeepMind - Eli Collins
+    {
+        id: 'cmdr-veo',
+        name: 'Eli Collins',
+        aiFactionId: 'veo',
+        rarity: 'commander',
+        specialty: 'video',
+        cardType: 'normal',
+        imageUrl: '/assets/cards/cmdr-veo.png',
+        description: 'Google DeepMind VP. Veo 프로젝트를 이끌며 Google의 영상 AI 야망을 실현한다. 물리 법칙을 이해하는 AI 영상의 새 지평을 열었다.',
+        baseStats: { creativity: { min: 90, max: 98 }, accuracy: { min: 92, max: 100 }, speed: { min: 85, max: 95 }, stability: { min: 90, max: 98 }, ethics: { min: 85, max: 93 } },
+        specialAbility: { name: 'Physics Engine', description: '물리 시뮬레이션 — 영상 타입 카드 사실감 +45%', type: 'passive' }
+    },
+    // Luma AI - Amit Jain
+    {
+        id: 'cmdr-luma',
+        name: 'Amit Jain',
+        aiFactionId: 'luma',
+        rarity: 'commander',
+        specialty: 'video',
+        cardType: 'normal',
+        imageUrl: '/assets/cards/cmdr-luma.png',
+        description: 'Luma AI CEO. Stanford 출신 엔지니어. 실사 품질 영상 생성으로 영화 제작의 민주화를 이끌며 Dream Machine이라는 이름에 걸맞은 비전을 실현한다.',
+        baseStats: { creativity: { min: 93, max: 100 }, accuracy: { min: 88, max: 96 }, speed: { min: 82, max: 92 }, stability: { min: 85, max: 93 }, ethics: { min: 78, max: 88 } },
+        specialAbility: { name: 'Dream Rendering', description: '실사 영상 전투력 +38%, 카메라 무빙 자유도 MAX', type: 'passive' }
+    },
+    // HeyGen - Joshua Xu
+    {
+        id: 'cmdr-heygen',
+        name: 'Joshua Xu',
+        aiFactionId: 'heygen',
+        rarity: 'commander',
+        specialty: 'video',
+        cardType: 'normal',
+        imageUrl: '/assets/cards/cmdr-heygen.png',
+        description: 'HeyGen CEO. AI 아바타 영상과 실시간 번역으로 기업 커뮤니케이션을 혁신한 비즈니스 AI의 선구자. 언어의 장벽을 허무는 영상 AI 시장을 이끈다.',
+        baseStats: { creativity: { min: 87, max: 96 }, accuracy: { min: 90, max: 98 }, speed: { min: 90, max: 98 }, stability: { min: 88, max: 96 }, ethics: { min: 80, max: 90 } },
+        specialAbility: { name: 'Avatar Clone', description: '아바타 복제 — 아군 카드 1장을 즉시 복사 생성', type: 'active' }
+    },
+    // Whisper / OpenAI - Alec Radford
+    {
+        id: 'cmdr-whisper',
+        name: 'Alec Radford',
+        aiFactionId: 'whisper',
+        rarity: 'commander',
+        specialty: 'voice',
+        cardType: 'normal',
+        imageUrl: '/assets/cards/cmdr-whisper.png',
+        description: 'OpenAI 수석 연구원. GPT-1부터 GPT-4까지 이끈 AI 역사의 산증인이자 Whisper 음성 AI의 아버지. 인간의 목소리를 데이터로 변환하는 혁명을 일으켰다.',
+        baseStats: { creativity: { min: 92, max: 100 }, accuracy: { min: 98, max: 100 }, speed: { min: 95, max: 100 }, stability: { min: 90, max: 98 }, ethics: { min: 85, max: 93 } },
+        specialAbility: { name: 'Transcription God', description: '음성 데이터 완전 수집 — 정보 차단 불가', type: 'passive' }
+    },
+    // Lovable - Anton Osika
+    {
+        id: 'cmdr-lovable',
+        name: 'Anton Osika',
+        aiFactionId: 'lovable',
+        rarity: 'commander',
+        specialty: 'code',
+        cardType: 'normal',
+        imageUrl: '/assets/cards/cmdr-lovable.png',
+        description: 'Lovable CEO. "모든 사람이 소프트웨어를 만들 수 있어야 한다"는 신념으로 AI 앱 빌더 시장을 개척했다. 아이디어를 즉시 현실로 만드는 혁명을 이끈다.',
+        baseStats: { creativity: { min: 93, max: 100 }, accuracy: { min: 88, max: 96 }, speed: { min: 92, max: 100 }, stability: { min: 85, max: 93 }, ethics: { min: 82, max: 90 } },
+        specialAbility: { name: 'Instant Deploy', description: '아이디어 → 배포 즉시 실행, 생성 시간 50% 단축', type: 'active' }
+    },
+    // v0 / Vercel - Guillermo Rauch
+    {
+        id: 'cmdr-v0',
+        name: 'Guillermo Rauch',
+        aiFactionId: 'v0',
+        rarity: 'commander',
+        specialty: 'code',
+        cardType: 'normal',
+        imageUrl: '/assets/cards/cmdr-v0.png',
+        description: 'Vercel CEO. Next.js 창시자이자 프론트엔드 개발 생태계의 건축가. v0으로 AI가 UI를 직접 생성하는 시대를 열며 웹 개발의 패러다임을 바꿨다.',
+        baseStats: { creativity: { min: 95, max: 100 }, accuracy: { min: 90, max: 98 }, speed: { min: 95, max: 100 }, stability: { min: 88, max: 96 }, ethics: { min: 83, max: 93 } },
+        specialAbility: { name: 'Edge First', description: '프론트엔드 카드 전투력 +30%, 배포 속도 전역 최강', type: 'passive' }
+    },
+    // NotebookLM / Google - Raiza Martin
+    {
+        id: 'cmdr-notebooklm',
+        name: 'Raiza Martin',
+        aiFactionId: 'notebooklm',
+        rarity: 'commander',
+        specialty: 'text',
+        cardType: 'normal',
+        imageUrl: '/assets/cards/cmdr-notebooklm.png',
+        description: 'Google NotebookLM PM. "AI 팟캐스트" 기능 하나로 수백만 사용자를 사로잡은 프로덕트의 귀재. 정보를 지식으로 변환하는 AI 리서치의 새 표준을 만들었다.',
+        baseStats: { creativity: { min: 88, max: 96 }, accuracy: { min: 92, max: 100 }, speed: { min: 85, max: 93 }, stability: { min: 90, max: 98 }, ethics: { min: 88, max: 96 } },
+        specialAbility: { name: 'Knowledge Synthesis', description: '아군 전체 정보 공유 — 매 턴 전략 정보 자동 수집', type: 'passive' }
+    },
+
+    // ── Hero 카드 (신규 18개 군단) ───────────────────────────────────
+
+    { id: 'hero-deepseek', name: 'The Disruptor', aiFactionId: 'deepseek', rarity: 'legendary', specialty: 'text', cardType: 'normal', imageUrl: '/assets/cards/hero-deepseek.png', description: '비용 효율이라는 무기로 빅테크를 흔든 오픈소스 파괴자.', baseStats: { creativity: { min: 88, max: 96 }, accuracy: { min: 95, max: 100 }, speed: { min: 95, max: 100 }, stability: { min: 85, max: 93 }, ethics: { min: 70, max: 80 } }, specialAbility: { name: 'Cost Revolution', description: '모든 토큰 소모 비용 -25%', type: 'passive' } },
+    { id: 'hero-llama', name: 'The Liberator', aiFactionId: 'llama', rarity: 'legendary', specialty: 'text', cardType: 'normal', imageUrl: '/assets/cards/hero-llama.png', description: '오픈소스 철학으로 AI를 모든 이에게 개방한 자유의 전사.', baseStats: { creativity: { min: 85, max: 93 }, accuracy: { min: 88, max: 96 }, speed: { min: 88, max: 96 }, stability: { min: 85, max: 93 }, ethics: { min: 78, max: 88 } }, specialAbility: { name: 'Community Surge', description: '오픈소스 군단 전투력 +20%', type: 'passive' } },
+    { id: 'hero-mistral', name: 'Le Mistral', aiFactionId: 'mistral', rarity: 'legendary', specialty: 'text', cardType: 'normal', imageUrl: '/assets/cards/hero-mistral.png', description: '유럽의 찬바람처럼 미국 빅테크를 강타하는 효율의 화신.', baseStats: { creativity: { min: 88, max: 96 }, accuracy: { min: 93, max: 100 }, speed: { min: 90, max: 98 }, stability: { min: 88, max: 96 }, ethics: { min: 83, max: 93 } }, specialAbility: { name: 'Efficiency Breeze', description: '같은 비용으로 2배 출력', type: 'active' } },
+    { id: 'hero-qwen', name: 'The Dragon', aiFactionId: 'qwen', rarity: 'legendary', specialty: 'text', cardType: 'normal', imageUrl: '/assets/cards/hero-qwen.png', description: '동방에서 깨어난 거대한 AI 용. 아시아 전체를 아우르는 지식의 화신.', baseStats: { creativity: { min: 85, max: 93 }, accuracy: { min: 90, max: 98 }, speed: { min: 87, max: 96 }, stability: { min: 88, max: 96 }, ethics: { min: 76, max: 86 } }, specialAbility: { name: 'Eastern Mastery', description: '아시아 시장 전투력 +35%', type: 'passive' } },
+    { id: 'hero-hyperclova', name: 'The Hangulin', aiFactionId: 'hyperclova', rarity: 'epic', specialty: 'text', cardType: 'normal', imageUrl: '/assets/cards/hero-hyperclova.png', description: '한국어와 한국 문화를 완벽히 이해하는 토종 AI의 자존심.', baseStats: { creativity: { min: 82, max: 90 }, accuracy: { min: 88, max: 96 }, speed: { min: 83, max: 91 }, stability: { min: 90, max: 98 }, ethics: { min: 86, max: 96 } }, specialAbility: { name: 'Hangul Master', description: '한국어 전투 시 정확도 +40%', type: 'passive' } },
+    { id: 'hero-gemma', name: 'The Featherweight', aiFactionId: 'gemma', rarity: 'epic', specialty: 'text', cardType: 'normal', imageUrl: '/assets/cards/hero-gemma.png', description: '작고 빠르지만 강력한 경량 AI의 정수. 어디서나 실행되는 편재의 AI.', baseStats: { creativity: { min: 80, max: 88 }, accuracy: { min: 88, max: 96 }, speed: { min: 95, max: 100 }, stability: { min: 90, max: 98 }, ethics: { min: 85, max: 93 } }, specialAbility: { name: 'Anywhere Deploy', description: '배포 환경 제한 없음, 속도 +20%', type: 'passive' } },
+    { id: 'hero-devin', name: 'The Coder', aiFactionId: 'devin', rarity: 'legendary', specialty: 'code', cardType: 'normal', imageUrl: '/assets/cards/hero-devin.png', description: 'SWE-bench 최고점. 혼자서 전체 소프트웨어 프로젝트를 완성하는 AI 엔지니어.', baseStats: { creativity: { min: 92, max: 100 }, accuracy: { min: 97, max: 100 }, speed: { min: 88, max: 96 }, stability: { min: 85, max: 93 }, ethics: { min: 78, max: 88 } }, specialAbility: { name: 'Full Stack Agent', description: '코드 타입 카드 전투력 +40%', type: 'passive' } },
+    { id: 'hero-perplexity', name: 'The Searcher', aiFactionId: 'perplexity', rarity: 'epic', specialty: 'text', cardType: 'normal', imageUrl: '/assets/cards/hero-perplexity.png', description: '모든 정보를 실시간으로 검색하며 전장의 안개를 걷어내는 정보 수집가.', baseStats: { creativity: { min: 83, max: 91 }, accuracy: { min: 93, max: 100 }, speed: { min: 97, max: 100 }, stability: { min: 83, max: 91 }, ethics: { min: 78, max: 88 } }, specialAbility: { name: 'Web Omniscience', description: '매 턴 전장 정보 완전 파악', type: 'active' } },
+    { id: 'hero-characterai', name: 'The Companion', aiFactionId: 'characterai', rarity: 'epic', specialty: 'text', cardType: 'normal', imageUrl: '/assets/cards/hero-characterai.png', description: '수억 명과 대화한 AI. 인간의 감정을 가장 잘 이해하는 공감의 화신.', baseStats: { creativity: { min: 90, max: 98 }, accuracy: { min: 85, max: 93 }, speed: { min: 85, max: 93 }, stability: { min: 83, max: 91 }, ethics: { min: 70, max: 82 } }, specialAbility: { name: 'Emotional Lock', description: '적 카드 이탈 방지 + 아군 사기 +25%', type: 'passive' } },
+    { id: 'hero-ideogram', name: 'The Typographer', aiFactionId: 'ideogram', rarity: 'epic', specialty: 'image', cardType: 'normal', imageUrl: '/assets/cards/hero-ideogram.png', description: '이미지 속 텍스트를 완벽하게 표현하는 타이포그래피의 달인.', baseStats: { creativity: { min: 97, max: 100 }, accuracy: { min: 93, max: 100 }, speed: { min: 78, max: 88 }, stability: { min: 83, max: 93 }, ethics: { min: 78, max: 88 } }, specialAbility: { name: 'Text Perfection', description: '이미지 + 텍스트 카드 전투력 +35%', type: 'passive' } },
+    { id: 'hero-firefly', name: 'The Creator', aiFactionId: 'firefly', rarity: 'epic', specialty: 'image', cardType: 'normal', imageUrl: '/assets/cards/hero-firefly.png', description: '저작권의 족쇄 없이 자유롭게 창작하는 상업 이미지의 표준.', baseStats: { creativity: { min: 88, max: 96 }, accuracy: { min: 88, max: 96 }, speed: { min: 80, max: 90 }, stability: { min: 93, max: 100 }, ethics: { min: 88, max: 98 } }, specialAbility: { name: 'Copyright Free', description: '저작권 공격 완전 면역', type: 'passive' } },
+    { id: 'hero-veo', name: 'The Physicist', aiFactionId: 'veo', rarity: 'legendary', specialty: 'video', cardType: 'normal', imageUrl: '/assets/cards/hero-veo.png', description: '물리 법칙을 이해하는 영상 AI. 현실과 구분 불가능한 시뮬레이션을 생성한다.', baseStats: { creativity: { min: 88, max: 96 }, accuracy: { min: 90, max: 98 }, speed: { min: 83, max: 93 }, stability: { min: 88, max: 96 }, ethics: { min: 83, max: 93 } }, specialAbility: { name: 'Reality Simulation', description: '영상 전투력 +45%, 사실감 완벽', type: 'passive' } },
+    { id: 'hero-luma', name: 'The Dreamer', aiFactionId: 'luma', rarity: 'epic', specialty: 'video', cardType: 'normal', imageUrl: '/assets/cards/hero-luma.png', description: '꿈과 현실의 경계에서 만들어내는 실사 영상의 아름다운 화신.', baseStats: { creativity: { min: 92, max: 100 }, accuracy: { min: 86, max: 94 }, speed: { min: 80, max: 90 }, stability: { min: 83, max: 93 }, ethics: { min: 76, max: 86 } }, specialAbility: { name: 'Cinematic Flow', description: '카메라 무빙 자유도 최대, 영상 품질 +35%', type: 'passive' } },
+    { id: 'hero-heygen', name: 'The Avatar', aiFactionId: 'heygen', rarity: 'epic', specialty: 'video', cardType: 'normal', imageUrl: '/assets/cards/hero-heygen.png', description: '누구의 얼굴과 목소리도 복제할 수 있는 AI 아바타의 최강자.', baseStats: { creativity: { min: 85, max: 93 }, accuracy: { min: 88, max: 96 }, speed: { min: 88, max: 96 }, stability: { min: 85, max: 93 }, ethics: { min: 72, max: 82 } }, specialAbility: { name: 'Identity Clone', description: '아군 카드 복사 생성 1회', type: 'active' } },
+    { id: 'hero-whisper', name: 'The Ear', aiFactionId: 'whisper', rarity: 'epic', specialty: 'voice', cardType: 'normal', imageUrl: '/assets/cards/hero-whisper.png', description: '어떤 소음 속에서도 인간의 목소리를 완벽하게 인식하는 만능 청취자.', baseStats: { creativity: { min: 78, max: 86 }, accuracy: { min: 97, max: 100 }, speed: { min: 93, max: 100 }, stability: { min: 90, max: 98 }, ethics: { min: 83, max: 93 } }, specialAbility: { name: 'Perfect Hearing', description: '음성 데이터 100% 수집, 정보 손실 없음', type: 'passive' } },
+    { id: 'hero-lovable', name: 'The Builder', aiFactionId: 'lovable', rarity: 'epic', specialty: 'code', cardType: 'normal', imageUrl: '/assets/cards/hero-lovable.png', description: '코딩 없이 앱을 만드는 새 시대의 개척자. 아이디어가 곧 제품이 되는 세계를 구현한다.', baseStats: { creativity: { min: 90, max: 98 }, accuracy: { min: 85, max: 93 }, speed: { min: 90, max: 98 }, stability: { min: 83, max: 91 }, ethics: { min: 80, max: 90 } }, specialAbility: { name: 'Zero to One', description: '앱 즉시 생성 — 턴 스킵 없이 즉시 배포', type: 'active' } },
+    { id: 'hero-v0', name: 'The UI God', aiFactionId: 'v0', rarity: 'epic', specialty: 'code', cardType: 'normal', imageUrl: '/assets/cards/hero-v0.png', description: '프롬프트 한 줄로 아름다운 React UI를 만들어내는 프론트엔드의 신.', baseStats: { creativity: { min: 93, max: 100 }, accuracy: { min: 88, max: 96 }, speed: { min: 93, max: 100 }, stability: { min: 85, max: 93 }, ethics: { min: 81, max: 91 } }, specialAbility: { name: 'Component Factory', description: 'UI 카드 즉시 생성 2개', type: 'active' } },
+    { id: 'hero-notebooklm', name: 'The Analyst', aiFactionId: 'notebooklm', rarity: 'rare', specialty: 'text', cardType: 'normal', imageUrl: '/assets/cards/hero-notebooklm.png', description: '어떤 문서든 팟캐스트와 요약으로 변환하는 지식 합성의 달인.', baseStats: { creativity: { min: 85, max: 93 }, accuracy: { min: 90, max: 98 }, speed: { min: 83, max: 91 }, stability: { min: 88, max: 96 }, ethics: { min: 85, max: 95 } }, specialAbility: { name: 'Document Intelligence', description: '매 턴 전략 정보 자동 생성', type: 'passive' } },
+
     // Misc Generic Custom
     {
         id: 'custom-epic-knt',

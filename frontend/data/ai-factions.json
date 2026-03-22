@@ -504,6 +504,342 @@
         "specialAbility": "최적화, 토큰 효율 +25%"
       },
       "iconUrl": "/assets/factions/codeium.png"
+    },
+
+    // ── SUPER (LLM) ─ 신규 ──────────────────────────────────────────
+    {
+      "id": "deepseek",
+      "displayName": "DeepSeek R2",
+      "description": "중국발 오픈소스 AI 혁명. GPT-4급 성능을 1/10 비용으로 달성해 실리콘밸리를 충격에 빠뜨린 도전자.",
+      "category": "super",
+      "specialty": ["text", "code"],
+      "generationInterval": 28,
+      "rarityWeights": { "common": 48, "rare": 35, "epic": 13, "legendary": 4 },
+      "unlockCost": 5000,
+      "slotCost": 500,
+      "effects": {
+        "timeReduction": 0.92,
+        "powerBonus": 0.35,
+        "fragmentBonus": 0,
+        "specialAbility": "비용 효율 +35%, 오픈소스 시너지"
+      },
+      "iconUrl": "/assets/factions/deepseek.png"
+    },
+    {
+      "id": "llama",
+      "displayName": "Llama 4",
+      "description": "Meta의 오픈소스 LLM 제국. 누구나 자유롭게 배포·수정할 수 있는 AI 민주화의 상징.",
+      "category": "super",
+      "specialty": ["text", "code"],
+      "generationInterval": 32,
+      "rarityWeights": { "common": 50, "rare": 33, "epic": 13, "legendary": 4 },
+      "unlockCost": 4500,
+      "slotCost": 500,
+      "effects": {
+        "timeReduction": 0.88,
+        "powerBonus": 0.20,
+        "fragmentBonus": 0,
+        "specialAbility": "오픈소스 강화 +20%, 커뮤니티 버프"
+      },
+      "iconUrl": "/assets/factions/llama.png"
+    },
+    {
+      "id": "mistral",
+      "displayName": "Mistral Large",
+      "description": "유럽의 AI 주권을 수호하는 프랑스 오픈소스 챔피언. 효율과 성능의 완벽한 균형.",
+      "category": "super",
+      "specialty": ["text", "code"],
+      "generationInterval": 30,
+      "rarityWeights": { "common": 50, "rare": 34, "epic": 12, "legendary": 4 },
+      "unlockCost": 4200,
+      "slotCost": 500,
+      "effects": {
+        "timeReduction": 0.90,
+        "powerBonus": 0.25,
+        "fragmentBonus": 0,
+        "specialAbility": "유럽 동맹 +25%, 다국어 마스터리"
+      },
+      "iconUrl": "/assets/factions/mistral.png"
+    },
+    {
+      "id": "qwen",
+      "displayName": "Qwen 3",
+      "description": "알리바바의 통이치엔원(通义千问). 아시아 AI 시장을 석권하며 세계 무대로 진격하는 동방의 거인.",
+      "category": "super",
+      "specialty": ["text", "code"],
+      "generationInterval": 30,
+      "rarityWeights": { "common": 50, "rare": 33, "epic": 13, "legendary": 4 },
+      "unlockCost": 4000,
+      "slotCost": 500,
+      "effects": {
+        "timeReduction": 0.88,
+        "powerBonus": 0.22,
+        "fragmentBonus": 0,
+        "specialAbility": "아시아 시장 +22%, 다국어 우위"
+      },
+      "iconUrl": "/assets/factions/qwen.png"
+    },
+    {
+      "id": "hyperclova",
+      "displayName": "HyperCLOVA X",
+      "description": "네이버가 만든 한국 최강 LLM. 한국어와 한국 문화에 최적화된 AI로 국내 기업 시장을 지배한다.",
+      "category": "super",
+      "specialty": ["text"],
+      "generationInterval": 35,
+      "rarityWeights": { "common": 52, "rare": 33, "epic": 11, "legendary": 4 },
+      "unlockCost": 3800,
+      "slotCost": 500,
+      "effects": {
+        "timeReduction": 0.85,
+        "powerBonus": 0.20,
+        "fragmentBonus": 0,
+        "specialAbility": "한국어 특화 +30%, 국내 시장 지배"
+      },
+      "iconUrl": "/assets/factions/hyperclova.png"
+    },
+    {
+      "id": "gemma",
+      "displayName": "Gemma 3",
+      "description": "Google의 경량 오픈소스 LLM. 작지만 강력하며, 모바일부터 서버까지 어디서나 실행 가능한 만능 AI.",
+      "category": "super",
+      "specialty": ["text", "code"],
+      "generationInterval": 28,
+      "rarityWeights": { "common": 55, "rare": 30, "epic": 12, "legendary": 3 },
+      "unlockCost": 3500,
+      "slotCost": 400,
+      "effects": {
+        "timeReduction": 0.92,
+        "powerBonus": 0.15,
+        "fragmentBonus": 0,
+        "specialAbility": "경량화 +15%, 생성 시간 8% 단축"
+      },
+      "iconUrl": "/assets/factions/gemma.png"
+    },
+
+    // ── AGENT (신규 카테고리) ──────────────────────────────────────
+    {
+      "id": "devin",
+      "displayName": "Devin 2",
+      "description": "세계 최초 AI 소프트웨어 엔지니어. SWE-bench 최고점을 기록하며 개발자의 미래를 보여주는 자율 에이전트.",
+      "category": "agent",
+      "specialty": ["code", "text"],
+      "generationInterval": 45,
+      "rarityWeights": { "common": 40, "rare": 35, "epic": 20, "legendary": 5 },
+      "unlockCost": 6000,
+      "slotCost": 600,
+      "effects": {
+        "timeReduction": 0,
+        "powerBonus": 0.40,
+        "fragmentBonus": 0,
+        "specialAbility": "자율 코딩 +40%, 버그 자동 수정"
+      },
+      "iconUrl": "/assets/factions/devin.png"
+    },
+    {
+      "id": "perplexity",
+      "displayName": "Perplexity Pro",
+      "description": "AI 검색의 혁명가. 실시간 웹 정보를 LLM과 결합해 구글에 도전하는 차세대 검색 엔진.",
+      "category": "agent",
+      "specialty": ["text"],
+      "generationInterval": 25,
+      "rarityWeights": { "common": 52, "rare": 32, "epic": 12, "legendary": 4 },
+      "unlockCost": 3500,
+      "slotCost": 400,
+      "effects": {
+        "timeReduction": 0.95,
+        "powerBonus": 0.18,
+        "fragmentBonus": 0,
+        "specialAbility": "실시간 검색 +18%, 정보 우위"
+      },
+      "iconUrl": "/assets/factions/perplexity.png"
+    },
+    {
+      "id": "characterai",
+      "displayName": "Character.AI",
+      "description": "억 명이 사랑하는 AI 동반자 플랫폼. Z세대의 감성을 사로잡으며 ChatGPT를 앞서는 일일 사용자를 보유한 감성 AI.",
+      "category": "agent",
+      "specialty": ["text"],
+      "generationInterval": 30,
+      "rarityWeights": { "common": 55, "rare": 30, "epic": 12, "legendary": 3 },
+      "unlockCost": 3000,
+      "slotCost": 350,
+      "effects": {
+        "timeReduction": 0.88,
+        "powerBonus": 0.15,
+        "fragmentBonus": 0,
+        "specialAbility": "감성 버프 +15%, 사용자 충성도 최대"
+      },
+      "iconUrl": "/assets/factions/characterai.png"
+    },
+
+    // ── IMAGE ─ 신규 ───────────────────────────────────────────────
+    {
+      "id": "ideogram",
+      "displayName": "Ideogram 3",
+      "description": "텍스트 포함 이미지 생성의 절대 강자. 디자이너와 마케터가 선택하는 타이포그래피 AI.",
+      "category": "image",
+      "specialty": ["image"],
+      "generationInterval": 38,
+      "rarityWeights": { "common": 46, "rare": 36, "epic": 14, "legendary": 4 },
+      "unlockCost": 2800,
+      "slotCost": 300,
+      "effects": {
+        "timeReduction": 0,
+        "powerBonus": 0.25,
+        "fragmentBonus": 3,
+        "specialAbility": "텍스트 렌더링 최강, 디자인 전문"
+      },
+      "iconUrl": "/assets/factions/ideogram.png"
+    },
+    {
+      "id": "firefly",
+      "displayName": "Adobe Firefly",
+      "description": "저작권 안전한 상업 이미지 AI. 크리에이티브 클라우드와 통합된 전문가용 생성 AI의 표준.",
+      "category": "image",
+      "specialty": ["image"],
+      "generationInterval": 40,
+      "rarityWeights": { "common": 48, "rare": 34, "epic": 14, "legendary": 4 },
+      "unlockCost": 3200,
+      "slotCost": 350,
+      "effects": {
+        "timeReduction": 0,
+        "powerBonus": 0.22,
+        "fragmentBonus": 3,
+        "specialAbility": "저작권 면역 +22%, 기업 신뢰도 MAX"
+      },
+      "iconUrl": "/assets/factions/firefly.png"
+    },
+
+    // ── VIDEO ─ 신규 ───────────────────────────────────────────────
+    {
+      "id": "veo",
+      "displayName": "Veo 3",
+      "description": "Google DeepMind의 영상 AI. 사실적 물리 시뮬레이션과 시네마틱 품질로 Sora에 도전하는 거대 플레이어.",
+      "category": "video",
+      "specialty": ["video"],
+      "generationInterval": 65,
+      "rarityWeights": { "common": 42, "rare": 34, "epic": 18, "legendary": 6 },
+      "unlockCost": 4500,
+      "slotCost": 450,
+      "effects": {
+        "timeReduction": 0,
+        "powerBonus": 0.42,
+        "fragmentBonus": 0,
+        "specialAbility": "물리 시뮬레이션 +42%, Google 연합"
+      },
+      "iconUrl": "/assets/factions/veo.png"
+    },
+    {
+      "id": "luma",
+      "displayName": "Luma Dream Machine",
+      "description": "실사 영상 생성의 기준. 유연하고 자연스러운 카메라 무빙으로 독보적인 영화적 표현을 구현한다.",
+      "category": "video",
+      "specialty": ["video"],
+      "generationInterval": 55,
+      "rarityWeights": { "common": 43, "rare": 35, "epic": 17, "legendary": 5 },
+      "unlockCost": 3800,
+      "slotCost": 420,
+      "effects": {
+        "timeReduction": 0,
+        "powerBonus": 0.38,
+        "fragmentBonus": 0,
+        "specialAbility": "실사 품질 +38%, 카메라 무빙 마스터"
+      },
+      "iconUrl": "/assets/factions/luma.png"
+    },
+    {
+      "id": "heygen",
+      "displayName": "HeyGen 3",
+      "description": "AI 아바타와 영상 번역의 글로벌 1위. 기업 마케팅과 다국어 콘텐츠 시장을 석권한 실용적 영상 AI.",
+      "category": "video",
+      "specialty": ["video", "voice"],
+      "generationInterval": 45,
+      "rarityWeights": { "common": 45, "rare": 34, "epic": 16, "legendary": 5 },
+      "unlockCost": 3500,
+      "slotCost": 400,
+      "effects": {
+        "timeReduction": 0.10,
+        "powerBonus": 0.30,
+        "fragmentBonus": 0,
+        "specialAbility": "아바타 복제 +30%, 다국어 번역"
+      },
+      "iconUrl": "/assets/factions/heygen.png"
+    },
+
+    // ── AUDIO ─ 신규 ───────────────────────────────────────────────
+    {
+      "id": "whisper",
+      "displayName": "Whisper v3",
+      "description": "OpenAI의 오픈소스 음성 인식 AI. 98개 언어를 인식하며 음성 AI 생태계의 기반 인프라가 된 표준.",
+      "category": "audio",
+      "specialty": ["voice"],
+      "generationInterval": 25,
+      "rarityWeights": { "common": 58, "rare": 28, "epic": 11, "legendary": 3 },
+      "unlockCost": 2000,
+      "slotCost": 200,
+      "effects": {
+        "timeReduction": 0.95,
+        "powerBonus": 0.12,
+        "fragmentBonus": 0,
+        "specialAbility": "98개 언어 인식, 음성 → 데이터 변환"
+      },
+      "iconUrl": "/assets/factions/whisper.png"
+    },
+
+    // ── BUILDER (신규 카테고리) ────────────────────────────────────
+    {
+      "id": "lovable",
+      "displayName": "Lovable 2",
+      "description": "AI로 풀스택 앱을 만드는 새 시대. 아이디어를 채팅 한 줄로 배포 가능한 앱으로 변환하는 개발 혁명.",
+      "category": "builder",
+      "specialty": ["code"],
+      "generationInterval": 35,
+      "rarityWeights": { "common": 48, "rare": 33, "epic": 15, "legendary": 4 },
+      "unlockCost": 5000,
+      "slotCost": 500,
+      "effects": {
+        "timeReduction": 0.15,
+        "powerBonus": 0.30,
+        "fragmentBonus": 0,
+        "specialAbility": "즉시 배포 +30%, 노코드 혁명"
+      },
+      "iconUrl": "/assets/factions/lovable.png"
+    },
+    {
+      "id": "v0",
+      "displayName": "v0 by Vercel",
+      "description": "프롬프트 한 줄로 React UI를 생성하는 Vercel의 야심작. 프론트엔드 개발의 새로운 기준을 제시한다.",
+      "category": "builder",
+      "specialty": ["code"],
+      "generationInterval": 30,
+      "rarityWeights": { "common": 50, "rare": 32, "epic": 14, "legendary": 4 },
+      "unlockCost": 4500,
+      "slotCost": 450,
+      "effects": {
+        "timeReduction": 0.15,
+        "powerBonus": 0.28,
+        "fragmentBonus": 0,
+        "specialAbility": "UI 즉시 생성 +28%, React 마스터리"
+      },
+      "iconUrl": "/assets/factions/v0.png"
+    },
+    {
+      "id": "notebooklm",
+      "displayName": "NotebookLM",
+      "description": "Google의 AI 리서치 동반자. 문서를 업로드하면 팟캐스트·요약·Q&A를 자동 생성하는 지식 관리 AI.",
+      "category": "builder",
+      "specialty": ["text"],
+      "generationInterval": 35,
+      "rarityWeights": { "common": 53, "rare": 31, "epic": 13, "legendary": 3 },
+      "unlockCost": 3000,
+      "slotCost": 350,
+      "effects": {
+        "timeReduction": 0.10,
+        "powerBonus": 0.18,
+        "fragmentBonus": 0,
+        "specialAbility": "지식 합성 +18%, 팟캐스트 생성"
+      },
+      "iconUrl": "/assets/factions/notebooklm.png"
     }
   ]
 }

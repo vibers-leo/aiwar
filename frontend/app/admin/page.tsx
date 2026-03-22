@@ -118,6 +118,12 @@ export default function AdminPage() {
                             🤖 AI 버전 모니터
                         </a>
                         <a
+                            href="/admin/content-generator"
+                            className="px-4 py-2 rounded-lg font-bold bg-gradient-to-r from-purple-600 to-pink-600 text-white hover:from-purple-500 hover:to-pink-500 transition-all flex items-center gap-2"
+                        >
+                            ✨ 콘텐츠 생성기
+                        </a>
+                        <a
                             href="/admin/card-assets"
                             className="px-4 py-2 rounded-lg font-bold bg-gradient-to-r from-purple-600 to-blue-600 text-white hover:from-purple-500 hover:to-blue-500 transition-all flex items-center gap-2"
                         >

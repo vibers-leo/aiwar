@@ -123,6 +123,71 @@ export function analyzeDeckSynergy(cards: Card[]): DeckSynergy {
             description: 'Runway + Kling: 영상 AI 연합 — 속도 +20%',
             icon: '🎬'
         },
+        // ── 신규 콤보 (신규 군단 추가분) ─────────────────────────────
+        {
+            id: 'open-source-rebellion',
+            name: 'Open Source Rebellion',
+            requiredFactions: ['deepseek', 'llama', 'mistral'],
+            bonusPower: 0.40,
+            description: 'DeepSeek + Llama + Mistral: 오픈소스 삼두정치 — 전투력 +40%, 비용 -30%',
+            icon: '🔓'
+        },
+        {
+            id: 'asian-ai-alliance',
+            name: 'Asian AI Alliance',
+            requiredFactions: ['deepseek', 'qwen', 'hyperclova'],
+            bonusPower: 0.35,
+            description: 'DeepSeek + Qwen + HyperCLOVA: 동방 AI 연합 — 아시아 시장 전투력 +35%',
+            icon: '🐉'
+        },
+        {
+            id: 'google-empire',
+            name: 'Google Empire',
+            requiredFactions: ['gemini', 'veo', 'notebooklm'],
+            bonusPower: 0.30,
+            description: 'Gemini + Veo + NotebookLM: Google 생태계 완전 장악 — 전투력 +30%',
+            icon: '🌐'
+        },
+        {
+            id: 'builder-squad',
+            name: 'Builder Squad',
+            requiredFactions: ['lovable', 'v0', 'devin'],
+            bonusPower: 0.35,
+            description: 'Lovable + v0 + Devin: AI 빌더 연합 — 개발 속도 2배, 전투력 +35%',
+            icon: '🏗️'
+        },
+        {
+            id: 'openai-full-stack',
+            name: 'OpenAI Full Stack',
+            requiredFactions: ['chatgpt', 'dalle', 'sora', 'whisper'],
+            bonusPower: 0.45,
+            description: 'ChatGPT + DALL-E + Sora + Whisper: OpenAI 완전체 — 전 분야 +45%',
+            icon: '🚀'
+        },
+        {
+            id: 'search-war',
+            name: 'Search War',
+            requiredFactions: ['perplexity', 'gemini'],
+            bonusPower: 0.25,
+            description: 'Perplexity + Gemini: AI 검색 패권 전쟁 — 정보 우위 +25%',
+            icon: '🔎'
+        },
+        {
+            id: 'video-mega-alliance',
+            name: 'Video Mega Alliance',
+            requiredFactions: ['sora', 'veo', 'luma'],
+            bonusPower: 0.40,
+            description: 'Sora + Veo + Luma: 영상 AI 3강 연합 — 영상 전투력 +40%',
+            icon: '🎥'
+        },
+        {
+            id: 'emotion-wave',
+            name: 'Emotion Wave',
+            requiredFactions: ['characterai', 'elevenlabs', 'suno'],
+            bonusPower: 0.30,
+            description: 'Character.AI + ElevenLabs + Suno: 감성 AI 동맹 — 사기 +30%',
+            icon: '💫'
+        },
     ];
 
     const activeCombos: ComboDefinition[] = COMBO_DEFINITIONS.filter(combo =>

@@ -124,6 +124,25 @@ export const LEVEL_REWARDS: Record<number, LevelReward> = {
     22: { type: 'faction', factionId: 'copilot', description: 'Copilot 군단 승인' },
     23: { type: 'faction', factionId: 'replit', description: 'Replit 군단 승인' },
     24: { type: 'faction', factionId: 'codeium', description: 'Codeium 군단 승인' },
+    // ── 신규 군단 해제 (Lv.25~42) ────────────────────────────────
+    25: { type: 'faction', factionId: 'deepseek', description: 'DeepSeek 군단 승인' },
+    26: { type: 'faction', factionId: 'llama', description: 'Llama 군단 승인' },
+    27: { type: 'faction', factionId: 'mistral', description: 'Mistral 군단 승인' },
+    28: { type: 'faction', factionId: 'qwen', description: 'Qwen 군단 승인' },
+    29: { type: 'faction', factionId: 'hyperclova', description: 'HyperCLOVA X 군단 승인' },
+    30: { type: 'faction', factionId: 'gemma', description: 'Gemma 군단 승인' },
+    31: { type: 'faction', factionId: 'devin', description: 'Devin 군단 승인' },
+    32: { type: 'faction', factionId: 'perplexity', description: 'Perplexity 군단 승인' },
+    33: { type: 'faction', factionId: 'characterai', description: 'Character.AI 군단 승인' },
+    34: { type: 'faction', factionId: 'ideogram', description: 'Ideogram 군단 승인' },
+    35: { type: 'faction', factionId: 'firefly', description: 'Adobe Firefly 군단 승인' },
+    36: { type: 'faction', factionId: 'veo', description: 'Veo 군단 승인' },
+    37: { type: 'faction', factionId: 'luma', description: 'Luma 군단 승인' },
+    38: { type: 'faction', factionId: 'heygen', description: 'HeyGen 군단 승인' },
+    39: { type: 'faction', factionId: 'whisper', description: 'Whisper 군단 승인' },
+    40: { type: 'faction', factionId: 'lovable', description: 'Lovable 군단 승인' },
+    41: { type: 'faction', factionId: 'v0', description: 'v0 군단 승인' },
+    42: { type: 'faction', factionId: 'notebooklm', description: 'NotebookLM 군단 승인' },
 };
 
 // Gemini는 기본 승인 (레벨 1에 슬롯과 함께)
