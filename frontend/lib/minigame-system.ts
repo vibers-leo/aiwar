@@ -154,21 +154,54 @@ export function generateOpponentHand(mode: MiniGameMode, userLevel: number = 1):
     const { commonProb, rareProb, epicProb, legendaryProb } = calculateRarityProbabilities(userLevel);
     console.log(`  Probabilities: Common ${commonProb.toFixed(1)}%, Rare ${rareProb.toFixed(1)}%, Epic ${epicProb.toFixed(1)}%, Legendary ${legendaryProb.toFixed(1)}%`);
 
+    // 등급별 기본 파워 범위
+    const RARITY_BASE_POWER: Record<string, { min: number; max: number }> = {
+        common:    { min: 60,  max: 120 },
+        rare:      { min: 130, max: 220 },
+        epic:      { min: 240, max: 380 },
+        legendary: { min: 400, max: 600 },
+    };
+
+    const AI_NAMES: Record<string, string[]> = {
+        machine:   ['Iron Core', 'Steel Frame', 'Logic Gate', 'Binary Cipher', 'Neural Link'],
+        union:     ['Data Stream', 'Open Protocol', 'Free Agent', 'Swarm Node', 'Mesh Guard'],
+        cyberpunk: ['Neon Blade', 'Ghost Wire', 'Chrome Jack', 'Surge Punk', 'Void Hacker'],
+        emperor:   ['Dark Throne', 'Iron Decree', 'Shadow Court', 'Silent Edge', 'Obsidian Veil'],
+        empire:    ['Command Grid', 'Siege Engine', 'War Protocol', 'Titan Shell', 'Apex Drone'],
+    };
+
     return Array(count).fill(null).map((_, i) => {
         const factionPool = ['machine', 'union', 'cyberpunk', 'emperor', 'empire'];
         const faction = factionPool[Math.floor(Math.random() * factionPool.length)];
-
-        // 레벨 기반 등급 결정
         const rarity = determineRarityByProbability(userLevel);
+
+        // [FIX] 등급+레벨 기반 실제 스탯 생성 (플레이스홀더 제거)
+        const basePower = RARITY_BASE_POWER[rarity] || RARITY_BASE_POWER.common;
+        const levelBonus = userLevel * 8;
+        const totalPower = basePower.min + Math.floor(Math.random() * (basePower.max - basePower.min)) + levelBonus;
+
+        // 세부 스탯: totalPower를 5개 스탯에 분배 (각 최소 5pt)
+        const statKeys = ['creativity', 'accuracy', 'speed', 'stability', 'ethics'];
+        const remaining = totalPower - 5 * 5; // 최소 5씩 배분 후 남은 포인트
+        const rawSplit = statKeys.map(() => Math.random());
+        const sum = rawSplit.reduce((a, b) => a + b, 0);
+        const stats = statKeys.reduce((acc, key, idx) => {
+            acc[key] = 5 + Math.floor((rawSplit[idx] / sum) * remaining);
+            return acc;
+        }, {} as Record<string, number>);
+        stats.totalPower = Object.values(stats).reduce((a, b) => a + b, 0);
+
+        const namePool = AI_NAMES[faction] || AI_NAMES.machine;
+        const name = namePool[i % namePool.length];
 
         return {
             id: `ai-card-${Date.now()}-${i}`,
             instanceId: `ai-inst-${Date.now()}-${i}`,
-            name: `Dark Unit ${i + 1}`,
+            name,
             rarity,
             aiFactionId: faction,
             imageUrl: `/assets/cards/dark_${faction}.png`,
-            stats: { totalPower: 100 * userLevel },
+            stats,
             type: faction === 'machine' ? 'EFFICIENCY' : (faction === 'cyberpunk' ? 'FUNCTION' : 'CREATIVITY')
         } as any;
     });

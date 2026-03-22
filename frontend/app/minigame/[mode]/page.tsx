@@ -29,6 +29,7 @@ import {
     MiniGameRoom as RoomData
 } from '@/lib/realtime-minigame-service';
 import { handleMiniGameResultTransaction } from '@/lib/firebase-db';
+import { saveBattleHistory } from '@/lib/user-profile-utils';
 import { playClick, playBet, playClash, playWin, playLose, toggleMute, getMuteState, initAudio } from '@/lib/sound-effects';
 
 // 모드별 필요한 카드 수 (공식 지침 v1.0)
@@ -246,7 +247,7 @@ export default function MiniGameRoom() {
             finishMiniGame(roomId!, final === 'win' ? user!.uid : (final === 'lose' ? roomData!.guestId! : 'draw'));
         }
 
-        // DB 트랜잭션 처리 (카드 소멸/획득)
+        // DB 트랜잭션 처리 (카드 소멸/획득) + 전투 기록 저장
         if (final !== 'draw' && user?.uid) {
             setIsProcessing(true);
             try {
@@ -258,6 +259,16 @@ export default function MiniGameRoom() {
                     opponentCards
                 );
                 if (refreshData) await refreshData();
+
+                // [FIX] 전투 기록 저장 (누락되어 있던 부분)
+                await saveBattleHistory(user.uid, {
+                    opponentId: isPVP ? (roomData?.guestId || 'ai') : 'ai',
+                    opponentName: isPVP ? (roomData?.guestId ? '실제 플레이어' : 'AI') : `AI (Lv.${level || 1})`,
+                    result: final === 'win' ? 'win' : 'loss',
+                    ratingChange: final === 'win' ? 10 : -5,
+                    battleMode: `minigame-${mode}`
+                });
+
                 console.log(`MiniGame DB sync complete: ${final}`);
             } catch (e) {
                 console.error("Game processing failed", e);
