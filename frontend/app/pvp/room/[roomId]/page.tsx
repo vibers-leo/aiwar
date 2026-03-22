@@ -50,9 +50,12 @@ export default function RealtimeBattleRoomPage() {
     const [error, setError] = useState<string | null>(null);
     const [vsCountdown, setVsCountdown] = useState(30); // [FIX] 20 -> 30 (More time for vs-matchup intro)
     const [localWinner, setLocalWinner] = useState<string | null>(null);
+    const [opponentDisconnected, setOpponentDisconnected] = useState(false);
 
     const heartbeatRef = useRef<NodeJS.Timeout | null>(null);
     const listenerRef = useRef<(() => void) | null>(null);
+    // [FIX] 스테일 클로저 방지: localPhase를 ref로도 추적
+    const localPhaseRef = useRef<LocalPhase>('loading');
 
     const { profile, user, loading: userLoading } = useUser();
     const state = getGameState(user?.uid);
@@ -117,8 +120,10 @@ export default function RealtimeBattleRoomPage() {
                 // 양쪽 모두 연결되었는지 확인
                 const bothConnected = roomData.player1.connected && roomData.player2.connected;
                 if (bothConnected) {
+                    localPhaseRef.current = 'vs-matchup';
                     setLocalPhase('vs-matchup');
                 } else {
+                    localPhaseRef.current = 'waiting';
                     setLocalPhase('waiting');
                 }
 
@@ -126,13 +131,15 @@ export default function RealtimeBattleRoomPage() {
                 const unsubscribe = listenToBattleRoom(roomId, async (updatedRoom) => {
                     setRoom(updatedRoom);
 
-                    // 상대방 연결 끊김 감지
+                    // 상대방 연결 끊김 감지 — [FIX] localPhaseRef.current 사용 (스테일 클로저 방지)
                     const isPlayer1 = updatedRoom.player1.playerId === playerId;
                     const opponentData = isPlayer1 ? updatedRoom.player2 : updatedRoom.player1;
                     const myData = isPlayer1 ? updatedRoom.player1 : updatedRoom.player2;
+                    const currentPhase = localPhaseRef.current;
 
-                    if (!opponentData.connected && localPhase !== 'loading' && localPhase !== 'waiting' && !updatedRoom.finished) {
-                        console.warn('Opponent disconnected');
+                    if (!opponentData.connected && currentPhase !== 'loading' && currentPhase !== 'waiting' && !updatedRoom.finished) {
+                        console.warn('[PVP] Opponent disconnected at phase:', currentPhase);
+                        setOpponentDisconnected(true);
                     }
 
                     // [FIX] 'waiting' 상태에서 양쪽 연결 시 'vs-matchup'으로 전환
@@ -142,6 +149,7 @@ export default function RealtimeBattleRoomPage() {
                         if (isPlayer1) {
                             await updateBattleRoom(roomId, { phase: 'vs-matchup' as BattlePhase });
                         }
+                        localPhaseRef.current = 'vs-matchup';
                         setLocalPhase('vs-matchup');
                         return;
                     }
@@ -155,11 +163,12 @@ export default function RealtimeBattleRoomPage() {
                         return;
                     }
 
-                    // [FIX] Phase synchronization logic
+                    // [FIX] Phase synchronization logic — [FIX] localPhaseRef.current 사용
                     const roomPhase = updatedRoom.phase as LocalPhase;
 
-                    if (roomPhase && roomPhase !== localPhase) {
-                        console.log(`[Flow] Phase synchronized: ${localPhase} -> ${roomPhase}`);
+                    if (roomPhase && roomPhase !== currentPhase) {
+                        console.log(`[Flow] Phase synchronized: ${currentPhase} -> ${roomPhase}`);
+                        localPhaseRef.current = roomPhase;
                         setLocalPhase(roomPhase);
                     }
                 });
@@ -390,6 +399,7 @@ export default function RealtimeBattleRoomPage() {
             });
         }
 
+        localPhaseRef.current = 'result';
         setLocalPhase('result');
     };
 
@@ -409,6 +419,19 @@ export default function RealtimeBattleRoomPage() {
     return (
         <div className="min-h-screen bg-black text-white overflow-hidden">
             <BackgroundBeams className="opacity-20" />
+
+            {/* 상대방 연결 끊김 배너 */}
+            {opponentDisconnected && localPhase !== 'result' && (
+                <motion.div
+                    initial={{ y: -60, opacity: 0 }}
+                    animate={{ y: 0, opacity: 1 }}
+                    className="fixed top-0 left-0 right-0 z-50 bg-red-600/90 backdrop-blur-sm px-4 py-3 text-center"
+                >
+                    <p className="text-white font-bold text-sm">
+                        ⚠️ 상대방의 연결이 끊겼습니다. 잠시 후 승리 처리됩니다...
+                    </p>
+                </motion.div>
+            )}
 
             <AnimatePresence mode="wait">
                 {/* 로딩 */}

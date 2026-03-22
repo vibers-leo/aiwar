@@ -334,18 +334,15 @@ export async function advancePhase(roomId: string): Promise<void> {
 
     switch (room.phase) {
         case 'waiting':
-            nextPhase = 'selection';
+            nextPhase = 'vs-matchup';
             break;
-        case 'selection':
-            nextPhase = 'reveal';
+        case 'vs-matchup':
+            nextPhase = 'deck-select';
             break;
-        case 'reveal':
-            nextPhase = 'ordering';
+        case 'deck-select':
+            nextPhase = 'battle';
             break;
-        case 'ordering':
-            nextPhase = 'combat';
-            break;
-        case 'combat':
+        case 'battle':
             // 승리 조건 확인
             const winnerId = checkVictory(room);
             if (winnerId) {
