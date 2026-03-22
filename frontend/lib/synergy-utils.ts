@@ -65,8 +65,74 @@ export function analyzeDeckSynergy(cards: Card[]): DeckSynergy {
         }
     });
 
-    // TODO: 콤보 계산 로직 추가 (현재는 빈 배열)
-    const activeCombos: ComboDefinition[] = [];
+    // 콤보 계산 로직
+    const COMBO_DEFINITIONS: ComboDefinition[] = [
+        {
+            id: 'openai-alliance',
+            name: 'OpenAI Alliance',
+            requiredFactions: ['chatgpt', 'dalle'],
+            bonusPower: 0.15,
+            description: 'ChatGPT + DALL-E: OpenAI 군단 전체 전투력 +15%',
+            icon: '🤖'
+        },
+        {
+            id: 'google-dominance',
+            name: 'Google Dominance',
+            requiredFactions: ['gemini', 'stable'],
+            bonusPower: 0.10,
+            description: 'Gemini + 이미지 AI: 방어력 +10%, 토큰 소모 -20%',
+            icon: '🔍'
+        },
+        {
+            id: 'rival-clash',
+            name: 'Rival Clash',
+            requiredFactions: ['chatgpt', 'claude'],
+            bonusPower: 0.30,
+            description: 'ChatGPT vs Claude: 극한의 경쟁 — 전투력 +30% (리스크 포함)',
+            icon: '⚔️'
+        },
+        {
+            id: 'creative-trio',
+            name: 'Creative Trio',
+            requiredFactions: ['midjourney', 'dalle', 'stable'],
+            bonusPower: 0.20,
+            description: '이미지 AI 삼총사: 창의 스탯 +20%',
+            icon: '🎨'
+        },
+        {
+            id: 'text-titans',
+            name: 'Text Titans',
+            requiredFactions: ['chatgpt', 'claude', 'gemini'],
+            bonusPower: 0.25,
+            description: '3대 텍스트 AI 집결: 전투력 +25%',
+            icon: '📝'
+        },
+        {
+            id: 'audio-studio',
+            name: 'Audio Studio',
+            requiredFactions: ['suno', 'eleven'],
+            bonusPower: 0.15,
+            description: 'Suno + ElevenLabs: 음성 AI 시너지 — 안정성 +15%',
+            icon: '🎵'
+        },
+        {
+            id: 'video-empire',
+            name: 'Video Empire',
+            requiredFactions: ['runway', 'kling'],
+            bonusPower: 0.20,
+            description: 'Runway + Kling: 영상 AI 연합 — 속도 +20%',
+            icon: '🎬'
+        },
+    ];
+
+    const activeCombos: ComboDefinition[] = COMBO_DEFINITIONS.filter(combo =>
+        combo.requiredFactions.every(faction => (factionCounts[faction] || 0) >= 1)
+    );
+
+    // 콤보 보너스를 totalBonus에 반영
+    activeCombos.forEach(combo => {
+        totalBonus += combo.bonusPower;
+    });
 
     return {
         factionCounts,

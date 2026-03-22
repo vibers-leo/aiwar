@@ -214,14 +214,10 @@ export function UserProvider({ children }: { children: React.ReactNode }) {
         // --- DATA SYNC & STAT UPDATES ---
         if (user && profile) {
             // Update stats whenever profile changes (reactive)
-            if (profile.coins < 0) {
-                setCoins(0);
-            } else {
-                setCoins(profile.coins);
-            }
-            setTokens(profile.tokens);
-            setLevel(profile.level);
-            setExperience(profile.exp);
+            setCoins(Math.max(0, profile.coins ?? 0));
+            setTokens(profile.tokens ?? 0);
+            setLevel(profile.level ?? 1);
+            setExperience(profile.exp ?? 0);
 
             // ONLY do full sync once per user session
             if (initialSyncDone.current) {

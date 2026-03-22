@@ -60,8 +60,8 @@ export async function createMiniGameRoom(hostId: string, hostName: string, mode:
 
     await set(newRoomRef, newRoom);
 
-    // 연결 끊김 시 방 자동 제거 (대기실 버전)
-    // onDisconnect(newRoomRef).remove(); 
+    // 연결 끊김 시 방 자동 제거
+    onDisconnect(newRoomRef).remove();
 
     return roomId;
 }

@@ -371,6 +371,8 @@ export function rerollCardStats(card: Card): Card {
     }
 
 
+    const baseLegacyStat = Math.floor(totalPower / 5);
+
     return {
         ...card,
         stats: {
@@ -379,10 +381,10 @@ export function rerollCardStats(card: Card): Card {
             creativity,
             function: func,
             totalPower,
-            accuracy: 0,
-            speed: 0,
-            stability: 0,
-            ethics: 0
+            accuracy: baseLegacyStat + Math.floor(Math.random() * 5),
+            speed: baseLegacyStat + Math.floor(Math.random() * 5),
+            stability: baseLegacyStat + Math.floor(Math.random() * 5),
+            ethics: baseLegacyStat + Math.floor(Math.random() * 5)
         },
         type: mainType
     };

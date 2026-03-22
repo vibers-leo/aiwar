@@ -5,6 +5,7 @@ import { BattleMode as BaseBattleMode } from './battle-modes';
 import { generateRandomCard } from './card-generation-system';
 import { getLeaderboardData } from './firebase-db';
 import { hasTypeAdvantage, TYPE_ADVANTAGE_MULTIPLIER, resolveBattleResult } from './type-system';
+import { getResearchBonus } from './research-system';
 
 export type { BattleMode } from './types';
 export type MatchType = 'realtime' | 'ai-training';
@@ -603,9 +604,7 @@ function calculateRewards(mode: BattleMode, winner: 'player' | 'opponent' | 'dra
     // [NEW] 행운 연구 보너스 반영
     let fortuneBonus = 0;
     try {
-        const { gameStorage } = require('./game-storage');
-        const { getResearchBonus } = require('./research-system');
-        const state = gameStorage.getGameState();
+        const state = getGameState();
         if (state.research?.stats?.fortune) {
             const level = state.research.stats.fortune.currentLevel;
             fortuneBonus = getResearchBonus('fortune', level);

@@ -264,11 +264,8 @@ export async function claimStarterPackTransaction(
             const userData = exists ? userDoc.data() as UserProfile : null;
 
             if (userData?.hasReceivedStarterPack) {
-                const isBrokenState = (userData.coins || 0) === 0 && (userData.level || 1) <= 1;
-                if (!isBrokenState) {
-                    console.warn(`[Transaction] User ${userId} already claimed starter pack.`);
-                    throw new Error('ALREADY_CLAIMED');
-                }
+                console.warn(`[Transaction] User ${userId} already claimed starter pack.`);
+                throw new Error('ALREADY_CLAIMED');
             }
 
             // 1. 프로필 업데이트

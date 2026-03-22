@@ -79,6 +79,11 @@ export default function UserProfilePage() {
                 return;
             }
 
+            const timeoutId = setTimeout(() => {
+                setError('프로필 로딩 시간이 초과되었습니다. 네트워크 상태를 확인해 주세요.');
+                setLoading(false);
+            }, 10000);
+
             try {
                 setLoading(true);
                 const userProfile = await getUserProfile(userId);
@@ -86,6 +91,7 @@ export default function UserProfilePage() {
                 if (!userProfile) {
                     setError('사용자를 찾을 수 없습니다.');
                     setLoading(false);
+                    clearTimeout(timeoutId);
                     return;
                 }
 
@@ -100,10 +106,12 @@ export default function UserProfilePage() {
                 setMainDeck(deck);
                 setBattleHistory(history);
                 setLoading(false);
+                clearTimeout(timeoutId);
             } catch (err) {
                 console.error('Failed to load profile:', err);
                 setError('프로필을 불러오는 중 오류가 발생했습니다.');
                 setLoading(false);
+                clearTimeout(timeoutId);
             }
         }
 
