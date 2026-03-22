@@ -152,8 +152,9 @@ export async function findMatch(
                         roomId
                     });
 
-                    // 상대방 상태 업데이트 (roomId 포함)
+                    // 상대방 상태 업데이트 (roomId + status 포함 — 없으면 listenForMatch가 발화 안 함)
                     await update(ref(db, `matchmaking/${battleMode}/${opponentId}`), {
+                        status: 'matched',
                         roomId
                     });
 
@@ -215,7 +216,7 @@ export async function findMatch(
             const ghostRoomData: BattleRoom & { isGhost: boolean } = {
                 roomId,
                 battleMode,
-                phase: 'deck-select', // Ghost AI is pre-ready, skip to deck-select directly
+                phase: 'waiting', // [FIX] 'waiting'으로 시작해야 vs-matchup 연출이 정상 재생됨
                 player1: {
                     playerId: myPlayerId,
                     playerName: myQueueData?.playerName || 'Player',

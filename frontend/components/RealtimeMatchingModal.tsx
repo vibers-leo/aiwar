@@ -134,6 +134,8 @@ export default function RealtimeMatchingModal({
                     matchListenerRef.current = null;
                 }
                 await leaveMatchmaking(battleMode, state.userId);
+                const { refundPVPEntryFee } = await import('@/lib/pvp-battle-system');
+                await refundPVPEntryFee(); // [FIX] 타임아웃으로 매칭 실패 시 환불
                 setSearching(false);
                 setError('매칭 시간 초과. 다시 시도해주세요.');
             }, 60000);
@@ -343,15 +345,17 @@ export default function RealtimeMatchingModal({
             timeoutRef.current = null;
         }
 
-        // Firebase에서 매칭 큐 제거
+        // Firebase에서 매칭 큐 제거 + 입장료 환불
         if (searching) {
             try {
                 const { leaveMatchmaking } = await import('@/lib/realtime-pvp-service');
+                const { refundPVPEntryFee } = await import('@/lib/pvp-battle-system');
                 const { getGameState } = await import('@/lib/game-state');
                 const state = getGameState();
                 await leaveMatchmaking(battleMode, state.userId);
+                await refundPVPEntryFee(); // [FIX] 매칭 취소 시 입장료 환불
             } catch (err) {
-                console.error('Failed to leave matchmaking:', err);
+                console.error('Failed to leave matchmaking or refund:', err);
             }
         }
 

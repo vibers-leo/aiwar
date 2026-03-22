@@ -297,6 +297,21 @@ export async function payPVPEntryFee(): Promise<{ success: boolean; message?: st
 
 
 /**
+ * PVP 입장료 환불 (매칭 실패 / 취소 시 호출)
+ */
+export async function refundPVPEntryFee(): Promise<void> {
+    try {
+        const { updateCoins, updateTokens } = await import('./firebase-db');
+        await updateCoins(PVP_REQUIREMENTS.entryFeeCoins);
+        await updateTokens(PVP_REQUIREMENTS.entryFeeTokens);
+        await gameStorage.addCoins(PVP_REQUIREMENTS.entryFeeCoins);
+        console.log(`↩️ Entry fee refunded: ${PVP_REQUIREMENTS.entryFeeCoins} coins + ${PVP_REQUIREMENTS.entryFeeTokens} tokens`);
+    } catch (error) {
+        console.error('❌ Failed to refund entry fee:', error);
+    }
+}
+
+/**
  * 카드 타입 결정
  */
 export function getCardType(card: Card): 'efficiency' | 'creativity' | 'function' {

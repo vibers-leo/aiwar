@@ -329,11 +329,14 @@ export default function RealtimeBattleRoomPage() {
         const isGhost = (room as any).isGhost || false;
         const winnerId = isWin ? playerId : opponentData.playerId;
 
-        // [FIX] 승패에 따른 정확한 보상 계산
+        // [FIX] PVP_REWARDS 중앙 설정에서 보상 계산 (하드코딩 제거)
+        const rewardKey = isWin ? 'realtime-win' : 'realtime-loss';
+        const pvpRewardConfig = PVP_REWARDS[rewardKey];
         const rewards = {
-            coins: isWin ? 200 : 0,           // 승리: 200, 패배: 0
-            experience: isWin ? 100 : 20,     // 승리: 100, 패배: 20
-            ratingChange: isWin ? 25 : -15    // 승리: +25, 패배: -15
+            coins: pvpRewardConfig.coins,
+            experience: pvpRewardConfig.exp,
+            ratingChange: pvpRewardConfig.rating,
+            tokens: pvpRewardConfig.tokens || 0
         };
 
         const battleResult: BattleResult = {
@@ -351,7 +354,7 @@ export default function RealtimeBattleRoomPage() {
             })),
             playerWins: pWins,
             opponentWins: eWins,
-            rewards: rewards  // [FIX] 승패에 따른 차등 보상
+            rewards: rewards  // [FIX] PVP_REWARDS 중앙 설정 기반 보상
         };
 
         // 로컬 위너 설정 (결과 화면용)
