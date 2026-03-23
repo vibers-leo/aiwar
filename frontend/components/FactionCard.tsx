@@ -1,11 +1,12 @@
 'use client';
 
-import React, { memo } from 'react';
+import React, { memo, useMemo } from 'react';
 import Image from 'next/image';
 import { AIFaction } from '@/lib/types';
 import { cn } from '@/lib/utils';
 import { Check, Zap, Clock } from 'lucide-react';
 import { TIER_CONFIG } from '@/lib/faction-subscription-utils';
+import { COMBO_DEFINITIONS } from '@/lib/synergy-utils';
 
 interface FactionCardProps {
     faction: AIFaction;
@@ -24,6 +25,12 @@ const FactionCard = memo(({
     onLoreClick,
     onSubscribeClick
 }: FactionCardProps) => {
+    // 이 군단이 참여하는 콤보 목록
+    const relatedCombos = useMemo(
+        () => COMBO_DEFINITIONS.filter(c => c.requiredFactions.includes(faction.id)),
+        [faction.id]
+    );
+
     const getTierBadgeColor = (tier: string) => {
         switch (tier) {
             case 'free': return 'from-gray-500 to-gray-600';
@@ -99,7 +106,27 @@ const FactionCard = memo(({
                     )}
                 </div>
 
-                <div className="flex-1" />
+                {/* Combo Chips */}
+                {relatedCombos.length > 0 && (
+                    <div className="mt-2 flex flex-wrap gap-1">
+                        {relatedCombos.slice(0, 3).map(combo => (
+                            <span
+                                key={combo.id}
+                                title={combo.description}
+                                className="px-1.5 py-0.5 bg-purple-500/20 border border-purple-500/30 rounded text-[9px] text-purple-300 font-bold leading-tight"
+                            >
+                                {combo.icon} {combo.name}
+                            </span>
+                        ))}
+                        {relatedCombos.length > 3 && (
+                            <span className="px-1.5 py-0.5 bg-white/5 rounded text-[9px] text-white/30">
+                                +{relatedCombos.length - 3}
+                            </span>
+                        )}
+                    </div>
+                )}
+
+                <div className="flex-1 min-h-[8px]" />
 
                 {/* Subscription Stats (If Subscribed) */}
                 {subscription && (

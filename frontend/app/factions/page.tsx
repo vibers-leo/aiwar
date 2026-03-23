@@ -7,7 +7,8 @@ import aiFactionsData from '@/data/ai-factions.json';
 import { cn } from '@/lib/utils';
 import { useUserProfile } from '@/hooks/useUserProfile';
 import { useAlert } from '@/context/AlertContext';
-import { Info, X, Check, Crown, Zap, Clock, Infinity, Shield, Battery, Coins, Sparkles, ChevronDown, ChevronUp } from 'lucide-react';
+import { Info, X, Check, Crown, Zap, Clock, Infinity, Shield, Battery, Coins, Sparkles, ChevronDown, ChevronUp, Swords } from 'lucide-react';
+import { COMBO_DEFINITIONS } from '@/lib/synergy-utils';
 import FactionLoreModal from '@/components/FactionLoreModal';
 import { FACTION_LORE_DATA, FactionLore } from '@/lib/faction-lore';
 import { getCardCharacterImage } from '@/lib/card-images';
@@ -348,6 +349,96 @@ export default function FactionsPage() {
                                     onLoreClick={handleLoreClick}
                                     onSubscribeClick={handleSubscribeRequest}
                                 />
+                            );
+                        })}
+                    </div>
+                </div>
+
+                {/* ===== 시너지 콤보 도감 ===== */}
+                <div className="mt-4">
+                    <div className="flex items-center gap-2 mb-4">
+                        <Swords className="text-purple-400" size={20} />
+                        <h2 className="text-xl font-bold text-white">시너지 콤보 도감</h2>
+                        <span className="text-sm text-white/40 font-normal">({COMBO_DEFINITIONS.length}개)</span>
+                    </div>
+                    <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3 pb-8">
+                        {COMBO_DEFINITIONS.map(combo => {
+                            const subscribedIds = subscriptions.map(s => s.factionId);
+                            const matched = combo.requiredFactions.filter(f => subscribedIds.includes(f)).length;
+                            const total = combo.requiredFactions.length;
+                            const isComplete = matched === total;
+                            const progress = total > 0 ? (matched / total) * 100 : 0;
+
+                            return (
+                                <motion.div
+                                    key={combo.id}
+                                    initial={{ opacity: 0, y: 10 }}
+                                    animate={{ opacity: 1, y: 0 }}
+                                    className={cn(
+                                        "border rounded-xl p-4 transition-all",
+                                        isComplete
+                                            ? "bg-purple-500/10 border-purple-500/40 shadow-lg shadow-purple-500/10"
+                                            : "bg-white/3 border-white/10 hover:border-white/20"
+                                    )}
+                                >
+                                    {/* Header */}
+                                    <div className="flex items-start justify-between mb-3">
+                                        <div className="flex items-center gap-2">
+                                            <span className="text-2xl">{combo.icon}</span>
+                                            <div>
+                                                <p className={cn("font-bold text-sm", isComplete ? "text-purple-200" : "text-white")}>{combo.name}</p>
+                                                <p className="text-[10px] text-white/40">{matched}/{total} 군단 구독 중</p>
+                                            </div>
+                                        </div>
+                                        <div className={cn(
+                                            "text-xs font-black px-2 py-1 rounded-full",
+                                            isComplete ? "bg-purple-500/30 text-purple-300" : "bg-white/5 text-white/30"
+                                        )}>
+                                            +{Math.round(combo.bonusPower * 100)}%
+                                        </div>
+                                    </div>
+
+                                    {/* Progress Bar */}
+                                    <div className="w-full bg-white/10 rounded-full h-1.5 mb-3 overflow-hidden">
+                                        <div
+                                            className={cn(
+                                                "h-full rounded-full transition-all duration-500",
+                                                isComplete ? "bg-purple-400" : "bg-cyan-500/60"
+                                            )}
+                                            style={{ width: `${progress}%` }}
+                                        />
+                                    </div>
+
+                                    {/* Required Factions */}
+                                    <div className="flex flex-wrap gap-1.5">
+                                        {combo.requiredFactions.map(factionId => {
+                                            const isSubscribed = subscribedIds.includes(factionId);
+                                            const factionData = factions.find(f => f.id === factionId);
+                                            const name = factionData?.displayName || factionId;
+                                            return (
+                                                <span
+                                                    key={factionId}
+                                                    className={cn(
+                                                        "flex items-center gap-1 px-2 py-0.5 rounded-full text-[10px] font-bold border",
+                                                        isSubscribed
+                                                            ? "bg-green-500/20 border-green-500/40 text-green-300"
+                                                            : "bg-white/5 border-white/10 text-white/40"
+                                                    )}
+                                                >
+                                                    {isSubscribed && <Check size={8} />}
+                                                    {name}
+                                                </span>
+                                            );
+                                        })}
+                                    </div>
+
+                                    {/* Effect */}
+                                    {isComplete && (
+                                        <p className="mt-2 text-[10px] text-purple-300/80 border-t border-purple-500/20 pt-2">
+                                            ✨ 생성 시간 {Math.round(combo.bonusPower * 30)}% 단축 활성 중
+                                        </p>
+                                    )}
+                                </motion.div>
                             );
                         })}
                     </div>

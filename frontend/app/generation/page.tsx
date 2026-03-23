@@ -439,6 +439,22 @@ export default function GenerationPage() {
     const activeCombos = useMemo(() => getActiveCombosFromFactions(assignedFactionIds), [assignedFactionIds]);
     const synergyTimeReduction = useMemo(() => getSlotSynergyTimeReduction(assignedFactionIds), [assignedFactionIds]);
 
+    // 슬롯에 1개 이상 군단이 들어있어 진행 중인 근접 콤보 (미완성 포함)
+    const nearMissCombos = useMemo(() => {
+        if (assignedFactionIds.length === 0) return [];
+        return COMBO_DEFINITIONS
+            .filter(combo => {
+                const matched = combo.requiredFactions.filter(f => assignedFactionIds.includes(f)).length;
+                return matched > 0 && matched < combo.requiredFactions.length;
+            })
+            .map(combo => ({
+                ...combo,
+                matched: combo.requiredFactions.filter(f => assignedFactionIds.includes(f)).length,
+            }))
+            .sort((a, b) => (b.matched / b.requiredFactions.length) - (a.matched / a.requiredFactions.length))
+            .slice(0, 4); // 최대 4개만 표시
+    }, [assignedFactionIds]);
+
     const readyCount = useMemo(() => slots.filter(slot => {
         if (!slot.factionId) return false;
         if (!slot.nextGenerationAt) return false;
@@ -531,19 +547,55 @@ export default function GenerationPage() {
                     )}
 
                     {/* 시너지 콤보 패널 */}
-                    {activeCombos.length > 0 && (
-                        <div className="mt-4 bg-purple-500/10 border border-purple-500/30 rounded-lg p-3">
-                            <p className="text-xs font-bold text-purple-400 mb-2 flex items-center gap-1">
-                                <Shield size={13} />
-                                활성 시너지 콤보 — 생성 시간 {Math.round(synergyTimeReduction * 100)}% 감소
-                            </p>
-                            <div className="flex flex-wrap gap-2">
-                                {activeCombos.map(combo => (
-                                    <span key={combo.id} className="px-2 py-1 bg-purple-500/20 border border-purple-500/30 rounded-full text-xs text-purple-300 font-bold">
-                                        {combo.icon} {combo.name}
-                                    </span>
-                                ))}
-                            </div>
+                    {(activeCombos.length > 0 || nearMissCombos.length > 0) && (
+                        <div className="mt-4 space-y-2">
+                            {/* 활성 콤보 */}
+                            {activeCombos.length > 0 && (
+                                <div className="bg-purple-500/10 border border-purple-500/40 rounded-xl p-3">
+                                    <p className="text-xs font-bold text-purple-300 mb-2 flex items-center gap-1.5">
+                                        <Shield size={13} className="text-purple-400" />
+                                        활성 시너지 — 생성 시간 <span className="text-green-400">-{Math.round(synergyTimeReduction * 100)}%</span>
+                                    </p>
+                                    <div className="flex flex-wrap gap-1.5">
+                                        {activeCombos.map(combo => (
+                                            <span key={combo.id} title={combo.description} className="px-2 py-1 bg-purple-500/25 border border-purple-400/40 rounded-full text-xs text-purple-200 font-bold flex items-center gap-1">
+                                                {combo.icon} {combo.name}
+                                                <span className="text-green-400 text-[9px]">-{Math.round(combo.bonusPower * 30)}%</span>
+                                            </span>
+                                        ))}
+                                    </div>
+                                </div>
+                            )}
+
+                            {/* 근접 콤보 (진행 중) */}
+                            {nearMissCombos.length > 0 && (
+                                <div className="bg-white/3 border border-white/10 rounded-xl p-3">
+                                    <p className="text-xs font-bold text-white/40 mb-2 flex items-center gap-1.5">
+                                        <Sparkles size={12} />
+                                        달성 가능한 콤보
+                                    </p>
+                                    <div className="space-y-2">
+                                        {nearMissCombos.map(combo => {
+                                            const pct = Math.round((combo.matched / combo.requiredFactions.length) * 100);
+                                            return (
+                                                <div key={combo.id} className="flex items-center gap-2">
+                                                    <span className="text-base w-5 shrink-0">{combo.icon}</span>
+                                                    <div className="flex-1 min-w-0">
+                                                        <div className="flex items-center justify-between mb-0.5">
+                                                            <span className="text-[10px] text-white/60 font-bold truncate">{combo.name}</span>
+                                                            <span className="text-[9px] text-white/30 shrink-0 ml-1">{combo.matched}/{combo.requiredFactions.length}</span>
+                                                        </div>
+                                                        <div className="w-full bg-white/10 rounded-full h-1 overflow-hidden">
+                                                            <div className="h-full bg-cyan-500/60 rounded-full" style={{ width: `${pct}%` }} />
+                                                        </div>
+                                                    </div>
+                                                    <span className="text-[9px] text-purple-400/70 shrink-0">+{Math.round(combo.bonusPower * 30)}%</span>
+                                                </div>
+                                            );
+                                        })}
+                                    </div>
+                                </div>
+                            )}
                         </div>
                     )}
                 </div>
