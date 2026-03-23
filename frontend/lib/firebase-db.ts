@@ -18,7 +18,8 @@ import {
     limit,
     runTransaction,
     writeBatch,
-    documentId
+    documentId,
+    arrayUnion
 } from 'firebase/firestore';
 import { createUniqueCardFromApplication } from './mythic-card-factory';
 import app, { db, isFirebaseConfigured } from './firebase';
@@ -133,6 +134,7 @@ export interface UserProfile {
         };
     };
     research?: any; // [NEW] Full Research State (CommanderResearch)
+    comboBadges?: string[]; // [NEW] 콤보 도감 뱃지 목록 (comboId 배열)
 }
 
 const BASE_MAX_TOKENS = 1000;
@@ -459,6 +461,19 @@ export async function cancelSubscription(userId: string, factionId: string): Pro
     } catch (error) {
         console.error('❌ 구독 취소 실패:', error);
         return false;
+    }
+}
+
+/**
+ * 콤보 도감 뱃지 추가 (이미 있으면 무시됨 — arrayUnion 중복 방지)
+ */
+export async function addComboBadge(userId: string, comboId: string): Promise<void> {
+    if (!isFirebaseConfigured || !db) return;
+    try {
+        const profileRef = doc(db, 'users', userId, 'profile', 'data');
+        await updateDoc(profileRef, { comboBadges: arrayUnion(comboId) });
+    } catch (error) {
+        console.error('[addComboBadge] failed:', error);
     }
 }
 

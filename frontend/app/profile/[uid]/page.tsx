@@ -13,7 +13,8 @@ import { getTierColor, getWinRateColor, formatRelativeTime, getUserMainDeck, get
 import { useUser } from '@/context/UserContext';
 import { useAlert } from '@/context/AlertContext';
 import { cn } from '@/lib/utils';
-import { User, Trophy, Target, Clock, UserPlus, Swords, Share2, ArrowLeft } from 'lucide-react';
+import { User, Trophy, Target, Clock, UserPlus, Swords, Share2, ArrowLeft, Shield } from 'lucide-react';
+import { COMBO_DEFINITIONS } from '@/lib/synergy-utils';
 import { InventoryCard } from '@/lib/inventory-system';
 import { sendBattleInvitation } from '@/lib/battle-invitation-system';
 
@@ -323,6 +324,41 @@ export default function UserProfilePage() {
                         </div>
                     )}
                 </motion.div>
+
+                {/* Combo Badges */}
+                {profile.comboBadges && profile.comboBadges.length > 0 && (
+                    <motion.div
+                        initial={{ opacity: 0, y: 20 }}
+                        animate={{ opacity: 1, y: 0 }}
+                        transition={{ delay: 0.45 }}
+                        className="bg-white/5 border border-purple-500/30 rounded-xl p-6"
+                    >
+                        <h3 className="text-xl font-bold text-white mb-4 flex items-center gap-2">
+                            <Shield className="text-purple-400" size={24} />
+                            콤보 도감 뱃지
+                            <span className="ml-2 text-sm font-normal text-purple-400">{profile.comboBadges.length} / {COMBO_DEFINITIONS.length}</span>
+                        </h3>
+                        <div className="flex flex-wrap gap-2">
+                            {COMBO_DEFINITIONS.map(combo => {
+                                const earned = profile.comboBadges!.includes(combo.id);
+                                return (
+                                    <div
+                                        key={combo.id}
+                                        title={combo.description}
+                                        className={cn(
+                                            "px-3 py-2 rounded-xl border text-sm font-bold transition-all",
+                                            earned
+                                                ? "bg-purple-500/20 border-purple-500/50 text-purple-300"
+                                                : "bg-white/5 border-white/10 text-white/20 grayscale"
+                                        )}
+                                    >
+                                        {combo.icon} {combo.name}
+                                    </div>
+                                );
+                            })}
+                        </div>
+                    </motion.div>
+                )}
 
                 {/* Battle History */}
                 <motion.div

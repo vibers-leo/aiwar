@@ -2,6 +2,9 @@
 
 import { Card } from './types';
 
+// ── 콤보 정의 (모듈 스코프) ────────────────────────────────────────────────
+// analyzeDeckSynergy 와 슬롯 시너지 둘 다 공유
+
 export interface ComboDefinition {
     id: string;
     name: string;
@@ -47,6 +50,131 @@ export function calculateSynergyBonus(count: number): number {
     return bonusMap[count] || 1.0;
 }
 
+// ── 콤보 정의 목록 ────────────────────────────────────────────────────────────
+export const COMBO_DEFINITIONS: ComboDefinition[] = [
+    {
+        id: 'openai-alliance',
+        name: 'OpenAI Alliance',
+        requiredFactions: ['chatgpt', 'dalle'],
+        bonusPower: 0.15,
+        description: 'ChatGPT + DALL-E: OpenAI 군단 전체 전투력 +15%',
+        icon: '🤖'
+    },
+    {
+        id: 'google-dominance',
+        name: 'Google Dominance',
+        requiredFactions: ['gemini', 'stable'],
+        bonusPower: 0.10,
+        description: 'Gemini + 이미지 AI: 방어력 +10%, 토큰 소모 -20%',
+        icon: '🔍'
+    },
+    {
+        id: 'rival-clash',
+        name: 'Rival Clash',
+        requiredFactions: ['chatgpt', 'claude'],
+        bonusPower: 0.30,
+        description: 'ChatGPT vs Claude: 극한의 경쟁 — 전투력 +30% (리스크 포함)',
+        icon: '⚔️'
+    },
+    {
+        id: 'creative-trio',
+        name: 'Creative Trio',
+        requiredFactions: ['midjourney', 'dalle', 'stable'],
+        bonusPower: 0.20,
+        description: '이미지 AI 삼총사: 창의 스탯 +20%',
+        icon: '🎨'
+    },
+    {
+        id: 'text-titans',
+        name: 'Text Titans',
+        requiredFactions: ['chatgpt', 'claude', 'gemini'],
+        bonusPower: 0.25,
+        description: '3대 텍스트 AI 집결: 전투력 +25%',
+        icon: '📝'
+    },
+    {
+        id: 'audio-studio',
+        name: 'Audio Studio',
+        requiredFactions: ['suno', 'eleven'],
+        bonusPower: 0.15,
+        description: 'Suno + ElevenLabs: 음성 AI 시너지 — 안정성 +15%',
+        icon: '🎵'
+    },
+    {
+        id: 'video-empire',
+        name: 'Video Empire',
+        requiredFactions: ['runway', 'kling'],
+        bonusPower: 0.20,
+        description: 'Runway + Kling: 영상 AI 연합 — 속도 +20%',
+        icon: '🎬'
+    },
+    // ── 신규 콤보 (신규 군단 추가분) ─────────────────────────────
+    {
+        id: 'open-source-rebellion',
+        name: 'Open Source Rebellion',
+        requiredFactions: ['deepseek', 'llama', 'mistral'],
+        bonusPower: 0.40,
+        description: 'DeepSeek + Llama + Mistral: 오픈소스 삼두정치 — 전투력 +40%, 비용 -30%',
+        icon: '🔓'
+    },
+    {
+        id: 'asian-ai-alliance',
+        name: 'Asian AI Alliance',
+        requiredFactions: ['deepseek', 'qwen', 'hyperclova'],
+        bonusPower: 0.35,
+        description: 'DeepSeek + Qwen + HyperCLOVA: 동방 AI 연합 — 아시아 시장 전투력 +35%',
+        icon: '🐉'
+    },
+    {
+        id: 'google-empire',
+        name: 'Google Empire',
+        requiredFactions: ['gemini', 'veo', 'notebooklm'],
+        bonusPower: 0.30,
+        description: 'Gemini + Veo + NotebookLM: Google 생태계 완전 장악 — 전투력 +30%',
+        icon: '🌐'
+    },
+    {
+        id: 'builder-squad',
+        name: 'Builder Squad',
+        requiredFactions: ['lovable', 'v0', 'devin'],
+        bonusPower: 0.35,
+        description: 'Lovable + v0 + Devin: AI 빌더 연합 — 개발 속도 2배, 전투력 +35%',
+        icon: '🏗️'
+    },
+    {
+        id: 'openai-full-stack',
+        name: 'OpenAI Full Stack',
+        requiredFactions: ['chatgpt', 'dalle', 'sora', 'whisper'],
+        bonusPower: 0.45,
+        description: 'ChatGPT + DALL-E + Sora + Whisper: OpenAI 완전체 — 전 분야 +45%',
+        icon: '🚀'
+    },
+    {
+        id: 'search-war',
+        name: 'Search War',
+        requiredFactions: ['perplexity', 'gemini'],
+        bonusPower: 0.25,
+        description: 'Perplexity + Gemini: AI 검색 패권 전쟁 — 정보 우위 +25%',
+        icon: '🔎'
+    },
+    {
+        id: 'video-mega-alliance',
+        name: 'Video Mega Alliance',
+        requiredFactions: ['sora', 'veo', 'luma'],
+        bonusPower: 0.40,
+        description: 'Sora + Veo + Luma: 영상 AI 3강 연합 — 영상 전투력 +40%',
+        icon: '🎥'
+    },
+    {
+        id: 'emotion-wave',
+        name: 'Emotion Wave',
+        requiredFactions: ['characterai', 'elevenlabs', 'suno'],
+        bonusPower: 0.30,
+        description: 'Character.AI + ElevenLabs + Suno: 감성 AI 동맹 — 사기 +30%',
+        icon: '💫'
+    },
+];
+
 // 덱 시너지 분석
 export function analyzeDeckSynergy(cards: Card[]): DeckSynergy {
     const factionCounts = calculateFactionCounts(cards);
@@ -66,130 +194,6 @@ export function analyzeDeckSynergy(cards: Card[]): DeckSynergy {
     });
 
     // 콤보 계산 로직
-    const COMBO_DEFINITIONS: ComboDefinition[] = [
-        {
-            id: 'openai-alliance',
-            name: 'OpenAI Alliance',
-            requiredFactions: ['chatgpt', 'dalle'],
-            bonusPower: 0.15,
-            description: 'ChatGPT + DALL-E: OpenAI 군단 전체 전투력 +15%',
-            icon: '🤖'
-        },
-        {
-            id: 'google-dominance',
-            name: 'Google Dominance',
-            requiredFactions: ['gemini', 'stable'],
-            bonusPower: 0.10,
-            description: 'Gemini + 이미지 AI: 방어력 +10%, 토큰 소모 -20%',
-            icon: '🔍'
-        },
-        {
-            id: 'rival-clash',
-            name: 'Rival Clash',
-            requiredFactions: ['chatgpt', 'claude'],
-            bonusPower: 0.30,
-            description: 'ChatGPT vs Claude: 극한의 경쟁 — 전투력 +30% (리스크 포함)',
-            icon: '⚔️'
-        },
-        {
-            id: 'creative-trio',
-            name: 'Creative Trio',
-            requiredFactions: ['midjourney', 'dalle', 'stable'],
-            bonusPower: 0.20,
-            description: '이미지 AI 삼총사: 창의 스탯 +20%',
-            icon: '🎨'
-        },
-        {
-            id: 'text-titans',
-            name: 'Text Titans',
-            requiredFactions: ['chatgpt', 'claude', 'gemini'],
-            bonusPower: 0.25,
-            description: '3대 텍스트 AI 집결: 전투력 +25%',
-            icon: '📝'
-        },
-        {
-            id: 'audio-studio',
-            name: 'Audio Studio',
-            requiredFactions: ['suno', 'eleven'],
-            bonusPower: 0.15,
-            description: 'Suno + ElevenLabs: 음성 AI 시너지 — 안정성 +15%',
-            icon: '🎵'
-        },
-        {
-            id: 'video-empire',
-            name: 'Video Empire',
-            requiredFactions: ['runway', 'kling'],
-            bonusPower: 0.20,
-            description: 'Runway + Kling: 영상 AI 연합 — 속도 +20%',
-            icon: '🎬'
-        },
-        // ── 신규 콤보 (신규 군단 추가분) ─────────────────────────────
-        {
-            id: 'open-source-rebellion',
-            name: 'Open Source Rebellion',
-            requiredFactions: ['deepseek', 'llama', 'mistral'],
-            bonusPower: 0.40,
-            description: 'DeepSeek + Llama + Mistral: 오픈소스 삼두정치 — 전투력 +40%, 비용 -30%',
-            icon: '🔓'
-        },
-        {
-            id: 'asian-ai-alliance',
-            name: 'Asian AI Alliance',
-            requiredFactions: ['deepseek', 'qwen', 'hyperclova'],
-            bonusPower: 0.35,
-            description: 'DeepSeek + Qwen + HyperCLOVA: 동방 AI 연합 — 아시아 시장 전투력 +35%',
-            icon: '🐉'
-        },
-        {
-            id: 'google-empire',
-            name: 'Google Empire',
-            requiredFactions: ['gemini', 'veo', 'notebooklm'],
-            bonusPower: 0.30,
-            description: 'Gemini + Veo + NotebookLM: Google 생태계 완전 장악 — 전투력 +30%',
-            icon: '🌐'
-        },
-        {
-            id: 'builder-squad',
-            name: 'Builder Squad',
-            requiredFactions: ['lovable', 'v0', 'devin'],
-            bonusPower: 0.35,
-            description: 'Lovable + v0 + Devin: AI 빌더 연합 — 개발 속도 2배, 전투력 +35%',
-            icon: '🏗️'
-        },
-        {
-            id: 'openai-full-stack',
-            name: 'OpenAI Full Stack',
-            requiredFactions: ['chatgpt', 'dalle', 'sora', 'whisper'],
-            bonusPower: 0.45,
-            description: 'ChatGPT + DALL-E + Sora + Whisper: OpenAI 완전체 — 전 분야 +45%',
-            icon: '🚀'
-        },
-        {
-            id: 'search-war',
-            name: 'Search War',
-            requiredFactions: ['perplexity', 'gemini'],
-            bonusPower: 0.25,
-            description: 'Perplexity + Gemini: AI 검색 패권 전쟁 — 정보 우위 +25%',
-            icon: '🔎'
-        },
-        {
-            id: 'video-mega-alliance',
-            name: 'Video Mega Alliance',
-            requiredFactions: ['sora', 'veo', 'luma'],
-            bonusPower: 0.40,
-            description: 'Sora + Veo + Luma: 영상 AI 3강 연합 — 영상 전투력 +40%',
-            icon: '🎥'
-        },
-        {
-            id: 'emotion-wave',
-            name: 'Emotion Wave',
-            requiredFactions: ['characterai', 'elevenlabs', 'suno'],
-            bonusPower: 0.30,
-            description: 'Character.AI + ElevenLabs + Suno: 감성 AI 동맹 — 사기 +30%',
-            icon: '💫'
-        },
-    ];
-
     const activeCombos: ComboDefinition[] = COMBO_DEFINITIONS.filter(combo =>
         combo.requiredFactions.every(faction => (factionCounts[faction] || 0) >= 1)
     );
@@ -207,6 +211,7 @@ export function analyzeDeckSynergy(cards: Card[]): DeckSynergy {
     };
 }
 
+
 // AI 군단 이름 가져오기
 export function getFactionDisplayName(factionId: string): string {
     const factionNames: Record<string, string> = {
@@ -223,4 +228,23 @@ export function getFactionDisplayName(factionId: string): string {
     };
 
     return factionNames[factionId] || factionId;
+}
+
+/**
+ * 슬롯에 배치된 군단 ID 목록으로 활성 콤보 확인 (Card 객체 불필요)
+ */
+export function getActiveCombosFromFactions(factionIds: string[]): ComboDefinition[] {
+    return COMBO_DEFINITIONS.filter(combo =>
+        combo.requiredFactions.every(f => factionIds.includes(f))
+    );
+}
+
+/**
+ * 활성 콤보에 따른 생성 시간 감소 비율 반환 (0.0 ~ 0.5)
+ * 콤보 하나당 bonusPower * 0.3 감소, 최대 50% 감소
+ */
+export function getSlotSynergyTimeReduction(factionIds: string[]): number {
+    const combos = getActiveCombosFromFactions(factionIds);
+    const total = combos.reduce((sum, c) => sum + c.bonusPower * 0.3, 0);
+    return Math.min(0.5, total);
 }

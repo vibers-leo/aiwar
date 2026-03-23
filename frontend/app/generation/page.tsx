@@ -7,7 +7,9 @@ import { AIFaction, Card } from '@/lib/types';
 import aiFactionsData from '@/data/ai-factions.json';
 import { cn } from '@/lib/utils';
 import { useAlert } from '@/context/AlertContext';
-import { Clock, AlertTriangle, Plus, X, Zap, Gift, Sparkles, Info } from 'lucide-react';
+import { Clock, AlertTriangle, Plus, X, Zap, Gift, Sparkles, Info, Shield } from 'lucide-react';
+import { getActiveCombosFromFactions, getSlotSynergyTimeReduction, COMBO_DEFINITIONS, ComboDefinition } from '@/lib/synergy-utils';
+import { addComboBadge } from '@/lib/firebase-db';
 import { addCardToInventory } from '@/lib/inventory-system';
 import {
     getGenerationSlots,
@@ -32,7 +34,7 @@ export default function GenerationPage() {
     const router = useRouter();
     const { user } = useFirebase();
     const { showAlert, showConfirm } = useAlert();
-    const { trackMissionEvent, addTokens, consumeTokens, tokens, refreshInventory, level } = useUser(); // [NEW] Use UserContext for missions and rewards
+    const { trackMissionEvent, addTokens, consumeTokens, tokens, refreshInventory, level, profile } = useUser(); // [NEW] Use UserContext for missions and rewards
 
     const userId = user?.uid;
 
@@ -222,6 +224,26 @@ export default function GenerationPage() {
                     loadData();
                     setSelectedSlotForAssignment(null);
 
+                    // 신규 콤보 뱃지 체크
+                    if (userId) {
+                        const newAllFactionIds = slots
+                            .filter(s => s.factionId && s.index !== slotIndex)
+                            .map(s => s.factionId as string)
+                            .concat([factionId]);
+                        const newCombos = getActiveCombosFromFactions(newAllFactionIds);
+                        const existingBadges = profile?.comboBadges || [];
+                        for (const combo of newCombos) {
+                            if (!existingBadges.includes(combo.id)) {
+                                addComboBadge(userId, combo.id).catch(console.error);
+                                showAlert({
+                                    title: `${combo.icon} 콤보 뱃지 획득!`,
+                                    message: `[${combo.name}] 콤보를 최초로 활성화했습니다!`,
+                                    type: 'success'
+                                });
+                            }
+                        }
+                    }
+
                     // 1. Commander Rental Logic - UserContext가 처리하므로 별도 저장 불필요
                     try {
                         console.log(`[Rental] Faction placed in slot: ${factionId}`);
@@ -410,8 +432,12 @@ export default function GenerationPage() {
         return `${minutes}:${seconds.toString().padStart(2, '0')}`;
     };
 
-    const assignedFactionIds = useMemo(() => slots.filter(s => s.factionId).map(s => s.factionId), [slots]);
+    const assignedFactionIds = useMemo(() => slots.filter(s => s.factionId).map(s => s.factionId as string), [slots]);
     const availableFactions = useMemo(() => subscriptions.filter(s => !assignedFactionIds.includes(s.factionId)), [subscriptions, assignedFactionIds]);
+
+    // 시너지 콤보
+    const activeCombos = useMemo(() => getActiveCombosFromFactions(assignedFactionIds), [assignedFactionIds]);
+    const synergyTimeReduction = useMemo(() => getSlotSynergyTimeReduction(assignedFactionIds), [assignedFactionIds]);
 
     const readyCount = useMemo(() => slots.filter(slot => {
         if (!slot.factionId) return false;
@@ -501,6 +527,23 @@ export default function GenerationPage() {
                             <p className="text-sm text-yellow-400">
                                 구독 중인 군단이 없습니다. <button onClick={() => router.push('/factions')} className="underline font-bold">군단 구독하러 가기</button>
                             </p>
+                        </div>
+                    )}
+
+                    {/* 시너지 콤보 패널 */}
+                    {activeCombos.length > 0 && (
+                        <div className="mt-4 bg-purple-500/10 border border-purple-500/30 rounded-lg p-3">
+                            <p className="text-xs font-bold text-purple-400 mb-2 flex items-center gap-1">
+                                <Shield size={13} />
+                                활성 시너지 콤보 — 생성 시간 {Math.round(synergyTimeReduction * 100)}% 감소
+                            </p>
+                            <div className="flex flex-wrap gap-2">
+                                {activeCombos.map(combo => (
+                                    <span key={combo.id} className="px-2 py-1 bg-purple-500/20 border border-purple-500/30 rounded-full text-xs text-purple-300 font-bold">
+                                        {combo.icon} {combo.name}
+                                    </span>
+                                ))}
+                            </div>
                         </div>
                     )}
                 </div>

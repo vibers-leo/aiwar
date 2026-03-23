@@ -13,6 +13,7 @@ import {
     canGenerateToday,
     incrementGenerationCount
 } from './faction-subscription-utils';
+import { getSlotSynergyTimeReduction } from './synergy-utils';
 
 export interface GenerationSlot {
     index: number;
@@ -165,8 +166,14 @@ export function assignFactionToSlot(slotIndex: number, factionId: string, userId
 
     if (canGenerate) {
         slot.status = 'waiting';
-        // 첫 배치 시에도 대기 시간 적용 (30분/20분/10분)
-        slot.nextGenerationAt = new Date(Date.now() + subscription.generationInterval * 60 * 1000);
+        // 시너지 콤보 시간 감소 적용
+        const allFactionIds = slots
+            .filter(s => s.factionId && s.index !== slotIndex)
+            .map(s => s.factionId!)
+            .concat([factionId]);
+        const timeReduction = getSlotSynergyTimeReduction(allFactionIds);
+        const effectiveInterval = subscription.generationInterval * (1 - timeReduction);
+        slot.nextGenerationAt = new Date(Date.now() + effectiveInterval * 60 * 1000);
     } else {
         slot.status = 'limit_reached';
         slot.nextGenerationAt = null;
@@ -269,7 +276,10 @@ export async function generateCard(slotIndex: number, userId?: string): Promise<
     // 다음 생성 시간 설정
     const { canGenerate: canGenerateNext } = canGenerateToday(slot.factionId!, userId);
     if (canGenerateNext) {
-        slot.nextGenerationAt = new Date(Date.now() + subscription.generationInterval * 60 * 1000);
+        const allFactionIds = slots.filter(s => s.factionId).map(s => s.factionId!);
+        const timeReduction = getSlotSynergyTimeReduction(allFactionIds);
+        const effectiveInterval = subscription.generationInterval * (1 - timeReduction);
+        slot.nextGenerationAt = new Date(Date.now() + effectiveInterval * 60 * 1000);
         slot.status = 'waiting';
     } else {
         slot.nextGenerationAt = null;
