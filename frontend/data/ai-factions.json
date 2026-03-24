@@ -615,7 +615,7 @@
       "iconUrl": "/assets/factions/gemma.png"
     },
 
-    // ── AGENT (신규 카테고리) ──────────────────────────────────────
+
     {
       "id": "devin",
       "displayName": "Devin 2",
@@ -671,7 +671,7 @@
       "iconUrl": "/assets/factions/characterai.png"
     },
 
-    // ── IMAGE ─ 신규 ───────────────────────────────────────────────
+
     {
       "id": "ideogram",
       "displayName": "Ideogram 3",
@@ -709,7 +709,7 @@
       "iconUrl": "/assets/factions/firefly.png"
     },
 
-    // ── VIDEO ─ 신규 ───────────────────────────────────────────────
+
     {
       "id": "veo",
       "displayName": "Veo 3",
@@ -765,7 +765,7 @@
       "iconUrl": "/assets/factions/heygen.png"
     },
 
-    // ── AUDIO ─ 신규 ───────────────────────────────────────────────
+
     {
       "id": "whisper",
       "displayName": "Whisper v3",
@@ -785,7 +785,7 @@
       "iconUrl": "/assets/factions/whisper.png"
     },
 
-    // ── BUILDER (신규 카테고리) ────────────────────────────────────
+
     {
       "id": "lovable",
       "displayName": "Lovable 2",
