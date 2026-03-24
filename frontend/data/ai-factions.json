@@ -506,7 +506,6 @@
       "iconUrl": "/assets/factions/codeium.png"
     },
 
-    // ── SUPER (LLM) ─ 신규 ──────────────────────────────────────────
     {
       "id": "deepseek",
       "displayName": "DeepSeek R2",
