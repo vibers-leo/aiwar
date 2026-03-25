@@ -1,3 +1,16 @@
+## 전략 문서 (개발 전 반드시 숙지)
+- **전략 진단 리포트**: `data/STRATEGY_ANALYSIS.md`
+- **PM 공통 지침**: 맥미니 루트 `pm.md`
+
+### 전략 핵심 요약
+- "AI 스토리가 주인공"인 게임으로 명확히 포지셔닝 → 마케팅도 "Story First" 강조
+- Beachhead 모든 지표 높음(Value, Winnability, Referral) → 시장 잠재력 충분하나 **마케팅 부족**
+- Q2 우선순위: 1) Minigame 완성 2) Story Ch6 배포 3) Reddit/Discord 커뮤니티 진입(각 20명 모집)
+- 완전 무료는 지속 불가능 → Q2 말 배틀패스(₩9,900/시즌) + 스킨(₩2,900~9,900) 수익화 필수
+- DAU 100명 달성 후 ARPU ₩2,500 목표 (Q4 말) → 월 ₩250만 매출 가능성
+
+---
+
 # AI War - Claude Code 프로젝트 가이드
 
 ## 프로젝트 개요
@@ -461,6 +474,46 @@ OKR.md의 KR 1.3 상태를 '95% 달성'으로 업데이트하시겠습니까?
 - Package Manager: npm
 - 개발 서버: `npm run dev` (기본 포트 3000)
 - 빌드: `npm run build`
+
+---
+
+## AI Recipe 이미지 API
+
+이 프로젝트는 **AI Recipe 중앙 이미지 서비스**를 사용합니다.
+
+### 사용 가능한 함수
+
+```typescript
+import { searchStockImage, generateAIImage } from '@/lib/ai-recipe-client';
+```
+
+### Stock Image 검색
+```typescript
+const image = await searchStockImage('fantasy warrior card', {
+  orientation: 'portrait',
+  size: 'medium',
+});
+// → { url, provider, alt, photographer, ... }
+```
+
+### AI 이미지 생성
+```typescript
+const image = await generateAIImage('epic battle card artwork, cyberpunk warrior character', {
+  size: 'large',
+  provider: 'auto',
+});
+// → { url, prompt, provider }
+```
+
+### 주요 용도
+- 카드/캐릭터 이미지 AI 생성
+- 전투 배경 이미지
+- 스토리 씬 일러스트
+
+### 주의사항
+- Server Action이나 API Route에서만 사용 (API 키 보호)
+- Rate Limit: 1000회/일
+- AI Recipe 서버 실행 필요: http://localhost:3300
 
 ---
 

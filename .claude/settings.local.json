@@ -1,0 +1,24 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(git commit:*)",
+      "Bash(npx playwright:*)",
+      "Bash(firebase deploy:*)",
+      "Bash(npx firebase-tools deploy:*)",
+      "Bash(lsof:*)",
+      "Bash(xargs kill:*)",
+      "Bash(npm run dev:*)",
+      "Bash(npm run test:*)",
+      "Bash(npm install:*)",
+      "Bash(curl:*)",
+      "Bash(kill -9 7841 echo \"Ruby 프로세스 종료\" sleep 2 curl -s http://localhost:3000/api/generate-card-image)",
+      "Bash(kill:*)",
+      "Bash(ngrok http:*)",
+      "Bash(/Users/admin/Desktop/ai-war/frontend/.env.local << 'EOF'\n\n# Kakao Auth\nNEXT_PUBLIC_KAKAO_JAVASCRIPT_KEY=2f28720e9688d9327a44c74522f7b52b\nKAKAO_REST_API_KEY=mbJWdBXJiCCJPfK8Qm71GfqQHtTWvlnV\nEOF)",
+      "Bash(/Users/admin/Desktop/ai-war/frontend/.env.local << 'EOF'\n\n# Firebase Admin SDK \\(서비스 어카운트 - 카카오 로그인용\\)\n# Firebase Console > Project Settings > Service accounts > Generate new private key\n# 다운로드한 JSON 파일에서 복사:\nFIREBASE_ADMIN_PROJECT_ID=aiwar-14246\nFIREBASE_ADMIN_CLIENT_EMAIL=\nFIREBASE_ADMIN_PRIVATE_KEY=\nEOF)"
+    ],
+    "additionalDirectories": [
+      "/tmp"
+    ]
+  }
+}
