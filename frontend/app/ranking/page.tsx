@@ -26,7 +26,7 @@ export default function RankingPage() {
     const [rankings, setRankings] = useState<RankingEntry[]>([]);
     const [myRank, setMyRank] = useState<RankingEntry | null>(null);
     const [currentSeason, setCurrentSeason] = useState<any>(null);
-    const [filter, setFilter] = useState<'top10' | 'top100' | 'all'>('top100');
+    const [filter, setFilter] = useState<'top10' | 'top50' | 'top100' | 'all'>('top50');
     const [sortConfig, setSortConfig] = useState<{ key: keyof RankingEntry; direction: 'asc' | 'desc' }>({ key: 'rating', direction: 'desc' });
 
     // User Action Modal State
@@ -41,8 +41,8 @@ export default function RankingPage() {
                 const season = getCurrentSeason();
                 setCurrentSeason(season);
 
-                // 2. Get Leaderboard Data
-                const userProfiles = await fetchLeaderboard();
+                // 2. Get Leaderboard Data (top 50)
+                const userProfiles = await fetchLeaderboard(50);
 
                 // Map UserProfile to RankingEntry
                 const mappedRankings: RankingEntry[] = (userProfiles as any[]).map((p, index) => ({
@@ -146,6 +146,7 @@ export default function RankingPage() {
     const processedRankings = [...rankings]
         .filter(r => {
             if (filter === 'top10') return r.rank <= 10;
+            if (filter === 'top50') return r.rank <= 50;
             if (filter === 'top100') return r.rank <= 100;
             return true;
         })
@@ -261,7 +262,7 @@ export default function RankingPage() {
 
             {/* Filters */}
             <div className="flex gap-2 mb-6 relative z-20 overflow-x-auto pb-2 scrollbar-hide">
-                {(['top10', 'top100', 'all'] as const).map(f => (
+                {(['top10', 'top50', 'top100', 'all'] as const).map(f => (
                     <button
                         key={f}
                         type="button"
@@ -271,10 +272,86 @@ export default function RankingPage() {
                             filter === f ? "bg-pink-500/20 border border-pink-500/50 text-pink-400" : "bg-white/5 border border-white/10 text-white/40 hover:border-white/20 hover:text-white"
                         )}
                     >
-                        {f === 'top10' ? 'TOP_10' : f === 'top100' ? 'TOP_100' : 'ALL'}
+                        {f === 'top10' ? 'TOP_10' : f === 'top50' ? 'TOP_50' : f === 'top100' ? 'TOP_100' : 'ALL'}
                     </button>
                 ))}
             </div>
+
+            {/* Top 3 Podium */}
+            {rankings.length >= 3 && (
+                <motion.div
+                    initial={{ opacity: 0, y: 20 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    transition={{ delay: 0.2 }}
+                    className="mb-8"
+                >
+                    <div className="flex items-end justify-center gap-3 sm:gap-6">
+                        {/* 2등 */}
+                        {(() => {
+                            const entry = rankings[1];
+                            const tier = getRankTier(entry.rating);
+                            return (
+                                <div
+                                    onClick={() => handleUserClick(entry)}
+                                    className="flex flex-col items-center cursor-pointer group"
+                                >
+                                    <div className="w-14 h-14 sm:w-16 sm:h-16 rounded-full bg-gradient-to-b from-gray-400/30 to-gray-600/20 border-2 border-gray-400/40 flex items-center justify-center text-2xl sm:text-3xl mb-2 group-hover:border-gray-300/60 transition-all">
+                                        🥈
+                                    </div>
+                                    <p className="text-white font-bold text-xs sm:text-sm truncate max-w-[80px] sm:max-w-[100px] text-center">{entry.playerName}</p>
+                                    <p className={cn("text-xs font-bold", tier.color)}>{tier.icon} {entry.rating}</p>
+                                    <p className="text-[10px] text-white/30 font-mono">{entry.wins}승 {entry.losses}패</p>
+                                    <div className="w-20 sm:w-24 h-20 sm:h-24 bg-gradient-to-t from-gray-500/20 to-transparent rounded-t-lg mt-2 flex items-end justify-center pb-2">
+                                        <span className="text-gray-400 font-black orbitron text-lg">2</span>
+                                    </div>
+                                </div>
+                            );
+                        })()}
+                        {/* 1등 */}
+                        {(() => {
+                            const entry = rankings[0];
+                            const tier = getRankTier(entry.rating);
+                            return (
+                                <div
+                                    onClick={() => handleUserClick(entry)}
+                                    className="flex flex-col items-center cursor-pointer group -mt-4"
+                                >
+                                    <div className="w-18 h-18 sm:w-20 sm:h-20 rounded-full bg-gradient-to-b from-amber-400/40 to-amber-600/20 border-2 border-amber-400/50 flex items-center justify-center text-3xl sm:text-4xl mb-2 shadow-[0_0_20px_rgba(245,158,11,0.3)] group-hover:shadow-[0_0_30px_rgba(245,158,11,0.5)] transition-all">
+                                        🥇
+                                    </div>
+                                    <p className="text-amber-400 font-bold text-sm sm:text-base truncate max-w-[80px] sm:max-w-[120px] text-center">{entry.playerName}</p>
+                                    <p className={cn("text-xs font-bold", tier.color)}>{tier.icon} {entry.rating}</p>
+                                    <p className="text-[10px] text-white/30 font-mono">{entry.wins}승 {entry.losses}패</p>
+                                    <div className="w-20 sm:w-24 h-28 sm:h-32 bg-gradient-to-t from-amber-500/20 to-transparent rounded-t-lg mt-2 flex items-end justify-center pb-2">
+                                        <span className="text-amber-400 font-black orbitron text-xl">1</span>
+                                    </div>
+                                </div>
+                            );
+                        })()}
+                        {/* 3등 */}
+                        {(() => {
+                            const entry = rankings[2];
+                            const tier = getRankTier(entry.rating);
+                            return (
+                                <div
+                                    onClick={() => handleUserClick(entry)}
+                                    className="flex flex-col items-center cursor-pointer group"
+                                >
+                                    <div className="w-12 h-12 sm:w-14 sm:h-14 rounded-full bg-gradient-to-b from-orange-700/30 to-orange-900/20 border-2 border-orange-700/40 flex items-center justify-center text-xl sm:text-2xl mb-2 group-hover:border-orange-600/60 transition-all">
+                                        🥉
+                                    </div>
+                                    <p className="text-white font-bold text-xs sm:text-sm truncate max-w-[80px] sm:max-w-[100px] text-center">{entry.playerName}</p>
+                                    <p className={cn("text-xs font-bold", tier.color)}>{tier.icon} {entry.rating}</p>
+                                    <p className="text-[10px] text-white/30 font-mono">{entry.wins}승 {entry.losses}패</p>
+                                    <div className="w-20 sm:w-24 h-14 sm:h-16 bg-gradient-to-t from-orange-700/20 to-transparent rounded-t-lg mt-2 flex items-end justify-center pb-2">
+                                        <span className="text-orange-600 font-black orbitron text-lg">3</span>
+                                    </div>
+                                </div>
+                            );
+                        })()}
+                    </div>
+                </motion.div>
+            )}
 
             {/* Ranking Table */}
             <div className="bg-white/5 border border-white/10 rounded-xl overflow-hidden min-h-[250px] sm:min-h-[400px] overflow-x-auto">

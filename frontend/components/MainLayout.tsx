@@ -25,6 +25,12 @@ const TutorialManager = dynamic(() => import('@/components/TutorialManager'), {
     loading: () => null, // TutorialManager should not show loading state
 });
 
+// [NEW] Daily Login Reward Modal
+const DailyRewardModal = dynamic(() => import('@/components/DailyRewardModal'), {
+    ssr: false,
+    loading: () => null,
+});
+
 import { useFooter } from '@/context/FooterContext';
 import { cn } from '@/lib/utils';
 
@@ -94,6 +100,7 @@ export default function MainLayout({ children }: { children: React.ReactNode }) 
                     )}
                 >
                     <TutorialManager />
+                    <DailyRewardModal />
                     <Suspense fallback={<LoadingPlaceholder />}>
                         {children}
                     </Suspense>
