@@ -6,6 +6,7 @@ import { useRouter } from 'next/navigation';
 import { BackgroundBeams } from '@/components/ui/aceternity/background-beams';
 import { HoverBorderGradient } from '@/components/ui/aceternity/hover-border-gradient';
 import GoogleLoginButton from '@/components/GoogleLoginButton';
+import VibersBanner from '@/components/VibersBanner';
 
 import { signInWithEmail } from '@/lib/firebase-auth';
 import { login, signInAsGuest } from '@/lib/auth-utils';
@@ -761,6 +762,11 @@ export default function IntroPage() {
                     </motion.div>
                 )}
             </AnimatePresence>
+
+            {/* Vibers 크로스 프로모션 */}
+            <div className="flex justify-center py-8">
+                <VibersBanner size="leaderboard" currentProject="aiwar" />
+            </div>
 
             {/* ===== CSS for scroll reveal ===== */}
             <style jsx global>{`
