@@ -23,7 +23,7 @@ export default function PrivacyPage() {
         {/* 전문 */}
         <section className="mb-10">
           <p className="text-base text-gray-300 leading-relaxed">
-            계발자들(이하 &quot;회사&quot;)은 정보주체의 자유와 권리 보호를 위해
+            주식회사 디랩(이하 &quot;회사&quot;)은 정보주체의 자유와 권리 보호를 위해
             「개인정보 보호법」 및 관계 법령이 정한 바를 준수하여, 적법하게
             개인정보를 처리하고 안전하게 관리하고 있습니다. 이에 「개인정보
             보호법」 제30조에 따라 정보주체에게 개인정보 처리에 관한 절차 및

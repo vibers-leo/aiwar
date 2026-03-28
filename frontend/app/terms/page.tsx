@@ -24,7 +24,7 @@ export default function TermsPage() {
         <section className="mb-10">
           <h2 className="text-2xl font-bold text-cyan-400 mb-4">제1조 (목적)</h2>
           <p className="text-base text-gray-300 leading-relaxed">
-            본 약관은 계발자들(이하 &quot;회사&quot;)이 운영하는 AI War 턴제 카드
+            본 약관은 주식회사 디랩(이하 &quot;회사&quot;)이 운영하는 AI War 턴제 카드
             배틀 게임(이하 &quot;서비스&quot;)을 이용함에 있어 회사와 이용자의
             권리, 의무 및 책임사항을 규정함을 목적으로 합니다.
           </p>
@@ -132,7 +132,7 @@ export default function TermsPage() {
           <h3 className="text-lg font-bold text-white mb-3">이용약관 관련 문의</h3>
           <div className="text-sm text-gray-300 space-y-1">
             <p>이메일: contact@vibers.co.kr</p>
-            <p>운영: 계발자들 (Vibers)</p>
+            <p>운영: 주식회사 디랩 (대표: 이준호, 사업자등록번호: 617-86-11575)</p>
           </div>
         </div>
       </div>
