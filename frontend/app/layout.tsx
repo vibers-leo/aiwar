@@ -76,6 +76,26 @@ export default function RootLayout({
         className={`${geistSans.variable} ${geistMono.variable} antialiased bg-gray-950`}
         suppressHydrationWarning
       >
+        <script
+          type="application/ld+json"
+          dangerouslySetInnerHTML={{
+            __html: JSON.stringify({
+              "@context": "https://schema.org",
+              "@type": "VideoGame",
+              "name": "AGI WAR : 전쟁의 서막",
+              "url": "https://ai-war.vercel.app",
+              "description": "20개 AI 군단을 모아 최강의 시너지로 전쟁의 서막을 여는 턴제 카드 전략 게임",
+              "applicationCategory": "Game",
+              "operatingSystem": "Web",
+              "creator": {
+                "@type": "Organization",
+                "name": "계발자들 (Vibers)",
+                "url": "https://vibers.co.kr"
+              },
+              "inLanguage": "ko"
+            })
+          }}
+        />
         <Script
           async
           src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-7704550771011130"
