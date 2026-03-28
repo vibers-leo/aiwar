@@ -30,7 +30,15 @@ export const metadata: Metadata = {
   openGraph: {
     title: "AGI WAR : 전쟁의 서막",
     description: "20개 AI 군단으로 펼치는 전략 카드 배틀",
+    url: "https://ai-war.vercel.app",
+    siteName: "AGI WAR",
     type: "website",
+    locale: "ko_KR",
+  },
+  twitter: {
+    card: "summary_large_image",
+    title: "AGI WAR : 전쟁의 서막",
+    description: "20개 AI 군단으로 펼치는 전략 카드 배틀",
   },
   // Preconnect hints for faster resource loading
   other: {
