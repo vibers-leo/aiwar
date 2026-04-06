@@ -52,6 +52,15 @@ export async function POST(req: NextRequest) {
         // 2. Firebase Custom Token 발급
         const customToken = await createKakaoCustomToken(kakaoUid);
 
+        // 바이버스 생태계 연결 (email 있을 때만, fire-and-forget)
+        if (email) {
+          fetch(`${process.env.VIBERS_SITE_URL ?? 'https://vibers.co.kr'}/api/vibers/connect`, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json', 'x-vibers-secret': process.env.VIBERS_CONNECT_SECRET ?? '' },
+            body: JSON.stringify({ type: 'join', brandSlug: 'aiwar', userEmail: email, userName: nickname }),
+          }).catch(() => {});
+        }
+
         // 3. 클라이언트로 반환
         return NextResponse.json({
             customToken,
