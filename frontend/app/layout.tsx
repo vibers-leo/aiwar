@@ -28,11 +28,16 @@ export const metadata: Metadata = {
   title: "AGI WAR : 전쟁의 서막 | 시즌1",
   description: "2030년의 미래를 바꿀 AI 카드 전략 게임 AGI WAR. 20개 AI 군단을 모아 최강의 시너지로 전쟁의 서막을 열어보세요!",
   keywords: "AI, 카드게임, 전략게임, AGI WAR, 턴제, GPT, Gemini, Claude",
+  icons: {
+    icon: "/favicon.ico",
+    apple: "/apple-touch-icon.png",
+  },
   openGraph: {
     title: "AGI WAR : 전쟁의 서막",
     description: "20개 AI 군단으로 펼치는 전략 카드 배틀",
-    url: "https://ai-war.vercel.app",
-    siteName: "AGI WAR",
+    url: "https://aiwar.vibers.co.kr",
+    siteName: "AIWAR",
+    images: [{ url: "/og-image.png", width: 1200, height: 630, alt: "AIWAR" }],
     type: "website",
     locale: "ko_KR",
   },
