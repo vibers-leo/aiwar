@@ -55,7 +55,7 @@ export default function BuyMeACoffeeBanner() {
                                     개발자에게 커피 한 잔 사주시면 더 좋은 게임을 만드는 데 큰 힘이 됩니다! 💪
                                 </p>
                                 <a
-                                    href="https://www.buymeacoffee.com/yourname"
+                                    href="https://www.buymeacoffee.com/vibers"
                                     target="_blank"
                                     rel="noopener noreferrer"
                                     className="inline-block bg-gradient-to-r from-yellow-400 to-orange-500 hover:from-yellow-500 hover:to-orange-600 text-white px-6 py-3 rounded-full font-bold transition-all transform hover:scale-105 shadow-lg"
