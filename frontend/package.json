@@ -28,10 +28,10 @@
     "firebase-admin": "^13.6.1",
     "framer-motion": "^12.23.26",
     "lucide-react": "^0.562.0",
-    "next": "16.0.10",
+    "next": "^16.2.3",
     "nodemailer": "^7.0.12",
-    "react": "19.2.1",
-    "react-dom": "19.2.1",
+    "react": "^19.2.5",
+    "react-dom": "^19.2.5",
     "replicate": "^1.4.0",
     "tailwind-merge": "^3.4.0",
     "uuid": "^13.0.0"

@@ -3,16 +3,7 @@ import Script from "next/script";
 import { Geist, Geist_Mono } from "next/font/google";
 import "./globals.css";
 import "./animations.css";
-import { ThemeProvider } from "@/components/ThemeProvider";
-import { FirebaseProvider } from "@/components/FirebaseProvider";
-import { LanguageProvider } from "@/context/LanguageContext";
-import { AlertProvider } from "@/context/AlertContext";
-import { FooterProvider } from "@/context/FooterContext";
-import { UserProvider } from "@/context/UserContext";
-import { SoundProvider } from "@/context/SoundContext";
-import { NotificationProvider } from "@/context/NotificationContext";
-import { CardModalProvider } from "@/components/CardModalContext";
-import MainLayout from "@/components/MainLayout";
+import ClientProviders from "@/components/ClientProviders";
 
 const geistSans = Geist({
   variable: "--font-geist-sans",
@@ -102,16 +93,18 @@ export default function RootLayout({
           }}
         />
         <Script
+          key="adsbygoogle"
           async
           src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-7704550771011130"
           crossOrigin="anonymous"
           strategy="afterInteractive"
         />
         <Script
+          key="gtag-js"
           src="https://www.googletagmanager.com/gtag/js?id=G-CGK1BSBM63"
           strategy="afterInteractive"
         />
-        <Script id="gtag-init" strategy="afterInteractive">
+        <Script key="gtag-init" id="gtag-init" strategy="afterInteractive">
           {`
             window.dataLayer = window.dataLayer || [];
             function gtag(){dataLayer.push(arguments);}
@@ -119,27 +112,9 @@ export default function RootLayout({
             gtag('config', 'G-CGK1BSBM63');
           `}
         </Script>
-        <FirebaseProvider>
-          <UserProvider>
-            <LanguageProvider>
-              <SoundProvider>
-                <AlertProvider>
-                  <NotificationProvider>
-                    <FooterProvider>
-                      <CardModalProvider>
-                        <ThemeProvider>
-                          <MainLayout>
-                            {children}
-                          </MainLayout>
-                        </ThemeProvider>
-                      </CardModalProvider>
-                    </FooterProvider>
-                  </NotificationProvider>
-                </AlertProvider>
-              </SoundProvider>
-            </LanguageProvider>
-          </UserProvider>
-        </FirebaseProvider>
+        <ClientProviders>
+          {children}
+        </ClientProviders>
       </body>
     </html>
   );
