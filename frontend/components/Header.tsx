@@ -37,7 +37,7 @@ export default function Header() {
         { name: 'AI Factions', href: '/factions' },
         { name: 'Shop', href: '/shop' },
         { name: 'Lab', href: '/lab' },
-        { name: 'PVP Arena', href: '/pvp/realtime' },
+        { name: 'PVP Arena', href: '/pvp' },
         { name: 'Ranking', href: '/ranking' },
     ];
 

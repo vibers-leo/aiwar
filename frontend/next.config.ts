@@ -38,6 +38,14 @@ const nextConfig: NextConfig = {
       },
     ];
   },
+  async redirects() {
+    return [
+      { source: '/inventory', destination: '/my-cards', permanent: true },
+      { source: '/pvp/match', destination: '/pvp', permanent: true },
+      { source: '/pvp/fight', destination: '/pvp', permanent: true },
+      { source: '/battle/fight', destination: '/battle', permanent: true },
+    ];
+  },
   async headers() {
     return [
       {
