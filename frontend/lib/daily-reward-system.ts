@@ -192,6 +192,9 @@ export async function claimDailyReward(uid: string): Promise<{
         rewards: newRewards,
     });
 
+    // 알림 트리거 (일일 보상 수령 완료)
+    import('@/lib/notification-service').then(({ notifyDailyReward }) => notifyDailyReward(uid)).catch(() => {});
+
     return {
         success: true,
         reward: check.reward,

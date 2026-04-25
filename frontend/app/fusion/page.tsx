@@ -180,6 +180,15 @@ export default function FusionPage() {
                 setRewardModalOpen(true);
                 addNotification('fusion', '합성 성공!', `${fusedCard.name} 카드를 획득했습니다!`, '/fusion');
                 trackMissionEvent('card-fusion', 1);
+
+                // 알림 트리거 (합성 성공)
+                if (user?.uid) {
+                    import('@/lib/notification-service').then(({ sendNotification }) => sendNotification(user.uid, {
+                        type: 'system',
+                        title: '카드 합성 성공!',
+                        message: `${fusedCard.name} 카드를 획득했습니다!`,
+                    })).catch(() => {});
+                }
             } else {
                 // 실패 처리
                 showAlert({

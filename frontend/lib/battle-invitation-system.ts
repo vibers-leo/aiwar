@@ -65,6 +65,9 @@ export async function sendBattleInvitation(
             expiresAt: expiresAt
         });
 
+        // 알림 트리거 (PVP 초대 수신자에게)
+        import('@/lib/notification-service').then(({ notifyPvpInvite }) => notifyPvpInvite(toUid, fromNickname, invitationId)).catch(() => {});
+
         return { success: true, invitationId };
     } catch (error: any) {
         console.error("Error sending battle invitation:", error);

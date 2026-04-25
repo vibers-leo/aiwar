@@ -289,6 +289,12 @@ export async function generateCard(slotIndex: number, userId?: string): Promise<
     slot.lastGeneratedCard = newCard;
     saveSlots(slots, userId);
 
+    // 알림 트리거 (카드 생성 완료)
+    if (userId && userId !== 'local-user' && userId !== 'guest') {
+        const factionName = factionData?.name || slot.factionId || '알 수 없음';
+        import('@/lib/notification-service').then(({ notifyCardReady }) => notifyCardReady(userId, factionName)).catch(() => {});
+    }
+
     // Check for active bonuses
     const hasBonuses = researchBonuses.efficiency > 1 || researchBonuses.creativity > 1 || researchBonuses.function > 1;
     const bonusText = hasBonuses ? `\n(연구 보너스 적용됨! +${Math.max(researchBonuses.efficiency, researchBonuses.creativity, researchBonuses.function) * 3} 스탯)` : '';

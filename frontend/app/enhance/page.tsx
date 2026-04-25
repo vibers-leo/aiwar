@@ -231,6 +231,15 @@ export default function EnhancePage() {
             setEnhancedResult(enhancedCard);
             setRewardModalOpen(true);
 
+            // 알림 트리거 (강화 성공)
+            if (user?.uid) {
+                import('@/lib/notification-service').then(({ sendNotification }) => sendNotification(user.uid, {
+                    type: 'system',
+                    title: '카드 강화 성공!',
+                    message: `${enhancedCard.name} 카드 강화가 완료되었습니다!`,
+                })).catch(() => {});
+            }
+
             handleClear();
             await loadCards(); // 인벤토리 & 토큰 갱신
         } catch (error) {

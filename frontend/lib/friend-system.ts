@@ -132,6 +132,9 @@ export async function sendFriendRequest(currentUserId: string, currentUserProfil
                 updatedAt: serverTimestamp()
             });
         });
+        // 알림 트리거 (친구 요청 수신자에게)
+        import('@/lib/notification-service').then(({ notifyFriendRequest }) => notifyFriendRequest(targetUserId, currentUserProfile.nickname || 'Unknown')).catch(() => {});
+
         return { success: true };
     } catch (error: any) {
         console.error("Error sending friend request:", error);

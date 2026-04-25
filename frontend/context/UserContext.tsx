@@ -845,6 +845,10 @@ export function UserProvider({ children }: { children: React.ReactNode }) {
                         type: "achievement",
                         icon: "🏆"
                     });
+                    // 알림 트리거 (퀘스트 완료)
+                    if (user?.uid) {
+                        import('@/lib/notification-service').then(({ notifyQuestComplete }) => notifyQuestComplete(user.uid, newlyCompleted.title)).catch(() => {});
+                    }
                 }
             }
             return updated;
