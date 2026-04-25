@@ -188,6 +188,7 @@ export default function ClashBattle() {
     }, [roomId, user, isHost, room?.status]);
 
     // 상대방 연결 상태 체크 및 자동 패배 처리
+    const disconnectProcessedRef = useRef(false);
     useEffect(() => {
         if (!room || !user || room.status === 'finished') return;
 
@@ -195,12 +196,17 @@ export default function ClashBattle() {
         const connected = checkConnection(opponentHeartbeat);
         setOpponentConnected(connected);
 
-        // 연결 끊김 감지 후 20초 대기 후 자동 패배 처리
-        if (!connected && opponentHeartbeat && room.status !== 'waiting') {
+        // 재접속 시 플래그 리셋
+        if (connected) {
+            disconnectProcessedRef.current = false;
+        }
+
+        // 연결 끊김 감지 후 20초 대기 후 자동 패배 처리 (1회만)
+        if (!connected && opponentHeartbeat && room.status !== 'waiting' && !disconnectProcessedRef.current) {
             const disconnectDuration = Date.now() - opponentHeartbeat;
 
-            // 20초 이상 연결 끊김 시 자동 패배 처리
             if (disconnectDuration > 20000) {
+                disconnectProcessedRef.current = true;
                 handleDisconnectDefeat();
             }
         }
