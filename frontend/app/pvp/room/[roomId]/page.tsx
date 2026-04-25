@@ -31,6 +31,7 @@ import { BackgroundBeams } from '@/components/ui/aceternity/background-beams';
 import { Button } from '@/components/ui/custom/Button';
 import { useTranslation } from '@/context/LanguageContext';
 import { saveBattleHistory } from '@/lib/user-profile-utils';
+import { analytics } from '@/lib/analytics';
 
 // Extended local phase for UI control
 type LocalPhase = 'loading' | 'waiting' | 'vs-matchup' | 'deck-select' | 'ordering' | 'battle' | 'result' | 'error';
@@ -398,6 +399,7 @@ export default function RealtimeBattleRoomPage() {
         // 로컬 위너 설정 + 보상 저장 (결과 화면용)
         setLocalWinner(winnerId);
         setBattleRewards({ coins: rewards.coins, ratingChange: rewards.ratingChange });
+        analytics.pvpMatchFinished(isWin ? 'win' : 'loss', room.battleMode);
 
         // 양쪽 모두 자기 계산 결과를 기록 (교차 검증용)
         const isPlayer1 = room.player1.playerId === playerId;

@@ -27,8 +27,10 @@ import { cn } from '@/lib/utils';
 import { useTranslation } from '@/context/LanguageContext';
 import { Sparkles, Star, Clock, AlertCircle, CheckCircle, Package } from 'lucide-react';
 import { Card } from '@/lib/types';
+import { useAlert } from '@/context/AlertContext';
 
 export default function StudioPage() {
+    const { showAlert } = useAlert();
     const [selectedCard, setSelectedCard] = useState<InventoryCard | null>(null);
     const [materialSlots, setMaterialSlots] = useState<(InventoryCard | null)[]>(Array(REQUIRED_MATERIAL_COUNT).fill(null));
     const [userTokens, setUserTokens] = useState(0);
@@ -118,7 +120,7 @@ export default function StudioPage() {
         );
 
         if (availableMaterials.length < REQUIRED_MATERIAL_COUNT) {
-            alert(`같은 등급(${baseRarity})의 레벨 1 카드가 부족합니다. (필요: ${REQUIRED_MATERIAL_COUNT}장, 보유: ${availableMaterials.length}장)`);
+            showAlert({ title: '재료 부족', message: `같은 등급(${baseRarity})의 레벨 1 카드가 부족합니다. (필요: ${REQUIRED_MATERIAL_COUNT}장, 보유: ${availableMaterials.length}장)`, type: 'warning' });
             return;
         }
 
@@ -127,7 +129,7 @@ export default function StudioPage() {
 
     const handleSubmit = async () => {
         if (!selectedCard) {
-            alert(t('unique.studio.validation.baseCard'));
+            showAlert({ title: '오류', message: t('unique.studio.validation.baseCard'), type: 'warning' });
             return;
         }
 
@@ -136,12 +138,12 @@ export default function StudioPage() {
         // 재료 검증
         const validation = validateMaterialCards(selectedCard, filledMaterials);
         if (!validation.isValid) {
-            alert(validation.message);
+            showAlert({ title: '검증 실패', message: validation.message, type: 'warning' });
             return;
         }
 
         if (!appName.trim() || !appDesc.trim()) {
-            alert(t('unique.studio.validation.input'));
+            showAlert({ title: '입력 오류', message: t('unique.studio.validation.input'), type: 'warning' });
             return;
         }
 
@@ -160,7 +162,7 @@ export default function StudioPage() {
             );
 
             if (result.success) {
-                alert(result.message);
+                showAlert({ title: '성공', message: result.message, type: 'success' });
                 setSelectedCard(null);
                 setMaterialSlots(Array(REQUIRED_MATERIAL_COUNT).fill(null));
                 setAppName('');
@@ -169,7 +171,7 @@ export default function StudioPage() {
                 await loadCards();
                 setViewMode('list');
             } else {
-                alert(result.message);
+                showAlert({ title: '오류', message: result.message, type: 'error' });
             }
         }
     };

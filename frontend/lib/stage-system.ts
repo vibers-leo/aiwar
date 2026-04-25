@@ -61,6 +61,30 @@ export function getStageEnemyDeck(stageId: string): EnemyAttribute[] {
         'stage-3-8': ['rock', 'paper', 'paper', 'scissors', 'scissors'],
         'stage-3-9': ['paper', 'paper', 'scissors', 'scissors', 'scissors'],
         'stage-3-10': ['rock', 'paper', 'paper', 'scissors', 'scissors'], // 최종보스
+
+        // 챕터 4: 전면전
+        'stage-4-1': ['scissors', 'scissors', 'paper', 'rock', 'rock'],
+        'stage-4-2': ['rock', 'scissors', 'scissors', 'paper', 'paper'],
+        'stage-4-3': ['paper', 'rock', 'scissors', 'scissors', 'paper'],
+        'stage-4-4': ['scissors', 'paper', 'rock', 'rock', 'scissors'],
+        'stage-4-5': ['rock', 'scissors', 'paper', 'scissors', 'paper'],   // 중간보스
+        'stage-4-6': ['paper', 'paper', 'rock', 'scissors', 'scissors'],
+        'stage-4-7': ['scissors', 'rock', 'paper', 'scissors', 'rock'],
+        'stage-4-8': ['rock', 'paper', 'scissors', 'rock', 'paper'],
+        'stage-4-9': ['scissors', 'scissors', 'rock', 'paper', 'paper'],
+        'stage-4-10': ['paper', 'scissors', 'rock', 'scissors', 'paper'],  // 최종보스
+
+        // 챕터 5: 최후의 결전
+        'stage-5-1': ['rock', 'scissors', 'paper', 'rock', 'scissors'],
+        'stage-5-2': ['paper', 'rock', 'scissors', 'paper', 'rock'],
+        'stage-5-3': ['scissors', 'paper', 'rock', 'scissors', 'paper'],
+        'stage-5-4': ['rock', 'rock', 'scissors', 'paper', 'scissors'],
+        'stage-5-5': ['scissors', 'paper', 'paper', 'rock', 'scissors'],   // 중간보스
+        'stage-5-6': ['paper', 'scissors', 'rock', 'paper', 'scissors'],
+        'stage-5-7': ['rock', 'paper', 'scissors', 'scissors', 'rock'],
+        'stage-5-8': ['scissors', 'rock', 'paper', 'rock', 'paper'],
+        'stage-5-9': ['paper', 'scissors', 'rock', 'scissors', 'rock'],
+        'stage-5-10': ['rock', 'paper', 'scissors', 'rock', 'paper'],      // 최종보스
     };
 
     return deckPatterns[stageId] || ['rock', 'paper', 'paper', 'scissors', 'scissors'];
@@ -199,8 +223,8 @@ export function getStageConfig(stageId: number): StageConfig {
 
         if (chapter >= 2) bossBuffs.push('강화된 AI');
         if (chapter >= 3) bossBuffs.push('상성 분석');
-        if (chapter >= 4) bossBuffs.push('전투력 +15%');
-        if (chapter >= 5) bossBuffs.push('회복 능력');
+        if (chapter >= 4) bossBuffs.push('전투력 강화');
+        if (chapter >= 5) bossBuffs.push('최종 진화');
     }
 
     // 비대칭 매치업 로직 (특수 스테이지)

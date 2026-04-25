@@ -113,6 +113,39 @@ export default function MainPage() {
         </div>
       )}
 
+      {/* 첫 배틀 유도 배너 - 튜토리얼 완료 후 첫 방문 유저 */}
+      {profile?.tutorialCompleted && profile?.level <= 2 && (
+        <motion.div
+          initial={{ opacity: 0, y: -20 }}
+          animate={{ opacity: 1, y: 0 }}
+          className="relative z-10 w-full max-w-7xl mx-auto mt-6 mb-4"
+        >
+          <Link href="/battle">
+            <div className="overflow-hidden rounded-2xl border-2 border-yellow-500/50 bg-gradient-to-r from-yellow-900/30 via-orange-900/20 to-red-900/30 backdrop-blur-md p-4 sm:p-5 flex items-center justify-between gap-4 cursor-pointer hover:border-yellow-400 hover:shadow-[0_0_30px_rgba(234,179,8,0.3)] transition-all group">
+              <div className="flex items-center gap-4">
+                <motion.div
+                  animate={{ scale: [1, 1.15, 1] }}
+                  transition={{ duration: 1.5, repeat: Infinity }}
+                  className="w-12 h-12 sm:w-14 sm:h-14 rounded-xl bg-yellow-500/20 border border-yellow-500/40 flex items-center justify-center text-2xl sm:text-3xl"
+                >
+                  ⚔️
+                </motion.div>
+                <div>
+                  <p className="text-yellow-400 text-xs font-bold tracking-wider mb-1">NEXT STEP</p>
+                  <h3 className="text-lg sm:text-xl font-black text-white">첫 번째 전투를 시작해보세요!</h3>
+                  <p className="text-white/50 text-sm mt-0.5">받은 카드로 스토리 모드 첫 전투에 도전하세요</p>
+                </div>
+              </div>
+              <div className="flex-shrink-0">
+                <span className="px-5 py-2 bg-gradient-to-r from-yellow-500 to-orange-500 text-black font-bold rounded-lg text-sm tracking-wider group-hover:from-yellow-400 group-hover:to-orange-400 transition-all">
+                  GO BATTLE →
+                </span>
+              </div>
+            </div>
+          </Link>
+        </motion.div>
+      )}
+
       {/* Season 1 Banner - Enhanced with premium glow */}
       <div id="season-banner" className="relative z-10 w-full max-w-7xl mx-auto mt-6 mb-8 overflow-hidden rounded-2xl border border-cyan-500/30 bg-black/60 backdrop-blur-md group cursor-pointer hover:border-cyan-400/80 transition-all duration-300 hover:shadow-[0_0_40px_rgba(6,182,212,0.3)]">
         <div className="absolute inset-0 bg-gradient-to-r from-cyan-900/20 via-blue-900/10 to-transparent opacity-50 group-hover:opacity-100 transition-opacity duration-500" />

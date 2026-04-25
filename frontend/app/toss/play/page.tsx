@@ -31,14 +31,21 @@ const GAME_MODES = [
 
 export default function TossPlayPage() {
   const [selectedMode, setSelectedMode] = useState<string | null>(null);
+  const [notice, setNotice] = useState<string | null>(null);
 
   const handleStart = () => {
     if (!selectedMode) return;
-    alert(`${GAME_MODES.find((m) => m.id === selectedMode)?.title} 준비 중입니다.\n토스 정식 출시 후 이용 가능합니다.`);
+    setNotice(`${GAME_MODES.find((m) => m.id === selectedMode)?.title} 준비 중이에요. 토스 정식 출시 후 이용할 수 있어요.`);
+    setTimeout(() => setNotice(null), 3000);
   };
 
   return (
     <div className="flex flex-1 flex-col px-5 py-6">
+      {notice && (
+        <div className="mb-4 rounded-xl bg-blue-50 px-4 py-3 text-[14px] text-blue-700 border border-blue-200">
+          {notice}
+        </div>
+      )}
       {/* 헤더 */}
       <h2 className="mb-1 text-[22px] font-bold text-gray-900">게임 로비</h2>
       <p className="mb-6 text-[14px] text-gray-500">
