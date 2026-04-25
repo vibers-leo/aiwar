@@ -1,5 +1,7 @@
 'use client';
 
+export const dynamic = 'force-dynamic';
+
 import { useEffect, useState, useCallback, useRef } from 'react';
 import { useRouter, useParams } from 'next/navigation';
 import { motion, AnimatePresence } from 'framer-motion';
@@ -51,9 +53,11 @@ export default function RealtimeBattleRoomPage() {
     const [vsCountdown, setVsCountdown] = useState(30); // [FIX] 20 -> 30 (More time for vs-matchup intro)
     const [localWinner, setLocalWinner] = useState<string | null>(null);
     const [opponentDisconnected, setOpponentDisconnected] = useState(false);
+    const [battleRewards, setBattleRewards] = useState<{ coins: number; ratingChange: number } | null>(null);
 
     const heartbeatRef = useRef<NodeJS.Timeout | null>(null);
     const listenerRef = useRef<(() => void) | null>(null);
+    const disconnectTimerRef = useRef<NodeJS.Timeout | null>(null);
     // [FIX] 스테일 클로저 방지: localPhase를 ref로도 추적
     const localPhaseRef = useRef<LocalPhase>('loading');
 
@@ -140,6 +144,39 @@ export default function RealtimeBattleRoomPage() {
                     if (!opponentData.connected && currentPhase !== 'loading' && currentPhase !== 'waiting' && !updatedRoom.finished) {
                         console.warn('[PVP] Opponent disconnected at phase:', currentPhase);
                         setOpponentDisconnected(true);
+
+                        // 15초 후 자동 승리 처리
+                        if (!disconnectTimerRef.current) {
+                            disconnectTimerRef.current = setTimeout(async () => {
+                                const freshRoom = await getBattleRoom(roomId);
+                                const freshOpp = freshRoom
+                                    ? (freshRoom.player1.playerId === playerId ? freshRoom.player2 : freshRoom.player1)
+                                    : null;
+
+                                if (freshRoom && !freshRoom.finished && freshOpp && !freshOpp.connected) {
+                                    console.log('[PVP] Auto-win triggered after 15s disconnect');
+                                    await updateBattleRoom(roomId, {
+                                        phase: 'finished',
+                                        winner: playerId,
+                                        finished: true
+                                    });
+                                    handleBattleFinish({
+                                        isWin: true,
+                                        playerWins: 1,
+                                        enemyWins: 0,
+                                        rounds: []
+                                    });
+                                }
+                                disconnectTimerRef.current = null;
+                            }, 15000);
+                        }
+                    }
+
+                    // 상대 재접속 시 타이머 취소
+                    if (opponentData.connected && disconnectTimerRef.current) {
+                        clearTimeout(disconnectTimerRef.current);
+                        disconnectTimerRef.current = null;
+                        setOpponentDisconnected(false);
                     }
 
                     // [FIX] 'waiting' 상태에서 양쪽 연결 시 'vs-matchup'으로 전환
@@ -163,7 +200,16 @@ export default function RealtimeBattleRoomPage() {
                         return;
                     }
 
-                    // [FIX] Phase synchronization logic — [FIX] localPhaseRef.current 사용
+                    // 결과 교차 검증: 양쪽 결과가 모두 기록되면 mismatch 체크
+                    const r = updatedRoom as any;
+                    if (r.player1Result && r.player2Result && !r.resultMismatch) {
+                        if (r.player1Result !== r.player2Result) {
+                            console.error('[PVP] Result mismatch! P1:', r.player1Result, 'P2:', r.player2Result);
+                            updateBattleRoom(roomId, { resultMismatch: true } as any);
+                        }
+                    }
+
+                    // Phase synchronization logic
                     const roomPhase = updatedRoom.phase as LocalPhase;
 
                     if (roomPhase && roomPhase !== currentPhase) {
@@ -200,6 +246,7 @@ export default function RealtimeBattleRoomPage() {
         return () => {
             if (listenerRef.current) listenerRef.current();
             if (heartbeatRef.current) clearInterval(heartbeatRef.current);
+            if (disconnectTimerRef.current) clearTimeout(disconnectTimerRef.current);
         };
     }, [roomId]);
 
@@ -284,34 +331,16 @@ export default function RealtimeBattleRoomPage() {
             return;
         }
 
-        // [FIX] Update player state first
+        // ready:true만 쓰고, phase 전환은 리스너(isPlayer1 가드)에 위임
         await updatePlayerState(roomId, playerId, {
             selectedCards: deck,
             cardOrder: Array.from({ length: requiredCount }, (_, i) => i),
             ready: true
         });
 
-        // [FIX] Fetch latest room state to check opponent's ready status
-        const latestRoom = await getBattleRoom(roomId);
-        if (!latestRoom) {
-            console.error('[Flow] Failed to fetch latest room state');
-            return;
-        }
-
-        const isPlayer1 = latestRoom.player1.playerId === playerId;
-        const opponentPlayer = isPlayer1 ? latestRoom.player2 : latestRoom.player1;
-        const myPlayer = isPlayer1 ? latestRoom.player1 : latestRoom.player2;
-
-        console.log('[Flow] Deck confirmed. My ready:', myPlayer.ready, 'Opponent ready:', opponentPlayer.ready);
-
-        // [FIX] Only transition to battle if BOTH players are ready
-        if (myPlayer.ready && opponentPlayer.ready) {
-            console.log('[Flow] Both players ready, triggering battle phase...');
-            await updateBattleRoom(roomId, { phase: 'battle' });
-        } else {
-            console.log('[Flow] Waiting for opponent...');
-            // Don't update phase here - let the listener handle it when opponent becomes ready
-        }
+        console.log('[Flow] Deck confirmed. Waiting for listener to detect both-ready...');
+        localPhaseRef.current = 'ordering';
+        setLocalPhase('ordering');
     };
 
     // VS 건너뛰기
@@ -366,10 +395,16 @@ export default function RealtimeBattleRoomPage() {
             rewards: rewards  // [FIX] PVP_REWARDS 중앙 설정 기반 보상
         };
 
-        // 로컬 위너 설정 (결과 화면용)
+        // 로컬 위너 설정 + 보상 저장 (결과 화면용)
         setLocalWinner(winnerId);
+        setBattleRewards({ coins: rewards.coins, ratingChange: rewards.ratingChange });
 
-        // [FIX] Only the winner updates the room to prevent both players from being winners
+        // 양쪽 모두 자기 계산 결과를 기록 (교차 검증용)
+        const isPlayer1 = room.player1.playerId === playerId;
+        const myResultKey = isPlayer1 ? 'player1Result' : 'player2Result';
+        await updateBattleRoom(roomId, { [myResultKey]: winnerId } as any);
+
+        // 승자만 phase:'finished' 기록 (중복 방지)
         if (isWin) {
             await updateBattleRoom(roomId, {
                 phase: 'finished',
@@ -801,15 +836,15 @@ export default function RealtimeBattleRoomPage() {
                             </div>
                         </div>
 
-                        {isWinner && (
+                        {battleRewards && (
                             <div className="grid grid-cols-2 gap-4 mb-8">
                                 <div className="bg-yellow-500/10 border border-yellow-500/30 rounded-xl p-4 text-center">
                                     <p className="text-yellow-400 text-sm">코인</p>
-                                    <p className="text-2xl font-black text-yellow-400">+200</p>
+                                    <p className="text-2xl font-black text-yellow-400">+{battleRewards.coins}</p>
                                 </div>
                                 <div className="bg-cyan-500/10 border border-cyan-500/30 rounded-xl p-4 text-center">
                                     <p className="text-cyan-400 text-sm">레이팅</p>
-                                    <p className="text-2xl font-black text-cyan-400">+25</p>
+                                    <p className="text-2xl font-black text-cyan-400">{battleRewards.ratingChange > 0 ? '+' : ''}{battleRewards.ratingChange}</p>
                                 </div>
                             </div>
                         )}

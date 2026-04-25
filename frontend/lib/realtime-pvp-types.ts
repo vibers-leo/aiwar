@@ -89,6 +89,9 @@ export interface BattleRoom {
     // 결과
     winner?: string; // playerId
     finished: boolean;
+    player1Result?: string; // player1이 계산한 승자 playerId
+    player2Result?: string; // player2가 계산한 승자 playerId
+    resultMismatch?: boolean; // 양쪽 결과 불일치 플래그
 
     // 메타
     createdAt: number;

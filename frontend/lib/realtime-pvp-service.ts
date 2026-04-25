@@ -283,7 +283,7 @@ export function listenForMatch(
     const db = getDatabase(app || undefined);
     const queueRef = ref(db, `matchmaking/${battleMode}/${playerId}`);
 
-    const unsubscribe = onValue(queueRef, (snapshot) => {
+    onValue(queueRef, (snapshot) => {
         if (snapshot.exists()) {
             const data = snapshot.val() as MatchmakingQueue;
             if (data.status === 'matched' && data.roomId) {
@@ -343,11 +343,6 @@ async function createBattleRoom(
     };
 
     await set(newRoomRef, room);
-
-    // 5분 후 자동 삭제 설정
-    setTimeout(() => {
-        cleanupBattleRoom(roomId);
-    }, 5 * 60 * 1000);
 
     return roomId;
 }
@@ -500,13 +495,4 @@ export async function sendHeartbeat(roomId: string, playerId: string): Promise<v
         lastHeartbeat: Date.now(),
         connected: true
     });
-}
-
-/**
- * 연결 끊김 감지
- */
-export function checkPlayerConnection(player: PlayerState): boolean {
-    const now = Date.now();
-    const timeSinceHeartbeat = now - player.lastHeartbeat;
-    return timeSinceHeartbeat < 10000; // 10초 이내
 }
