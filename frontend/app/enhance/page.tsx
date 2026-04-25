@@ -3,6 +3,7 @@
 export const dynamic = 'force-dynamic';
 
 import { useState, useEffect, useCallback } from 'react';
+import { useRouter } from 'next/navigation';
 import { Card as CardType } from '@/lib/types';
 import { enhanceCard, getEnhanceCost, getEnhancePreview } from '@/lib/enhance-utils';
 import CyberPageLayout from '@/components/CyberPageLayout';
@@ -22,7 +23,8 @@ import { Sparkles } from "lucide-react";
 
 export default function EnhancePage() {
     const { showAlert } = useAlert();
-    const { consumeTokens, profile } = useUser(); // [NEW]
+    const router = useRouter();
+    const { consumeTokens, profile, user, loading } = useUser(); // [NEW]
     const [allCards, setAllCards] = useState<InventoryCard[]>([]);
     const [targetCard, setTargetCard] = useState<InventoryCard | null>(null);
     const [materialSlots, setMaterialSlots] = useState<(InventoryCard | null)[]>(Array(10).fill(null));
@@ -264,6 +266,20 @@ export default function EnhancePage() {
         false,
         true // prioritizeMain
     );
+
+    if (!loading && !user) {
+        return (
+            <div className="min-h-screen bg-gray-950 flex items-center justify-center">
+                <div className="text-center p-8 bg-black/40 border border-cyan-500/30 rounded-xl max-w-md">
+                    <h2 className="text-2xl font-bold text-white mb-2">로그인이 필요해요</h2>
+                    <p className="text-gray-400 mb-6">이 기능을 사용하려면 먼저 로그인해 주세요.</p>
+                    <button onClick={() => router.push('/')} className="px-6 py-3 bg-cyan-500 hover:bg-cyan-600 text-white rounded-lg font-medium transition-colors">
+                        로그인하기
+                    </button>
+                </div>
+            </div>
+        );
+    }
 
     return (
         <CyberPageLayout

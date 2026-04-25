@@ -3,8 +3,10 @@
 export const dynamic = 'force-dynamic';
 
 import { useState, useEffect } from 'react';
+import { useRouter } from 'next/navigation';
 import { motion, AnimatePresence } from 'framer-motion';
 import CyberPageLayout from '@/components/CyberPageLayout';
+import { useUser } from '@/context/UserContext';
 import Link from 'next/link';
 import { EncryptedText } from '@/components/ui/custom/EncryptedText';
 import { Button } from '@/components/ui/custom/Button';
@@ -22,6 +24,8 @@ import { cn } from '@/lib/utils';
 import { BackgroundBeams } from '@/components/ui/aceternity/background-beams';
 
 export default function StoryPage() {
+    const router = useRouter();
+    const { user, loading: authLoading } = useUser();
     const [seasons, setSeasons] = useState<Season[]>([]);
     const [selectedSeason, setSelectedSeason] = useState<Season | null>(null);
     const [loading, setLoading] = useState(true);
@@ -55,7 +59,21 @@ export default function StoryPage() {
         }
     };
 
-    if (loading) return null;
+    if (loading || authLoading) return null;
+
+    if (!authLoading && !user) {
+        return (
+            <div className="min-h-screen bg-gray-950 flex items-center justify-center">
+                <div className="text-center p-8 bg-black/40 border border-cyan-500/30 rounded-xl max-w-md">
+                    <h2 className="text-2xl font-bold text-white mb-2">로그인이 필요해요</h2>
+                    <p className="text-gray-400 mb-6">이 기능을 사용하려면 먼저 로그인해 주세요.</p>
+                    <button onClick={() => router.push('/')} className="px-6 py-3 bg-cyan-500 hover:bg-cyan-600 text-white rounded-lg font-medium transition-colors">
+                        로그인하기
+                    </button>
+                </div>
+            </div>
+        );
+    }
 
     // Use Korean title primarily, English as subtitle in CyberPageLayout
     return (
