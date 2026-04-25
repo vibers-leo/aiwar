@@ -1,5 +1,7 @@
 'use client';
 
+export const dynamic = 'force-dynamic';
+
 import { useState, useEffect } from 'react';
 import { getAllUsersWithStatus, migrateUserStarterPackStatus } from '@/lib/firebase-db';
 import { db } from '@/lib/firebase';

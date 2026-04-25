@@ -1,5 +1,7 @@
 'use client';
 
+export const dynamic = 'force-dynamic';
+
 import { useState, useEffect } from 'react';
 import { Card as CardType } from '@/lib/types';
 import { InventoryCard, addCardToInventory, removeCardFromInventory, loadInventory as loadInventorySystem } from '@/lib/inventory-system';

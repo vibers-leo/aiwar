@@ -1,5 +1,7 @@
 'use client';
 
+export const dynamic = 'force-dynamic';
+
 import React, { useState } from 'react';
 import { useTranslation } from '@/context/LanguageContext';
 import { motion } from 'framer-motion';

@@ -1,10 +1,12 @@
+'use client';
+
+export const dynamic = 'force-dynamic';
+
 /**
  * 1장 전투 모드 페이지
- * 
+ *
  * 단판 승부 전투 모드
  */
-
-'use client';
 
 import { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';

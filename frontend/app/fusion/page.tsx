@@ -1,5 +1,7 @@
 'use client';
 
+export const dynamic = 'force-dynamic';
+
 import { useState, useEffect, useCallback } from 'react';
 import { Card as CardType } from '@/lib/types';
 import { useUserProfile } from '@/hooks/useUserProfile';

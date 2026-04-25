@@ -1,5 +1,7 @@
 'use client';
 
+export const dynamic = 'force-dynamic';
+
 import React, { useState, useEffect } from 'react';
 import { Card, CardTemplate, Specialty } from '@/lib/types';
 import PreBattleScene from '@/components/battle/PreBattleScene';

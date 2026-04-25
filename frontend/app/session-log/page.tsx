@@ -1,5 +1,7 @@
 'use client';
 
+export const dynamic = 'force-dynamic';
+
 import CyberPageLayout from '@/components/CyberPageLayout';
 import { motion } from 'framer-motion';
 import { useUser } from '@/context/UserContext';

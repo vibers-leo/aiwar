@@ -1,5 +1,7 @@
 'use client';
 
+export const dynamic = 'force-dynamic';
+
 import { useState } from 'react';
 import Link from 'next/link';
 import { RefreshCw, Globe, ExternalLink, ArrowLeft, CheckCircle, XCircle, Code, FileText } from 'lucide-react';
