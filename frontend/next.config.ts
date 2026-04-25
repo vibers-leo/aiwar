@@ -13,7 +13,10 @@ const withPWA = withPWAInit({
 });
 
 const nextConfig: NextConfig = {
-  turbopack: {},
+  turbopack: {
+    root: __dirname,
+  },
+  output: 'standalone',
   images: {
     unoptimized: true,
     formats: ['image/avif', 'image/webp'],

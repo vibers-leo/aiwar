@@ -37,14 +37,6 @@ export const metadata: Metadata = {
     title: "AGI WAR : 전쟁의 서막",
     description: "20개 AI 군단으로 펼치는 전략 카드 배틀",
   },
-  // Preconnect hints for faster resource loading
-  other: {
-    "link": [
-      { rel: "preconnect", href: "https://firebasestorage.googleapis.com" },
-      { rel: "preconnect", href: "https://firestore.googleapis.com" },
-      { rel: "dns-prefetch", href: "https://firebasestorage.googleapis.com" },
-    ].map(l => `<${l.href}>; rel=${l.rel}`).join(", ")
-  },
   manifest: '/manifest.json',
   appleWebApp: {
     capable: true,
@@ -68,6 +60,11 @@ export default function RootLayout({
 }>) {
   return (
     <html lang="ko" suppressHydrationWarning>
+      <head>
+        <link rel="preconnect" href="https://firebasestorage.googleapis.com" />
+        <link rel="preconnect" href="https://firestore.googleapis.com" />
+        <link rel="dns-prefetch" href="https://firebasestorage.googleapis.com" />
+      </head>
       <body
         className={`${geistSans.variable} ${geistMono.variable} antialiased bg-gray-950`}
         suppressHydrationWarning

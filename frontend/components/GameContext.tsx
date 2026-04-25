@@ -1,3 +1,5 @@
+'use client';
+
 import React, { createContext, useContext, useState, useEffect, ReactNode } from 'react';
 import { Card as CardType } from '@/lib/types';
 import { CardData } from '@/types/card';
