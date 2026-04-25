@@ -707,7 +707,13 @@ export function UserProvider({ children }: { children: React.ReactNode }) {
         try {
             await firebaseUpdateExpAndLevel(currentExp, currentLevel, user.uid);
             await reloadProfile();
-            if (leveledUp) checkFeatureUnlocks(currentLevel);
+            if (leveledUp) {
+                checkFeatureUnlocks(currentLevel);
+                // 실시간 레벨업 알림
+                import('@/lib/notification-service').then(({ notifyLevelUp }) => {
+                    notifyLevelUp(user.uid, currentLevel);
+                });
+            }
         } catch (err) {
             console.error("Failed to add experience:", err);
         }

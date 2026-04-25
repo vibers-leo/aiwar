@@ -15,10 +15,12 @@ interface NotificationPanelProps {
 }
 
 export default function NotificationPanel({ isOpen, onClose }: NotificationPanelProps) {
-    const { notifications, markAllAsRead, clearNotifications } = useNotification();
+    const { notifications, markAsRead, markAllAsRead, clearNotifications } = useNotification();
     const router = useRouter();
 
-    const handleNotificationClick = (link?: string) => {
+    const handleNotificationClick = (item: NotificationItem) => {
+        markAsRead(item.id);
+        const link = item.link || item.data?.link || (item.data?.roomId ? `/pvp/room/${item.data.roomId}` : undefined);
         if (link) {
             router.push(link);
             onClose();
@@ -26,6 +28,14 @@ export default function NotificationPanel({ isOpen, onClose }: NotificationPanel
     };
 
     const getIcon = (type: NotificationType) => {
+        // 게임 알림 타입은 이모지 아이콘 사용
+        if (type === 'pvp_match' || type === 'pvp_invite') return <span className="text-base">⚔️</span>;
+        if (type === 'daily_reward') return <span className="text-base">🎁</span>;
+        if (type === 'card_ready') return <span className="text-base">🃏</span>;
+        if (type === 'friend_request') return <span className="text-base">👋</span>;
+        if (type === 'quest_complete') return <span className="text-base">✅</span>;
+        if (type === 'level_up') return <ArrowUpCircle size={16} className="text-cyan-500" />;
+
         switch (type) {
             case 'success': return <CheckCircle2 size={16} className="text-green-500" />;
             case 'error': return <AlertCircle size={16} className="text-red-500" />;
@@ -96,7 +106,7 @@ export default function NotificationPanel({ isOpen, onClose }: NotificationPanel
                                 notifications.map((item) => (
                                     <div
                                         key={item.id}
-                                        onClick={() => handleNotificationClick(item.link)}
+                                        onClick={() => handleNotificationClick(item)}
                                         className={cn(
                                             "relative p-3 rounded-xl border transition-all hover:bg-white/5",
                                             item.link ? "cursor-pointer hover:border-white/30 active:scale-[0.98]" : "",
