@@ -1008,52 +1008,52 @@ export const CARD_DATABASE: CardTemplate[] = [
     },
     // --- COMMON TIER (기본 AI 유닛) ---
     {
-        id: 'common-data-crawler', name: 'Data Crawler', aiFactionId: 'chatgpt', rarity: 'common' as Rarity, specialty: 'text' as Specialty, cardType: 'normal' as const,
+        id: 'common-data-crawler', imageUrl: '/card_placeholder_1765931222851.png', name: 'Data Crawler', aiFactionId: 'chatgpt', rarity: 'common' as Rarity, specialty: 'text' as Specialty, cardType: 'normal' as const,
         description: '데이터 수집을 담당하는 기초 크롤러 유닛. 빠르지만 불안정하다.',
         baseStats: { creativity: { min: 10, max: 25 }, accuracy: { min: 15, max: 30 }, speed: { min: 30, max: 45 }, stability: { min: 10, max: 20 }, ethics: { min: 20, max: 35 } }
     },
     {
-        id: 'common-pixel-scout', name: 'Pixel Scout', aiFactionId: 'midjourney', rarity: 'common' as Rarity, specialty: 'image' as Specialty, cardType: 'normal' as const,
+        id: 'common-\1', imageUrl: '/card_placeholder_1765931222851.png', name: 'Pixel Scout', aiFactionId: 'midjourney', rarity: 'common' as Rarity, specialty: 'image' as Specialty, cardType: 'normal' as const,
         description: '이미지 정찰을 수행하는 초급 시각 유닛.',
         baseStats: { creativity: { min: 20, max: 35 }, accuracy: { min: 10, max: 20 }, speed: { min: 25, max: 40 }, stability: { min: 15, max: 25 }, ethics: { min: 25, max: 35 } }
     },
     {
-        id: 'common-syntax-drone', name: 'Syntax Drone', aiFactionId: 'cursor', rarity: 'common' as Rarity, specialty: 'code' as Specialty, cardType: 'normal' as const,
+        id: 'common-\1', imageUrl: '/card_placeholder_1765931222851.png', name: 'Syntax Drone', aiFactionId: 'cursor', rarity: 'common' as Rarity, specialty: 'code' as Specialty, cardType: 'normal' as const,
         description: '기본 문법 검사를 수행하는 코드 드론.',
         baseStats: { creativity: { min: 5, max: 15 }, accuracy: { min: 30, max: 45 }, speed: { min: 20, max: 35 }, stability: { min: 25, max: 35 }, ethics: { min: 30, max: 40 } }
     },
     {
-        id: 'common-echo-bot', name: 'Echo Bot', aiFactionId: 'gemini', rarity: 'common' as Rarity, specialty: 'text' as Specialty, cardType: 'normal' as const,
+        id: 'common-\1', imageUrl: '/card_placeholder_1765931222851.png', name: 'Echo Bot', aiFactionId: 'gemini', rarity: 'common' as Rarity, specialty: 'text' as Specialty, cardType: 'normal' as const,
         description: '입력을 반복하는 단순 응답 봇. 학습 능력은 제한적.',
         baseStats: { creativity: { min: 5, max: 10 }, accuracy: { min: 20, max: 35 }, speed: { min: 35, max: 50 }, stability: { min: 20, max: 30 }, ethics: { min: 30, max: 40 } }
     },
     {
-        id: 'common-noise-filter', name: 'Noise Filter', aiFactionId: 'stable-diffusion', rarity: 'common' as Rarity, specialty: 'image' as Specialty, cardType: 'normal' as const,
+        id: 'common-\1', imageUrl: '/card_placeholder_1765931222851.png', name: 'Noise Filter', aiFactionId: 'stable-diffusion', rarity: 'common' as Rarity, specialty: 'image' as Specialty, cardType: 'normal' as const,
         description: '이미지 노이즈를 제거하는 기초 필터링 유닛.',
         baseStats: { creativity: { min: 10, max: 20 }, accuracy: { min: 25, max: 40 }, speed: { min: 15, max: 25 }, stability: { min: 30, max: 40 }, ethics: { min: 20, max: 30 } }
     },
     {
-        id: 'common-log-parser', name: 'Log Parser', aiFactionId: 'copilot', rarity: 'common' as Rarity, specialty: 'code' as Specialty, cardType: 'normal' as const,
+        id: 'common-\1', imageUrl: '/card_placeholder_1765931222851.png', name: 'Log Parser', aiFactionId: 'copilot', rarity: 'common' as Rarity, specialty: 'code' as Specialty, cardType: 'normal' as const,
         description: '로그 데이터를 분석하는 기본 파서 유닛.',
         baseStats: { creativity: { min: 5, max: 15 }, accuracy: { min: 35, max: 45 }, speed: { min: 20, max: 30 }, stability: { min: 30, max: 40 }, ethics: { min: 25, max: 35 } }
     },
     {
-        id: 'common-tone-sampler', name: 'Tone Sampler', aiFactionId: 'suno', rarity: 'common' as Rarity, specialty: 'audio' as Specialty, cardType: 'normal' as const,
+        id: 'common-\1', imageUrl: '/card_placeholder_1765931222851.png', name: 'Tone Sampler', aiFactionId: 'suno', rarity: 'common' as Rarity, specialty: 'audio' as Specialty, cardType: 'normal' as const,
         description: '오디오 샘플을 수집하는 기초 음향 유닛.',
         baseStats: { creativity: { min: 15, max: 30 }, accuracy: { min: 15, max: 25 }, speed: { min: 20, max: 35 }, stability: { min: 20, max: 30 }, ethics: { min: 25, max: 35 } }
     },
     {
-        id: 'common-frame-grabber', name: 'Frame Grabber', aiFactionId: 'runway', rarity: 'common' as Rarity, specialty: 'video' as Specialty, cardType: 'normal' as const,
+        id: 'common-\1', imageUrl: '/card_placeholder_1765931222851.png', name: 'Frame Grabber', aiFactionId: 'runway', rarity: 'common' as Rarity, specialty: 'video' as Specialty, cardType: 'normal' as const,
         description: '영상에서 프레임을 추출하는 기본 비디오 유닛.',
         baseStats: { creativity: { min: 10, max: 20 }, accuracy: { min: 20, max: 30 }, speed: { min: 30, max: 45 }, stability: { min: 15, max: 25 }, ethics: { min: 20, max: 30 } }
     },
     {
-        id: 'common-prompt-relay', name: 'Prompt Relay', aiFactionId: 'claude', rarity: 'common' as Rarity, specialty: 'text' as Specialty, cardType: 'normal' as const,
+        id: 'common-\1', imageUrl: '/card_placeholder_1765931222851.png', name: 'Prompt Relay', aiFactionId: 'claude', rarity: 'common' as Rarity, specialty: 'text' as Specialty, cardType: 'normal' as const,
         description: '프롬프트를 전달하는 단순 중계 유닛.',
         baseStats: { creativity: { min: 10, max: 20 }, accuracy: { min: 25, max: 35 }, speed: { min: 30, max: 40 }, stability: { min: 25, max: 35 }, ethics: { min: 35, max: 45 } }
     },
     {
-        id: 'common-cache-unit', name: 'Cache Unit', aiFactionId: 'deepseek', rarity: 'common' as Rarity, specialty: 'code' as Specialty, cardType: 'normal' as const,
+        id: 'common-\1', imageUrl: '/card_placeholder_1765931222851.png', name: 'Cache Unit', aiFactionId: 'deepseek', rarity: 'common' as Rarity, specialty: 'code' as Specialty, cardType: 'normal' as const,
         description: '데이터를 임시 저장하는 캐시 유닛. 안정적이지만 느리다.',
         baseStats: { creativity: { min: 5, max: 10 }, accuracy: { min: 30, max: 40 }, speed: { min: 10, max: 20 }, stability: { min: 40, max: 50 }, ethics: { min: 30, max: 40 } }
     },
