@@ -1007,103 +1007,27 @@ export const CARD_DATABASE: CardTemplate[] = [
         baseStats: { creativity: { min: 50, max: 60 }, accuracy: { min: 90, max: 95 }, speed: { min: 60, max: 70 }, stability: { min: 80, max: 90 }, ethics: { min: 90, max: 100 } }
     },
     // --- COMMON TIER (기본 AI 유닛) ---
-    {
-        id: 'common-data-crawler', imageUrl: '/card_placeholder_1765931222851.png', name: 'Data Crawler', aiFactionId: 'chatgpt', rarity: 'common' as Rarity, specialty: 'text' as Specialty, cardType: 'normal' as const,
-        description: '데이터 수집을 담당하는 기초 크롤러 유닛. 빠르지만 불안정하다.',
-        baseStats: { creativity: { min: 10, max: 25 }, accuracy: { min: 15, max: 30 }, speed: { min: 30, max: 45 }, stability: { min: 10, max: 20 }, ethics: { min: 20, max: 35 } }
-    },
-    {
-        id: 'common-\1', imageUrl: '/card_placeholder_1765931222851.png', name: 'Pixel Scout', aiFactionId: 'midjourney', rarity: 'common' as Rarity, specialty: 'image' as Specialty, cardType: 'normal' as const,
-        description: '이미지 정찰을 수행하는 초급 시각 유닛.',
-        baseStats: { creativity: { min: 20, max: 35 }, accuracy: { min: 10, max: 20 }, speed: { min: 25, max: 40 }, stability: { min: 15, max: 25 }, ethics: { min: 25, max: 35 } }
-    },
-    {
-        id: 'common-\1', imageUrl: '/card_placeholder_1765931222851.png', name: 'Syntax Drone', aiFactionId: 'cursor', rarity: 'common' as Rarity, specialty: 'code' as Specialty, cardType: 'normal' as const,
-        description: '기본 문법 검사를 수행하는 코드 드론.',
-        baseStats: { creativity: { min: 5, max: 15 }, accuracy: { min: 30, max: 45 }, speed: { min: 20, max: 35 }, stability: { min: 25, max: 35 }, ethics: { min: 30, max: 40 } }
-    },
-    {
-        id: 'common-\1', imageUrl: '/card_placeholder_1765931222851.png', name: 'Echo Bot', aiFactionId: 'gemini', rarity: 'common' as Rarity, specialty: 'text' as Specialty, cardType: 'normal' as const,
-        description: '입력을 반복하는 단순 응답 봇. 학습 능력은 제한적.',
-        baseStats: { creativity: { min: 5, max: 10 }, accuracy: { min: 20, max: 35 }, speed: { min: 35, max: 50 }, stability: { min: 20, max: 30 }, ethics: { min: 30, max: 40 } }
-    },
-    {
-        id: 'common-\1', imageUrl: '/card_placeholder_1765931222851.png', name: 'Noise Filter', aiFactionId: 'stable-diffusion', rarity: 'common' as Rarity, specialty: 'image' as Specialty, cardType: 'normal' as const,
-        description: '이미지 노이즈를 제거하는 기초 필터링 유닛.',
-        baseStats: { creativity: { min: 10, max: 20 }, accuracy: { min: 25, max: 40 }, speed: { min: 15, max: 25 }, stability: { min: 30, max: 40 }, ethics: { min: 20, max: 30 } }
-    },
-    {
-        id: 'common-\1', imageUrl: '/card_placeholder_1765931222851.png', name: 'Log Parser', aiFactionId: 'copilot', rarity: 'common' as Rarity, specialty: 'code' as Specialty, cardType: 'normal' as const,
-        description: '로그 데이터를 분석하는 기본 파서 유닛.',
-        baseStats: { creativity: { min: 5, max: 15 }, accuracy: { min: 35, max: 45 }, speed: { min: 20, max: 30 }, stability: { min: 30, max: 40 }, ethics: { min: 25, max: 35 } }
-    },
-    {
-        id: 'common-\1', imageUrl: '/card_placeholder_1765931222851.png', name: 'Tone Sampler', aiFactionId: 'suno', rarity: 'common' as Rarity, specialty: 'audio' as Specialty, cardType: 'normal' as const,
-        description: '오디오 샘플을 수집하는 기초 음향 유닛.',
-        baseStats: { creativity: { min: 15, max: 30 }, accuracy: { min: 15, max: 25 }, speed: { min: 20, max: 35 }, stability: { min: 20, max: 30 }, ethics: { min: 25, max: 35 } }
-    },
-    {
-        id: 'common-\1', imageUrl: '/card_placeholder_1765931222851.png', name: 'Frame Grabber', aiFactionId: 'runway', rarity: 'common' as Rarity, specialty: 'video' as Specialty, cardType: 'normal' as const,
-        description: '영상에서 프레임을 추출하는 기본 비디오 유닛.',
-        baseStats: { creativity: { min: 10, max: 20 }, accuracy: { min: 20, max: 30 }, speed: { min: 30, max: 45 }, stability: { min: 15, max: 25 }, ethics: { min: 20, max: 30 } }
-    },
-    {
-        id: 'common-\1', imageUrl: '/card_placeholder_1765931222851.png', name: 'Prompt Relay', aiFactionId: 'claude', rarity: 'common' as Rarity, specialty: 'text' as Specialty, cardType: 'normal' as const,
-        description: '프롬프트를 전달하는 단순 중계 유닛.',
-        baseStats: { creativity: { min: 10, max: 20 }, accuracy: { min: 25, max: 35 }, speed: { min: 30, max: 40 }, stability: { min: 25, max: 35 }, ethics: { min: 35, max: 45 } }
-    },
-    {
-        id: 'common-\1', imageUrl: '/card_placeholder_1765931222851.png', name: 'Cache Unit', aiFactionId: 'deepseek', rarity: 'common' as Rarity, specialty: 'code' as Specialty, cardType: 'normal' as const,
-        description: '데이터를 임시 저장하는 캐시 유닛. 안정적이지만 느리다.',
-        baseStats: { creativity: { min: 5, max: 10 }, accuracy: { min: 30, max: 40 }, speed: { min: 10, max: 20 }, stability: { min: 40, max: 50 }, ethics: { min: 30, max: 40 } }
-    },
+    { id: 'common-data-crawler', imageUrl: '/card_placeholder_1765931222851.png', name: 'Data Crawler', aiFactionId: 'chatgpt', rarity: 'common', specialty: 'text', cardType: 'normal', description: '데이터 수집을 담당하는 기초 크롤러 유닛. 빠르지만 불안정하다.', baseStats: { creativity: { min: 10, max: 25 }, accuracy: { min: 15, max: 30 }, speed: { min: 30, max: 45 }, stability: { min: 10, max: 20 }, ethics: { min: 20, max: 35 } } },
+    { id: 'common-pixel-scout', imageUrl: '/card_placeholder_1765931222851.png', name: 'Pixel Scout', aiFactionId: 'midjourney', rarity: 'common', specialty: 'image', cardType: 'normal', description: '이미지 정찰을 수행하는 초급 시각 유닛.', baseStats: { creativity: { min: 20, max: 35 }, accuracy: { min: 10, max: 20 }, speed: { min: 25, max: 40 }, stability: { min: 15, max: 25 }, ethics: { min: 25, max: 35 } } },
+    { id: 'common-syntax-drone', imageUrl: '/card_placeholder_1765931222851.png', name: 'Syntax Drone', aiFactionId: 'cursor', rarity: 'common', specialty: 'code', cardType: 'normal', description: '기본 문법 검사를 수행하는 코드 드론.', baseStats: { creativity: { min: 5, max: 15 }, accuracy: { min: 30, max: 45 }, speed: { min: 20, max: 35 }, stability: { min: 25, max: 35 }, ethics: { min: 30, max: 40 } } },
+    { id: 'common-echo-bot', imageUrl: '/card_placeholder_1765931222851.png', name: 'Echo Bot', aiFactionId: 'gemini', rarity: 'common', specialty: 'text', cardType: 'normal', description: '입력을 반복하는 단순 응답 봇. 학습 능력은 제한적.', baseStats: { creativity: { min: 5, max: 10 }, accuracy: { min: 20, max: 35 }, speed: { min: 35, max: 50 }, stability: { min: 20, max: 30 }, ethics: { min: 30, max: 40 } } },
+    { id: 'common-noise-filter', imageUrl: '/card_placeholder_1765931222851.png', name: 'Noise Filter', aiFactionId: 'stable-diffusion', rarity: 'common', specialty: 'image', cardType: 'normal', description: '이미지 노이즈를 제거하는 기초 필터링 유닛.', baseStats: { creativity: { min: 10, max: 20 }, accuracy: { min: 25, max: 40 }, speed: { min: 15, max: 25 }, stability: { min: 30, max: 40 }, ethics: { min: 20, max: 30 } } },
+    { id: 'common-log-parser', imageUrl: '/card_placeholder_1765931222851.png', name: 'Log Parser', aiFactionId: 'copilot', rarity: 'common', specialty: 'code', cardType: 'normal', description: '로그 데이터를 분석하는 기본 파서 유닛.', baseStats: { creativity: { min: 5, max: 15 }, accuracy: { min: 35, max: 45 }, speed: { min: 20, max: 30 }, stability: { min: 30, max: 40 }, ethics: { min: 25, max: 35 } } },
+    { id: 'common-tone-sampler', imageUrl: '/card_placeholder_1765931222851.png', name: 'Tone Sampler', aiFactionId: 'suno', rarity: 'common', specialty: 'audio', cardType: 'normal', description: '오디오 샘플을 수집하는 기초 음향 유닛.', baseStats: { creativity: { min: 15, max: 30 }, accuracy: { min: 15, max: 25 }, speed: { min: 20, max: 35 }, stability: { min: 20, max: 30 }, ethics: { min: 25, max: 35 } } },
+    { id: 'common-frame-grabber', imageUrl: '/card_placeholder_1765931222851.png', name: 'Frame Grabber', aiFactionId: 'runway', rarity: 'common', specialty: 'video', cardType: 'normal', description: '영상에서 프레임을 추출하는 기본 비디오 유닛.', baseStats: { creativity: { min: 10, max: 20 }, accuracy: { min: 20, max: 30 }, speed: { min: 30, max: 45 }, stability: { min: 15, max: 25 }, ethics: { min: 20, max: 30 } } },
+    { id: 'common-prompt-relay', imageUrl: '/card_placeholder_1765931222851.png', name: 'Prompt Relay', aiFactionId: 'claude', rarity: 'common', specialty: 'text', cardType: 'normal', description: '프롬프트를 전달하는 단순 중계 유닛.', baseStats: { creativity: { min: 10, max: 20 }, accuracy: { min: 25, max: 35 }, speed: { min: 30, max: 40 }, stability: { min: 25, max: 35 }, ethics: { min: 35, max: 45 } } },
+    { id: 'common-cache-unit', imageUrl: '/card_placeholder_1765931222851.png', name: 'Cache Unit', aiFactionId: 'deepseek', rarity: 'common', specialty: 'code', cardType: 'normal', description: '데이터를 임시 저장하는 캐시 유닛. 안정적이지만 느리다.', baseStats: { creativity: { min: 5, max: 10 }, accuracy: { min: 30, max: 40 }, speed: { min: 10, max: 20 }, stability: { min: 40, max: 50 }, ethics: { min: 30, max: 40 } } },
 
     // --- RARE TIER (특화 AI 유닛) ---
-    {
-        id: 'rare-vision-analyst', name: 'Vision Analyst', aiFactionId: 'gemini', rarity: 'rare' as Rarity, specialty: 'image' as Specialty, cardType: 'normal' as const,
-        description: '멀티모달 시각 분석 전문 유닛. 텍스트와 이미지를 동시에 처리한다.',
-        baseStats: { creativity: { min: 30, max: 45 }, accuracy: { min: 40, max: 55 }, speed: { min: 35, max: 50 }, stability: { min: 35, max: 45 }, ethics: { min: 40, max: 50 } }
-    },
-    {
-        id: 'rare-code-linter', name: 'Code Linter', aiFactionId: 'cursor', rarity: 'rare' as Rarity, specialty: 'code' as Specialty, cardType: 'normal' as const,
-        description: '코드 품질을 분석하고 개선안을 제시하는 린터 유닛.',
-        baseStats: { creativity: { min: 20, max: 35 }, accuracy: { min: 50, max: 65 }, speed: { min: 30, max: 40 }, stability: { min: 45, max: 55 }, ethics: { min: 40, max: 50 } }
-    },
-    {
-        id: 'rare-melody-weaver', name: 'Melody Weaver', aiFactionId: 'suno', rarity: 'rare' as Rarity, specialty: 'audio' as Specialty, cardType: 'normal' as const,
-        description: '멜로디를 생성하고 편곡하는 음악 전문 유닛.',
-        baseStats: { creativity: { min: 45, max: 60 }, accuracy: { min: 30, max: 40 }, speed: { min: 25, max: 35 }, stability: { min: 35, max: 45 }, ethics: { min: 40, max: 50 } }
-    },
-    {
-        id: 'rare-style-mixer', name: 'Style Mixer', aiFactionId: 'midjourney', rarity: 'rare' as Rarity, specialty: 'image' as Specialty, cardType: 'normal' as const,
-        description: '다양한 아트 스타일을 혼합하여 새로운 시각적 표현을 만드는 유닛.',
-        baseStats: { creativity: { min: 50, max: 65 }, accuracy: { min: 25, max: 35 }, speed: { min: 30, max: 40 }, stability: { min: 30, max: 40 }, ethics: { min: 35, max: 45 } }
-    },
-    {
-        id: 'rare-logic-gate', name: 'Logic Gate', aiFactionId: 'chatgpt', rarity: 'rare' as Rarity, specialty: 'text' as Specialty, cardType: 'normal' as const,
-        description: '논리적 추론을 담당하는 게이트 유닛. 정확도가 높다.',
-        baseStats: { creativity: { min: 25, max: 35 }, accuracy: { min: 55, max: 70 }, speed: { min: 30, max: 40 }, stability: { min: 40, max: 50 }, ethics: { min: 45, max: 55 } }
-    },
-    {
-        id: 'rare-safety-shield', name: 'Safety Shield', aiFactionId: 'claude', rarity: 'rare' as Rarity, specialty: 'text' as Specialty, cardType: 'normal' as const,
-        description: '유해 콘텐츠를 차단하는 안전 방어 유닛. 윤리 수치가 매우 높다.',
-        baseStats: { creativity: { min: 20, max: 30 }, accuracy: { min: 40, max: 50 }, speed: { min: 25, max: 35 }, stability: { min: 50, max: 60 }, ethics: { min: 60, max: 75 } }
-    },
-    {
-        id: 'rare-clip-editor', name: 'Clip Editor', aiFactionId: 'runway', rarity: 'rare' as Rarity, specialty: 'video' as Specialty, cardType: 'normal' as const,
-        description: '영상을 자동 편집하는 비디오 전문 유닛.',
-        baseStats: { creativity: { min: 40, max: 50 }, accuracy: { min: 35, max: 45 }, speed: { min: 40, max: 55 }, stability: { min: 30, max: 40 }, ethics: { min: 35, max: 45 } }
-    },
-    {
-        id: 'rare-debug-tracer', name: 'Debug Tracer', aiFactionId: 'copilot', rarity: 'rare' as Rarity, specialty: 'code' as Specialty, cardType: 'normal' as const,
-        description: '버그를 추적하고 원인을 분석하는 디버깅 전문 유닛.',
-        baseStats: { creativity: { min: 20, max: 30 }, accuracy: { min: 55, max: 65 }, speed: { min: 35, max: 45 }, stability: { min: 40, max: 50 }, ethics: { min: 40, max: 50 } }
-    },
-    {
-        id: 'rare-search-indexer', name: 'Search Indexer', aiFactionId: 'perplexity', rarity: 'rare' as Rarity, specialty: 'text' as Specialty, cardType: 'normal' as const,
-        description: '실시간 검색 인덱스를 구축하는 정보 탐색 전문 유닛.',
-        baseStats: { creativity: { min: 25, max: 35 }, accuracy: { min: 50, max: 60 }, speed: { min: 45, max: 60 }, stability: { min: 35, max: 45 }, ethics: { min: 40, max: 50 } }
-    },
+    { id: 'rare-vision-analyst', imageUrl: '/card_placeholder_1765931222851.png', name: 'Vision Analyst', aiFactionId: 'gemini', rarity: 'rare', specialty: 'image', cardType: 'normal', description: '멀티모달 시각 분석 전문 유닛. 텍스트와 이미지를 동시에 처리한다.', baseStats: { creativity: { min: 30, max: 45 }, accuracy: { min: 40, max: 55 }, speed: { min: 35, max: 50 }, stability: { min: 35, max: 45 }, ethics: { min: 40, max: 50 } } },
+    { id: 'rare-code-linter', imageUrl: '/card_placeholder_1765931222851.png', name: 'Code Linter', aiFactionId: 'cursor', rarity: 'rare', specialty: 'code', cardType: 'normal', description: '코드 품질을 분석하고 개선안을 제시하는 린터 유닛.', baseStats: { creativity: { min: 20, max: 35 }, accuracy: { min: 50, max: 65 }, speed: { min: 30, max: 40 }, stability: { min: 45, max: 55 }, ethics: { min: 40, max: 50 } } },
+    { id: 'rare-melody-weaver', imageUrl: '/card_placeholder_1765931222851.png', name: 'Melody Weaver', aiFactionId: 'suno', rarity: 'rare', specialty: 'audio', cardType: 'normal', description: '멜로디를 생성하고 편곡하는 음악 전문 유닛.', baseStats: { creativity: { min: 45, max: 60 }, accuracy: { min: 30, max: 40 }, speed: { min: 25, max: 35 }, stability: { min: 35, max: 45 }, ethics: { min: 40, max: 50 } } },
+    { id: 'rare-style-mixer', imageUrl: '/card_placeholder_1765931222851.png', name: 'Style Mixer', aiFactionId: 'midjourney', rarity: 'rare', specialty: 'image', cardType: 'normal', description: '다양한 아트 스타일을 혼합하여 새로운 시각적 표현을 만드는 유닛.', baseStats: { creativity: { min: 50, max: 65 }, accuracy: { min: 25, max: 35 }, speed: { min: 30, max: 40 }, stability: { min: 30, max: 40 }, ethics: { min: 35, max: 45 } } },
+    { id: 'rare-logic-gate', imageUrl: '/card_placeholder_1765931222851.png', name: 'Logic Gate', aiFactionId: 'chatgpt', rarity: 'rare', specialty: 'text', cardType: 'normal', description: '논리적 추론을 담당하는 게이트 유닛. 정확도가 높다.', baseStats: { creativity: { min: 25, max: 35 }, accuracy: { min: 55, max: 70 }, speed: { min: 30, max: 40 }, stability: { min: 40, max: 50 }, ethics: { min: 45, max: 55 } } },
+    { id: 'rare-safety-shield', imageUrl: '/card_placeholder_1765931222851.png', name: 'Safety Shield', aiFactionId: 'claude', rarity: 'rare', specialty: 'text', cardType: 'normal', description: '유해 콘텐츠를 차단하는 안전 방어 유닛. 윤리 수치가 매우 높다.', baseStats: { creativity: { min: 20, max: 30 }, accuracy: { min: 40, max: 50 }, speed: { min: 25, max: 35 }, stability: { min: 50, max: 60 }, ethics: { min: 60, max: 75 } } },
+    { id: 'rare-clip-editor', imageUrl: '/card_placeholder_1765931222851.png', name: 'Clip Editor', aiFactionId: 'runway', rarity: 'rare', specialty: 'video', cardType: 'normal', description: '영상을 자동 편집하는 비디오 전문 유닛.', baseStats: { creativity: { min: 40, max: 50 }, accuracy: { min: 35, max: 45 }, speed: { min: 40, max: 55 }, stability: { min: 30, max: 40 }, ethics: { min: 35, max: 45 } } },
+    { id: 'rare-debug-tracer', imageUrl: '/card_placeholder_1765931222851.png', name: 'Debug Tracer', aiFactionId: 'copilot', rarity: 'rare', specialty: 'code', cardType: 'normal', description: '버그를 추적하고 원인을 분석하는 디버깅 전문 유닛.', baseStats: { creativity: { min: 20, max: 30 }, accuracy: { min: 55, max: 65 }, speed: { min: 35, max: 45 }, stability: { min: 40, max: 50 }, ethics: { min: 40, max: 50 } } },
+    { id: 'rare-search-indexer', imageUrl: '/card_placeholder_1765931222851.png', name: 'Search Indexer', aiFactionId: 'perplexity', rarity: 'rare', specialty: 'text', cardType: 'normal', description: '실시간 검색 인덱스를 구축하는 정보 탐색 전문 유닛.', baseStats: { creativity: { min: 25, max: 35 }, accuracy: { min: 50, max: 60 }, speed: { min: 45, max: 60 }, stability: { min: 35, max: 45 }, ethics: { min: 40, max: 50 } } },
 ];
 
 export const COMMANDERS = CARD_DATABASE.filter(card => card.rarity === 'commander');
