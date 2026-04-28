@@ -11,6 +11,7 @@ import { SoundProvider } from "@/context/SoundContext";
 import { NotificationProvider } from "@/context/NotificationContext";
 import { CardModalProvider } from "@/components/CardModalContext";
 import MainLayout from "@/components/MainLayout";
+import ChatBot from "@/components/ChatBot";
 
 export default function ClientProviders({ children }: { children: ReactNode }) {
   return (
@@ -25,6 +26,7 @@ export default function ClientProviders({ children }: { children: ReactNode }) {
                     <ThemeProvider>
                       <MainLayout>
                         {children}
+                        <ChatBot />
                       </MainLayout>
                     </ThemeProvider>
                   </CardModalProvider>
